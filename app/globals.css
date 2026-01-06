@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-thunder-950 text-white antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-storm-500 hover:bg-storm-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+  }
+
+  .btn-secondary {
+    @apply bg-thunder-800 hover:bg-thunder-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 border border-thunder-600;
+  }
+
+  .card {
+    @apply bg-thunder-900/80 backdrop-blur-sm rounded-xl border border-thunder-700/50 shadow-xl;
+  }
+
+  .nav-link {
+    @apply text-thunder-300 hover:text-white transition-colors duration-200;
+  }
+
+  .danger-badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .danger-0 { @apply bg-green-500/20 text-green-400; }
+  .danger-1 { @apply bg-yellow-500/20 text-yellow-400; }
+  .danger-2 { @apply bg-orange-500/20 text-orange-400; }
+  .danger-3 { @apply bg-red-500/20 text-red-400; }
+  .danger-4 { @apply bg-red-900/40 text-red-300; }
+
+  .sms-preview {
+    @apply font-mono text-sm bg-thunder-950 p-4 rounded-lg border border-thunder-700;
+    white-space: pre-wrap;
+  }
+}
