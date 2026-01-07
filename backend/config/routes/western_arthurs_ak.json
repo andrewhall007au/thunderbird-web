@@ -1,0 +1,220 @@
+{
+  "route_id": "western_arthurs_ak",
+  "name": "Western Arthurs (Alpha-Kappa)",
+  "short_name": "WA A-K",
+  "region": "Tasmania",
+  "distance_km": 57,
+  "typical_days": "6-8",
+  "grade": 5,
+  "grade_description": "Expert - technical scrambling, remote",
+  "is_loop": true,
+  "elevation_config": {
+    "camp_typical": 850,
+    "peak_typical": 1100,
+    "peak_min": 1000,
+    "peak_max": 1200
+  },
+  "camps": [
+    {
+      "code": "LAKEF",
+      "name": "Lake Fortuna",
+      "lat": -43.115,
+      "lon": 146.225,
+      "elevation": 850,
+      "bom_cell": "199-115",
+      "verified": false,
+      "type": "camp"
+    },
+    {
+      "code": "LAKEC",
+      "name": "Lake Cygnus",
+      "lat": -43.1303,
+      "lon": 146.2378,
+      "elevation": 874,
+      "bom_cell": "200-116",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "SQUAR",
+      "name": "Square Lake",
+      "lat": -43.136,
+      "lon": 146.249,
+      "elevation": 871,
+      "bom_cell": "200-116",
+      "verified": false,
+      "type": "camp"
+    },
+    {
+      "code": "JUNCT",
+      "name": "Junction Creek",
+      "lat": -43.096,
+      "lon": 146.275,
+      "elevation": 238,
+      "bom_cell": "198-117",
+      "verified": false,
+      "type": "camp"
+    },
+    {
+      "code": "LAKEO",
+      "name": "Lake Oberon",
+      "lat": -43.1486,
+      "lon": 146.2722,
+      "elevation": 863,
+      "bom_cell": "201-117",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "SCOTT",
+      "name": "Scotts Peak Dam",
+      "lat": -43.0375,
+      "lon": 146.2978,
+      "elevation": 300,
+      "bom_cell": "195-118",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "HIGHM",
+      "name": "High Moor",
+      "lat": -43.161,
+      "lon": 146.295,
+      "elevation": 850,
+      "bom_cell": "202-118",
+      "verified": false,
+      "type": "camp"
+    },
+    {
+      "code": "LAKEH",
+      "name": "Haven Lake",
+      "lat": -43.165,
+      "lon": 146.312,
+      "elevation": 832,
+      "bom_cell": "202-118",
+      "verified": false,
+      "type": "camp"
+    }
+  ],
+  "peaks": [
+    {
+      "code": "HESPE",
+      "name": "Mt Hesperus",
+      "lat": -43.118682,
+      "lon": 146.229973,
+      "elevation": 1098,
+      "bom_cell": "199-115",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "HAYES",
+      "name": "Mt Hayes",
+      "lat": -43.132466,
+      "lon": 146.247008,
+      "elevation": 1119,
+      "bom_cell": "200-116",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "CAPEL",
+      "name": "Capella Crags",
+      "lat": -43.128,
+      "lon": 146.24,
+      "elevation": 1000,
+      "bom_cell": "200-116",
+      "verified": false,
+      "type": "on_route"
+    },
+    {
+      "code": "PROCY",
+      "name": "Procyon Peak",
+      "lat": -43.137,
+      "lon": 146.26,
+      "elevation": 1136,
+      "bom_cell": "200-116",
+      "verified": false,
+      "type": "side_trip"
+    },
+    {
+      "code": "ORION",
+      "name": "Mt Orion",
+      "lat": -43.140707,
+      "lon": 146.266812,
+      "elevation": 1151,
+      "bom_cell": "201-117",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "SIRIU",
+      "name": "Mt Sirius",
+      "lat": -43.147509,
+      "lon": 146.264255,
+      "elevation": 1151,
+      "bom_cell": "201-117",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "PEGAS",
+      "name": "Mt Pegasus",
+      "lat": -43.152,
+      "lon": 146.272,
+      "elevation": 1063,
+      "bom_cell": "201-117",
+      "verified": false,
+      "type": "on_route"
+    },
+    {
+      "code": "CAPRI",
+      "name": "Mt Capricorn",
+      "lat": -43.158,
+      "lon": 146.28,
+      "elevation": 1037,
+      "bom_cell": "201-117",
+      "verified": false,
+      "type": "on_route"
+    },
+    {
+      "code": "COLUM",
+      "name": "Mt Columba",
+      "lat": -43.164,
+      "lon": 146.296,
+      "elevation": 1000,
+      "bom_cell": "202-118",
+      "verified": false,
+      "type": "side_trip"
+    },
+    {
+      "code": "TAURU",
+      "name": "Mt Taurus",
+      "lat": -43.168,
+      "lon": 146.31,
+      "elevation": 1011,
+      "bom_cell": "202-118",
+      "verified": false,
+      "type": "on_route"
+    }
+  ],
+  "bom_cells": [
+    "195-118",
+    "198-117",
+    "199-115",
+    "200-116",
+    "201-117",
+    "202-118"
+  ],
+  "return_waypoints": [
+    {
+      "code": "JUNCT",
+      "bom_cell": "198-117"
+    },
+    {
+      "code": "SCOTT",
+      "bom_cell": "195-118"
+    }
+  ],
+  "total_locations": 18
+}

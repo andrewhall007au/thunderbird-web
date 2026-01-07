@@ -1,0 +1,18 @@
+[Unit]
+Description=Thunderbird Weather SMS Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/thunderbird-web/backend
+Environment="PATH=/root/thunderbird-web/backend/venv/bin"
+Environment="THUNDERBIRD_DB_PATH=/root/thunderbird-web/backend/thunderbird.db"
+Environment="TZ=Australia/Hobart"
+EnvironmentFile=/root/thunderbird-web/backend/.env
+ExecStart=/root/thunderbird-web/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

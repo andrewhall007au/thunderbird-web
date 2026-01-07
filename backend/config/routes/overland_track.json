@@ -1,0 +1,233 @@
+{
+  "route_id": "overland_track",
+  "name": "Overland Track",
+  "short_name": "Overland",
+  "region": "Tasmania",
+  "distance_km": 65,
+  "typical_days": "5-7",
+  "grade": 4,
+  "grade_description": "Difficult - well-marked but challenging terrain",
+  "is_loop": false,
+  "elevation_config": {
+    "camp_typical": 850,
+    "peak_typical": 1400,
+    "peak_min": 1200,
+    "peak_max": 1617
+  },
+  "camps": [
+    {
+      "code": "RONNY",
+      "name": "Ronny Creek",
+      "lat": -41.6504,
+      "lon": 145.9614,
+      "elevation": 942,
+      "bom_cell": "126-107",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "WATER",
+      "name": "Waterfall Valley Hut",
+      "lat": -41.7147,
+      "lon": 145.9469,
+      "elevation": 1020,
+      "bom_cell": "129-106",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "WINDM",
+      "name": "Lake Windermere Hut",
+      "lat": -41.7641,
+      "lon": 145.9498,
+      "elevation": 993,
+      "bom_cell": "132-106",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "PELIO",
+      "name": "New Pelion Hut",
+      "lat": -41.8295,
+      "lon": 146.0464,
+      "elevation": 739,
+      "bom_cell": "135-109",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "KIAOR",
+      "name": "Kia Ora Hut",
+      "lat": -41.8921,
+      "lon": 146.082,
+      "elevation": 863,
+      "bom_cell": "138-111",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "BERTN",
+      "name": "Bert Nichols Hut",
+      "lat": -41.9321,
+      "lon": 146.0889,
+      "elevation": 1000,
+      "bom_cell": "140-111",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "PINEV",
+      "name": "Pine Valley Hut",
+      "lat": -41.9585,
+      "lon": 146.0635,
+      "elevation": 847,
+      "bom_cell": "141-110",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "NARCI",
+      "name": "Narcissus Hut",
+      "lat": -42.0125,
+      "lon": 146.1017,
+      "elevation": 738,
+      "bom_cell": "144-111",
+      "verified": true,
+      "type": "camp"
+    },
+    {
+      "code": "ECHOP",
+      "name": "Echo Point Hut",
+      "lat": -42.0436,
+      "lon": 146.1383,
+      "elevation": 740,
+      "bom_cell": "146-112",
+      "verified": false,
+      "type": "camp"
+    },
+    {
+      "code": "CYNTH",
+      "name": "Cynthia Bay (Visitor Centre)",
+      "lat": -42.1163,
+      "lon": 146.1741,
+      "elevation": 748,
+      "bom_cell": "149-114",
+      "verified": false,
+      "type": "camp"
+    }
+  ],
+  "peaks": [
+    {
+      "code": "CRADL",
+      "name": "Cradle Mountain",
+      "lat": -41.6848,
+      "lon": 145.9511,
+      "elevation": 1545,
+      "bom_cell": "128-106",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "MARIO",
+      "name": "Marions Lookout",
+      "lat": -41.6607,
+      "lon": 145.9525,
+      "elevation": 1224,
+      "bom_cell": "127-106",
+      "verified": true,
+      "type": "on_route"
+    },
+    {
+      "code": "BARNB",
+      "name": "Barn Bluff",
+      "lat": -41.7244,
+      "lon": 145.9225,
+      "elevation": 1559,
+      "bom_cell": "130-105",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "OAKLE",
+      "name": "Mt Oakleigh",
+      "lat": -41.7998,
+      "lon": 146.0369,
+      "elevation": 1286,
+      "bom_cell": "133-109",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "PELIO",
+      "name": "Mt Pelion West",
+      "lat": -41.8319,
+      "lon": 145.9793,
+      "elevation": 1560,
+      "bom_cell": "135-107",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "PELIO",
+      "name": "Mt Pelion East",
+      "lat": -41.8574,
+      "lon": 146.0675,
+      "elevation": 1461,
+      "bom_cell": "136-110",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "OSSA",
+      "name": "Mt Ossa",
+      "lat": -41.8713,
+      "lon": 146.0333,
+      "elevation": 1617,
+      "bom_cell": "137-109",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "ACROP",
+      "name": "The Acropolis",
+      "lat": -41.9361,
+      "lon": 146.061,
+      "elevation": 1471,
+      "bom_cell": "140-110",
+      "verified": true,
+      "type": "side_trip"
+    },
+    {
+      "code": "LABYR",
+      "name": "Labyrinth Lookout",
+      "lat": -41.9445,
+      "lon": 146.047,
+      "elevation": 1202,
+      "bom_cell": "141-109",
+      "verified": true,
+      "type": "side_trip"
+    }
+  ],
+  "bom_cells": [
+    "126-107",
+    "127-106",
+    "128-106",
+    "129-106",
+    "130-105",
+    "132-106",
+    "133-109",
+    "135-107",
+    "135-109",
+    "136-110",
+    "137-109",
+    "138-111",
+    "140-110",
+    "140-111",
+    "141-109",
+    "141-110",
+    "144-111",
+    "146-112",
+    "149-114"
+  ],
+  "total_locations": 19
+}
