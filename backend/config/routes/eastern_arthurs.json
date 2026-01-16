@@ -1,0 +1,142 @@
+{
+  "route_id": "eastern_arthurs",
+  "name": "Eastern Arthurs",
+  "code": "EA",
+  "location": "Southwest National Park, Tasmania",
+  "distance_km": 65,
+  "typical_duration_days": [
+    7,
+    10
+  ],
+  "grade": 5,
+  "camps": [
+    {
+      "code": "SCOTT",
+      "name": "Scotts Peak Dam",
+      "lat": -43.0375,
+      "lon": 146.2722,
+      "elevation": 300,
+      "bom_cell": "195-117"
+    },
+    {
+      "code": "CRACR",
+      "name": "Cracroft Crossing",
+      "lat": -43.1,
+      "lon": 146.35,
+      "elevation": 350,
+      "bom_cell": "199-119"
+    },
+    {
+      "code": "PASSC",
+      "name": "Pass Creek",
+      "lat": -43.15,
+      "lon": 146.38,
+      "elevation": 500,
+      "bom_cell": "201-120"
+    },
+    {
+      "code": "STUAR",
+      "name": "Stuart Saddle",
+      "lat": -43.18,
+      "lon": 146.4,
+      "elevation": 700,
+      "bom_cell": "203-121"
+    },
+    {
+      "code": "GOONM",
+      "name": "Goon Moor",
+      "lat": -43.2,
+      "lon": 146.42,
+      "elevation": 800,
+      "bom_cell": "204-122"
+    },
+    {
+      "code": "HANGI",
+      "name": "Hanging Lake",
+      "lat": -43.22,
+      "lon": 146.44,
+      "elevation": 850,
+      "bom_cell": "205-122"
+    },
+    {
+      "code": "BERCH",
+      "name": "Bechervaise Plateau",
+      "lat": -43.2,
+      "lon": 146.38,
+      "elevation": 900,
+      "bom_cell": "204-120"
+    },
+    {
+      "code": "CUTTI",
+      "name": "Cutting Camp",
+      "lat": -43.22,
+      "lon": 146.4,
+      "elevation": 750,
+      "bom_cell": "205-121"
+    },
+    {
+      "code": "FARMH",
+      "name": "Farmhouse Creek",
+      "lat": -43.28,
+      "lon": 146.45,
+      "elevation": 300,
+      "bom_cell": "208-123"
+    }
+  ],
+  "peaks": [
+    {
+      "code": "FEDER",
+      "name": "Federation Peak",
+      "lat": -43.2372,
+      "lon": 146.4539,
+      "elevation": 1225,
+      "bom_cell": "205-123"
+    },
+    {
+      "code": "NEEDL",
+      "name": "The Needles",
+      "lat": -43.21,
+      "lon": 146.41,
+      "elevation": 1080,
+      "bom_cell": "204-121"
+    },
+    {
+      "code": "EASTP",
+      "name": "East Portal",
+      "lat": -43.19,
+      "lon": 146.43,
+      "elevation": 1008,
+      "bom_cell": "203-122"
+    },
+    {
+      "code": "DIALT",
+      "name": "The Dial",
+      "lat": -43.2,
+      "lon": 146.4,
+      "elevation": 1083,
+      "bom_cell": "204-121"
+    },
+    {
+      "code": "DEVIL",
+      "name": "Devils Thumb",
+      "lat": -43.23,
+      "lon": 146.42,
+      "elevation": 1050,
+      "bom_cell": "205-122"
+    }
+  ],
+  "bom_cells": [
+    "195-117",
+    "199-119",
+    "201-120",
+    "203-121",
+    "203-122",
+    "204-120",
+    "204-121",
+    "204-122",
+    "205-121",
+    "205-122",
+    "205-123",
+    "208-123"
+  ]
+}

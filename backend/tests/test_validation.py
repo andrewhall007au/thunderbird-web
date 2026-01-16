@@ -226,11 +226,11 @@ class TestCommandParser:
         # LAKEV is ambiguous - matches LAKEVE (Vesta) and LAKEVU (Venus)
         result = parser.parse('LAKEV')
         assert result.command_type == CommandType.AMBIGUOUS_CAMP
-        assert 'matching_camps' in result.args
-        assert len(result.args['matching_camps']) == 2
-        assert 'LAKEVE' in result.args['matching_camps']
-        assert 'LAKEVU' in result.args['matching_camps']
-        assert 'Did you mean' in result.error_message
+        assert 'matches' in result.args
+        assert len(result.args['matches']) == 2
+        assert 'LAKEVE' in result.args['matches']
+        assert 'LAKEVU' in result.args['matches']
+        assert 'matches' in result.error_message
         
         # Full code should resolve unambiguously
         result = parser.parse('LAKEVE')
@@ -694,13 +694,13 @@ class TestEndToEnd:
         result = parser.parse('CAST')
         assert result.command_type == CommandType.CAST
         assert not result.is_valid
-        assert 'camp code' in result.error_message.lower()
+        assert 'location' in result.error_message.lower()
         
         # Invalid camp code
         result = parser.parse('CAST XXXXX')
         assert result.command_type == CommandType.CAST
         assert not result.is_valid
-        assert 'valid camp' in result.error_message.lower()
+        assert 'not recognized' in result.error_message.lower()
     
     @pytest.mark.asyncio
     async def test_hourly_forecast(self):
@@ -763,151 +763,146 @@ class TestOnboarding:
         assert session.state == OnboardingState.AWAITING_NAME
     
     def test_trail_selection(self):
-        """Selecting trail should advance to date question."""
+        """v3.1: Selecting trail should complete registration (pull-based)."""
         from app.services.onboarding import OnboardingManager, OnboardingState
-        
+
         manager = OnboardingManager()
         manager.process_input("+61400000002", "START")
         manager.process_input("+61400000002", "Andrew")  # Name first
-        
+
+        # v3.1: Route 1 is Overland Track, completes immediately
         response, is_complete = manager.process_input("+61400000002", "1")
-        
-        assert "Western Arthurs" in response
-        assert "Q3: Start date?" in response
-        assert not is_complete
-        
+
+        assert "Overland Track" in response
+        assert "CAST" in response  # Commands guide
+        assert is_complete  # v3.1: Completes after route selection
+
         session = manager.get_session("+61400000002")
-        assert session.state == OnboardingState.AWAITING_DATE
-        assert session.route_id == "western_arthurs_ak"
+        assert session.state == OnboardingState.COMPLETE
+        assert session.route_id == "overland_track"
         assert session.trail_name == "Andrew"
     
     def test_invalid_trail_selection(self):
-        """Invalid trail selection should ask again."""
+        """v3.1: Invalid trail selection (7+) should ask again."""
         from app.services.onboarding import OnboardingManager, OnboardingState
-        
+
         manager = OnboardingManager()
         manager.process_input("+61400000003", "START")
         manager.process_input("+61400000003", "TestUser")  # Name first
-        
-        response, is_complete = manager.process_input("+61400000003", "5")
-        
-        assert "Please reply 1, 2, or 3" in response
+
+        # v3.1: Now accepts 1-6, so 7 is invalid
+        response, is_complete = manager.process_input("+61400000003", "7")
+
+        assert "Please reply 1-6" in response
         assert not is_complete
-        
+
         # Should still be awaiting trail
         session = manager.get_session("+61400000003")
         assert session.state == OnboardingState.AWAITING_TRAIL
     
-    def test_date_parsing(self):
-        """Date should parse correctly in DDMMYY format."""
+    def test_all_six_routes_available(self):
+        """v3.1: All 6 routes should be selectable."""
         from app.services.onboarding import OnboardingManager, OnboardingState
-        from datetime import datetime
-        
-        manager = OnboardingManager()
-        manager.process_input("+61400000004", "START")
-        manager.process_input("+61400000004", "TestUser")  # Name first
-        manager.process_input("+61400000004", "1")  # Western Arthurs
-        
-        # Use a future date
-        future = datetime.now().replace(year=2026, month=12, day=15)
-        date_str = future.strftime("%d%m%y")
-        
-        response, is_complete = manager.process_input("+61400000004", date_str)
-        
-        assert "Got it:" in response
-        assert "Q4: Days on trail?" in response
-        assert not is_complete
-        
-        session = manager.get_session("+61400000004")
-        assert session.state == OnboardingState.AWAITING_DAYS
+
+        route_tests = [
+            ("1", "overland_track", "Overland Track"),
+            ("2", "western_arthurs_ak", "Western Arthurs (A-K)"),
+            ("3", "western_arthurs_full", "Western Arthurs (Full)"),
+            ("4", "federation_peak", "Federation Peak"),
+            ("5", "eastern_arthurs", "Eastern Arthurs"),
+            ("6", "combined_arthurs", "Combined W+E Arthurs"),
+        ]
+
+        for selection, route_id, route_name in route_tests:
+            manager = OnboardingManager()
+            phone = f"+6140000010{selection}"
+            manager.process_input(phone, "START")
+            manager.process_input(phone, "TestUser")
+
+            response, is_complete = manager.process_input(phone, selection)
+
+            assert route_name in response, f"Route {selection} should show {route_name}"
+            assert is_complete, f"Route {selection} should complete"
+
+            session = manager.get_session(phone)
+            assert session.route_id == route_id
     
     def test_full_onboarding_flow(self):
-        """Complete onboarding flow should work end to end."""
+        """v3.1: Complete onboarding flow (name -> route -> complete)."""
         from app.services.onboarding import OnboardingManager, OnboardingState
-        from datetime import datetime
-        
+
         manager = OnboardingManager()
         phone = "+61400000005"
-        
+
         # START
         response, _ = manager.process_input(phone, "START")
-        assert "Q1" in response
-        
-        # Name
+        assert "name" in response.lower()
+
+        # Name - v3.1 shows 6 routes
         response, _ = manager.process_input(phone, "Andrew")
-        assert "Got it: Andrew" in response
-        assert "Q2: Which trail?" in response
-        
-        # Trail selection
-        response, _ = manager.process_input(phone, "3")  # Overland Track
-        assert "Overland Track" in response
-        
-        # Date
-        response, _ = manager.process_input(phone, "191226")  # 19 Dec 2026
-        assert "19 Dec 2026" in response
-        
-        # Days
-        response, _ = manager.process_input(phone, "6")
-        assert "Q5: Direction?" in response
-        
-        # Direction - now completes immediately (no confirmation step)
-        response, is_complete = manager.process_input(phone, "1")  # Standard
-        assert "All set" in response
+        assert "Hi Andrew" in response
+        assert "1 = Overland Track" in response
+        assert "6 = Combined W+E Arthurs" in response
+
+        # Trail selection - v3.1 completes immediately
+        response, is_complete = manager.process_input(phone, "6")  # Combined Arthurs
+        assert "Combined W+E Arthurs" in response
+        assert "CAST" in response  # Commands guide shown
         assert is_complete
-        
+
         session = manager.get_session(phone)
         assert session.state == OnboardingState.COMPLETE
         assert session.trail_name == "Andrew"
+        assert session.route_id == "combined_arthurs"
     
     def test_quick_start_guide_generation(self):
-        """Quick start guide should be generated for route."""
+        """v3.1: Quick start guide shows camps, peaks, and optional setup."""
         from app.services.onboarding import OnboardingManager, OnboardingState
-        
+
         manager = OnboardingManager()
         phone = "+61400000006"
-        
-        # Complete onboarding
+
+        # v3.1: Complete onboarding (name -> route -> done)
         manager.process_input(phone, "START")
-        manager.process_input(phone, "TestUser")  # Name
-        manager.process_input(phone, "1")  # Western Arthurs A-K
-        manager.process_input(phone, "191226")
-        manager.process_input(phone, "7")
-        manager.process_input(phone, "1")  # Direction - completes registration
-        
+        manager.process_input(phone, "TestUser")
+        manager.process_input(phone, "1")  # Overland Track
+
         session = manager.get_session(phone)
         messages = manager.get_quick_start_guide(session)
-        
-        # 6 messages: [1/6] check-in, [2/6] waypoints, [3/6] routine, [4/6] commands, [5/6] key, [6/6] rules
-        assert len(messages) == 6
-        assert "[1/6] CHECK-IN" in messages[0]
-        assert "[2/6] WAYPOINTS" in messages[1]
-        assert "Camps:" in messages[1]
-        assert "Peaks:" in messages[1]
-        assert "[6/6] IMPORTANT RULES" in messages[5]
+
+        # v3.1: 3 messages - camps list, peaks list, optional setup
+        assert len(messages) == 3
+        assert "YOUR CAMPS" in messages[0]
+        assert "RONNY" in messages[0]  # Overland Track camp code
+        assert "YOUR PEAKS" in messages[1]
+        assert "CRADL" in messages[1]  # Cradle Mountain peak code
+        assert "1545m" in messages[1]  # Peak elevation
+        assert "OPTIONAL SETUP" in messages[2]
+        assert "SAFE" in messages[2]
+        assert "ALERTS" in messages[2]
     
     def test_restart_onboarding(self):
-        """Starting again should restart onboarding."""
+        """v3.1: START should restart onboarding at any point."""
         from app.services.onboarding import OnboardingManager, OnboardingState
-        
+
         manager = OnboardingManager()
         phone = "+61400000007"
-        
-        # Start onboarding
+
+        # Start and complete onboarding
         manager.process_input(phone, "START")
-        manager.process_input(phone, "TestUser")  # Name
-        manager.process_input(phone, "1")  # Western Arthurs A-K
-        manager.process_input(phone, "191226")
-        
-        # Session should be in AWAITING_DAYS
+        manager.process_input(phone, "TestUser")
+        manager.process_input(phone, "1")  # Completes in v3.1
+
+        # Session should be COMPLETE
         session = manager.get_session(phone)
-        assert session.state == OnboardingState.AWAITING_DAYS
-        
+        assert session.state == OnboardingState.COMPLETE
+
         # Start again - should restart
         response, is_complete = manager.process_input(phone, "START")
-        
-        assert "Q1" in response
+
+        assert "name" in response.lower()
         assert not is_complete
-        
+
         # Should be back at AWAITING_NAME
         session = manager.get_session(phone)
         assert session.state == OnboardingState.AWAITING_NAME

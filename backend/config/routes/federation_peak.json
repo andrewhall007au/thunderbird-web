@@ -1,0 +1,63 @@
+{
+  "route_id": "federation_peak",
+  "name": "Federation Peak",
+  "code": "FP",
+  "location": "Southwest National Park, Tasmania",
+  "distance_km": 45,
+  "typical_duration_days": [
+    4,
+    5
+  ],
+  "grade": 5,
+  "camps": [
+    {
+      "code": "FARMH",
+      "name": "Farmhouse Creek",
+      "lat": -43.28,
+      "lon": 146.45,
+      "elevation": 300,
+      "bom_cell": "208-123"
+    },
+    {
+      "code": "SOUTH",
+      "name": "South Cracroft",
+      "lat": -43.25,
+      "lon": 146.42,
+      "elevation": 450,
+      "bom_cell": "206-122"
+    },
+    {
+      "code": "CUTTI",
+      "name": "Cutting Camp",
+      "lat": -43.22,
+      "lon": 146.4,
+      "elevation": 750,
+      "bom_cell": "205-121"
+    },
+    {
+      "code": "BERCH",
+      "name": "Bechervaise Plateau",
+      "lat": -43.2,
+      "lon": 146.38,
+      "elevation": 900,
+      "bom_cell": "204-120"
+    }
+  ],
+  "peaks": [
+    {
+      "code": "FEDER",
+      "name": "Federation Peak",
+      "lat": -43.2372,
+      "lon": 146.4539,
+      "elevation": 1225,
+      "bom_cell": "205-123"
+    }
+  ],
+  "bom_cells": [
+    "204-120",
+    "205-121",
+    "205-123",
+    "206-122",
+    "208-123"
+  ]
+}

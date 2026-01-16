@@ -1,6 +1,6 @@
 """
 SMS Command Parser
-Based on THUNDERBIRD_SPEC_v2.4 Sections 7, 8.7, 8.7.1
+Based on THUNDERBIRD_SPEC_v3.0 Sections 7, 8
 """
 
 from datetime import datetime, date
@@ -25,9 +25,23 @@ class CommandType(str, Enum):
     KEY = "KEY"
     ALERTS = "ALERTS"
     CAST = "CAST"
-    SAFE = "SAFE"           # Add SafeCheck contact
-    SAFEDEL = "SAFEDEL"     # Remove SafeCheck contact
-    SAFELIST = "SAFELIST"   # List SafeCheck contacts
+    
+    # v3.0 new commands
+    CAST12 = "CAST12"       # 12hr hourly (alias for CAST)
+    CAST24 = "CAST24"       # 24hr hourly
+    CAST7 = "CAST7"         # 7-day all camps
+    PEAKS = "PEAKS"         # 7-day all peaks
+    CHECKIN = "CHECKIN"     # Explicit check-in
+    ROUTE = "ROUTE"         # List camp/peak codes
+    ALERTS_ON = "ALERTS_ON"
+    ALERTS_OFF = "ALERTS_OFF"
+    SKIP = "SKIP"           # Skip onboarding step
+    
+    # Legacy
+    WA_PUSH = "WA_PUSH"
+    SAFE = "SAFE"
+    SAFEDEL = "SAFEDEL"
+    SAFELIST = "SAFELIST"
     YES = "Y"
     NO = "N"
     CAMP_CODE = "CAMP"
@@ -46,15 +60,24 @@ class ParsedCommand:
     args: Dict[str, Any]
     is_valid: bool
     error_message: Optional[str] = None
+    
+    # v3.0 convenience properties
+    @property
+    def location_code(self) -> Optional[str]:
+        """Get camp or peak code from args."""
+        return self.args.get("camp_code") or self.args.get("peak_code") or self.args.get("location_code")
+    
+    @property
+    def action(self) -> Optional[str]:
+        """Get action from args (e.g., ON/OFF for ALERTS)."""
+        return self.args.get("action")
 
 
 class CommandParser:
     """
     Parse incoming SMS messages into commands.
+    v3.0 - Pull-based system with explicit CHECKIN.
     """
-    
-    # Camp codes are loaded dynamically from route JSON files
-    # This ensures alignment with the spec
     
     @classmethod
     def get_camp_codes_for_route(cls, route_id: str) -> List[str]:
@@ -74,6 +97,17 @@ class CommandParser:
             all_camps.update(cls.get_camp_codes_for_route(route_id))
         return list(all_camps)
     
+    @classmethod
+    def get_all_peak_codes(cls) -> List[str]:
+        """Get all peak codes from all routes."""
+        from app.services.routes import RouteLoader, get_route
+        all_peaks = set()
+        for route_id in RouteLoader.list_routes():
+            route = get_route(route_id)
+            if route:
+                all_peaks.update([p.code for p in route.peaks])
+        return list(all_peaks)
+    
     def find_camps_by_prefix(self, prefix: str) -> List[str]:
         """Find all camp codes that start with the given prefix."""
         prefix_upper = prefix.upper()
@@ -81,15 +115,14 @@ class CommandParser:
     
     def get_camp_name(self, camp_code: str) -> str:
         """Get the display name for a camp code."""
-        from app.services.routes import RouteLoader
+        from app.services.routes import RouteLoader, get_route
         for route_id in RouteLoader.list_routes():
-            from app.services.routes import get_route
             route = get_route(route_id)
             if route:
                 for camp in route.camps:
                     if camp.code == camp_code:
                         return camp.name
-        return camp_code  # Fallback to code if name not found
+        return camp_code
     
     # Simple command mapping (no args)
     SIMPLE_COMMANDS = {
@@ -98,6 +131,7 @@ class CommandParser:
         "STOP": CommandType.STOP,
         "CANCEL": CommandType.STOP,
         "HELP": CommandType.HELP,
+        "COMMANDS": CommandType.HELP,
         "STATUS": CommandType.STATUS,
         "DELAY": CommandType.DELAY,
         "EXTEND": CommandType.EXTEND,
@@ -105,12 +139,24 @@ class CommandParser:
         "EDIT": CommandType.EDIT,
         "KEY": CommandType.KEY,
         "LEGEND": CommandType.KEY,
-        "ALERTS": CommandType.ALERTS,
+        # "ALERTS": CommandType.ALERTS,  # Handled separately
         "WARNINGS": CommandType.ALERTS,
+        "SAFELIST": CommandType.SAFELIST,
         "Y": CommandType.YES,
         "YES": CommandType.YES,
         "N": CommandType.NO,
         "NO": CommandType.NO,
+        # v3.0 additions
+        "ROUTE": CommandType.ROUTE,
+        "ROUTES": CommandType.ROUTE,
+        "CAST7": CommandType.CAST7,
+        "PEAKS": CommandType.PEAKS,
+        "SKIP": CommandType.SKIP,
+    }
+    
+    # Cheat codes (multi-word commands)
+    CHEAT_CODES = {
+        "WA PUSH": CommandType.WA_PUSH,
     }
     
     # LIVETEST commands (with @ prefix)
@@ -126,40 +172,33 @@ class CommandParser:
     def __init__(self, route_id: Optional[str] = None):
         self.route_id = route_id
         self.valid_camps = self._get_valid_camps()
+        self.valid_peaks = self._get_valid_peaks()
     
     def _get_valid_camps(self) -> List[str]:
         """Get valid camp codes for current route."""
         if self.route_id:
             return self.get_camp_codes_for_route(self.route_id)
-        # Return all camp codes if no route specified
         return self.get_all_camp_codes()
     
+    def _get_valid_peaks(self) -> List[str]:
+        """Get valid peak codes for current route."""
+        return self.get_all_peak_codes()
+    
     def sanitize(self, message: str) -> str:
-        """
-        Sanitize incoming SMS message.
-        Section 12.9.3
-        """
-        # Strip whitespace
+        """Sanitize incoming SMS message."""
         cleaned = message.strip()
-        # Don't uppercase yet - preserve for @ detection
-        # Remove most special chars but keep @ for LIVETEST
-        cleaned = re.sub(r'[^A-Za-z0-9@ ]', '', cleaned)
+        cleaned = re.sub(r'[^A-Za-z0-9@ +]', '', cleaned)
         return cleaned
     
     def parse(self, message: str) -> ParsedCommand:
         """
         Parse an SMS message into a command.
-        
-        Args:
-            message: Raw SMS message text
-        
-        Returns:
-            ParsedCommand with type and any arguments
+        v3.0 - All commands case-insensitive.
         """
         sanitized = self.sanitize(message)
         upper = sanitized.upper()
         
-        # Check for LIVETEST commands first (preserve @ prefix)
+        # Check for LIVETEST commands first
         for pattern, cmd_type in self.LIVETEST_COMMANDS.items():
             if upper.startswith(pattern.upper()):
                 return ParsedCommand(
@@ -169,7 +208,16 @@ class CommandParser:
                     is_valid=True
                 )
         
-        # Now work with uppercase
+        # Check for cheat codes
+        for pattern, cmd_type in self.CHEAT_CODES.items():
+            if upper == pattern or upper.startswith(pattern + " "):
+                return ParsedCommand(
+                    command_type=cmd_type,
+                    raw_input=message,
+                    args={},
+                    is_valid=True
+                )
+        
         parts = upper.split()
         if not parts:
             return ParsedCommand(
@@ -182,7 +230,7 @@ class CommandParser:
         
         first_word = parts[0]
         
-        # Check simple commands
+        # Check simple commands first
         if first_word in self.SIMPLE_COMMANDS:
             return ParsedCommand(
                 command_type=self.SIMPLE_COMMANDS[first_word],
@@ -191,153 +239,99 @@ class CommandParser:
                 is_valid=True
             )
         
-        # Check for CAST command (CAST LAKEO)
-        if first_word == "CAST":
+        # ALERTS ON / ALERTS OFF / bare ALERTS (v3.0)
+        if first_word == "ALERTS":
             if len(parts) >= 2:
-                camp_code = parts[1]
-                if camp_code in self.valid_camps:
+                action = parts[1]
+                if action == "ON":
                     return ParsedCommand(
-                        command_type=CommandType.CAST,
+                        command_type=CommandType.ALERTS_ON,
                         raw_input=message,
-                        args={"camp_code": camp_code},
+                        args={"action": "ON"},
                         is_valid=True
                     )
-                else:
+                elif action == "OFF":
                     return ParsedCommand(
-                        command_type=CommandType.CAST,
+                        command_type=CommandType.ALERTS_OFF,
                         raw_input=message,
-                        args={},
-                        is_valid=False,
-                        error_message=f"CAST requires a valid camp code.\n\nYour route camps:\n{' '.join(self.valid_camps)}\n\nExample: CAST LAKEO"
+                        args={"action": "OFF"},
+                        is_valid=True
                     )
-            else:
-                return ParsedCommand(
-                    command_type=CommandType.CAST,
-                    raw_input=message,
-                    args={},
-                    is_valid=False,
-                    error_message=f"CAST requires a camp code.\n\nYour route camps:\n{' '.join(self.valid_camps)}\n\nExample: CAST LAKEO"
-                )
-        
-        # Check for SAFE command (SAFE +61400123456 Kate)
-        if first_word == "SAFE":
-            if len(parts) >= 3:
-                contact_phone = parts[1]
-                contact_name = ' '.join(parts[2:])  # Name can have spaces
-                return ParsedCommand(
-                    command_type=CommandType.SAFE,
-                    raw_input=message,
-                    args={"contact_phone": contact_phone, "contact_name": contact_name},
-                    is_valid=True
-                )
-            elif len(parts) == 2:
-                # Just phone, no name
-                contact_phone = parts[1]
-                return ParsedCommand(
-                    command_type=CommandType.SAFE,
-                    raw_input=message,
-                    args={"contact_phone": contact_phone, "contact_name": "Contact"},
-                    is_valid=True
-                )
-            else:
-                return ParsedCommand(
-                    command_type=CommandType.SAFE,
-                    raw_input=message,
-                    args={},
-                    is_valid=False,
-                    error_message="SAFE requires a phone number.\n\nExample: SAFE +61400123456 Kate"
-                )
-        
-        # Check for SAFEDEL command (SAFEDEL +61400123456)
-        if first_word == "SAFEDEL":
-            if len(parts) >= 2:
-                contact_phone = parts[1]
-                return ParsedCommand(
-                    command_type=CommandType.SAFEDEL,
-                    raw_input=message,
-                    args={"contact_phone": contact_phone},
-                    is_valid=True
-                )
-            else:
-                return ParsedCommand(
-                    command_type=CommandType.SAFEDEL,
-                    raw_input=message,
-                    args={},
-                    is_valid=False,
-                    error_message="SAFEDEL requires a phone number.\n\nExample: SAFEDEL +61400123456"
-                )
-        
-        # Check for SAFELIST command
-        if first_word == "SAFELIST":
+            # Bare ALERTS command
             return ParsedCommand(
-                command_type=CommandType.SAFELIST,
+                command_type=CommandType.ALERTS,
                 raw_input=message,
                 args={},
                 is_valid=True
             )
         
-        # Check if it's an exact camp code match
+        # CAST / CAST12 with location (v3.0)
+        if first_word in ("CAST", "CAST12"):
+            return self._parse_cast(parts, CommandType.CAST, message)
+        
+        # CAST24 with location (v3.0)
+        if first_word == "CAST24":
+            return self._parse_cast(parts, CommandType.CAST24, message)
+        
+        # CHECKIN command (v3.0)
+        if first_word == "CHECKIN":
+            return self._parse_checkin(parts, message)
+        
+        # SAFE command
+        if first_word == "SAFE":
+            return self._parse_safe(parts, message)
+        
+        # SAFEDEL command
+        if first_word == "SAFEDEL":
+            return self._parse_safedel(parts, message)
+        
+        # Check if it's a valid camp code
+        # v3.0: bare camp code does NOT check in automatically
         if first_word in self.valid_camps:
             return ParsedCommand(
                 command_type=CommandType.CAMP_CODE,
                 raw_input=message,
                 args={"camp_code": first_word},
-                is_valid=True
+                is_valid=True,
+                error_message="Use CHECKIN command. Example: CHECKIN " + first_word
             )
         
-        # Check if it's a 5-letter prefix that matches multiple camps (disambiguation needed)
-        if len(first_word) == 5 and first_word.isalpha():
-            matching_camps = self.find_camps_by_prefix(first_word)
-            if len(matching_camps) > 1:
-                # Ambiguous - need user to clarify
-                options = []
-                for i, camp in enumerate(sorted(matching_camps), 1):
-                    camp_name = self.get_camp_name(camp)
-                    options.append(f"{i}. {camp_name} ({camp})")
-                return ParsedCommand(
-                    command_type=CommandType.AMBIGUOUS_CAMP,
-                    raw_input=message,
-                    args={
-                        "prefix": first_word,
-                        "matching_camps": sorted(matching_camps)
-                    },
-                    is_valid=True,
-                    error_message=f"Did you mean:\n" + "\n".join(options) + "\n\nReply with number or full code."
-                )
-            elif len(matching_camps) == 1:
-                # Single match - treat as valid
-                return ParsedCommand(
-                    command_type=CommandType.CAMP_CODE,
-                    raw_input=message,
-                    args={"camp_code": matching_camps[0]},
-                    is_valid=True
-                )
-            else:
-                # No matches - invalid camp code
-                return ParsedCommand(
-                    command_type=CommandType.CAMP_CODE,
-                    raw_input=message,
-                    args={"camp_code": first_word},
-                    is_valid=False,
-                    error_message=f'"{first_word}" not recognized'
-                )
-        
-        # Check if it looks like a camp code (6 chars) but isn't valid
-        if len(first_word) == 6 and first_word.isalpha():
+        # Check if it's a valid peak code
+        if first_word in self.valid_peaks:
             return ParsedCommand(
                 command_type=CommandType.CAMP_CODE,
                 raw_input=message,
-                args={"camp_code": first_word},
-                is_valid=False,
-                error_message=f'"{first_word}" not recognized'
+                args={"peak_code": first_word},
+                is_valid=True,
+                error_message="Use CAST for forecasts. Example: CAST " + first_word
             )
         
-        # Check for date input (DDMMYY format) - used in onboarding
+        # Prefix matching for camps
+        if len(first_word) >= 3:
+            matches = self.find_camps_by_prefix(first_word)
+            if len(matches) == 1:
+                return ParsedCommand(
+                    command_type=CommandType.CAMP_CODE,
+                    raw_input=message,
+                    args={"camp_code": matches[0]},
+                    is_valid=True,
+                    error_message="Use CHECKIN command. Example: CHECKIN " + matches[0]
+                )
+            elif len(matches) > 1:
+                return ParsedCommand(
+                    command_type=CommandType.AMBIGUOUS_CAMP,
+                    raw_input=message,
+                    args={"matches": matches},
+                    is_valid=False,
+                    error_message=f'"{first_word}" matches: {" ".join(matches)}'
+                )
+        
+        # Check for date input (DDMMYY format)
         if re.match(r'^\d{6}$', first_word):
             try:
                 parsed_date = self._parse_date(first_word)
                 return ParsedCommand(
-                    command_type=CommandType.UNKNOWN,  # Will be handled by onboarding flow
+                    command_type=CommandType.UNKNOWN,
                     raw_input=message,
                     args={"date": parsed_date, "date_str": first_word},
                     is_valid=True
@@ -351,7 +345,7 @@ class CommandParser:
                     error_message=str(e)
                 )
         
-        # Check for number input (used in onboarding)
+        # Check for number input (onboarding)
         if first_word.isdigit():
             return ParsedCommand(
                 command_type=CommandType.UNKNOWN,
@@ -366,22 +360,105 @@ class CommandParser:
             raw_input=message,
             args={},
             is_valid=False,
-            error_message="Command not recognized"
+            error_message="Command not recognized. Text COMMANDS for help."
         )
     
+    def _parse_cast(self, parts: List[str], cmd_type: CommandType, message: str) -> ParsedCommand:
+        """Parse CAST/CAST12/CAST24 command."""
+        if len(parts) >= 2:
+            location = parts[1]
+            if location in self.valid_camps or location in self.valid_peaks:
+                return ParsedCommand(
+                    command_type=cmd_type,
+                    raw_input=message,
+                    args={"location_code": location, "camp_code": location},
+                    is_valid=True
+                )
+            else:
+                return ParsedCommand(
+                    command_type=cmd_type,
+                    raw_input=message,
+                    args={"location_code": location},
+                    is_valid=False,
+                    error_message=f'"{location}" not recognized. Text ROUTE for valid codes.'
+                )
+        else:
+            return ParsedCommand(
+                command_type=cmd_type,
+                raw_input=message,
+                args={},
+                is_valid=False,
+                error_message="CAST requires a location. Example: CAST LAKEO"
+            )
+    
+    def _parse_checkin(self, parts: List[str], message: str) -> ParsedCommand:
+        """Parse CHECKIN command (v3.0)."""
+        if len(parts) >= 2:
+            camp = parts[1]
+            if camp in self.valid_camps:
+                return ParsedCommand(
+                    command_type=CommandType.CHECKIN,
+                    raw_input=message,
+                    args={"camp_code": camp},
+                    is_valid=True
+                )
+            else:
+                return ParsedCommand(
+                    command_type=CommandType.CHECKIN,
+                    raw_input=message,
+                    args={"camp_code": camp},
+                    is_valid=False,
+                    error_message=f'"{camp}" not recognized. Text ROUTE for valid camps.'
+                )
+        else:
+            return ParsedCommand(
+                command_type=CommandType.CHECKIN,
+                raw_input=message,
+                args={},
+                is_valid=False,
+                error_message="CHECKIN requires a camp. Example: CHECKIN LAKEO"
+            )
+    
+    def _parse_safe(self, parts: List[str], message: str) -> ParsedCommand:
+        """Parse SAFE command."""
+        if len(parts) >= 2:
+            phone = parts[1]
+            name = parts[2] if len(parts) >= 3 else "Contact"
+            return ParsedCommand(
+                command_type=CommandType.SAFE,
+                raw_input=message,
+                args={"phone": phone, "name": name},
+                is_valid=True
+            )
+        else:
+            return ParsedCommand(
+                command_type=CommandType.SAFE,
+                raw_input=message,
+                args={},
+                is_valid=False,
+                error_message="SAFE requires phone. Example: SAFE +61400123456 Kate"
+            )
+    
+    def _parse_safedel(self, parts: List[str], message: str) -> ParsedCommand:
+        """Parse SAFEDEL command."""
+        if len(parts) >= 2 and parts[1].isdigit():
+            return ParsedCommand(
+                command_type=CommandType.SAFEDEL,
+                raw_input=message,
+                args={"index": int(parts[1])},
+                is_valid=True
+            )
+        else:
+            return ParsedCommand(
+                command_type=CommandType.SAFEDEL,
+                raw_input=message,
+                args={},
+                is_valid=False,
+                error_message="SAFEDEL requires number. Example: SAFEDEL 1"
+            )
+    
     def _parse_date(self, date_str: str) -> date:
-        """
-        Parse date from DDMMYY format.
-        
-        Args:
-            date_str: Date string in DDMMYY format
-        
-        Returns:
-            date object
-        
-        Raises:
-            ValueError if invalid format
-        """
+        """Parse date from DDMMYY format."""
         if len(date_str) != 6:
             raise ValueError("Date must be 6 digits (DDMMYY)")
         
@@ -390,7 +467,6 @@ class CommandParser:
             month = int(date_str[2:4])
             year = int(date_str[4:6])
             
-            # Convert 2-digit year
             if year < 50:
                 year += 2000
             else:
@@ -404,18 +480,25 @@ class CommandParser:
 class ResponseGenerator:
     """
     Generate response messages for commands.
-    Section 8.7.1
+    v3.0 updates.
     """
+    
+    @staticmethod
+    def invalid_location(location_code: str) -> str:
+        """Generate response for invalid location code (v3.0)."""
+        return (
+            f'"{location_code}" not recognized.\n\n'
+            f'Text ROUTE for valid camps and peaks.'
+        )
     
     @staticmethod
     def invalid_camp(camp_code: str, valid_camps: List[str]) -> str:
         """Generate response for invalid camp code."""
-        camps_str = ' '.join(valid_camps[:6])  # First 6 camps
+        camps_str = ' '.join(valid_camps[:6])
         return (
             f'"{camp_code}" not recognized.\n\n'
-            f'Valid camps on your route:\n'
-            f'{camps_str}\n\n'
-            f'Text HELP for commands.'
+            f'Valid camps:\n{camps_str}\n\n'
+            f'Text ROUTE for full list.'
         )
     
     @staticmethod
@@ -423,13 +506,13 @@ class ResponseGenerator:
         """Generate response for unknown command."""
         return (
             'Command not recognized.\n\n'
-            'Text HELP for available commands.'
+            'Text COMMANDS for available commands.'
         )
     
     @staticmethod
     def camp_already_passed(camp_code: str, current: str, ahead: List[str]) -> str:
         """Generate response for camp already passed."""
-        ahead_str = ', '.join(ahead[:3])  # First 3 camps ahead
+        ahead_str = ', '.join(ahead[:3])
         return (
             f"You've already passed {camp_code}.\n\n"
             f"Current position: {current}\n"
@@ -452,7 +535,6 @@ class ResponseGenerator:
         """Generate response for duplicate check-in."""
         return (
             f'Already checked in at {camp_code} today.\n\n'
-            f'Next check-in: tomorrow 5:30pm\n\n'
             f'Text STATUS for your details.'
         )
     
@@ -468,18 +550,21 @@ class ResponseGenerator:
     
     @staticmethod
     def help_message() -> str:
-        """Generate HELP response."""
+        """Generate HELP/COMMANDS response (v3.0)."""
         return (
             'THUNDERBIRD COMMANDS\n'
             '────────────────────\n'
-            '[CAMP] = Check in (e.g., LAKEO)\n'
-            'STATUS = Your subscription\n'
-            'DELAY = Weather delay +1 day\n'
-            'EXTEND = Extend trip +1 day\n'
-            'RESEND = Resend last forecast\n'
-            'KEY = Column legend\n'
-            'ALERTS = BOM warnings\n'
-            'STOP = End service'
+            'CAST [LOC] = 12hr forecast\n'
+            'CAST24 [LOC] = 24hr forecast\n'
+            'CAST7 = 7-day all camps\n'
+            'PEAKS = 7-day all peaks\n'
+            'CHECKIN [CAMP] = Check in\n'
+            'ROUTE = List codes\n'
+            'ALERTS ON/OFF = Warnings\n'
+            'SAFE [PHONE] [NAME]\n'
+            'STATUS = Subscription\n'
+            'KEY = Legend\n'
+            'CANCEL = End service'
         )
     
     @staticmethod
@@ -499,39 +584,107 @@ class ResponseGenerator:
             f'Position: {current_camp}\n'
             f'Day: {day_number} of {total_days}\n'
             f'Expires: {expires_str}\n\n'
-            f'Text HELP for commands.'
+            f'Text COMMANDS for help.'
         )
     
     @staticmethod
     def key_message() -> str:
-        """Generate KEY response - column legend."""
+        """Generate KEY response (v3.0 - with Prec, Wd, no CB)."""
         return (
             'FORECAST COLUMN KEY\n'
             '────────────────────\n'
-            'Day = Forecast day (Mon, Tue...)\n'
-            'Tmp = Temperature range (C)\n'
+            'Hr  = Hour (24hr)\n'
+            'Tmp = Temperature (C)\n'
             '%Rn = Rain probability\n'
-            'Rn  = Rain amount (mm)\n'
-            'Sn  = Snow amount (cm)\n'
-            'Wa  = Wind average (km/h)\n'
-            'Wm  = Wind max/gusts (km/h)\n'
-            '%Cd = Cloud cover %\n'
-            'CB  = Cloud base (x100m)\n'
+            'Prec = R#-# rain mm, S#-# snow cm\n'
+            'Wa  = Wind avg (km/h)\n'
+            'Wm  = Wind max (km/h)\n'
+            'Wd  = Wind direction\n'
+            '%Cd = Cloud cover\n'
             'FL  = Freezing level (x100m)\n'
-            'D   = Danger (!,!!,!!!)\n'
-            'TS  = Thunderstorm risk\n\n'
-            'Example: CB=8 means cloud at 800m\n'
-            'Example: FL=12 means freezing at 1200m'
+            'D   = Danger (!,!!,!!!)\n\n'
+            'Example: Prec R2-4 = 2-4mm rain\n'
+            'Example: FL=15 = freezing at 1500m'
         )
     
     @staticmethod
-    def checkin_confirmed(camp_code: str, camp_name: str) -> str:
-        """Generate check-in confirmation."""
-        return (
-            f'✓ Checked in at {camp_code}\n'
-            f'  {camp_name}\n\n'
-            f'Forecast coming at 6pm.'
+    def checkin_confirmed(
+        camp_code: str,
+        camp_name: str,
+        timestamp: Optional[datetime] = None,
+        safecheck_count: int = 0,
+        gps_lat: Optional[float] = None,
+        gps_lon: Optional[float] = None
+    ) -> str:
+        """Generate check-in confirmation (v3.0)."""
+        time_str = timestamp.strftime('%H:%M') if timestamp else datetime.now(TZ_HOBART).strftime('%H:%M')
+        
+        msg = (
+            f'✓ Checked in at {camp_name}\n'
+            f'  {camp_code} at {time_str}\n'
         )
+        
+        if gps_lat and gps_lon:
+            msg += f'  GPS: {gps_lat:.4f}, {gps_lon:.4f}\n'
+        
+        if safecheck_count > 0:
+            msg += f'\n{safecheck_count} SafeCheck contact(s) notified.'
+        
+        return msg
+    
+    @staticmethod
+    def route_info(route_name: str, route_id: str) -> str:
+        """Generate ROUTE response (v3.0)."""
+        from app.services.routes import get_route
+        route = get_route(route_id)
+        
+        if not route:
+            return f'Route {route_id} not found.'
+        
+        camps = ' '.join([c.code for c in route.camps])
+        peaks = ' '.join([p.code for p in route.peaks])
+        
+        return (
+            f'{route_name}\n'
+            f'────────────────────\n'
+            f'CAMPS:\n{camps}\n\n'
+            f'PEAKS:\n{peaks}\n\n'
+            f'CAST [CODE] = forecast\n'
+            f'CHECKIN [CAMP] = check in'
+        )
+    
+    @staticmethod
+    def alerts_enabled() -> str:
+        """Generate ALERTS ON confirmation (v3.0)."""
+        return (
+            'BOM alerts enabled.\n\n'
+            'You will receive severe weather warnings.\n\n'
+            'Text ALERTS OFF to disable.'
+        )
+    
+    @staticmethod
+    def alerts_disabled() -> str:
+        """Generate ALERTS OFF confirmation (v3.0)."""
+        return (
+            'BOM alerts disabled.\n\n'
+            'Text ALERTS ON to re-enable.'
+        )
+    
+    @staticmethod
+    def current_alerts(warnings: List[Dict[str, Any]]) -> str:
+        """Generate current BOM warnings response (v3.0)."""
+        if not warnings:
+            return (
+                'No active warnings for your route.\n\n'
+                'Text ALERTS ON to receive future warnings.'
+            )
+        
+        msg = 'ACTIVE WARNINGS\n────────────────────\n'
+        for w in warnings[:3]:
+            msg += f"⚠️ {w.get('title', 'Warning')}\n"
+            msg += f"   {w.get('description', '')}\n"
+        
+        return msg
     
     @staticmethod
     def delay_confirmed(new_expiry: date) -> str:

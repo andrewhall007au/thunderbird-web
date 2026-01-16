@@ -251,3 +251,162 @@ class RouteLoader:
 def get_route(route_id: str) -> Optional[Route]:
     """Convenience function to get a route."""
     return RouteLoader.load(route_id)
+
+# =============================================================================
+
+# =============================================================================
+# V3.0 ROUTES ADDITIONS - Add to end of routes.py
+# =============================================================================
+
+# Peak code to info mapping (fallback when route not loaded)
+# From THUNDERBIRD_SPEC_v3.1 Section 7.5
+KNOWN_PEAKS = {
+    # Overland Track (OL)
+    "CRADC": {"name": "Cradle Mountain", "elevation": 1545},
+    "BARNE": {"name": "Barn Bluff", "elevation": 1559},
+    "ACROP": {"name": "The Acropolis", "elevation": 1471},
+    "OLYMT": {"name": "Mt Olympus", "elevation": 1447},
+    "OAKLE": {"name": "Mt Oakleigh", "elevation": 1280},
+    "PELIM": {"name": "Pelion East", "elevation": 1433},
+    "KATHW": {"name": "Cathedral Mountain", "elevation": 1382},
+    "MOUNT": {"name": "Mt Ossa", "elevation": 1617},
+    
+    # Western Arthurs A-K
+    "HESPE": {"name": "Mt Hesperus", "elevation": 1098},
+    "PROCY": {"name": "Procyon Peak", "elevation": 1136},
+    "PRIOR": {"name": "Mt Prior", "elevation": 1070},
+    "CAPRI": {"name": "Mt Capricorn", "elevation": 1037},
+    "TAURA": {"name": "Mt Taurus", "elevation": 1011},
+    "SCORP": {"name": "Mt Scorpio", "elevation": 1106},
+    
+    # Western Arthurs Full (additional)
+    "SIRIU": {"name": "Mt Sirius", "elevation": 1151},
+    "ORION": {"name": "Mt Orion", "elevation": 1151},
+    "PEGAU": {"name": "Mt Pegasus", "elevation": 1063},
+    "ALDEB": {"name": "Mt Aldebaran", "elevation": 1107},
+    "WESTP": {"name": "West Portal", "elevation": 1181},
+    
+    # Federation Peak
+    "FEDER": {"name": "Federation Peak", "elevation": 1225},
+    
+    # Eastern Arthurs
+    "NEEDL": {"name": "The Needles", "elevation": 1080},
+    "EASTP": {"name": "East Portal", "elevation": 1008},
+    "DIALT": {"name": "The Dial", "elevation": 1083},
+    "DEVIL": {"name": "Devils Thumb", "elevation": 1050},
+}
+
+def validate_camp_code(code: str) -> bool:
+    """
+    Check if camp code is valid (case-insensitive).
+    v3.0 requirement.
+    """
+    code_upper = code.upper()
+    for route_id in RouteLoader.list_routes():
+        route = RouteLoader.load(route_id)
+        if route:
+            for camp in route.camps:
+                if camp.code.upper() == code_upper:
+                    return True
+    return False
+
+
+def validate_peak_code(code: str) -> bool:
+    """
+    Check if peak code is valid (case-insensitive).
+    v3.0 requirement.
+    
+    Checks both loaded routes and known peaks fallback.
+    """
+    code_upper = code.upper()
+    
+    # Check known peaks first
+    if code_upper in KNOWN_PEAKS:
+        return True
+    
+    # Check loaded routes
+    for route_id in RouteLoader.list_routes():
+        route = RouteLoader.load(route_id)
+        if route:
+            for peak in route.peaks:
+                if peak.code.upper() == code_upper:
+                    return True
+    return False
+
+
+def get_peak_full_name(code: str) -> str:
+    """
+    Get full name for peak code.
+    v3.0 requirement.
+    """
+    code_upper = code.upper()
+    
+    # Check known peaks first
+    if code_upper in KNOWN_PEAKS:
+        return KNOWN_PEAKS[code_upper]["name"]
+    
+    # Check loaded routes
+    for route_id in RouteLoader.list_routes():
+        route = RouteLoader.load(route_id)
+        if route:
+            for peak in route.peaks:
+                if peak.code.upper() == code_upper:
+                    return peak.name
+    return code
+
+
+def get_peak_display(code: str) -> str:
+    """
+    Get peak display with name and elevation.
+    v3.0: Shows full name + elevation for onboarding.
+    """
+    code_upper = code.upper()
+    
+    # Check known peaks first
+    if code_upper in KNOWN_PEAKS:
+        info = KNOWN_PEAKS[code_upper]
+        return f"{info['name']} ({info['elevation']}m)"
+    
+    # Check loaded routes
+    for route_id in RouteLoader.list_routes():
+        route = RouteLoader.load(route_id)
+        if route:
+            for peak in route.peaks:
+                if peak.code.upper() == code_upper:
+                    return f"{peak.name} ({peak.elevation}m)"
+    return code
+
+
+def get_peak_elevation(code: str) -> int:
+    """
+    Get elevation for peak code.
+    Returns 0 if not found.
+    """
+    code_upper = code.upper()
+    
+    # Check known peaks first
+    if code_upper in KNOWN_PEAKS:
+        return KNOWN_PEAKS[code_upper]["elevation"]
+    
+    # Check loaded routes
+    for route_id in RouteLoader.list_routes():
+        route = RouteLoader.load(route_id)
+        if route:
+            for peak in route.peaks:
+                if peak.code.upper() == code_upper:
+                    return peak.elevation
+    return 0
+
+
+def get_camp_display(code: str) -> str:
+    """
+    Get camp display with name and elevation.
+    """
+    code_upper = code.upper()
+    for route_id in RouteLoader.list_routes():
+        route = RouteLoader.load(route_id)
+        if route:
+            for camp in route.camps:
+                if camp.code.upper() == code_upper:
+                    return f"{camp.name} ({camp.elevation}m)"
+    return code

@@ -1,0 +1,212 @@
+{
+  "route_id": "combined_arthurs",
+  "name": "Combined W+E Arthurs",
+  "code": "CA",
+  "location": "Southwest National Park, Tasmania",
+  "distance_km": 120,
+  "typical_duration_days": [
+    12,
+    14
+  ],
+  "grade": 5,
+  "camps": [
+    {
+      "code": "SCOTT",
+      "name": "Scotts Peak Dam",
+      "lat": -43.0375,
+      "lon": 146.2722,
+      "elevation": 300,
+      "bom_cell": "195-117"
+    },
+    {
+      "code": "JUNCT",
+      "name": "Junction Creek",
+      "lat": -43.096,
+      "lon": 146.285,
+      "elevation": 238,
+      "bom_cell": "198-117"
+    },
+    {
+      "code": "LAKEF",
+      "name": "Lake Fortuna",
+      "lat": -43.115,
+      "lon": 146.26,
+      "elevation": 840,
+      "bom_cell": "199-116"
+    },
+    {
+      "code": "LAKEC",
+      "name": "Lake Cygnus",
+      "lat": -43.1303,
+      "lon": 146.2503,
+      "elevation": 880,
+      "bom_cell": "200-116"
+    },
+    {
+      "code": "LAKEO",
+      "name": "Lake Oberon",
+      "lat": -43.1486,
+      "lon": 146.2722,
+      "elevation": 863,
+      "bom_cell": "201-117"
+    },
+    {
+      "code": "HIGHM",
+      "name": "High Moor",
+      "lat": -43.161,
+      "lon": 146.275,
+      "elevation": 950,
+      "bom_cell": "202-117"
+    },
+    {
+      "code": "LAKEH",
+      "name": "Haven Lake",
+      "lat": -43.175,
+      "lon": 146.285,
+      "elevation": 870,
+      "bom_cell": "202-117"
+    },
+    {
+      "code": "LAKES",
+      "name": "Lake Sirona",
+      "lat": -43.19,
+      "lon": 146.3,
+      "elevation": 820,
+      "bom_cell": "203-118"
+    },
+    {
+      "code": "CRACR",
+      "name": "Cracroft Crossing",
+      "lat": -43.1,
+      "lon": 146.35,
+      "elevation": 350,
+      "bom_cell": "199-119"
+    },
+    {
+      "code": "PASSC",
+      "name": "Pass Creek",
+      "lat": -43.15,
+      "lon": 146.38,
+      "elevation": 500,
+      "bom_cell": "201-120"
+    },
+    {
+      "code": "STUAR",
+      "name": "Stuart Saddle",
+      "lat": -43.18,
+      "lon": 146.4,
+      "elevation": 700,
+      "bom_cell": "203-121"
+    },
+    {
+      "code": "GOONM",
+      "name": "Goon Moor",
+      "lat": -43.2,
+      "lon": 146.42,
+      "elevation": 800,
+      "bom_cell": "204-122"
+    },
+    {
+      "code": "HANGI",
+      "name": "Hanging Lake",
+      "lat": -43.22,
+      "lon": 146.44,
+      "elevation": 850,
+      "bom_cell": "205-122"
+    },
+    {
+      "code": "BERCH",
+      "name": "Bechervaise Plateau",
+      "lat": -43.2,
+      "lon": 146.38,
+      "elevation": 900,
+      "bom_cell": "204-120"
+    },
+    {
+      "code": "CUTTI",
+      "name": "Cutting Camp",
+      "lat": -43.22,
+      "lon": 146.4,
+      "elevation": 750,
+      "bom_cell": "205-121"
+    },
+    {
+      "code": "FARMH",
+      "name": "Farmhouse Creek",
+      "lat": -43.28,
+      "lon": 146.45,
+      "elevation": 300,
+      "bom_cell": "208-123"
+    }
+  ],
+  "peaks": [
+    {
+      "code": "HESPE",
+      "name": "Mt Hesperus",
+      "lat": -43.12,
+      "lon": 146.26,
+      "elevation": 1098,
+      "bom_cell": "200-116"
+    },
+    {
+      "code": "PROCY",
+      "name": "Procyon Peak",
+      "lat": -43.13,
+      "lon": 146.25,
+      "elevation": 1136,
+      "bom_cell": "200-116"
+    },
+    {
+      "code": "SIRIU",
+      "name": "Mt Sirius",
+      "lat": -43.15,
+      "lon": 146.27,
+      "elevation": 1151,
+      "bom_cell": "201-117"
+    },
+    {
+      "code": "FEDER",
+      "name": "Federation Peak",
+      "lat": -43.2372,
+      "lon": 146.4539,
+      "elevation": 1225,
+      "bom_cell": "205-123"
+    },
+    {
+      "code": "NEEDL",
+      "name": "The Needles",
+      "lat": -43.21,
+      "lon": 146.41,
+      "elevation": 1080,
+      "bom_cell": "204-121"
+    },
+    {
+      "code": "EASTP",
+      "name": "East Portal",
+      "lat": -43.19,
+      "lon": 146.43,
+      "elevation": 1008,
+      "bom_cell": "203-122"
+    }
+  ],
+  "bom_cells": [
+    "195-117",
+    "198-117",
+    "199-116",
+    "199-119",
+    "200-116",
+    "201-117",
+    "201-120",
+    "202-117",
+    "203-118",
+    "203-121",
+    "203-122",
+    "204-120",
+    "204-121",
+    "204-122",
+    "205-121",
+    "205-122",
+    "205-123",
+    "208-123"
+  ]
+}

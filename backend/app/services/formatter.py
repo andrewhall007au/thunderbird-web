@@ -767,3 +767,367 @@ def adjust_temp_for_elevation(
     elevation_diff = target_elev - base_elev
     temp_adjustment = (elevation_diff / 100) * lapse_rate
     return base_temp - temp_adjustment
+
+# =============================================================================
+
+# =============================================================================
+# V3.0 FORMATTER ADDITIONS - Add to end of formatter.py
+# =============================================================================
+
+# Precipitation Formatting (Prec column - v3.0)
+def format_precipitation(min_val: int, max_val: int, is_snow: bool = False) -> str:
+    """
+    Format precipitation as R#-# (rain mm) or S#-# (snow cm).
+    v3.0 merged Rn and Sn columns into single Prec column.
+    """
+    prefix = "S" if is_snow else "R"
+    return f"{prefix}{min_val}-{max_val}"
+
+
+def determine_precip_type(elevation: int, freezing_level: int) -> str:
+    """
+    Determine precipitation type based on elevation vs freezing level.
+    Returns: "rain", "snow", or "mixed"
+    """
+    if freezing_level > elevation + 200:
+        return "rain"
+    elif freezing_level < elevation - 100:
+        return "snow"
+    return "snow"  # Default to snow for safety
+
+
+# Wind Direction Formatting (Wd column - v3.0)
+COMPASS_DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+
+
+def format_wind_direction(degrees) -> str:
+    """
+    Convert wind direction degrees to compass direction.
+    Returns: N, NE, E, SE, S, SW, W, NW
+    
+    Handles both numeric degrees and string direction inputs.
+    """
+    # Handle string input (already a direction)
+    if isinstance(degrees, str):
+        return degrees.upper()
+    
+    # Handle numeric input
+    try:
+        degrees = int(degrees) % 360
+        index = round(degrees / 45) % 8
+        return COMPASS_DIRECTIONS[index]
+    except (ValueError, TypeError):
+        return "W"  # Default to westerly
+
+
+def is_unusual_wind_direction(direction: str) -> bool:
+    """
+    Check if wind direction is unusual for Tasmania.
+    Tasmania is in Roaring Forties - westerly winds are normal.
+    """
+    normal_directions = {"W", "NW", "SW"}
+    return direction.upper() not in normal_directions
+
+
+# Column Headers (v3.0 - no CB column)
+def get_forecast_header() -> str:
+    """
+    Get column header for hourly forecast.
+    v3.0: Added Prec, Wd. Removed CB.
+    """
+    return "Hr|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|FL|D"
+
+
+def get_daily_header() -> str:
+    """Get column header for daily forecast."""
+    return "Day|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|FL|D"
+
+
+# GSM-7 Safety
+GSM7_UNSAFE = set("°€£¥©®←→↑↓∞≠≤≥÷×¿¡")
+
+
+def is_gsm7_safe(char: str) -> bool:
+    """Check if character is safe for GSM-7 encoding."""
+    return char not in GSM7_UNSAFE
+
+
+def format_temperature(temp: int) -> str:
+    """Format temperature without degree symbol (GSM-7 safe)."""
+    return str(temp)
+
+
+# V3.0 Formatters
+class FormatCAST12:
+    """Format 12-hour hourly forecast."""
+    
+    @staticmethod
+    def format(location_name: str, elevation: int, forecast_data: dict, date) -> str:
+        """Format 12-hour forecast as single message (~450 chars)."""
+        lines = []
+        date_str = date.strftime("%d/%m")
+        lines.append(f"{location_name} {elevation}m {date_str}")
+        lines.append(get_forecast_header())
+        
+        periods = forecast_data.get("periods", [])[:12]
+        for i, period in enumerate(periods):
+            # Extract hour from time string or use index
+            time_val = period.get("time", "")
+            if isinstance(time_val, str) and len(time_val) >= 13:
+                hour = int(time_val[11:13])
+            else:
+                hour = i  # Fallback to index
+            
+            # Determine precip type
+            fl = period.get("freezing_level", 2000)
+            if isinstance(fl, str):
+                try:
+                    fl = int(fl)
+                except ValueError:
+                    fl = 2000
+            
+            precip_type = determine_precip_type(elevation, fl)
+            
+            if precip_type == "snow":
+                prec = format_precipitation(
+                    int(period.get("snow_min", 0)),
+                    int(period.get("snow_max", 0)),
+                    is_snow=True
+                )
+            else:
+                prec = format_precipitation(
+                    int(period.get("rain_min", 0)),
+                    int(period.get("rain_max", 0)),
+                    is_snow=False
+                )
+            
+            wd = format_wind_direction(period.get("wind_direction", 270))
+            
+            row = (
+                f"{hour:02d}|"
+                f"{period.get('temp_min', 0)}-{period.get('temp_max', 10)}|"
+                f"{period.get('rain_chance', 0)}%|"
+                f"{prec}|"
+                f"{period.get('wind_avg', 0)}|"
+                f"{period.get('wind_max', 0)}|"
+                f"{wd}|"
+                f"{period.get('cloud_cover', 0)}%|"
+                f"{fl // 100}|"
+                f"{period.get('danger', '')}"
+            )
+            lines.append(row)
+        
+        return "\n".join(lines)
+
+
+class FormatCAST24:
+    """Format 24-hour hourly forecast."""
+    
+    @staticmethod
+    def format(location_name: str, elevation: int, forecast_data: dict, date) -> str:
+        """Format as single long string."""
+        lines = []
+        date_str = date.strftime("%d/%m")
+        lines.append(f"{location_name} {elevation}m {date_str}")
+        lines.append(get_forecast_header())
+        
+        periods = forecast_data.get("periods", [])[:24]
+        for i, period in enumerate(periods):
+            time_val = period.get("time", "")
+            if isinstance(time_val, str) and len(time_val) >= 13:
+                hour = int(time_val[11:13])
+            else:
+                hour = i
+            
+            fl = period.get("freezing_level", 2000)
+            if isinstance(fl, str):
+                try:
+                    fl = int(fl)
+                except ValueError:
+                    fl = 2000
+            
+            precip_type = determine_precip_type(elevation, fl)
+            
+            if precip_type == "snow":
+                prec = format_precipitation(
+                    int(period.get("snow_min", 0)),
+                    int(period.get("snow_max", 0)),
+                    is_snow=True
+                )
+            else:
+                prec = format_precipitation(
+                    int(period.get("rain_min", 0)),
+                    int(period.get("rain_max", 0)),
+                    is_snow=False
+                )
+            
+            wd = format_wind_direction(period.get("wind_direction", 270))
+            
+            row = (
+                f"{hour:02d}|"
+                f"{period.get('temp_min', 0)}-{period.get('temp_max', 10)}|"
+                f"{period.get('rain_chance', 0)}%|"
+                f"{prec}|"
+                f"{period.get('wind_avg', 0)}|"
+                f"{period.get('wind_max', 0)}|"
+                f"{wd}|"
+                f"{period.get('cloud_cover', 0)}%|"
+                f"{fl // 100}|"
+                f"{period.get('danger', '')}"
+            )
+            lines.append(row)
+        
+        return "\n".join(lines)
+    
+    @staticmethod
+    def format_multi(location_name: str, elevation: int, forecast_data: dict, date) -> list:
+        """Format as multiple SMS messages."""
+        full = FormatCAST24.format(location_name, elevation, forecast_data, date)
+        
+        messages = []
+        lines = full.split("\n")
+        
+        current = []
+        current_len = 0
+        part = 1
+        
+        for line in lines:
+            if current_len + len(line) + 1 > 400 and current:
+                messages.append("\n".join(current))
+                current = []
+                current_len = 0
+                part += 1
+            current.append(line)
+            current_len += len(line) + 1
+        
+        if current:
+            messages.append("\n".join(current))
+        
+        # Add part numbers
+        total = len(messages)
+        messages = [f"[{i+1}/{total}]\n{m}" for i, m in enumerate(messages)]
+        
+        return messages
+
+
+class FormatCAST7:
+    """Format 7-day camp summary."""
+    
+    @staticmethod
+    def format(route_name: str, forecast_data: dict, start_date=None, date=None) -> str:
+        """
+        Format 7-day summary for all camps.
+        
+        forecast_data structure:
+        {
+            "LAKEO": [
+                {"day": "Mon", "date": "15/01", "temp": "5-12", ...},
+                ...
+            ],
+            ...
+        }
+        """
+        lines = [f"{route_name} 7-DAY FORECAST"]
+        lines.append(get_daily_header())
+        
+        # Generate 7 day labels
+        from datetime import timedelta
+        if start_date is None:
+            start_date = date
+        day_labels = []
+        # Use date param if start_date not provided
+        if start_date is None:
+            start_date = date
+        for i in range(7):
+            d = start_date + timedelta(days=i)
+            day_labels.append(d.strftime("%a"))  # Mon, Tue, etc.
+        
+        for camp_code, days in forecast_data.items():
+            lines.append(f"\n{camp_code}:")
+            for i, day in enumerate(days[:7]):
+                if isinstance(day, dict):
+                    # Full day data
+                    day_label = day.get("day", day_labels[i] if i < len(day_labels) else f"D{i+1}")
+                    tmp = day.get("temp", day.get("temp_range", "?-?"))
+                    rn = day.get("rain_chance", day.get("%rn", "?"))
+                    prec = day.get("prec", "R0-0")
+                    wa = day.get("wind_avg", day.get("wa", "?"))
+                    wm = day.get("wind_max", day.get("wm", "?"))
+                    wd = day.get("wind_dir", day.get("wd", "W"))
+                    cd = day.get("cloud", day.get("%cd", "?"))
+                    fl = day.get("freezing_level", day.get("fl", "?"))
+                    d = day.get("danger", day.get("d", ""))
+                    
+                    lines.append(f"  {day_label}|{tmp}|{rn}%|{prec}|{wa}|{wm}|{wd}|{cd}%|{fl}|{d}")
+                else:
+                    # Simple day marker
+                    lines.append(f"  {day_labels[i] if i < len(day_labels) else f'D{i+1}'}|?|?|?|?|?|?|?|?|")
+        
+        return "\n".join(lines)
+    
+    @staticmethod
+    def format_multi(route_name: str, forecast_data: dict, start_date=None, date=None) -> list:
+        """Format as multiple messages if needed."""
+        full = FormatCAST7.format(route_name, forecast_data, start_date=start_date, date=date)
+        
+        # Split by camp if too long
+        if len(full) <= 450:
+            return [full]
+        
+        messages = []
+        lines = full.split("\n")
+        
+        current = [lines[0], lines[1]]  # Header
+        current_len = len(lines[0]) + len(lines[1]) + 2
+        
+        for line in lines[2:]:
+            if line.startswith("\n") or (current_len + len(line) > 400 and len(current) > 2):
+                if current:
+                    messages.append("\n".join(current))
+                current = [lines[0], lines[1]]  # Repeat header
+                current_len = len(lines[0]) + len(lines[1]) + 2
+            current.append(line)
+            current_len += len(line) + 1
+        
+        if current and len(current) > 2:
+            messages.append("\n".join(current))
+        
+        # Add part numbers
+        total = len(messages)
+        if total > 1:
+            messages = [f"[{i+1}/{total}]\n{m}" for i, m in enumerate(messages)]
+        
+        return messages
+
+
+class FormatPEAKS:
+    """Format 7-day peak summary."""
+    
+    @staticmethod
+    def format(route_name: str, forecast_data: dict, start_date=None, date=None) -> str:
+        """
+        Format 7-day peaks summary with FL column.
+        
+        Shows freezing level prominently since that's key for peaks.
+        """
+        lines = [f"{route_name} PEAKS 7-DAY"]
+        lines.append("Peak|Day|FL|Wm|D")
+        
+        from datetime import timedelta
+        if start_date is None:
+            start_date = date
+        
+        for peak_code, days in forecast_data.items():
+            for i, day in enumerate(days[:7]):
+                d = start_date + timedelta(days=i)
+                day_label = d.strftime("%a")
+                
+                if isinstance(day, dict):
+                    fl = day.get("freezing_level", day.get("fl", "?"))
+                    wm = day.get("wind_max", day.get("wm", "?"))
+                    danger = day.get("danger", day.get("d", ""))
+                    lines.append(f"{peak_code}|{day_label}|{fl}|{wm}|{danger}")
+                else:
+                    lines.append(f"{peak_code}|{day_label}|?|?|")
+        
+        return "\n".join(lines)

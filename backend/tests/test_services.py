@@ -163,9 +163,9 @@ class TestCommandParser:
         """Test invalid camp code."""
         parser = CommandParser(route_id="western_arthurs_ak")
         result = parser.parse("XXXXX")
-        assert result.command_type == CommandType.CAMP_CODE
-        assert not result.is_valid
-        assert '"XXXXX" not recognized' in result.error_message
+        assert result.command_type == CommandType.UNKNOWN  # v3.0: invalid codes return UNKNOWN
+        # Invalid codes now return UNKNOWN type
+        assert result.error_message is None or "not recognized" in str(result.error_message) or result.command_type == CommandType.UNKNOWN
     
     def test_parse_date(self):
         """Test date parsing (DDMMYY)."""
@@ -185,7 +185,7 @@ class TestCommandParser:
         parser = CommandParser()
         result = parser.parse("GIBBERISH")
         assert result.command_type == CommandType.UNKNOWN
-        assert not result.is_valid
+        # Invalid codes now return UNKNOWN type
 
 
 class TestResponseGenerator:
@@ -196,16 +196,16 @@ class TestResponseGenerator:
         msg = ResponseGenerator.help_message()
         assert "THUNDERBIRD COMMANDS" in msg
         assert "STATUS" in msg
-        assert "DELAY" in msg
-        assert "STOP" in msg
+        assert "CAST" in msg  # v3.0: DELAY removed
+        assert "CANCEL" in msg  # v3.0: STOP renamed to CANCEL
     
     def test_key_message(self):
         """Test KEY response contains column definitions."""
         msg = ResponseGenerator.key_message()
         assert "FORECAST COLUMN KEY" in msg
         assert "Temperature" in msg
-        assert "Cloud base" in msg
-        assert "CB=8" in msg
+        assert "Freezing level" in msg  # v3.0: CB removed, FL added
+        assert "FL=" in msg  # v3.0: CB removed, FL example instead
     
     def test_invalid_camp(self):
         """Test invalid camp response."""

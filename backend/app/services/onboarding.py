@@ -1,13 +1,13 @@
 """
-Onboarding State Machine - Section 7 of Spec v2.7
+Onboarding State Machine - Section 7 of Spec v3.1
 
-Handles the SMS-based registration flow:
-1. START → Q1 (trail selection)
-2. Q1 response → Q2 (start date)
-3. Q2 response → Q3 (days on trail)
-4. Q3 response → Q4 (direction)
-5. Q4 response → Confirmation
-6. Y → Complete registration + Quick Start Guide
+v3.0 Update: Simplified to 5-6 steps. Removed start date question.
+Pull-based system - users request forecasts when needed.
+
+Flow:
+1. START → Ask name (for SafeCheck)
+2. Name → Route selection (6 options)
+3. Route → Complete + Quick Start Guide
 """
 
 from enum import Enum
@@ -51,41 +51,44 @@ class OnboardingSession:
         return (datetime.now() - self.created_at).total_seconds() > timeout_minutes * 60
 
 
-# Route configurations - must match config/routes/*.json
+# Route configurations - v3.1 spec Section 7.3
+# All 6 routes with camps/peaks loaded dynamically from JSON
 ROUTES = {
+    "overland_track": {
+        "name": "Overland Track",
+        "short_code": "OL",
+    },
     "western_arthurs_ak": {
         "name": "Western Arthurs (A-K)",
-        "camps_standard": ["SCOTT", "JUNCT", "LAKEF", "LAKEC", "SQUAR", "LAKEO", "HIGHM", "LAKEH"],
-        "camps_reverse": ["LAKEH", "HIGHM", "LAKEO", "SQUAR", "LAKEC", "LAKEF", "JUNCT", "SCOTT"],
-        "peaks": ["HESPE", "HAYES", "CAPEL", "PROCY", "ORION", "SIRIU", "PEGAS", "CAPRI", "COLUM", "TAURU"],
-        "suggested_days": 7,
-        "max_days": 12,
-        "direction_q": "Q5: Direction?\n1 = Scotts→Haven (standard)\n2 = Haven→Scotts (reverse)",
-        "direction_names": {"1": "Scotts to Haven", "2": "Haven to Scotts"},
+        "short_code": "WA",
     },
     "western_arthurs_full": {
         "name": "Western Arthurs (Full)",
-        "camps_standard": ["SCOTT", "JUNCT", "LAKEF", "LAKEC", "SQUAR", "LAKEO", "HIGHM", "LAKEH", 
-                          "LAKES", "LAKEVE", "LAKEJ", "PROMO", "LAKEVU", "LAKER", "CRACR"],
-        "camps_reverse": None,  # Full traverse is one-way only
-        "peaks": ["HESPE", "HAYES", "CAPEL", "PROCY", "ORION", "SIRIU", "PEGAS", "CAPRI", "DORAD", 
-                  "COLUM", "TAURU", "ALDEB", "SCORP", "CARIN", "SCULP", "PHOEN", "WESTP", "CANOP", "CENTA", "CRAGS"],
-        "suggested_days": 12,
-        "max_days": 14,
-        "direction_q": None,  # No direction choice for full traverse
-        "direction_names": {},
+        "short_code": "WA",
     },
-    "overland_track": {
-        "name": "Overland Track",
-        "camps_standard": ["RONNY", "WATER", "WINDM", "PELIO", "KIAOR", "BERTN", "PINEV", "NARCI"],
-        "camps_reverse": ["NARCI", "PINEV", "BERTN", "KIAOR", "PELIO", "WINDM", "WATER", "RONNY"],
-        "peaks": ["CRADL", "MARIO", "BARNB", "OAKLE", "OSSA", "ACROP", "LABYR"],
-        "suggested_days": 6,
-        "max_days": 10,
-        "direction_q": "Q5: Direction?\n1 = Cradle→St Clair (standard)\n2 = St Clair→Cradle (reverse)",
-        "direction_names": {"1": "Cradle to St Clair", "2": "St Clair to Cradle"},
-    }
+    "federation_peak": {
+        "name": "Federation Peak",
+        "short_code": "FP",
+    },
+    "eastern_arthurs": {
+        "name": "Eastern Arthurs",
+        "short_code": "EA",
+    },
+    "combined_arthurs": {
+        "name": "Combined W+E Arthurs",
+        "short_code": "CA",
+    },
 }
+
+# Route selection menu order (matches spec Section 7.3)
+ROUTE_MENU = [
+    ("1", "overland_track", "Overland Track"),
+    ("2", "western_arthurs_ak", "Western Arthurs (A-K)"),
+    ("3", "western_arthurs_full", "Western Arthurs (Full)"),
+    ("4", "federation_peak", "Federation Peak"),
+    ("5", "eastern_arthurs", "Eastern Arthurs"),
+    ("6", "combined_arthurs", "Combined W+E Arthurs"),
+]
 
 
 class OnboardingManager:
@@ -185,57 +188,66 @@ class OnboardingManager:
         )
     
     def _process_name(self, session: OnboardingSession, text: str) -> Tuple[str, bool]:
-        """Process Q1: trail name."""
+        """Process Q1: trail name (for SafeCheck notifications)."""
         text = text.strip()
-        
+
         # Basic validation
         if len(text) < 1:
             return "Please enter a name (e.g. Andrew, Dad, etc.)", False
-        
+
         if len(text) > 30:
             return "Name too long. Please use 30 characters or less.", False
-        
+
         session.trail_name = text
         session.state = OnboardingState.AWAITING_TRAIL
-        
+
+        # v3.1: Show all 6 routes
         return (
-            f"Got it: {text}\n\n"
-            "Q2: Which trail?\n"
-            "1 = Western Arthurs (A-K)\n"
-            "2 = Western Arthurs (Full)\n"
-            "3 = Overland Track"
+            f"Hi {text}! Which route?\n"
+            "(So we show the correct camps & peaks)\n\n"
+            "1 = Overland Track\n"
+            "2 = Western Arthurs (A-K)\n"
+            "3 = Western Arthurs (Full)\n"
+            "4 = Federation Peak\n"
+            "5 = Eastern Arthurs\n"
+            "6 = Combined W+E Arthurs\n\n"
+            "Reply 1-6"
         ), False
     
     def _process_trail_selection(self, session: OnboardingSession, text: str) -> Tuple[str, bool]:
-        """Process Q2: trail selection."""
+        """Process Q2: trail selection. v3.1: Goes straight to completion."""
         text = text.strip()
-        
+
+        # v3.1: 6 route options matching spec Section 7.3
         route_map = {
-            "1": "western_arthurs_ak",
-            "2": "western_arthurs_full", 
-            "3": "overland_track",
+            "1": "overland_track",
+            "2": "western_arthurs_ak",
+            "3": "western_arthurs_full",
+            "4": "federation_peak",
+            "5": "eastern_arthurs",
+            "6": "combined_arthurs",
         }
-        
+
         if text not in route_map:
             return (
-                "Please reply 1, 2, or 3:\n"
-                "1 = Western Arthurs (A-K)\n"
-                "2 = Western Arthurs (Full)\n"
-                "3 = Overland Track"
+                "Please reply 1-6:\n"
+                "1 = Overland Track\n"
+                "2 = Western Arthurs (A-K)\n"
+                "3 = Western Arthurs (Full)\n"
+                "4 = Federation Peak\n"
+                "5 = Eastern Arthurs\n"
+                "6 = Combined W+E Arthurs"
             ), False
-        
+
         route_id = route_map[text]
         route = ROUTES[route_id]
-        
+
         session.route_id = route_id
         session.route_name = route["name"]
-        session.state = OnboardingState.AWAITING_DATE
-        
-        return (
-            f"Got it: {route['name']}\n\n"
-            "Q3: Start date? (DDMMYY)\n"
-            "e.g. 190126 = 19 Jan 2026"
-        ), False
+        session.direction = "standard"  # v3.1: No direction question
+
+        # v3.1: Skip date/days/direction - go straight to completion
+        return self._complete_registration(session)
     
     def _process_date_input(self, session: OnboardingSession, text: str) -> Tuple[str, bool]:
         """Process Q3: start date."""
@@ -327,41 +339,35 @@ class OnboardingManager:
         return self._complete_registration(session, direction_name)
     
     def _complete_registration(self, session: OnboardingSession, direction_name: str = "") -> Tuple[str, bool]:
-        """Complete registration without confirmation step."""
+        """
+        Complete registration - v3.1 pull-based system.
+        No start date/days - users request forecasts when needed.
+        """
         session.state = OnboardingState.COMPLETE
-        
+
         route = ROUTES[session.route_id]
-        camps = route["camps_standard"] if session.direction == "standard" else route.get("camps_reverse", route["camps_standard"])
-        
-        # Generate itinerary (for internal tracking)
-        itinerary = []
-        for day in range(1, session.num_days + 1):
-            date = session.start_date + timedelta(days=day - 1)
-            date_str = date.strftime("%d%b")
-            if day <= len(camps):
-                camp = camps[min(day - 1, len(camps) - 1)]
-            else:
-                camp = "Exit"
-            itinerary.append((day, date_str, camp))
-        session.itinerary = itinerary
-        
-        # Calculate first forecast date (6pm day before start)
-        first_forecast = session.start_date - timedelta(days=1)
-        first_forecast_str = first_forecast.strftime("%d %b")
-        
-        # Build response
-        lines = []
-        if direction_name:
-            lines.append(f"Got it: {direction_name}\n")
-        
-        lines.append("All set! ✓\n")
-        lines.append(f"Route: {route['name']}")
-        lines.append(f"Start: {session.start_date.strftime('%d %b %Y')}")
-        lines.append(f"Days: {session.num_days}")
-        lines.append(f"\nFirst forecast: 6pm {first_forecast_str}")
-        lines.append("(day before start)\n")
-        lines.append("Sending Quick Start Guide...")
-        
+
+        # v3.1: Pull-based confirmation message (spec Section 7.3)
+        lines = [
+            f"{route['name']} ✓\n",
+            "FORECAST COMMANDS",
+            "─────────────────",
+            "CAST LAKEO = 12hr hourly",
+            "CAST12 LAKEO = 12hr hourly",
+            "CAST24 LAKEO = 24hr hourly",
+            "CAST7 = 7-day all camps",
+            "PEAKS = 7-day all peaks\n",
+            "CHECK-IN (notifies SafeCheck)",
+            "─────────────────",
+            "CHECKIN LAKEO\n",
+            "OTHER COMMANDS",
+            "─────────────────",
+            "ROUTE = List all codes",
+            "STATUS = Your trip",
+            "KEY = Forecast legend\n",
+            "Sending camps & peaks list..."
+        ]
+
         return "\n".join(lines), True
     
     def _process_confirmation(self, session: OnboardingSession, text: str) -> Tuple[str, bool]:
@@ -371,105 +377,231 @@ class OnboardingManager:
     def get_quick_start_guide(self, session: OnboardingSession) -> List[str]:
         """
         Generate the Quick Start Guide messages for the user's route.
-        Returns list of messages to send.
+        v3.1: Dynamically loads camps and peaks from JSON route files.
+        Returns list of messages to send (Steps 4-6 from spec Section 7.3).
         """
-        route = ROUTES.get(session.route_id, ROUTES["western_arthurs_ak"])
-        camps = route["camps_standard"] if session.direction == "standard" else route.get("camps_reverse", route["camps_standard"])
-        peaks = route.get("peaks", [])
-        
+        from app.services.routes import get_route
+
         messages = []
-        
-        # [1/6] CHECK-IN - How to check in and alert loved ones (FIRST!)
+        route_data = get_route(session.route_id)
+
+        # [1/2] CAMPS LIST - v3.1 spec Step 4
+        if route_data:
+            camp_lines = ["YOUR CAMPS", "══════════════════════"]
+            for camp in route_data.camps:
+                camp_lines.append(f"{camp.code} = {camp.name}")
+            camp_lines.append("")
+            camp_lines.append("Use: CAST LAKEO or CHECKIN LAKEO")
+            messages.append("\n".join(camp_lines))
+
+            # [2/2] PEAKS LIST - v3.1 spec Step 5 (with elevations)
+            if route_data.peaks:
+                peak_lines = ["YOUR PEAKS", "══════════════════════"]
+                for peak in route_data.peaks:
+                    peak_lines.append(f"{peak.code} = {peak.name} ({peak.elevation}m)")
+                peak_lines.append("")
+                peak_lines.append("Use: CAST HESPE for peak forecast")
+                messages.append("\n".join(peak_lines))
+        else:
+            # Fallback if route not found
+            messages.append(
+                "YOUR CAMPS\n"
+                "══════════════════════\n"
+                "(Route data loading...)\n\n"
+                "Text ROUTE to see all codes."
+            )
+
+        # [3/3] SafeCheck + Alerts setup - v3.1 spec Step 6
         messages.append(
-            "[1/6] CHECK-IN\n"
-            "────────────────────\n"
-            "Text your camp code when you\n"
-            "arrive (e.g. LAKEO or NPELI)\n\n"
-            "Your SafeCheck contacts will\n"
-            "be notified of your position.\n\n"
-            "Check in anytime to update\n"
-            "your location on the trail."
+            "OPTIONAL SETUP\n"
+            "══════════════════════\n"
+            "Add SafeCheck contact:\n"
+            "  SAFE +61400123456 Mum\n\n"
+            "Enable BOM alerts:\n"
+            "  ALERTS ON\n\n"
+            "Or text SKIP to finish.\n"
+            "(Any command also works)"
         )
-        
-        # [2/6] WAYPOINTS - All camps and peaks together
-        camp_rows = []
-        for i in range(0, len(camps), 4):
-            camp_rows.append(" ".join(camps[i:i+4]))
-        
-        peak_section = ""
-        if peaks:
-            peak_rows = []
-            for i in range(0, len(peaks), 5):
-                peak_rows.append(" ".join(peaks[i:i+5]))
-            peak_section = "\n\nPeaks:\n" + "\n".join(peak_rows)
-        
-        messages.append(
-            "[2/6] WAYPOINTS\n"
-            "────────────────────\n"
-            "Camps:\n"
-            + "\n".join(camp_rows)
-            + peak_section
-        )
-        
-        # [3/6] DAILY ROUTINE
-        messages.append(
-            "[3/6] DAILY ROUTINE\n"
-            "────────────────────\n"
-            "6:00am  Morning forecast\n"
-            "        (hourly for today)\n\n"
-            "5:30pm  Check-in prompt\n"
-            "        → Reply with camp code\n\n"
-            "6:00pm  Evening forecast\n"
-            "        (tomorrow + 7-day outlook)"
-        )
-        
-        # [4/6] COMMANDS
-        messages.append(
-            "[4/6] COMMANDS\n"
-            "────────────────────\n"
-            "CAST LAKEO = On-demand forecast\n"
-            "(12hr hourly for any camp/peak)\n\n"
-            "DELAY  = Weather delay +1 day\n"
-            "EXTEND = Add days to trip\n"
-            "STATUS = Your trip details\n"
-            "KEY    = Forecast legend\n"
-            "HELP   = Show this guide\n"
-            "STOP   = End service"
-        )
-        
-        # [5/6] FORECAST KEY
-        messages.append(
-            "[5/6] FORECAST KEY\n"
-            "────────────────────\n"
-            "Hr  = Hour (06, 09, 12...)\n"
-            "Tmp = Temperature °C\n"
-            "%Rn = Rain chance\n"
-            "Rn  = Rain mm | Sn = Snow cm\n"
-            "Wa  = Wind avg | Wm = Gusts\n"
-            "%Cd = Cloud % | CB = Cloud base\n"
-            "FL  = Freezing level (x100m)\n"
-            "D   = Danger (!,!!,!!!)\n\n"
-            "CB=14 → cloud at 1400m\n"
-            "FL=18 → freezing at 1800m"
-        )
-        
-        # [6/6] IMPORTANT RULES
-        messages.append(
-            "[6/6] IMPORTANT RULES\n"
-            "────────────────────\n"
-            "• Forecasts only for camps AHEAD\n"
-            "  (already passed = no forecast)\n\n"
-            "• Peak forecasts show summit\n"
-            "  conditions, not camp level\n\n"
-            "• Wind from WEST is normal\n"
-            "  (Roaring Forties)\n\n"
-            "• Text START to re-register\n"
-            "  if you need to change dates\n\n"
-            "Ready for your adventure! 🏔️"
-        )
-        
+
         return messages
 
 
 # Global singleton instance
 onboarding_manager = OnboardingManager()
+
+# =============================================================================
+# V3.0 ONBOARDING ADDITIONS - Add to end of onboarding.py
+# =============================================================================
+
+class OnboardingFlow:
+    """
+    V3.0 Onboarding flow manager.
+    
+    6-step flow (no start date question):
+    1. Welcome + ask name
+    2. Route selection
+    3. Commands guide
+    4. Camps list
+    5. Peaks with elevations
+    6. SafeCheck + Alerts (optional)
+    """
+    
+    TOTAL_STEPS = 6
+    total_steps = 6  # Alias for tests
+    
+    def __init__(self, route_id: str = None):
+        self.route_id = route_id
+        self.current_step = 1
+        self.user_name = None
+        self.completed = False
+    
+    def get_step_count(self) -> int:
+        """Return total number of onboarding steps."""
+        return self.TOTAL_STEPS
+    
+    def get_current_step(self) -> int:
+        """Return current step number."""
+        return self.current_step
+    
+    def get_message(self, step: int = None, route_name: str = None, route_id: str = None, user_name: str = None, **kwargs) -> str:
+        """Alias for get_step_message."""
+        if route_id:
+            self.route_id = route_id
+        return self.get_step_message(step)
+    
+    def get_step_message(self, step: int = None) -> str:
+        """Get message for a specific step."""
+        if step is None:
+            step = self.current_step
+        
+        if step == 1:
+            return self._step1_welcome()
+        elif step == 2:
+            return self._step2_route_selection()
+        elif step == 3:
+            return self._step3_commands()
+        elif step == 4:
+            return self._step4_camps()
+        elif step == 5:
+            return self._step5_peaks()
+        elif step == 6:
+            return self._step6_safecheck_alerts()
+        else:
+            return "Onboarding complete!"
+    
+    def advance(self) -> str:
+        """Advance to next step and return its message."""
+        if self.current_step < self.TOTAL_STEPS:
+            self.current_step += 1
+            return self.get_step_message()
+        else:
+            self.completed = True
+            return "Onboarding complete! Text COMMANDS for help."
+    
+    def _step1_welcome(self) -> str:
+        """Step 1: Welcome and ask for name."""
+        return (
+            "Welcome to Thunderbird!\n"
+            "────────────────────\n"
+            "Backcountry weather for hikers.\n\n"
+            "What's your name? (Used for SafeCheck notifications)"
+        )
+    
+    def _step2_route_selection(self) -> str:
+        """Step 2: Route selection."""
+        from app.services.routes import RouteLoader
+        
+        routes = RouteLoader.list_routes()
+        route_names = []
+        for r in routes[:6]:
+            route = RouteLoader.load(r)
+            if route:
+                route_names.append(route.name)
+            else:
+                route_names.append(r)
+        route_list = "\n".join([f"  {i+1}. {name}" for i, name in enumerate(route_names)])
+        
+        return (
+            f"Which route are you hiking?\n\n"
+            f"{route_list}\n\n"
+            f"Reply with number or route name."
+        )
+    
+    def _step3_commands(self) -> str:
+        """Step 3: Commands guide."""
+        return (
+            "QUICK COMMANDS\n"
+            "────────────────────\n"
+            "CAST [LOC] = 12hr forecast\n"
+            "CAST24 [LOC] = 24hr forecast\n"
+            "CAST7 = 7-day all camps\n"
+            "CHECKIN [CAMP] = Check in\n"
+            "PEAKS = Peak forecasts\n\n"
+            "Reply NEXT to continue."
+        )
+    
+    def _step4_camps(self) -> str:
+        """Step 4: List camps on route."""
+        if not self.route_id:
+            return "No route selected. Reply with route number."
+        
+        from app.services.routes import get_route
+        route = get_route(self.route_id)
+        
+        if not route:
+            return "Route not found."
+        
+        camp_list = "\n".join([f"{c.code} = {c.name}" for c in route.camps])
+        
+        return (
+            f"YOUR ROUTE CAMPS\n"
+            f"────────────────────\n"
+            f"{camp_list}\n\n"
+            f"Use: CAST [CODE] for forecast\n"
+            f"Use: CHECKIN [CODE] to check in\n\n"
+            f"Reply NEXT to continue."
+        )
+    
+    def _step5_peaks(self) -> str:
+        """Step 5: List peaks with elevations."""
+        if not self.route_id:
+            return "No route selected."
+        
+        return get_peaks_message(self.route_id)
+    
+    def _step6_safecheck_alerts(self) -> str:
+        """Step 6: SafeCheck and Alerts setup."""
+        return (
+            "OPTIONAL FEATURES\n"
+            "────────────────────\n"
+            "SafeCheck: Notify contacts when you check in\n"
+            "  SAFE +61400123456 Kate\n\n"
+            "BOM Alerts: Severe weather warnings\n"
+            "  ALERTS ON (disabled by default)\n\n"
+            "Reply SKIP or set up now.\n"
+            "Text COMMANDS anytime for help."
+        )
+
+
+def get_peaks_message(route_id: str) -> str:
+    """
+    Generate peaks message with full names and elevations.
+    
+    v3.0: Shows elevation for each peak.
+    """
+    from app.services.routes import get_route
+    
+    route = get_route(route_id)
+    if not route or not route.peaks:
+        return "No peaks on this route."
+    
+    lines = ["YOUR ROUTE PEAKS", "────────────────────"]
+    
+    for peak in route.peaks:
+        lines.append(f"{peak.code} = {peak.name} ({peak.elevation}m)")
+    
+    lines.append("")
+    lines.append("Use: CAST [CODE] for forecast")
+    lines.append("Reply NEXT to continue.")
+    
+    return "\n".join(lines)
