@@ -472,10 +472,16 @@ async def handle_inbound_sms(
             raise HTTPException(status_code=403, detail="Invalid signature")
     
     # Extract message details
-    from_phone = params.get("From", "")
+    from_phone_raw = params.get("From", "")
     body = params.get("Body", "")
     message_sid = params.get("MessageSid", "")
-    
+
+    # Normalize phone number for consistent session lookup
+    try:
+        from_phone = PhoneUtils.normalize(from_phone_raw)
+    except ValueError:
+        from_phone = from_phone_raw.strip()  # Fallback to stripped version
+
     logger.info(f"SMS received from {PhoneUtils.mask(from_phone)}: {body[:50]}...")
     
     # Check if user is in onboarding flow FIRST
