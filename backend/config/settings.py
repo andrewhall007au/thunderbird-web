@@ -20,9 +20,10 @@ class Settings(BaseSettings):
     
     # Application
     APP_NAME: str = "Thunderbird"
-    APP_VERSION: str = "2.7.0"
+    APP_VERSION: str = "3.1.0"
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
+    ENVIRONMENT: str = "development"  # development, staging, production
     
     # Database
     DATABASE_URL: str = "postgresql://localhost:5432/thunderbird"
