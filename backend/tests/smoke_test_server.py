@@ -64,6 +64,8 @@ class SmokeTestRunner:
         self.test_cast12_command()
         self.test_cast24_command()
         self.test_cast7_command()
+        self.test_cast7_camps_command()
+        self.test_cast7_peaks_command()
         self.test_peaks_command()
         self.test_checkin_command()
         self.test_route_command()
@@ -221,15 +223,59 @@ class SmokeTestRunner:
     def test_cast7_command(self):
         """Test CAST7 command"""
         print("\n[CAST7 Command]")
-        
+
         result = self.send_sms_command("CAST7")
-        
+
         self.test(
             "CAST7 returns 200",
             result["status"] == 200,
             f"Got status: {result['status']}"
         )
-    
+
+    def test_cast7_camps_command(self):
+        """Test CAST7 CAMPS command (v3.2 grouped format)"""
+        print("\n[CAST7 CAMPS Command]")
+
+        result = self.send_sms_command("CAST7 CAMPS")
+
+        self.test(
+            "CAST7 CAMPS returns 200",
+            result["status"] == 200,
+            f"Got status: {result['status']}"
+        )
+
+        body = result["body"]
+        self.test(
+            "Response shows grouping notice",
+            "Grouped" in body or "ZONE" in body,
+            "Missing grouping indication"
+        )
+
+        self.test(
+            "Response shows zones",
+            "ZONE" in body or "zones" in body.lower(),
+            "Missing zone structure"
+        )
+
+    def test_cast7_peaks_command(self):
+        """Test CAST7 PEAKS command (v3.2 grouped format)"""
+        print("\n[CAST7 PEAKS Command]")
+
+        result = self.send_sms_command("CAST7 PEAKS")
+
+        self.test(
+            "CAST7 PEAKS returns 200",
+            result["status"] == 200,
+            f"Got status: {result['status']}"
+        )
+
+        body = result["body"]
+        self.test(
+            "Response shows grouping",
+            "Grouped" in body or "ZONE" in body,
+            "Missing grouping indication"
+        )
+
     def test_peaks_command(self):
         """Test PEAKS command"""
         print("\n[PEAKS Command]")
@@ -464,11 +510,11 @@ class SmokeTestRunner:
             "Missing Wd values in output"
         )
         
-        # Should NOT have CB column
+        # Should HAVE CB column (reinstated in v3.1)
         self.test(
-            "No CB column (removed in v3.0)",
-            "|CB|" not in body,
-            "Old CB column still present"
+            "Has CB column (reinstated in v3.1)",
+            "CB" in body,
+            "Missing CB column"
         )
     
     # =========================================================================
