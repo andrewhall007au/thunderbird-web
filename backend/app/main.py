@@ -1539,6 +1539,55 @@ async def admin_test_sms(request: Request):
         return RedirectResponse(f"/admin?msg=Error: {str(e)}", status_code=302)
 
 
+@app.get("/admin/api/grouping-stats")
+async def admin_grouping_stats_api(request: Request):
+    """Get dynamic grouping statistics as JSON."""
+    if not require_admin(request):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    from app.services.pricing import (
+        ROUTE_GROUPING_STATS,
+        get_trip_savings_summary,
+        COMMAND_SEGMENTS,
+        COMMAND_SEGMENTS_UNGROUPED
+    )
+
+    routes = []
+    for route_id, stats in ROUTE_GROUPING_STATS.items():
+        summary = get_trip_savings_summary(route_id)
+        routes.append({
+            "route_id": route_id,
+            "route_name": route_id.replace("_", " ").title(),
+            "camps": stats.get("camps", 0),
+            "camp_zones": stats.get("camp_zones", 0),
+            "camp_reduction_pct": int(stats.get("camp_reduction", 0) * 100),
+            "peaks": stats.get("peaks", 0),
+            "peak_zones": stats.get("peak_zones", 0),
+            "peak_reduction_pct": int(stats.get("peak_reduction", 0) * 100),
+            "segments_saved_per_trip": summary.get("segments_saved_per_trip", 0),
+            "cost_saved_per_trip": float(summary.get("cost_saved_per_trip", 0)),
+        })
+
+    return JSONResponse(content={
+        "grouping_thresholds": {
+            "temperature_c": 2,
+            "rain_mm": 2,
+            "wind_kmh": 5,
+        },
+        "segment_estimates": {
+            "grouped": {
+                "CAST7_CAMPS": COMMAND_SEGMENTS["CAST7_CAMPS"],
+                "CAST7_PEAKS": COMMAND_SEGMENTS["CAST7_PEAKS"],
+            },
+            "ungrouped": {
+                "CAST7_CAMPS": COMMAND_SEGMENTS_UNGROUPED["CAST7_CAMPS"],
+                "CAST7_PEAKS": COMMAND_SEGMENTS_UNGROUPED["CAST7_PEAKS"],
+            },
+        },
+        "routes": routes,
+    })
+
+
 # ============================================================================
 # Exception Handler
 # ============================================================================

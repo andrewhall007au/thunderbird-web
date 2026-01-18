@@ -1,11 +1,12 @@
 """
-V3.0 Pricing Tier Tests
+V3.2 Pricing Tier Tests
 
 Tests for tiered pricing model:
 - Standard: $19.99 (Overland, Federation Peak)
 - Advanced: $29.99 (WA A-K, Eastern Arthurs)
 - Expert: $49.99 (WA Full, Combined Arthurs)
 - SMS Usage: 50% margin over cost
+- Dynamic Grouping: 40-60% segment reduction for CAST7 CAMPS/PEAKS
 
 Run with: pytest tests/test_v3_pricing.py -v
 """
@@ -184,19 +185,21 @@ class TestCommandSegmentCosts:
         # Single location 7-day forecast
         assert 3 <= segments <= 5, f"CAST7 should use ~4 segments, got {segments}"
 
-    def test_cast7_camps_segment_count(self):
-        """CAST7 CAMPS should use ~14 segments"""
+    def test_cast7_camps_segment_count_grouped(self):
+        """CAST7 CAMPS with grouping should use ~6 segments (was ~14)"""
         from app.services.pricing import estimate_command_segments
 
         segments = estimate_command_segments("CAST7_CAMPS")
-        assert 12 <= segments <= 16, f"CAST7_CAMPS should use ~14 segments, got {segments}"
+        # With dynamic grouping, reduced from ~14 to ~6
+        assert 4 <= segments <= 8, f"CAST7_CAMPS (grouped) should use ~6 segments, got {segments}"
 
-    def test_cast7_peaks_segment_count(self):
-        """CAST7 PEAKS should use ~10 segments"""
+    def test_cast7_peaks_segment_count_grouped(self):
+        """CAST7 PEAKS with grouping should use ~4 segments (was ~10)"""
         from app.services.pricing import estimate_command_segments
 
         segments = estimate_command_segments("CAST7_PEAKS")
-        assert 8 <= segments <= 12, f"CAST7_PEAKS should use ~10 segments, got {segments}"
+        # With dynamic grouping, reduced from ~10 to ~4
+        assert 3 <= segments <= 6, f"CAST7_PEAKS (grouped) should use ~4 segments, got {segments}"
     
     def test_checkin_segment_count(self):
         """CHECKIN should use 1 segment"""
@@ -314,13 +317,130 @@ class TestUserBalance:
     def test_insufficient_balance_warning(self):
         """User with low balance should be warned"""
         from app.services.user import UserService
-        
+
         service = UserService()
-        
+
         user = service.create_user(phone="+61400000000", name="Test")
         service.add_balance(user.id, Decimal("0.50"))
-        
+
         # Check if warning should be shown
         should_warn = service.check_low_balance(user.id)
-        
+
         assert should_warn, "Should warn when balance < $1"
+
+
+# =============================================================================
+# Dynamic Grouping Statistics Tests (v3.2)
+# =============================================================================
+
+class TestGroupingStatistics:
+    """
+    Test grouping statistics and savings calculations.
+    Spec Section 10.4 (v3.2)
+    """
+
+    def test_route_grouping_stats_exist(self):
+        """All routes should have grouping statistics"""
+        from app.services.pricing import get_grouping_stats
+
+        routes = [
+            "overland_track",
+            "western_arthurs_ak",
+            "western_arthurs_full",
+            "eastern_arthurs",
+            "federation_peak",
+            "combined_arthurs",
+        ]
+
+        for route_id in routes:
+            stats = get_grouping_stats(route_id)
+            assert "camps" in stats, f"{route_id} missing camps stat"
+            assert "camp_zones" in stats, f"{route_id} missing camp_zones stat"
+            assert "peaks" in stats, f"{route_id} missing peaks stat"
+            assert "peak_zones" in stats, f"{route_id} missing peak_zones stat"
+
+    def test_grouping_reduces_zones(self):
+        """Grouping should result in fewer zones than locations"""
+        from app.services.pricing import get_grouping_stats
+
+        stats = get_grouping_stats("western_arthurs_full")
+
+        assert stats["camp_zones"] < stats["camps"], \
+            "Camp zones should be fewer than camps"
+        assert stats["peak_zones"] < stats["peaks"], \
+            "Peak zones should be fewer than peaks"
+
+    def test_estimate_grouping_savings(self):
+        """Should calculate savings from grouping"""
+        from app.services.pricing import estimate_grouping_savings
+
+        savings = estimate_grouping_savings(
+            route_id="western_arthurs_full",
+            cast7_camps_count=1,
+            cast7_peaks_count=1
+        )
+
+        assert savings["segments_saved"] > 0, "Should save segments"
+        assert savings["cost_saved"] > 0, "Should save cost"
+        assert savings["reduction_pct"] > 40, "Should achieve >40% reduction"
+
+    def test_grouping_savings_camps_only(self):
+        """Should calculate savings for CAMPS only usage"""
+        from app.services.pricing import estimate_grouping_savings
+
+        savings = estimate_grouping_savings(
+            route_id="overland_track",
+            cast7_camps_count=2,
+            cast7_peaks_count=0
+        )
+
+        # 2 CAST7_CAMPS: ungrouped = 28, grouped = 12
+        assert savings["ungrouped_segments"] == 28
+        assert savings["grouped_segments"] == 12
+        assert savings["segments_saved"] == 16
+
+    def test_grouping_savings_peaks_only(self):
+        """Should calculate savings for PEAKS only usage"""
+        from app.services.pricing import estimate_grouping_savings
+
+        savings = estimate_grouping_savings(
+            route_id="western_arthurs_ak",
+            cast7_camps_count=0,
+            cast7_peaks_count=2
+        )
+
+        # 2 CAST7_PEAKS: ungrouped = 20, grouped = 8
+        assert savings["ungrouped_segments"] == 20
+        assert savings["grouped_segments"] == 8
+        assert savings["segments_saved"] == 12
+
+    def test_calculate_actual_reduction(self):
+        """Should calculate reduction from actual zone counts"""
+        from app.services.pricing import calculate_actual_grouping_reduction
+
+        # Example: 15 camps -> 4 zones
+        result = calculate_actual_grouping_reduction(
+            locations_count=15,
+            zones_count=4,
+            segments_per_zone=2
+        )
+
+        assert result["locations"] == 15
+        assert result["zones"] == 4
+        assert result["ungrouped_segments"] == 30  # 15 * 2
+        assert result["grouped_segments"] == 8     # 4 * 2
+        assert result["segments_saved"] == 22
+        assert result["reduction_pct"] > 70
+
+    def test_trip_savings_summary(self):
+        """Should provide trip savings summary"""
+        from app.services.pricing import get_trip_savings_summary
+
+        summary = get_trip_savings_summary("western_arthurs_full")
+
+        assert summary["route_id"] == "western_arthurs_full"
+        assert summary["camps"] > 0
+        assert summary["camp_zones"] > 0
+        assert summary["segments_saved_per_trip"] > 0
+        assert summary["cost_saved_per_trip"] > 0
+        assert summary["avg_reduction_pct"] > 50

@@ -233,6 +233,10 @@ ADMIN_PAGE = """
         .stat {{ background: #0f0f23; padding: 16px; border-radius: 8px; text-align: center; }}
         .stat-value {{ font-size: 32px; font-weight: 700; color: #e94560; }}
         .stat-label {{ font-size: 12px; color: #666; margin-top: 4px; }}
+        .grouping-stats table {{ font-size: 14px; }}
+        .grouping-stats th {{ background: #0f0f23; }}
+        .grouping-stats .reduction {{ color: #27ae60; font-weight: 600; }}
+        .grouping-stats .saving {{ color: #27ae60; }}
     </style>
 </head>
 <body>
@@ -295,6 +299,13 @@ ADMIN_PAGE = """
     </div>
     
     <div class="card" style="margin-top: 20px;">
+        <h2>Dynamic Grouping Stats (v3.2)</h2>
+        <div class="grouping-stats">
+            {grouping_stats}
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
         <h2>Quick Actions</h2>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             <form method="POST" action="/admin/push-all" style="margin: 0;">
@@ -315,6 +326,52 @@ def render_login(error: str = "") -> str:
     """Render login page."""
     error_html = f'<div class="error">{error}</div>' if error else ""
     return LOGIN_PAGE.replace("{error}", error_html)
+
+
+def render_grouping_stats() -> str:
+    """Render grouping statistics table."""
+    from app.services.pricing import ROUTE_GROUPING_STATS, get_trip_savings_summary
+
+    rows = ""
+    total_savings = 0
+
+    for route_id, stats in ROUTE_GROUPING_STATS.items():
+        summary = get_trip_savings_summary(route_id)
+        route_name = route_id.replace("_", " ").title()
+
+        camp_reduction = int(stats.get("camp_reduction", 0) * 100)
+        peak_reduction = int(stats.get("peak_reduction", 0) * 100)
+        avg_reduction = summary.get("avg_reduction_pct", 0)
+        cost_saved = summary.get("cost_saved_per_trip", 0)
+        total_savings += float(cost_saved)
+
+        rows += f"""
+        <tr>
+            <td>{route_name}</td>
+            <td>{stats.get('camps', 0)} → {stats.get('camp_zones', 0)}</td>
+            <td class="reduction">{camp_reduction}%</td>
+            <td>{stats.get('peaks', 0)} → {stats.get('peak_zones', 0)}</td>
+            <td class="reduction">{peak_reduction}%</td>
+            <td class="saving">${cost_saved:.2f}</td>
+        </tr>
+        """
+
+    return f"""
+    <table>
+        <tr>
+            <th>Route</th>
+            <th>Camps → Zones</th>
+            <th>Camp Reduction</th>
+            <th>Peaks → Zones</th>
+            <th>Peak Reduction</th>
+            <th>$/Trip Saved</th>
+        </tr>
+        {rows}
+    </table>
+    <p style="margin-top: 12px; color: #888; font-size: 13px;">
+        Grouping thresholds: ±2°C, ±2mm rain, ±5km/h wind
+    </p>
+    """
 
 
 def render_admin(users: List[User], message: str = "") -> str:
@@ -358,7 +415,7 @@ def render_admin(users: List[User], message: str = "") -> str:
         """
     else:
         users_table = '<div class="empty">No users registered yet</div>'
-    
+
     # Message
     if message:
         if "error" in message.lower():
@@ -367,14 +424,18 @@ def render_admin(users: List[User], message: str = "") -> str:
             msg_html = f'<div class="success">{message}</div>'
     else:
         msg_html = ""
-    
+
     # Stats
     active = len([u for u in users if u.status in (UserStatus.REGISTERED, UserStatus.ACTIVE)])
-    
+
+    # Grouping stats
+    grouping_stats = render_grouping_stats()
+
     return ADMIN_PAGE.format(
         message=msg_html,
         total_users=len(users),
         active_users=active,
         forecasts_sent=0,  # TODO: Track this
-        users_table=users_table
+        users_table=users_table,
+        grouping_stats=grouping_stats
     )
