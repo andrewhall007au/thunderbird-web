@@ -181,10 +181,13 @@ class OnboardingManager:
     def _get_welcome_message(self) -> str:
         """Return the initial welcome message with Q1 (name)."""
         return (
-            "Welcome to Thunderbird!\n"
-            "5 quick questions to set up.\n\n"
-            "Q1: Your trail name?\n"
-            "(This identifies you to your SafeCheck contacts)"
+            "Welcome to Thunderbird weather bot.\n"
+            "Thunderbird fetches the weather\n"
+            "forecast for you when out on trail.\n\n"
+            "3 quick questions to set up.\n\n"
+            "What's your trail name?\n"
+            "(Identifies you to SafeCheck contacts,\n"
+            "set up later in onboarding)"
         )
     
     def _process_name(self, session: OnboardingSession, text: str) -> Tuple[str, bool]:
@@ -347,23 +350,25 @@ class OnboardingManager:
 
         route = ROUTES[session.route_id]
 
-        # v3.1: Pull-based confirmation message (spec Section 7.3)
+        # v3.2: Pull-based confirmation message
         lines = [
             f"{route['name']} ✓\n",
             "FORECAST COMMANDS",
             "─────────────────",
-            "CAST LAKEO = 12hr hourly",
-            "CAST12 LAKEO = 12hr hourly",
-            "CAST24 LAKEO = 24hr hourly",
-            "CAST7 = 7-day all camps",
-            "PEAKS = 7-day all peaks\n",
-            "CHECK-IN (notifies SafeCheck)",
-            "─────────────────",
-            "CHECKIN LAKEO\n",
+            "CAST12 [CAMP/PEAK]",
+            "  12hr hourly e.g. CAST12 LAKEO",
+            "CAST24 [CAMP/PEAK]",
+            "  24hr hourly e.g. CAST24 WESTP",
+            "CAST7 [CAMP/PEAK]",
+            "  7-day for location",
+            "CAST7 CAMPS = 7-day all camps",
+            "CAST7 PEAKS = 7-day all peaks\n",
             "OTHER COMMANDS",
             "─────────────────",
-            "ROUTE = List all codes",
-            "STATUS = Your trip",
+            "CHECKIN [CAMP]",
+            "  Check in & notify SafeCheck",
+            "ROUTE = List camp/peak codes",
+            "STATUS = Your trip info",
             "KEY = Forecast legend\n",
             "Sending camps & peaks list..."
         ]
@@ -378,9 +383,10 @@ class OnboardingManager:
         """
         Generate the Quick Start Guide messages for the user's route.
         v3.1: Dynamically loads camps and peaks from JSON route files.
+        v3.2: Groups peaks by BOM cell to show primary + nearby count.
         Returns list of messages to send (Steps 4-6 from spec Section 7.3).
         """
-        from app.services.routes import get_route
+        from app.services.routes import get_route, get_peak_groups
 
         messages = []
         route_data = get_route(session.route_id)
@@ -394,13 +400,18 @@ class OnboardingManager:
             camp_lines.append("Use: CAST LAKEO or CHECKIN LAKEO")
             messages.append("\n".join(camp_lines))
 
-            # [2/2] PEAKS LIST - v3.1 spec Step 5 (with elevations)
+            # [2/2] PEAKS LIST - v3.2: Grouped by BOM cell
             if route_data.peaks:
+                peak_groups = get_peak_groups(route_data)
                 peak_lines = ["YOUR PEAKS", "══════════════════════"]
-                for peak in route_data.peaks:
-                    peak_lines.append(f"{peak.code} = {peak.name} ({peak.elevation}m)")
+                peak_lines.append(f"({len(peak_groups)} forecast zones)")
                 peak_lines.append("")
-                peak_lines.append("Use: CAST HESPE for peak forecast")
+                for group in peak_groups:
+                    # Show: WESTP = West Portal (1181m) +3
+                    peak_lines.append(group.display_short())
+                peak_lines.append("")
+                peak_lines.append("+N = nearby peaks with same forecast")
+                peak_lines.append("Use: CAST WESTP for peak forecast")
                 messages.append("\n".join(peak_lines))
         else:
             # Fallback if route not found
@@ -411,16 +422,21 @@ class OnboardingManager:
                 "Text ROUTE to see all codes."
             )
 
-        # [3/3] SafeCheck + Alerts setup - v3.1 spec Step 6
+        # [3/3] SafeCheck setup - v3.2
         messages.append(
-            "OPTIONAL SETUP\n"
+            "SAFECHECK\n"
             "══════════════════════\n"
-            "Add SafeCheck contact:\n"
+            "Notify loved ones of your\n"
+            "progress on trail.\n\n"
+            "To add a contact, type:\n"
             "  SAFE +61400123456 Mum\n\n"
-            "Enable BOM alerts:\n"
-            "  ALERTS ON\n\n"
-            "Or text SKIP to finish.\n"
-            "(Any command also works)"
+            "(Up to 10 contacts)\n\n"
+            "When you CHECKIN, they get:\n"
+            "─────────────────────\n"
+            "Andrew checked in at\n"
+            "Lake Oberon (863m)\n"
+            "14:32 18/01\n"
+            "maps.google.com/?q=-43.14,146.27"
         )
 
         return messages

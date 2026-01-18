@@ -218,7 +218,7 @@ class SQLiteUserStore:
             return cursor.rowcount > 0
     
     def add_safecheck_contact(self, phone: str, contact_phone: str, contact_name: str) -> bool:
-        """Add a SafeCheck emergency contact (max 3)."""
+        """Add a SafeCheck emergency contact (max 10)."""
         with self._get_connection() as conn:
             # Check current count
             cursor = conn.execute(
@@ -226,8 +226,8 @@ class SQLiteUserStore:
                 (phone,)
             )
             count = cursor.fetchone()["count"]
-            
-            if count >= 3:
+
+            if count >= 10:
                 # Check if this is an update to existing contact
                 cursor = conn.execute(
                     "SELECT id FROM safecheck_contacts WHERE user_phone = ? AND contact_phone = ?",

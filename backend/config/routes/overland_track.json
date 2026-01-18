@@ -158,7 +158,7 @@
       "type": "side_trip"
     },
     {
-      "code": "PELIO",
+      "code": "PELIOW",
       "name": "Mt Pelion West",
       "lat": -41.8319,
       "lon": 145.9793,
@@ -168,7 +168,7 @@
       "type": "side_trip"
     },
     {
-      "code": "PELIO",
+      "code": "PELIOE",
       "name": "Mt Pelion East",
       "lat": -41.8574,
       "lon": 146.0675,

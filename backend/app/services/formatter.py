@@ -547,9 +547,122 @@ class ForecastFormatter:
         
         if period_count == 0:
             lines.append("(No forecast data available)")
-        
+
         return '\n'.join(lines)
-    
+
+    def format_7day(
+        self,
+        forecast,
+        waypoint_code: str,
+        waypoint_name: str,
+        waypoint_elevation: int
+    ) -> str:
+        """
+        Format 7-day daily forecast for CAST7 command.
+        Shows daily summary for a single location.
+        """
+        lines = []
+
+        # Header
+        lines.append(f"CAST7 {waypoint_code}")
+        lines.append(f"{waypoint_name} ({waypoint_elevation}m)")
+        lines.append("7-Day Forecast")
+        lines.append("")
+
+        # Column headers for daily
+        lines.append("Day|Tmp|%Rn|Prec|Wa|Wm|%Cd|FL")
+
+        # Get daily periods (typically daily forecasts have one period per day)
+        if hasattr(forecast, 'daily_periods') and forecast.daily_periods:
+            for period in forecast.daily_periods[:7]:
+                day_label = period.datetime.strftime("%a")
+                temp_str = f"{int(period.temp_min)}-{int(period.temp_max)}"
+                rain_pct = period.rain_chance
+
+                # Precipitation
+                if period.snow_max > 0:
+                    prec = f"S{int(period.snow_min)}-{int(period.snow_max)}"
+                elif period.rain_max > 0:
+                    prec = f"R{int(period.rain_min)}-{int(period.rain_max)}"
+                else:
+                    prec = "-"
+
+                fl = period.freezing_level // 100 if period.freezing_level else "-"
+
+                line = f"{day_label}|{temp_str}|{rain_pct}%|{prec}|{period.wind_avg}|{period.wind_max}|{period.cloud_cover}%|{fl}"
+                lines.append(line)
+        elif hasattr(forecast, 'periods') and forecast.periods:
+            # Fall back to hourly periods, group by day
+            from collections import defaultdict
+            daily_data = defaultdict(list)
+            for period in forecast.periods:
+                day_key = period.datetime.strftime("%a")
+                daily_data[day_key].append(period)
+
+            for day_label, periods in list(daily_data.items())[:7]:
+                if not periods:
+                    continue
+                temp_min = min(p.temp_min for p in periods)
+                temp_max = max(p.temp_max for p in periods)
+                rain_pct = max(p.rain_chance for p in periods)
+                rain_max = max(p.rain_max for p in periods)
+                snow_max = max(p.snow_max for p in periods)
+                wind_avg = int(sum(p.wind_avg for p in periods) / len(periods))
+                wind_max = max(p.wind_max for p in periods)
+                cloud = int(sum(p.cloud_cover for p in periods) / len(periods))
+                fl_vals = [p.freezing_level for p in periods if p.freezing_level]
+                fl = min(fl_vals) // 100 if fl_vals else "-"
+
+                if snow_max > 0:
+                    prec = f"S0-{int(snow_max)}"
+                elif rain_max > 0:
+                    prec = f"R0-{int(rain_max)}"
+                else:
+                    prec = "-"
+
+                line = f"{day_label}|{int(temp_min)}-{int(temp_max)}|{rain_pct}%|{prec}|{wind_avg}|{wind_max}|{cloud}%|{fl}"
+                lines.append(line)
+        else:
+            lines.append("(No forecast data available)")
+
+        return '\n'.join(lines)
+
+    def format_7day_summary(
+        self,
+        forecast,
+        waypoint_code: str,
+        waypoint_name: str
+    ) -> str:
+        """
+        Format a one-line 7-day summary for CAST7 CAMPS/PEAKS.
+        Returns: "LAKEO: 5-15C 40% R0-5"
+        """
+        if hasattr(forecast, 'daily_periods') and forecast.daily_periods:
+            periods = forecast.daily_periods[:7]
+        elif hasattr(forecast, 'periods') and forecast.periods:
+            periods = forecast.periods
+        else:
+            return f"{waypoint_code}: No data"
+
+        if not periods:
+            return f"{waypoint_code}: No data"
+
+        # Aggregate over 7 days
+        temp_min = min(p.temp_min for p in periods)
+        temp_max = max(p.temp_max for p in periods)
+        rain_pct = max(p.rain_chance for p in periods)
+        rain_max = max(p.rain_max for p in periods)
+        snow_max = max(getattr(p, 'snow_max', 0) for p in periods)
+
+        if snow_max > 0:
+            prec = f"S{int(snow_max)}"
+        elif rain_max > 0:
+            prec = f"R{int(rain_max)}"
+        else:
+            prec = "-"
+
+        return f"{waypoint_code}: {int(temp_min)}-{int(temp_max)}C {rain_pct}% {prec}"
+
     def format_3hourly_tomorrow(
         self,
         forecast: CellForecast,
@@ -774,26 +887,57 @@ def adjust_temp_for_elevation(
 # V3.0 FORMATTER ADDITIONS - Add to end of formatter.py
 # =============================================================================
 
-# Precipitation Formatting (Prec column - v3.0)
+# Precipitation Formatting (Prec column - v3.1)
 def format_precipitation(min_val: int, max_val: int, is_snow: bool = False) -> str:
     """
     Format precipitation as R#-# (rain mm) or S#-# (snow cm).
-    v3.0 merged Rn and Sn columns into single Prec column.
+    Legacy function for backwards compatibility.
     """
     prefix = "S" if is_snow else "R"
     return f"{prefix}{min_val}-{max_val}"
 
 
+def format_precipitation_combined(
+    rain_min: int, rain_max: int,
+    snow_min: int, snow_max: int
+) -> str:
+    """
+    Format precipitation showing both rain and snow if present.
+    v3.1: Shows both when significant precipitation of each type.
+
+    Returns:
+        "R2-4"    - rain only
+        "S1-2"    - snow only
+        "R2/S1"   - both (rain mm / snow cm, max values only for brevity)
+        "-"       - no precipitation
+    """
+    has_rain = rain_max > 0
+    has_snow = snow_max > 0
+
+    if has_rain and has_snow:
+        # Both present - show compact format with max values
+        return f"R{rain_max}/S{snow_max}"
+    elif has_snow:
+        return f"S{snow_min}-{snow_max}"
+    elif has_rain:
+        return f"R{rain_min}-{rain_max}"
+    else:
+        return "-"
+
+
 def determine_precip_type(elevation: int, freezing_level: int) -> str:
     """
-    Determine precipitation type based on elevation vs freezing level.
+    Determine likely precipitation type based on elevation vs freezing level.
     Returns: "rain", "snow", or "mixed"
+
+    Note: This is used for forecasting likely type, but actual precip
+    should use format_precipitation_combined() to show both if present.
     """
     if freezing_level > elevation + 200:
         return "rain"
     elif freezing_level < elevation - 100:
         return "snow"
-    return "snow"  # Default to snow for safety
+    return "mixed"  # Near freezing level - could be either
 
 
 # Wind Direction Formatting (Wd column - v3.0)
@@ -829,18 +973,18 @@ def is_unusual_wind_direction(direction: str) -> bool:
     return direction.upper() not in normal_directions
 
 
-# Column Headers (v3.0 - no CB column)
+# Column Headers (v3.1 - CB reinstated for alpine safety)
 def get_forecast_header() -> str:
     """
     Get column header for hourly forecast.
-    v3.0: Added Prec, Wd. Removed CB.
+    v3.1: CB reinstated - critical for alpine safety (in-cloud conditions).
     """
-    return "Hr|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|FL|D"
+    return "Hr|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|CB|FL|D"
 
 
 def get_daily_header() -> str:
     """Get column header for daily forecast."""
-    return "Day|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|FL|D"
+    return "Day|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|CB|FL|D"
 
 
 # GSM-7 Safety
@@ -878,31 +1022,30 @@ class FormatCAST12:
             else:
                 hour = i  # Fallback to index
             
-            # Determine precip type
+            # Get freezing level
             fl = period.get("freezing_level", 2000)
             if isinstance(fl, str):
                 try:
                     fl = int(fl)
                 except ValueError:
                     fl = 2000
-            
-            precip_type = determine_precip_type(elevation, fl)
-            
-            if precip_type == "snow":
-                prec = format_precipitation(
-                    int(period.get("snow_min", 0)),
-                    int(period.get("snow_max", 0)),
-                    is_snow=True
-                )
-            else:
-                prec = format_precipitation(
-                    int(period.get("rain_min", 0)),
-                    int(period.get("rain_max", 0)),
-                    is_snow=False
-                )
-            
+
+            # Format precipitation - show both rain and snow if present
+            prec = format_precipitation_combined(
+                rain_min=int(period.get("rain_min", 0)),
+                rain_max=int(period.get("rain_max", 0)),
+                snow_min=int(period.get("snow_min", 0)),
+                snow_max=int(period.get("snow_max", 0))
+            )
+
             wd = format_wind_direction(period.get("wind_direction", 270))
-            
+            cb = period.get("cloud_base", 1200)
+            if isinstance(cb, str):
+                try:
+                    cb = int(cb)
+                except ValueError:
+                    cb = 1200
+
             row = (
                 f"{hour:02d}|"
                 f"{period.get('temp_min', 0)}-{period.get('temp_max', 10)}|"
@@ -912,11 +1055,12 @@ class FormatCAST12:
                 f"{period.get('wind_max', 0)}|"
                 f"{wd}|"
                 f"{period.get('cloud_cover', 0)}%|"
+                f"{cb // 100}|"
                 f"{fl // 100}|"
                 f"{period.get('danger', '')}"
             )
             lines.append(row)
-        
+
         return "\n".join(lines)
 
 
@@ -945,24 +1089,23 @@ class FormatCAST24:
                     fl = int(fl)
                 except ValueError:
                     fl = 2000
-            
-            precip_type = determine_precip_type(elevation, fl)
-            
-            if precip_type == "snow":
-                prec = format_precipitation(
-                    int(period.get("snow_min", 0)),
-                    int(period.get("snow_max", 0)),
-                    is_snow=True
-                )
-            else:
-                prec = format_precipitation(
-                    int(period.get("rain_min", 0)),
-                    int(period.get("rain_max", 0)),
-                    is_snow=False
-                )
-            
+
+            # Format precipitation - show both rain and snow if present
+            prec = format_precipitation_combined(
+                rain_min=int(period.get("rain_min", 0)),
+                rain_max=int(period.get("rain_max", 0)),
+                snow_min=int(period.get("snow_min", 0)),
+                snow_max=int(period.get("snow_max", 0))
+            )
+
             wd = format_wind_direction(period.get("wind_direction", 270))
-            
+            cb = period.get("cloud_base", 1200)
+            if isinstance(cb, str):
+                try:
+                    cb = int(cb)
+                except ValueError:
+                    cb = 1200
+
             row = (
                 f"{hour:02d}|"
                 f"{period.get('temp_min', 0)}-{period.get('temp_max', 10)}|"
@@ -972,13 +1115,14 @@ class FormatCAST24:
                 f"{period.get('wind_max', 0)}|"
                 f"{wd}|"
                 f"{period.get('cloud_cover', 0)}%|"
+                f"{cb // 100}|"
                 f"{fl // 100}|"
                 f"{period.get('danger', '')}"
             )
             lines.append(row)
-        
+
         return "\n".join(lines)
-    
+
     @staticmethod
     def format_multi(location_name: str, elevation: int, forecast_data: dict, date) -> list:
         """Format as multiple SMS messages."""
@@ -1055,13 +1199,14 @@ class FormatCAST7:
                     wm = day.get("wind_max", day.get("wm", "?"))
                     wd = day.get("wind_dir", day.get("wd", "W"))
                     cd = day.get("cloud", day.get("%cd", "?"))
+                    cb = day.get("cloud_base", day.get("cb", "?"))
                     fl = day.get("freezing_level", day.get("fl", "?"))
                     d = day.get("danger", day.get("d", ""))
-                    
-                    lines.append(f"  {day_label}|{tmp}|{rn}%|{prec}|{wa}|{wm}|{wd}|{cd}%|{fl}|{d}")
+
+                    lines.append(f"  {day_label}|{tmp}|{rn}%|{prec}|{wa}|{wm}|{wd}|{cd}%|{cb}|{fl}|{d}")
                 else:
                     # Simple day marker
-                    lines.append(f"  {day_labels[i] if i < len(day_labels) else f'D{i+1}'}|?|?|?|?|?|?|?|?|")
+                    lines.append(f"  {day_labels[i] if i < len(day_labels) else f'D{i+1}'}|?|?|?|?|?|?|?|?|?|")
         
         return "\n".join(lines)
     
@@ -1102,32 +1247,41 @@ class FormatCAST7:
 
 class FormatPEAKS:
     """Format 7-day peak summary."""
-    
+
     @staticmethod
     def format(route_name: str, forecast_data: dict, start_date=None, date=None) -> str:
         """
-        Format 7-day peaks summary with FL column.
-        
-        Shows freezing level prominently since that's key for peaks.
+        Format 7-day peaks summary with full weather data.
+
+        Shows all metrics including CB (cloud base) and FL (freezing level)
+        which are critical for peak safety.
         """
         lines = [f"{route_name} PEAKS 7-DAY"]
-        lines.append("Peak|Day|FL|Wm|D")
-        
+        lines.append(get_daily_header())
+
         from datetime import timedelta
         if start_date is None:
             start_date = date
-        
+
         for peak_code, days in forecast_data.items():
+            lines.append(f"\n{peak_code}:")
             for i, day in enumerate(days[:7]):
                 d = start_date + timedelta(days=i)
                 day_label = d.strftime("%a")
-                
+
                 if isinstance(day, dict):
-                    fl = day.get("freezing_level", day.get("fl", "?"))
+                    tmp = day.get("temp", day.get("temp_range", "?-?"))
+                    rn = day.get("rain_chance", day.get("%rn", "?"))
+                    prec = day.get("prec", "R0-0")
+                    wa = day.get("wind_avg", day.get("wa", "?"))
                     wm = day.get("wind_max", day.get("wm", "?"))
+                    wd = day.get("wind_dir", day.get("wd", "W"))
+                    cd = day.get("cloud", day.get("%cd", "?"))
+                    cb = day.get("cloud_base", day.get("cb", "?"))
+                    fl = day.get("freezing_level", day.get("fl", "?"))
                     danger = day.get("danger", day.get("d", ""))
-                    lines.append(f"{peak_code}|{day_label}|{fl}|{wm}|{danger}")
+                    lines.append(f"  {day_label}|{tmp}|{rn}%|{prec}|{wa}|{wm}|{wd}|{cd}%|{cb}|{fl}|{danger}")
                 else:
-                    lines.append(f"{peak_code}|{day_label}|?|?|")
+                    lines.append(f"  {day_label}|?|?|?|?|?|?|?|?|?|")
         
         return "\n".join(lines)

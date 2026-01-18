@@ -39,8 +39,9 @@ COMMAND_SEGMENTS = {
     "CAST": 3,
     "CAST12": 3,
     "CAST24": 6,
-    "CAST7": 14,
-    "PEAKS": 10,
+    "CAST7": 4,           # 7-day single location
+    "CAST7_CAMPS": 14,    # 7-day all camps
+    "CAST7_PEAKS": 10,    # 7-day all peaks
     "CHECKIN": 1,
     "ROUTE": 2,
     "STATUS": 1,
@@ -147,37 +148,40 @@ def estimate_trip_cost(
     cast12_per_day: int = 1,
     cast24_count: int = 0,
     cast7_count: int = 1,
-    peaks_count: int = 0,
+    cast7_camps_count: int = 0,
+    cast7_peaks_count: int = 0,
     checkins_per_day: int = 1,
     safecheck_contacts: int = 0
 ) -> Dict:
     """
     Estimate total trip cost.
-    
+
     Args:
         route_id: Route identifier
         days: Trip duration in days
         cast12_per_day: CAST12 commands per day
         cast24_count: Total CAST24 commands
-        cast7_count: Total CAST7 commands
-        peaks_count: Total PEAKS commands
+        cast7_count: Total CAST7 [location] commands
+        cast7_camps_count: Total CAST7 CAMPS commands
+        cast7_peaks_count: Total CAST7 PEAKS commands
         checkins_per_day: Check-ins per day
         safecheck_contacts: Number of SafeCheck contacts
-    
+
     Returns:
         Dict with upfront, sms_cost, total, segments
     """
     # Upfront cost based on route tier
     upfront = get_route_price(route_id)
-    
+
     # Calculate total segments
     segments = 0
-    
+
     # CAST commands
     segments += days * cast12_per_day * COMMAND_SEGMENTS["CAST12"]
     segments += cast24_count * COMMAND_SEGMENTS["CAST24"]
     segments += cast7_count * COMMAND_SEGMENTS["CAST7"]
-    segments += peaks_count * COMMAND_SEGMENTS["PEAKS"]
+    segments += cast7_camps_count * COMMAND_SEGMENTS["CAST7_CAMPS"]
+    segments += cast7_peaks_count * COMMAND_SEGMENTS["CAST7_PEAKS"]
     
     # Check-ins
     segments += days * checkins_per_day * COMMAND_SEGMENTS["CHECKIN"]

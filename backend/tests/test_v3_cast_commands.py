@@ -99,23 +99,23 @@ class TestCAST12Command:
         wind_dirs = ["NW", "SW", "W", "N", "NE", "E", "SE", "S"]
         assert any(wd in response for wd in wind_dirs), "Missing wind direction values"
     
-    def test_cast12_excludes_cloud_base(self):
-        """CAST12 should NOT include CB (cloud base) column - removed in v3.0"""
+    def test_cast12_includes_cloud_base(self):
+        """CAST12 SHOULD include CB (cloud base) column - reinstated in v3.1"""
         from app.services.formatter import FormatCAST12
-        
+
         mock_data = _create_mock_hourly_data(hours=12)
-        
+
         response = FormatCAST12.format(
             location_name="Lake Oberon",
             elevation=863,
             forecast_data=mock_data,
             date=datetime.now(TZ_HOBART)
         )
-        
-        # CB should not appear in header
+
+        # CB should appear in header (critical for alpine safety)
         header_line = [line for line in response.split('\n') if 'Hr|' in line or 'Hr ' in line]
         if header_line:
-            assert "CB" not in header_line[0], "CB column should be removed in v3.0"
+            assert "CB" in header_line[0], "CB column should be present in v3.1"
     
     def test_cast12_fits_3_sms(self):
         """CAST12 response should fit in approximately 3 SMS segments"""
@@ -288,18 +288,19 @@ class TestCAST7Command:
 
 class TestPEAKSCommand:
     """
-    PEAKS returns 7-day summary for all peaks on user's route.
-    Spec Section 8.2.4
+    CAST7 PEAKS returns 7-day summary for all peaks on user's route.
+    Spec Section 8.2.4 - Now unified under CAST7 command.
     """
-    
+
     def test_peaks_parses_correctly(self):
-        """PEAKS should parse as a command"""
+        """CAST7 PEAKS should parse as CAST7 with all_peaks flag"""
         from app.services.commands import CommandParser
-        
+
         parser = CommandParser()
-        parsed = parser.parse("PEAKS")
-        
-        assert parsed.command_type.name == "PEAKS"
+        parsed = parser.parse("CAST7 PEAKS")
+
+        assert parsed.command_type.name == "CAST7"
+        assert parsed.args.get("all_peaks") is True
     
     def test_peaks_includes_all_route_peaks(self):
         """PEAKS should include all peaks for route"""

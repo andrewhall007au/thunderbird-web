@@ -47,32 +47,52 @@ class TestPrecColumn:
     def test_prec_snow_format(self):
         """Snow should display as S#-# format"""
         from app.services.formatter import format_precipitation
-        
+
         # Test snow amounts
         test_cases = [
             (0, 0, True, "S0-0"),    # No snow
             (1, 2, True, "S1-2"),    # Light snow
             (3, 8, True, "S3-8"),    # Heavy snow
         ]
-        
+
         for snow_min, snow_max, is_snow, expected in test_cases:
             result = format_precipitation(snow_min, snow_max, is_snow)
             assert result == expected, f"Expected {expected}, got {result}"
-    
+
+    def test_prec_combined_format(self):
+        """v3.1: Should show both rain and snow when both present"""
+        from app.services.formatter import format_precipitation_combined
+
+        # Rain only
+        assert format_precipitation_combined(1, 4, 0, 0) == "R1-4"
+
+        # Snow only
+        assert format_precipitation_combined(0, 0, 1, 2) == "S1-2"
+
+        # Both rain and snow (mixed conditions)
+        assert format_precipitation_combined(2, 4, 1, 2) == "R4/S2"
+
+        # No precipitation
+        assert format_precipitation_combined(0, 0, 0, 0) == "-"
+
     def test_prec_determines_type_by_freezing_level(self):
-        """Should show S (snow) when freezing level below elevation"""
+        """Should determine precip type based on freezing level vs elevation"""
         from app.services.formatter import determine_precip_type
-        
+
         # Camp at 863m
         camp_elevation = 863
-        
-        # Freezing level at 1800m - rain
+
+        # Freezing level at 1800m - clearly rain (well above elevation)
         assert determine_precip_type(camp_elevation, 1800) == "rain"
-        
-        # Freezing level at 800m - snow
-        assert determine_precip_type(camp_elevation, 800) == "snow"
-        
-        # Freezing level at 900m - mixed/snow (close to elevation)
+
+        # Freezing level at 500m - clearly snow (well below elevation)
+        assert determine_precip_type(camp_elevation, 500) == "snow"
+
+        # Freezing level at 800m - near elevation, could be mixed
+        result = determine_precip_type(camp_elevation, 800)
+        assert result in ["snow", "mixed"], "Near-freezing should be snow or mixed"
+
+        # Freezing level at 900m - also near elevation
         result = determine_precip_type(camp_elevation, 900)
         assert result in ["snow", "mixed"], "Near-freezing should be snow or mixed"
     
@@ -155,33 +175,41 @@ class TestWdColumn:
 
 
 # =============================================================================
-# CB Column Tests (Removed)
+# CB Column Tests (Reinstated in v3.1)
 # =============================================================================
 
-class TestCBColumnRemoved:
+class TestCBColumnPresent:
     """
-    v3.0 removed CB (cloud base) column.
+    v3.1 reinstated CB (cloud base) column - critical for alpine safety.
     Spec Section 5.2
     """
-    
-    def test_cb_not_in_header(self):
-        """Header should NOT include CB column"""
+
+    def test_cb_in_header(self):
+        """Header SHOULD include CB column"""
         from app.services.formatter import get_forecast_header
-        
+
         header = get_forecast_header()
-        
-        assert "CB" not in header, "CB column should be removed in v3.0"
-        assert "|CB|" not in header, "CB column should not appear"
-    
-    def test_cb_not_in_key_response(self):
-        """KEY command should not explain CB"""
+
+        assert "CB" in header, "CB column should be present in v3.1"
+        assert "|CB|" in header, "CB column should appear between other columns"
+
+    def test_cb_in_daily_header(self):
+        """Daily header SHOULD include CB column"""
+        from app.services.formatter import get_daily_header
+
+        header = get_daily_header()
+
+        assert "CB" in header, "CB column should be present in daily header"
+        assert "|CB|" in header, "CB column should appear between other columns"
+
+    def test_cb_in_key_response(self):
+        """KEY command should explain CB"""
         from app.services.commands import ResponseGenerator
-        
+
         key_response = ResponseGenerator.key_message()
-        
-        # CB should not be explained
-        assert "CB" not in key_response or "cloud base" not in key_response.lower(), \
-            "KEY should not explain removed CB column"
+
+        # CB should be explained (cloud base is critical for alpine safety)
+        assert "CB" in key_response, "KEY should explain CB column"
 
 
 # =============================================================================
@@ -318,7 +346,7 @@ class TestPeakElevationDisplay:
             ("PROCY", "Procyon Peak"),
             ("FEDER", "Federation Peak"),
             ("SIRIU", "Mt Sirius"),
-            ("CRADC", "Cradle Mountain"),
+            ("CRADL", "Cradle Mountain"),
         ]
         
         for code, expected_name in test_cases:

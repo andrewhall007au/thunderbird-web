@@ -29,8 +29,7 @@ class CommandType(str, Enum):
     # v3.0 new commands
     CAST12 = "CAST12"       # 12hr hourly (alias for CAST)
     CAST24 = "CAST24"       # 24hr hourly
-    CAST7 = "CAST7"         # 7-day all camps
-    PEAKS = "PEAKS"         # 7-day all peaks
+    CAST7 = "CAST7"         # 7-day (location, CAMPS, or PEAKS)
     CHECKIN = "CHECKIN"     # Explicit check-in
     ROUTE = "ROUTE"         # List camp/peak codes
     ALERTS_ON = "ALERTS_ON"
@@ -149,8 +148,6 @@ class CommandParser:
         # v3.0 additions
         "ROUTE": CommandType.ROUTE,
         "ROUTES": CommandType.ROUTE,
-        "CAST7": CommandType.CAST7,
-        "PEAKS": CommandType.PEAKS,
         "SKIP": CommandType.SKIP,
     }
     
@@ -272,7 +269,11 @@ class CommandParser:
         # CAST24 with location (v3.0)
         if first_word == "CAST24":
             return self._parse_cast(parts, CommandType.CAST24, message)
-        
+
+        # CAST7 with location, CAMPS, or PEAKS (v3.2)
+        if first_word == "CAST7":
+            return self._parse_cast7(parts, message)
+
         # CHECKIN command (v3.0)
         if first_word == "CHECKIN":
             return self._parse_checkin(parts, message)
@@ -389,6 +390,48 @@ class CommandParser:
                 args={},
                 is_valid=False,
                 error_message="CAST requires a location. Example: CAST LAKEO"
+            )
+
+    def _parse_cast7(self, parts: List[str], message: str) -> ParsedCommand:
+        """Parse CAST7 command - 7-day forecast for location, CAMPS, or PEAKS."""
+        if len(parts) >= 2:
+            location = parts[1]
+            if location == "CAMPS":
+                return ParsedCommand(
+                    command_type=CommandType.CAST7,
+                    raw_input=message,
+                    args={"all_camps": True},
+                    is_valid=True
+                )
+            elif location == "PEAKS":
+                return ParsedCommand(
+                    command_type=CommandType.CAST7,
+                    raw_input=message,
+                    args={"all_peaks": True},
+                    is_valid=True
+                )
+            elif location in self.valid_camps or location in self.valid_peaks:
+                return ParsedCommand(
+                    command_type=CommandType.CAST7,
+                    raw_input=message,
+                    args={"location_code": location},
+                    is_valid=True
+                )
+            else:
+                return ParsedCommand(
+                    command_type=CommandType.CAST7,
+                    raw_input=message,
+                    args={"location_code": location},
+                    is_valid=False,
+                    error_message=f'"{location}" not recognized. Text ROUTE for valid codes.'
+                )
+        else:
+            return ParsedCommand(
+                command_type=CommandType.CAST7,
+                raw_input=message,
+                args={},
+                is_valid=False,
+                error_message="CAST7 requires location. Example: CAST7 LAKEO, CAST7 CAMPS, or CAST7 PEAKS"
             )
     
     def _parse_checkin(self, parts: List[str], message: str) -> ParsedCommand:
@@ -550,14 +593,15 @@ class ResponseGenerator:
     
     @staticmethod
     def help_message() -> str:
-        """Generate HELP/COMMANDS response (v3.0)."""
+        """Generate HELP/COMMANDS response (v3.2)."""
         return (
             'THUNDERBIRD COMMANDS\n'
             '────────────────────\n'
-            'CAST [LOC] = 12hr forecast\n'
+            'CAST12 [LOC] = 12hr forecast\n'
             'CAST24 [LOC] = 24hr forecast\n'
-            'CAST7 = 7-day all camps\n'
-            'PEAKS = 7-day all peaks\n'
+            'CAST7 [LOC] = 7-day location\n'
+            'CAST7 CAMPS = 7-day all camps\n'
+            'CAST7 PEAKS = 7-day all peaks\n'
             'CHECKIN [CAMP] = Check in\n'
             'ROUTE = List codes\n'
             'ALERTS ON/OFF = Warnings\n'
@@ -589,7 +633,7 @@ class ResponseGenerator:
     
     @staticmethod
     def key_message() -> str:
-        """Generate KEY response (v3.0 - with Prec, Wd, no CB)."""
+        """Generate KEY response (v3.1 - with CB reinstated)."""
         return (
             'FORECAST COLUMN KEY\n'
             '────────────────────\n'
@@ -601,10 +645,11 @@ class ResponseGenerator:
             'Wm  = Wind max (km/h)\n'
             'Wd  = Wind direction\n'
             '%Cd = Cloud cover\n'
+            'CB  = Cloud base (x100m)\n'
             'FL  = Freezing level (x100m)\n'
             'D   = Danger (!,!!,!!!)\n\n'
-            'Example: Prec R2-4 = 2-4mm rain\n'
-            'Example: FL=15 = freezing at 1500m'
+            'CB=8 means clouds at 800m\n'
+            'FL=12 means freezing at 1200m'
         )
     
     @staticmethod

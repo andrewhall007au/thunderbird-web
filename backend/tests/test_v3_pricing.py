@@ -177,12 +177,26 @@ class TestCommandSegmentCosts:
         assert 5 <= segments <= 7, f"CAST24 should use ~6 segments, got {segments}"
     
     def test_cast7_segment_count_per_day(self):
-        """CAST7 should use ~2 segments per day"""
+        """CAST7 [location] should use ~4 segments"""
         from app.services.pricing import estimate_command_segments
-        
+
         segments = estimate_command_segments("CAST7")
-        # 7 days × 2 = 14 segments total
-        assert 12 <= segments <= 16, f"CAST7 should use ~14 segments, got {segments}"
+        # Single location 7-day forecast
+        assert 3 <= segments <= 5, f"CAST7 should use ~4 segments, got {segments}"
+
+    def test_cast7_camps_segment_count(self):
+        """CAST7 CAMPS should use ~14 segments"""
+        from app.services.pricing import estimate_command_segments
+
+        segments = estimate_command_segments("CAST7_CAMPS")
+        assert 12 <= segments <= 16, f"CAST7_CAMPS should use ~14 segments, got {segments}"
+
+    def test_cast7_peaks_segment_count(self):
+        """CAST7 PEAKS should use ~10 segments"""
+        from app.services.pricing import estimate_command_segments
+
+        segments = estimate_command_segments("CAST7_PEAKS")
+        assert 8 <= segments <= 12, f"CAST7_PEAKS should use ~10 segments, got {segments}"
     
     def test_checkin_segment_count(self):
         """CHECKIN should use 1 segment"""
@@ -224,18 +238,18 @@ class TestTripCostEstimation:
     def test_wa_full_cost(self):
         """9-day WA Full should cost ~$60 total"""
         from app.services.pricing import estimate_trip_cost
-        
+
         result = estimate_trip_cost(
             route_id="western_arthurs_full",
             days=9,
             cast12_per_day=1,
             cast24_count=2,
             cast7_count=1,
-            peaks_count=1,
+            cast7_peaks_count=1,
             checkins_per_day=1,
             safecheck_contacts=2
         )
-        
+
         # Upfront: $49.99
         # SMS: ~$10
         # Total: ~$60

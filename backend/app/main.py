@@ -5,6 +5,7 @@ Based on THUNDERBIRD_SPEC_v2.4 Section 12.4
 
 import logging
 import asyncio
+import html
 from datetime import datetime, date, timedelta
 from typing import Optional
 from contextlib import asynccontextmanager
@@ -498,11 +499,11 @@ async def handle_inbound_sms(
         
         twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Message>{response_text}</Message>
+    <Message>{html.escape(response_text)}</Message>
 </Response>"""
         from fastapi.responses import Response
         return Response(content=twiml, media_type="application/xml")
-    
+
     # Only handle onboarding if:
     # 1. User sends START/REGISTER, OR
     # 2. User has an active (non-complete) onboarding session
@@ -517,9 +518,9 @@ async def handle_inbound_sms(
             # Return immediate response
             twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Message>{response_text}</Message>
+    <Message>{html.escape(response_text)}</Message>
 </Response>"""
-            
+
             # If onboarding complete, send quick start guide asynchronously
             if is_complete:
                 import asyncio
@@ -535,12 +536,12 @@ async def handle_inbound_sms(
     # Generate response based on command
     response_text = await process_command(from_phone, parsed)
     
-    # Return TwiML response
+    # Return TwiML response (XML-escape to handle & and < characters)
     twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Message>{response_text}</Message>
+    <Message>{html.escape(response_text)}</Message>
 </Response>"""
-    
+
     from fastapi.responses import Response
     return Response(
         content=twiml,
@@ -606,13 +607,35 @@ async def process_command(phone: str, parsed) -> str:
     elif parsed.command_type == CommandType.KEY:
         return ResponseGenerator.key_message()
     
-    elif parsed.command_type == CommandType.CAST:
+    elif parsed.command_type in (CommandType.CAST, CommandType.CAST12):
+        # CAST and CAST12 are aliases - 12hr hourly forecast
         if not parsed.is_valid:
-            return parsed.error_message or "CAST requires a camp code.\n\nExample: CAST LAKEO"
-        
-        camp_code = parsed.args.get("camp_code", "")
-        return await generate_cast_forecast(camp_code)
-    
+            return parsed.error_message or "CAST requires a location.\n\nExample: CAST12 LAKEO"
+
+        camp_code = parsed.args.get("location_code") or parsed.args.get("camp_code", "")
+        return await generate_cast_forecast(camp_code, hours=12)
+
+    elif parsed.command_type == CommandType.CAST24:
+        # 24hr hourly forecast
+        if not parsed.is_valid:
+            return parsed.error_message or "CAST24 requires a location.\n\nExample: CAST24 LAKEO"
+
+        camp_code = parsed.args.get("location_code") or parsed.args.get("camp_code", "")
+        return await generate_cast_forecast(camp_code, hours=24)
+
+    elif parsed.command_type == CommandType.CAST7:
+        # 7-day forecast - location, CAMPS, or PEAKS
+        if not parsed.is_valid:
+            return parsed.error_message or "CAST7 requires location.\n\nExample: CAST7 LAKEO, CAST7 CAMPS, or CAST7 PEAKS"
+
+        if parsed.args.get("all_camps"):
+            return await generate_cast7_all_camps(phone)
+        elif parsed.args.get("all_peaks"):
+            return await generate_cast7_all_peaks(phone)
+        else:
+            camp_code = parsed.args.get("location_code", "")
+            return await generate_cast7_forecast(camp_code)
+
     elif parsed.command_type == CommandType.UNKNOWN:
         if not parsed.is_valid:
             return ResponseGenerator.unknown_command()
@@ -675,9 +698,9 @@ async def process_command(phone: str, parsed) -> str:
         # Add contact
         if user_store.add_safecheck_contact(phone, normalized_contact, contact_name):
             contacts = user_store.get_safecheck_contacts(phone)
-            return f"SafeCheck contact added:\n{contact_name}: {PhoneUtils.mask(normalized_contact)}\n\nTotal contacts: {len(contacts)}/3\n\nThey'll be notified when you check in."
+            return f"SafeCheck contact added:\n{contact_name}: {PhoneUtils.mask(normalized_contact)}\n\nTotal contacts: {len(contacts)}/10\n\nThey'll be notified when you check in."
         else:
-            return "Could not add contact. Maximum 3 contacts allowed."
+            return "Could not add contact. Maximum 10 contacts allowed."
     
     elif parsed.command_type == CommandType.SAFEDEL:
         if not parsed.is_valid:
@@ -716,7 +739,7 @@ async def process_command(phone: str, parsed) -> str:
         lines = ["SafeCheck contacts:"]
         for c in contacts:
             lines.append(f"- {c.name}: {PhoneUtils.mask(c.phone)}")
-        lines.append(f"\nTotal: {len(contacts)}/3")
+        lines.append(f"\nTotal: {len(contacts)}/10")
         return "\n".join(lines)
     
     elif parsed.command_type == CommandType.STOP:
@@ -732,51 +755,54 @@ async def process_command(phone: str, parsed) -> str:
     return "Command received. Processing..."
 
 
-async def generate_cast_forecast(camp_code: str) -> str:
+async def generate_cast_forecast(camp_code: str, hours: int = 12) -> str:
     """Generate CAST forecast for a specific camp/peak."""
-    from app.services.routes import RouteLoader, get_route
-    
+    from app.services.routes import RouteLoader, get_route, get_other_peaks_in_cell
+
     # Find the waypoint across all routes
     waypoint = None
     route = None
-    
-    for route_id in ["western_arthurs_ak", "western_arthurs_full", "overland_track"]:
+    is_peak = False
+
+    for route_id in RouteLoader.list_routes():
         try:
             r = get_route(route_id)
             if not r:
                 continue
-            
+
             # Check camps
             camp = r.get_camp(camp_code.upper())
             if camp:
                 waypoint = camp
                 route = r
+                is_peak = False
                 break
-            
+
             # Check peaks
             peak = r.get_peak(camp_code.upper())
             if peak:
                 waypoint = peak
                 route = r
+                is_peak = True
                 break
-                
+
         except Exception as e:
             logger.warning(f"Could not load route {route_id}: {e}")
             continue
-    
+
     if not waypoint:
-        return f"Unknown waypoint: {camp_code}\n\nUse HELP to see valid codes."
-    
+        return f"Unknown location: {camp_code}\n\nText ROUTE for valid codes."
+
     # Get forecast for this location
     lat = waypoint.lat
     lon = waypoint.lon
     elevation = waypoint.elevation
     name = waypoint.name
-    
+
     try:
         bom_service = get_bom_service()
-        forecast = await bom_service.get_hourly_forecast(lat, lon, hours=12)
-        
+        forecast = await bom_service.get_hourly_forecast(lat, lon, hours=hours)
+
         # Format as CAST response using dedicated method
         formatter = ForecastFormatter()
         message = formatter.format_cast(
@@ -784,14 +810,147 @@ async def generate_cast_forecast(camp_code: str) -> str:
             waypoint_code=camp_code.upper(),
             waypoint_name=name,
             waypoint_elevation=elevation,
-            hours=12
+            hours=hours
         )
-        
+
+        # For peaks, add "Also covers:" if other peaks share the same BOM cell
+        if is_peak and route:
+            other_peaks = get_other_peaks_in_cell(route, camp_code)
+            if other_peaks:
+                other_names = ", ".join(p.name for p in other_peaks[:3])  # Limit to 3
+                if len(other_peaks) > 3:
+                    other_names += f" +{len(other_peaks) - 3} more"
+                message += f"\n\nAlso covers: {other_names}"
+
         return message
-        
+
     except Exception as e:
         logger.error(f"CAST forecast error for {camp_code}: {e}")
         return f"Unable to get forecast for {camp_code}. Please try again."
+
+
+async def generate_cast7_forecast(location_code: str) -> str:
+    """Generate 7-day forecast for a specific camp/peak."""
+    from app.services.routes import RouteLoader, get_route
+
+    # Find the waypoint
+    waypoint = None
+    for route_id in RouteLoader.list_routes():
+        r = get_route(route_id)
+        if not r:
+            continue
+        camp = r.get_camp(location_code.upper())
+        if camp:
+            waypoint = camp
+            break
+        peak = r.get_peak(location_code.upper())
+        if peak:
+            waypoint = peak
+            break
+
+    if not waypoint:
+        return f"Unknown location: {location_code}\n\nText ROUTE for valid codes."
+
+    try:
+        bom_service = get_bom_service()
+        forecast = await bom_service.get_daily_forecast(waypoint.lat, waypoint.lon, days=7)
+
+        formatter = ForecastFormatter()
+        return formatter.format_7day(
+            forecast=forecast,
+            waypoint_code=location_code.upper(),
+            waypoint_name=waypoint.name,
+            waypoint_elevation=waypoint.elevation
+        )
+    except Exception as e:
+        logger.error(f"CAST7 forecast error for {location_code}: {e}")
+        return f"Unable to get 7-day forecast for {location_code}. Please try again."
+
+
+async def generate_cast7_all_camps(phone: str) -> str:
+    """Generate 7-day forecast for all camps on user's route."""
+    from app.models.database import user_store
+
+    user = user_store.get_user(phone)
+    if not user:
+        return "You're not registered. Send START to begin."
+
+    route = get_route(user.route_id)
+    if not route:
+        return "Route not found. Please contact support."
+
+    try:
+        bom_service = get_bom_service()
+        formatter = ForecastFormatter()
+
+        # Get forecasts for each camp
+        lines = [f"7-DAY FORECAST - ALL CAMPS", f"{route.name}", "═" * 24]
+
+        for camp in route.camps[:8]:  # Limit to 8 camps for SMS length
+            try:
+                forecast = await bom_service.get_daily_forecast(camp.lat, camp.lon, days=7)
+                summary = formatter.format_7day_summary(forecast, camp.code, camp.name)
+                lines.append(summary)
+            except Exception as e:
+                lines.append(f"{camp.code}: Forecast unavailable")
+
+        if len(route.camps) > 8:
+            lines.append(f"... +{len(route.camps) - 8} more camps")
+
+        lines.append("")
+        lines.append("CAST7 [CODE] for detailed forecast")
+
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.error(f"CAST7 CAMPS error: {e}")
+        return "Unable to get forecasts. Please try again."
+
+
+async def generate_cast7_all_peaks(phone: str) -> str:
+    """Generate 7-day forecast for all peaks on user's route."""
+    from app.models.database import user_store
+    from app.services.routes import get_peak_groups
+
+    user = user_store.get_user(phone)
+    if not user:
+        return "You're not registered. Send START to begin."
+
+    route = get_route(user.route_id)
+    if not route:
+        return "Route not found. Please contact support."
+
+    try:
+        bom_service = get_bom_service()
+        formatter = ForecastFormatter()
+
+        # Get peak groups (by BOM cell)
+        peak_groups = get_peak_groups(route)
+
+        lines = [f"7-DAY FORECAST - ALL PEAKS", f"{route.name}", "═" * 24]
+
+        for group in peak_groups[:8]:  # Limit to 8 groups for SMS length
+            peak = group.primary_peak
+            try:
+                forecast = await bom_service.get_daily_forecast(peak.lat, peak.lon, days=7)
+                summary = formatter.format_7day_summary(forecast, peak.code, peak.name)
+                if group.other_peaks:
+                    summary += f" +{len(group.other_peaks)}"
+                lines.append(summary)
+            except Exception as e:
+                lines.append(f"{peak.code}: Forecast unavailable")
+
+        if len(peak_groups) > 8:
+            lines.append(f"... +{len(peak_groups) - 8} more peaks")
+
+        lines.append("")
+        lines.append("CAST7 [CODE] for detailed forecast")
+
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.error(f"CAST7 PEAKS error: {e}")
+        return "Unable to get forecasts. Please try again."
 
 
 # ============================================================================

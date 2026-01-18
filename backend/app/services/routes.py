@@ -262,14 +262,15 @@ def get_route(route_id: str) -> Optional[Route]:
 # From THUNDERBIRD_SPEC_v3.1 Section 7.5
 KNOWN_PEAKS = {
     # Overland Track (OL)
-    "CRADC": {"name": "Cradle Mountain", "elevation": 1545},
-    "BARNE": {"name": "Barn Bluff", "elevation": 1559},
+    "CRADL": {"name": "Cradle Mountain", "elevation": 1545},
+    "MARIO": {"name": "Marions Lookout", "elevation": 1224},
+    "BARNB": {"name": "Barn Bluff", "elevation": 1559},
+    "OAKLE": {"name": "Mt Oakleigh", "elevation": 1286},
+    "PELIOW": {"name": "Mt Pelion West", "elevation": 1560},
+    "PELIOE": {"name": "Mt Pelion East", "elevation": 1461},
+    "OSSA": {"name": "Mt Ossa", "elevation": 1617},
     "ACROP": {"name": "The Acropolis", "elevation": 1471},
-    "OLYMT": {"name": "Mt Olympus", "elevation": 1447},
-    "OAKLE": {"name": "Mt Oakleigh", "elevation": 1280},
-    "PELIM": {"name": "Pelion East", "elevation": 1433},
-    "KATHW": {"name": "Cathedral Mountain", "elevation": 1382},
-    "MOUNT": {"name": "Mt Ossa", "elevation": 1617},
+    "LABYR": {"name": "Labyrinth Lookout", "elevation": 1202},
     
     # Western Arthurs A-K
     "HESPE": {"name": "Mt Hesperus", "elevation": 1098},
@@ -410,3 +411,97 @@ def get_camp_display(code: str) -> str:
                 if camp.code.upper() == code_upper:
                     return f"{camp.name} ({camp.elevation}m)"
     return code
+
+
+# =============================================================================
+# PEAK GROUPING BY BOM CELL
+# =============================================================================
+
+@dataclass
+class PeakGroup:
+    """Group of peaks sharing the same BOM cell (same weather forecast)."""
+    cell_id: str
+    primary_peak: Waypoint  # Highest peak in the group
+    other_peaks: List[Waypoint]  # Other peaks in same cell
+
+    @property
+    def all_peaks(self) -> List[Waypoint]:
+        """All peaks in group, primary first."""
+        return [self.primary_peak] + self.other_peaks
+
+    @property
+    def count(self) -> int:
+        """Total peaks in group."""
+        return 1 + len(self.other_peaks)
+
+    def display_short(self) -> str:
+        """Short display for onboarding: 'WESTP = West Portal (1181m) +3'"""
+        p = self.primary_peak
+        if self.other_peaks:
+            return f"{p.code} = {p.name} ({p.elevation}m) +{len(self.other_peaks)}"
+        else:
+            return f"{p.code} = {p.name} ({p.elevation}m)"
+
+    def other_peaks_text(self) -> str:
+        """Text listing other peaks: 'Mt Canopus, Centaurus Ridge, Crags of Andromeda'"""
+        return ", ".join(p.name for p in self.other_peaks)
+
+
+def get_peak_groups(route: Route) -> List[PeakGroup]:
+    """
+    Group peaks by BOM cell, with highest peak as primary.
+
+    Returns list of PeakGroup sorted by primary peak elevation (highest first).
+    """
+    from collections import defaultdict
+
+    # Group peaks by cell
+    cells: Dict[str, List[Waypoint]] = defaultdict(list)
+    for peak in route.peaks:
+        cells[peak.bom_cell].append(peak)
+
+    # Create PeakGroup for each cell
+    groups = []
+    for cell_id, peaks in cells.items():
+        # Sort by elevation descending
+        peaks_sorted = sorted(peaks, key=lambda p: p.elevation, reverse=True)
+        primary = peaks_sorted[0]
+        others = peaks_sorted[1:]
+        groups.append(PeakGroup(
+            cell_id=cell_id,
+            primary_peak=primary,
+            other_peaks=others
+        ))
+
+    # Sort groups by primary peak elevation (highest first)
+    groups.sort(key=lambda g: g.primary_peak.elevation, reverse=True)
+
+    return groups
+
+
+def get_peak_group_for_code(route: Route, peak_code: str) -> Optional[PeakGroup]:
+    """
+    Get the PeakGroup containing a specific peak code.
+    Useful for CAST command to show "Also covers: ..." message.
+    """
+    peak_code_upper = peak_code.upper()
+    groups = get_peak_groups(route)
+
+    for group in groups:
+        for peak in group.all_peaks:
+            if peak.code.upper() == peak_code_upper:
+                return group
+    return None
+
+
+def get_other_peaks_in_cell(route: Route, peak_code: str) -> List[Waypoint]:
+    """
+    Get other peaks in the same BOM cell as the given peak.
+    Returns empty list if peak not found or is the only peak in cell.
+    """
+    group = get_peak_group_for_code(route, peak_code)
+    if not group:
+        return []
+
+    peak_code_upper = peak_code.upper()
+    return [p for p in group.all_peaks if p.code.upper() != peak_code_upper]

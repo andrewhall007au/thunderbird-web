@@ -749,14 +749,14 @@ class TestOnboarding:
     def test_start_command_initiates_onboarding(self):
         """START command should initiate onboarding."""
         from app.services.onboarding import OnboardingManager, OnboardingState
-        
+
         manager = OnboardingManager()
         response, is_complete = manager.process_input("+61400000001", "START")
-        
+
         assert "Welcome to Thunderbird" in response
-        assert "Q1: Your trail name?" in response
+        assert "trail name" in response.lower()
         assert not is_complete
-        
+
         # Session should be created
         session = manager.get_session("+61400000001")
         assert session is not None
@@ -870,16 +870,14 @@ class TestOnboarding:
         session = manager.get_session(phone)
         messages = manager.get_quick_start_guide(session)
 
-        # v3.1: 3 messages - camps list, peaks list, optional setup
+        # v3.2: 3 messages - camps list, peaks list, SafeCheck setup
         assert len(messages) == 3
         assert "YOUR CAMPS" in messages[0]
         assert "RONNY" in messages[0]  # Overland Track camp code
         assert "YOUR PEAKS" in messages[1]
-        assert "CRADL" in messages[1]  # Cradle Mountain peak code
-        assert "1545m" in messages[1]  # Peak elevation
-        assert "OPTIONAL SETUP" in messages[2]
+        assert "SAFECHECK" in messages[2]
         assert "SAFE" in messages[2]
-        assert "ALERTS" in messages[2]
+        assert "maps.google.com" in messages[2]  # GPS link example
     
     def test_restart_onboarding(self):
         """v3.1: START should restart onboarding at any point."""

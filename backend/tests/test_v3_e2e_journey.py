@@ -197,11 +197,12 @@ class TestMultiDayTripScenario:
     def test_peak_forecast(self):
         """Get peak forecast before summit attempt."""
         from app.services.commands import CommandParser, CommandType
-        
+
         parser = CommandParser(route_id="western_arthurs_full")
-        
-        result = parser.parse("PEAKS")
-        assert result.command_type == CommandType.PEAKS
+
+        result = parser.parse("CAST7 PEAKS")
+        assert result.command_type == CommandType.CAST7
+        assert result.args.get("all_peaks") is True
 
 
 class TestErrorRecoveryScenario:

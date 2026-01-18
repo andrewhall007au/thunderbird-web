@@ -143,26 +143,162 @@
     {
       "code": "HESPE",
       "name": "Mt Hesperus",
-      "lat": -43.12,
-      "lon": 146.26,
+      "lat": -43.118682,
+      "lon": 146.229973,
       "elevation": 1098,
+      "bom_cell": "199-115"
+    },
+    {
+      "code": "HAYES",
+      "name": "Mt Hayes",
+      "lat": -43.132466,
+      "lon": 146.247008,
+      "elevation": 1119,
+      "bom_cell": "200-116"
+    },
+    {
+      "code": "CAPEL",
+      "name": "Capella Crags",
+      "lat": -43.128,
+      "lon": 146.24,
+      "elevation": 1000,
       "bom_cell": "200-116"
     },
     {
       "code": "PROCY",
       "name": "Procyon Peak",
-      "lat": -43.13,
-      "lon": 146.25,
+      "lat": -43.137,
+      "lon": 146.26,
       "elevation": 1136,
       "bom_cell": "200-116"
     },
     {
-      "code": "SIRIU",
-      "name": "Mt Sirius",
-      "lat": -43.15,
-      "lon": 146.27,
+      "code": "ORION",
+      "name": "Mt Orion",
+      "lat": -43.140707,
+      "lon": 146.266812,
       "elevation": 1151,
       "bom_cell": "201-117"
+    },
+    {
+      "code": "SIRIU",
+      "name": "Mt Sirius",
+      "lat": -43.147509,
+      "lon": 146.264255,
+      "elevation": 1151,
+      "bom_cell": "201-117"
+    },
+    {
+      "code": "PEGAS",
+      "name": "Mt Pegasus",
+      "lat": -43.152,
+      "lon": 146.272,
+      "elevation": 1063,
+      "bom_cell": "201-117"
+    },
+    {
+      "code": "CAPRI",
+      "name": "Mt Capricorn",
+      "lat": -43.158,
+      "lon": 146.28,
+      "elevation": 1037,
+      "bom_cell": "201-117"
+    },
+    {
+      "code": "DORAD",
+      "name": "Dorado Peak",
+      "lat": -43.162,
+      "lon": 146.29,
+      "elevation": 1000,
+      "bom_cell": "202-117"
+    },
+    {
+      "code": "COLUM",
+      "name": "Mt Columba",
+      "lat": -43.164,
+      "lon": 146.296,
+      "elevation": 1000,
+      "bom_cell": "202-118"
+    },
+    {
+      "code": "TAURU",
+      "name": "Mt Taurus",
+      "lat": -43.168,
+      "lon": 146.31,
+      "elevation": 1011,
+      "bom_cell": "202-118"
+    },
+    {
+      "code": "ALDEB",
+      "name": "Mt Aldebaran",
+      "lat": -43.178045,
+      "lon": 146.345189,
+      "elevation": 1107,
+      "bom_cell": "202-119"
+    },
+    {
+      "code": "SCORP",
+      "name": "Mt Scorpio",
+      "lat": -43.161396,
+      "lon": 146.345215,
+      "elevation": 1106,
+      "bom_cell": "202-119"
+    },
+    {
+      "code": "CARIN",
+      "name": "Carina Peak",
+      "lat": -43.172,
+      "lon": 146.358,
+      "elevation": 1000,
+      "bom_cell": "202-120"
+    },
+    {
+      "code": "SCULP",
+      "name": "The Sculptor",
+      "lat": -43.178,
+      "lon": 146.368,
+      "elevation": 1000,
+      "bom_cell": "202-120"
+    },
+    {
+      "code": "PHOEN",
+      "name": "The Phoenix",
+      "lat": -43.182,
+      "lon": 146.38,
+      "elevation": 1050,
+      "bom_cell": "203-120"
+    },
+    {
+      "code": "WESTP",
+      "name": "West Portal",
+      "lat": -43.194444,
+      "lon": 146.408611,
+      "elevation": 1181,
+      "bom_cell": "203-121"
+    },
+    {
+      "code": "CANOP",
+      "name": "Mt Canopus",
+      "lat": -43.186,
+      "lon": 146.388,
+      "elevation": 1100,
+      "bom_cell": "203-121"
+    },
+    {
+      "code": "CENTA",
+      "name": "Centaurus Ridge",
+      "lat": -43.19,
+      "lon": 146.395,
+      "elevation": 1043,
+      "bom_cell": "203-121"
+    },
+    {
+      "code": "CRAGS",
+      "name": "Crags of Andromeda",
+      "lat": -43.192,
+      "lon": 146.402,
+      "elevation": 1100,
+      "bom_cell": "203-121"
     },
     {
       "code": "FEDER",
@@ -187,18 +323,39 @@
       "lon": 146.43,
       "elevation": 1008,
       "bom_cell": "203-122"
+    },
+    {
+      "code": "DIALT",
+      "name": "The Dial",
+      "lat": -43.2,
+      "lon": 146.4,
+      "elevation": 1083,
+      "bom_cell": "204-121"
+    },
+    {
+      "code": "DEVIL",
+      "name": "Devils Thumb",
+      "lat": -43.23,
+      "lon": 146.42,
+      "elevation": 1050,
+      "bom_cell": "205-122"
     }
   ],
   "bom_cells": [
     "195-117",
     "198-117",
+    "199-115",
     "199-116",
     "199-119",
     "200-116",
     "201-117",
     "201-120",
     "202-117",
+    "202-118",
+    "202-119",
+    "202-120",
     "203-118",
+    "203-120",
     "203-121",
     "203-122",
     "204-120",
