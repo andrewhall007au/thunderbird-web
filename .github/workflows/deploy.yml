@@ -51,21 +51,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy to server
+        run: |
+          rsync -avz --exclude 'venv' --exclude '__pycache__' --exclude '*.pyc' --exclude '.env' --exclude '*.db' --exclude '*.bak' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            backend/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/root/overland-weather/
+
+      - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /root/thunderbird-web
-            git pull origin main
-            cd backend
+            cd /root/overland-weather
             source venv/bin/activate
-            pip install -r requirements.txt
-            systemctl restart thunderbird
+            pip install -r requirements.txt -q
+            systemctl restart overland
             sleep 5
-            systemctl status thunderbird --no-pager
+            systemctl status overland --no-pager
 
       - name: Run smoke tests
         uses: appleboy/ssh-action@v1.0.3
@@ -74,7 +85,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /root/thunderbird-web/backend
+            cd /root/overland-weather
             source venv/bin/activate
             python tests/smoke_test_server.py --url http://localhost:8000
 
