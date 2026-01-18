@@ -868,8 +868,11 @@ async def generate_cast7_forecast(location_code: str) -> str:
 
 
 async def generate_cast7_all_camps(phone: str) -> str:
-    """Generate 7-day forecast for all camps on user's route."""
+    """Generate 7-day grouped forecast for all camps on user's route."""
     from app.models.database import user_store
+    from app.services.formatter import FormatCAST7Grouped
+    from datetime import datetime, timedelta
+    from config.settings import TZ_HOBART
 
     user = user_store.get_user(phone)
     if not user:
@@ -881,26 +884,61 @@ async def generate_cast7_all_camps(phone: str) -> str:
 
     try:
         bom_service = get_bom_service()
-        formatter = ForecastFormatter()
 
-        # Get forecasts for each camp
-        lines = [f"7-DAY FORECAST - ALL CAMPS", f"{route.name}", "═" * 24]
+        # Build forecast data dict for all camps
+        forecast_data = {}
+        today = datetime.now(TZ_HOBART).date()
 
-        for camp in route.camps[:8]:  # Limit to 8 camps for SMS length
+        for camp in route.camps:
             try:
                 forecast = await bom_service.get_daily_forecast(camp.lat, camp.lon, days=7)
-                summary = formatter.format_7day_summary(forecast, camp.code, camp.name)
-                lines.append(summary)
+
+                # Convert forecast to dict format for grouping
+                camp_days = []
+                if hasattr(forecast, 'periods') and forecast.periods:
+                    # Group hourly periods by day
+                    from collections import defaultdict
+                    daily = defaultdict(list)
+                    for p in forecast.periods:
+                        day_key = p.datetime.date()
+                        daily[day_key].append(p)
+
+                    for day_date in sorted(daily.keys())[:7]:
+                        periods = daily[day_date]
+                        if periods:
+                            camp_days.append({
+                                "day": day_date.strftime("%a"),
+                                "temp": f"{int(min(p.temp_min for p in periods))}-{int(max(p.temp_max for p in periods))}",
+                                "rain_chance": max(p.rain_chance for p in periods),
+                                "rain_max": max(p.rain_max for p in periods),
+                                "prec": f"R0-{int(max(p.rain_max for p in periods))}" if max(p.rain_max for p in periods) > 0 else "-",
+                                "wind_avg": int(sum(p.wind_avg for p in periods) / len(periods)),
+                                "wind_max": max(p.wind_max for p in periods),
+                                "wind_dir": "W",
+                                "cloud": int(sum(p.cloud_cover for p in periods) / len(periods)),
+                                "cloud_base": int(sum(p.cloud_base for p in periods) / len(periods)) // 100,
+                                "freezing_level": min(p.freezing_level for p in periods if p.freezing_level) // 100 if any(p.freezing_level for p in periods) else 18,
+                            })
+
+                if camp_days:
+                    forecast_data[camp.code] = camp_days
+
             except Exception as e:
-                lines.append(f"{camp.code}: Forecast unavailable")
+                logger.warning(f"Could not fetch forecast for {camp.code}: {e}")
+                continue
 
-        if len(route.camps) > 8:
-            lines.append(f"... +{len(route.camps) - 8} more camps")
+        if not forecast_data:
+            return "Unable to fetch forecasts. Please try again."
 
-        lines.append("")
-        lines.append("CAST7 [CODE] for detailed forecast")
+        # Use grouped formatter
+        result = FormatCAST7Grouped.format(
+            route_name=route.name,
+            forecast_data=forecast_data,
+            location_type="CAMPS",
+            date=datetime.now(TZ_HOBART)
+        )
 
-        return "\n".join(lines)
+        return result
 
     except Exception as e:
         logger.error(f"CAST7 CAMPS error: {e}")
@@ -908,9 +946,11 @@ async def generate_cast7_all_camps(phone: str) -> str:
 
 
 async def generate_cast7_all_peaks(phone: str) -> str:
-    """Generate 7-day forecast for all peaks on user's route."""
+    """Generate 7-day grouped forecast for all peaks on user's route."""
     from app.models.database import user_store
-    from app.services.routes import get_peak_groups
+    from app.services.formatter import FormatCAST7Grouped
+    from datetime import datetime
+    from config.settings import TZ_HOBART
 
     user = user_store.get_user(phone)
     if not user:
@@ -922,31 +962,73 @@ async def generate_cast7_all_peaks(phone: str) -> str:
 
     try:
         bom_service = get_bom_service()
-        formatter = ForecastFormatter()
 
-        # Get peak groups (by BOM cell)
-        peak_groups = get_peak_groups(route)
+        # Build forecast data dict for all peaks
+        forecast_data = {}
 
-        lines = [f"7-DAY FORECAST - ALL PEAKS", f"{route.name}", "═" * 24]
-
-        for group in peak_groups[:8]:  # Limit to 8 groups for SMS length
-            peak = group.primary_peak
+        for peak in route.peaks:
             try:
                 forecast = await bom_service.get_daily_forecast(peak.lat, peak.lon, days=7)
-                summary = formatter.format_7day_summary(forecast, peak.code, peak.name)
-                if group.other_peaks:
-                    summary += f" +{len(group.other_peaks)}"
-                lines.append(summary)
+
+                # Convert forecast to dict format for grouping
+                peak_days = []
+                if hasattr(forecast, 'periods') and forecast.periods:
+                    # Group hourly periods by day
+                    from collections import defaultdict
+                    daily = defaultdict(list)
+                    for p in forecast.periods:
+                        day_key = p.datetime.date()
+                        daily[day_key].append(p)
+
+                    for day_date in sorted(daily.keys())[:7]:
+                        periods = daily[day_date]
+                        if periods:
+                            # Check for snow based on freezing level vs peak elevation
+                            fl_min = min(p.freezing_level for p in periods if p.freezing_level) if any(p.freezing_level for p in periods) else 2000
+                            rain_max = max(p.rain_max for p in periods)
+                            snow_max = max(getattr(p, 'snow_max', 0) for p in periods)
+
+                            # Determine precip type
+                            if snow_max > 0:
+                                prec = f"S0-{int(snow_max)}"
+                            elif rain_max > 0:
+                                prec = f"R0-{int(rain_max)}"
+                            else:
+                                prec = "-"
+
+                            peak_days.append({
+                                "day": day_date.strftime("%a"),
+                                "temp": f"{int(min(p.temp_min for p in periods))}-{int(max(p.temp_max for p in periods))}",
+                                "rain_chance": max(p.rain_chance for p in periods),
+                                "rain_max": rain_max,
+                                "prec": prec,
+                                "wind_avg": int(sum(p.wind_avg for p in periods) / len(periods)),
+                                "wind_max": max(p.wind_max for p in periods),
+                                "wind_dir": "W",
+                                "cloud": int(sum(p.cloud_cover for p in periods) / len(periods)),
+                                "cloud_base": int(sum(p.cloud_base for p in periods) / len(periods)) // 100,
+                                "freezing_level": fl_min // 100,
+                            })
+
+                if peak_days:
+                    forecast_data[peak.code] = peak_days
+
             except Exception as e:
-                lines.append(f"{peak.code}: Forecast unavailable")
+                logger.warning(f"Could not fetch forecast for {peak.code}: {e}")
+                continue
 
-        if len(peak_groups) > 8:
-            lines.append(f"... +{len(peak_groups) - 8} more peaks")
+        if not forecast_data:
+            return "Unable to fetch forecasts. Please try again."
 
-        lines.append("")
-        lines.append("CAST7 [CODE] for detailed forecast")
+        # Use grouped formatter
+        result = FormatCAST7Grouped.format(
+            route_name=route.name,
+            forecast_data=forecast_data,
+            location_type="PEAKS",
+            date=datetime.now(TZ_HOBART)
+        )
 
-        return "\n".join(lines)
+        return result
 
     except Exception as e:
         logger.error(f"CAST7 PEAKS error: {e}")
