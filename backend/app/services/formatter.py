@@ -514,41 +514,103 @@ class ForecastFormatter:
         """
         Format on-demand CAST forecast - next N hours from now.
         Shows hourly data for the specified waypoint.
+        v3.1: Uses combined Prec column (R#-#/S#-#), Wd, and CB columns.
         """
         lines = []
-        
+
         # Header
         lines.append(f"CAST {waypoint_code}")
         lines.append(f"{waypoint_name} ({waypoint_elevation}m)")
-        
+
         # Light hours
         now = datetime.now(TZ_HOBART)
         light_str = LightCalculator.get_light_hours(forecast.lat, forecast.lon, now.date())
         lines.append(light_str)
         lines.append("")
-        
-        # Column headers
-        lines.append("Hr|Tmp|%Rn|Rn|Sn|Wa|Wm|%Cd|CB|FL|D")
-        
+
+        # Column headers - v3.1 format with Prec, Wd, CB
+        lines.append(get_forecast_header())
+
         # Get next N hours of forecast data
         current_hour = now.replace(minute=0, second=0, microsecond=0)
         end_time = current_hour + timedelta(hours=hours)
-        
+
         period_count = 0
         for period in forecast.periods:
             # Include periods from now until end_time
             if current_hour <= period.datetime < end_time:
-                formatted = self.format_period(
-                    period, 0, False, waypoint_elevation,
-                    is_hourly=True, base_elevation=forecast.base_elevation
+                hour = period.datetime.hour
+
+                # Combined precipitation column (R#-#/S#-#)
+                prec = format_precipitation_combined(
+                    rain_min=int(period.rain_min),
+                    rain_max=int(period.rain_max),
+                    snow_min=int(period.snow_min),
+                    snow_max=int(period.snow_max)
                 )
-                lines.append(formatted.to_line())
+
+                # Wind direction
+                wd = format_wind_direction(getattr(period, 'wind_direction', 270))
+
+                # Cloud base (convert m to hundreds)
+                cb = period.cloud_base // 100 if period.cloud_base else 12
+
+                # Freezing level (convert m to hundreds)
+                fl = period.freezing_level // 100 if period.freezing_level else 20
+
+                # Danger indicator
+                danger = self._calculate_danger(period, waypoint_elevation)
+
+                row = (
+                    f"{hour:02d}|"
+                    f"{int(period.temp_min)}-{int(period.temp_max)}|"
+                    f"{period.rain_chance}%|"
+                    f"{prec}|"
+                    f"{period.wind_avg}|"
+                    f"{period.wind_max}|"
+                    f"{wd}|"
+                    f"{period.cloud_cover}%|"
+                    f"{cb}|"
+                    f"{fl}|"
+                    f"{danger}"
+                )
+                lines.append(row)
                 period_count += 1
-        
+
         if period_count == 0:
             lines.append("(No forecast data available)")
 
         return '\n'.join(lines)
+
+    def _calculate_danger(self, period, elevation: int) -> str:
+        """Calculate danger indicator for a period."""
+        danger_level = 0
+
+        # Wind danger
+        if period.wind_max >= 80:
+            danger_level = 3
+        elif period.wind_max >= 60:
+            danger_level = max(danger_level, 2)
+        elif period.wind_max >= 45:
+            danger_level = max(danger_level, 1)
+
+        # Cold + wet danger (hypothermia risk)
+        if period.temp_max < 5 and period.rain_chance > 50:
+            danger_level = max(danger_level, 2)
+        elif period.temp_max < 8 and period.rain_chance > 70:
+            danger_level = max(danger_level, 1)
+
+        # Snow + elevation danger
+        if period.snow_max > 0 and elevation > 1000:
+            danger_level = max(danger_level, 1)
+        if period.snow_max > 5:
+            danger_level = max(danger_level, 2)
+
+        # Freezing level danger
+        if period.freezing_level and period.freezing_level < elevation:
+            danger_level = max(danger_level, 1)
+
+        return "!" * danger_level if danger_level else ""
 
     def format_7day(
         self,
