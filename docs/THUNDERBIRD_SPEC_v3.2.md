@@ -1,9 +1,11 @@
 # Thunderbird Design Reference
 ## SMS Weather Forecasting for Remote Hiking Trails
 
-**Version:** 3.1  
-**Date:** January 2026  
-**Status:** Production-ready with pull-based CAST commands, expanded route coverage, and admin functions
+**Version:** 3.2
+**Date:** January 2026
+**Status:** Production-ready with pull-based CAST commands, dynamic grouping, expanded route coverage, and admin functions
+
+> **v3.2 Update:** Added dynamic grouping for CAST7 CAMPS and CAST7 PEAKS commands. Locations with similar weather (±2°C, ±2mm, ±5km/h) are grouped into zones, reducing SMS payload by 40-85%.
 
 ---
 
@@ -1709,11 +1711,86 @@ HIGHM  5-14 30% R1-4 22/38 W
 Best day: Wed - Low wind
 ```
 
-#### 8.2.4 PEAKS - 7-Day Peak Summary
+#### 8.2.4 CAST7 CAMPS - Grouped Camp Summary (v3.2)
+
+**Usage:** `CAST7 CAMPS`
+
+Returns 7-day forecast for all camps on your route, with **dynamic grouping** to reduce SMS payload. Camps with similar weather conditions (within ±2°C, ±2mm rain, ±5km/h wind) are grouped into zones.
+
+**Response (Example: Western Arthurs Full):**
+```
+CAST7 CAMPS - Western Arthurs (Full)
+Grouped within ±2C ±2mm ±5km/h
+══════════════════════════════
+
+ZONE 1: LAKEO HIGHM LAKEH
+Day|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|CB|FL|D
+Thu|3-11|40%|R2-6|25|45|W|55%|9|17|!
+Fri|4-12|35%|R1-5|22|40|W|50%|10|18|
+Sat|5-13|30%|R1-4|20|35|NW|45%|11|18|
+Sun|4-12|45%|R2-8|28|50|SW|60%|8|16|!!
+Mon|3-10|50%|R3-10|32|55|SW|65%|7|15|!!
+Tue|4-11|40%|R2-6|25|42|W|55%|9|17|!
+Wed|5-14|25%|R0-3|18|32|W|40%|12|19|
+
+ZONE 2: LAKEF LAKEC LAKES
+Day|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|CB|FL|D
+Thu|5-14|35%|R1-5|22|40|W|50%|10|18|
+...
+
+ZONE 3: JUNCT SCOTT
+Day|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|CB|FL|D
+Thu|9-18|20%|R0-2|15|25|W|35%|15|20|
+...
+
+13 locations → 3 zones
+```
+
+**Grouping Thresholds:**
+| Metric | Threshold | Rationale |
+|--------|-----------|-----------|
+| Temperature | ±2°C | Noticeable comfort difference |
+| Rain | ±2mm | Significant precipitation difference |
+| Wind | ±5km/h | Meaningful wind speed difference |
+
+**Benefits:**
+- Reduces SMS payload by 40-85% depending on route
+- Groups camps at similar elevations/exposures
+- Shows representative "worst case" for each zone
+
+#### 8.2.5 CAST7 PEAKS - Grouped Peak Summary (v3.2)
+
+**Usage:** `CAST7 PEAKS`
+
+Returns 7-day forecast for all peaks on your route with dynamic grouping.
+
+**Response (Example: Western Arthurs):**
+```
+CAST7 PEAKS - Western Arthurs
+Grouped within ±2C ±2mm ±5km/h
+══════════════════════════════
+
+ZONE 1: HESPE PROCY PRIOR CAPRI
+Day|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|CB|FL|D
+Thu|0-8|45%|R2-6|35|55|W|60%|8|16|!
+Fri|1-9|40%|R1-5|32|50|W|55%|9|17|!
+...
+
+ZONE 2: TAURA SCORP PEGUS
+Day|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|CB|FL|D
+Thu|-1-7|50%|S0-2|38|60|SW|65%|7|15|!!
+...
+
+12 peaks → 2 zones
+```
+
+**Note:** Peak grouping is especially effective as peaks at similar elevations typically share weather cells.
+
+#### 8.2.6 PEAKS - 7-Day Peak Summary (Legacy)
 
 **Usage:** `PEAKS` (uses your registered route)
 
-Returns 7-day daily summary for all peaks on your route.
+Returns 7-day daily summary for all peaks on your route (ungrouped format).
 
 **Response (Example: Western Arthurs Full - 4 SMS):**
 ```

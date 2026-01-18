@@ -1245,6 +1245,355 @@ class FormatCAST7:
         return messages
 
 
+# =============================================================================
+# DYNAMIC GROUPING - v3.2
+# Groups camps/peaks with similar weather to reduce SMS payload
+# =============================================================================
+
+# Grouping thresholds (absolute values)
+GROUPING_THRESHOLD_TEMP = 2      # ±2°C
+GROUPING_THRESHOLD_RAIN = 2      # ±2mm
+GROUPING_THRESHOLD_WIND = 5      # ±5km/h
+
+
+@dataclass
+class WeatherMetrics:
+    """Key weather metrics for a location over 7 days."""
+    location_code: str
+    temp_min: float
+    temp_max: float
+    rain_max: float
+    wind_max: float
+
+    def is_similar_to(self, other: 'WeatherMetrics') -> bool:
+        """Check if this location's weather is similar to another."""
+        temp_diff = abs((self.temp_min + self.temp_max) / 2 -
+                       (other.temp_min + other.temp_max) / 2)
+        rain_diff = abs(self.rain_max - other.rain_max)
+        wind_diff = abs(self.wind_max - other.wind_max)
+
+        return (temp_diff <= GROUPING_THRESHOLD_TEMP and
+                rain_diff <= GROUPING_THRESHOLD_RAIN and
+                wind_diff <= GROUPING_THRESHOLD_WIND)
+
+
+def extract_weather_metrics(location_code: str, forecast_days: list) -> WeatherMetrics:
+    """Extract key weather metrics from 7-day forecast data."""
+    if not forecast_days:
+        return WeatherMetrics(location_code, 0, 0, 0, 0)
+
+    temp_mins = []
+    temp_maxs = []
+    rain_maxs = []
+    wind_maxs = []
+
+    for day in forecast_days[:7]:
+        if isinstance(day, dict):
+            # Handle various key formats
+            temp_str = day.get("temp", day.get("temp_range", "0-0"))
+            if isinstance(temp_str, str) and "-" in temp_str:
+                parts = temp_str.split("-")
+                try:
+                    temp_mins.append(float(parts[0]))
+                    temp_maxs.append(float(parts[1]))
+                except (ValueError, IndexError):
+                    pass
+
+            # Rain - extract max from range or direct value
+            rain = day.get("rain_max", day.get("rain", 0))
+            if isinstance(rain, str):
+                # Handle "R0-5" format
+                if "-" in rain:
+                    try:
+                        rain = float(rain.split("-")[1])
+                    except (ValueError, IndexError):
+                        rain = 0
+                else:
+                    try:
+                        rain = float(rain.replace("R", "").replace("S", ""))
+                    except ValueError:
+                        rain = 0
+            rain_maxs.append(float(rain))
+
+            # Wind max
+            wm = day.get("wind_max", day.get("wm", 0))
+            try:
+                wind_maxs.append(float(wm))
+            except (ValueError, TypeError):
+                pass
+
+    return WeatherMetrics(
+        location_code=location_code,
+        temp_min=min(temp_mins) if temp_mins else 0,
+        temp_max=max(temp_maxs) if temp_maxs else 0,
+        rain_max=max(rain_maxs) if rain_maxs else 0,
+        wind_max=max(wind_maxs) if wind_maxs else 0
+    )
+
+
+def group_locations_by_weather(forecast_data: dict) -> List[List[str]]:
+    """
+    Group locations with similar weather conditions.
+
+    Returns list of groups, where each group is a list of location codes
+    that have similar weather (within thresholds).
+    """
+    # Extract metrics for all locations
+    metrics = {}
+    for loc_code, days in forecast_data.items():
+        metrics[loc_code] = extract_weather_metrics(loc_code, days)
+
+    # Group similar locations using simple clustering
+    ungrouped = set(metrics.keys())
+    groups = []
+
+    while ungrouped:
+        # Start a new group with first ungrouped location
+        current = ungrouped.pop()
+        group = [current]
+
+        # Find all similar locations
+        to_check = list(ungrouped)
+        for loc in to_check:
+            if metrics[current].is_similar_to(metrics[loc]):
+                group.append(loc)
+                ungrouped.remove(loc)
+
+        groups.append(sorted(group))
+
+    return groups
+
+
+def get_group_representative_forecast(group: List[str], forecast_data: dict) -> list:
+    """
+    Get representative forecast for a group by averaging metrics.
+    Uses the first location's structure, averaged with others.
+    """
+    if not group or not forecast_data:
+        return []
+
+    # Use first location as template
+    template_days = forecast_data.get(group[0], [])
+    if not template_days:
+        return []
+
+    result = []
+    num_days = min(7, len(template_days))
+
+    for day_idx in range(num_days):
+        day_data = {}
+
+        # Collect values from all locations in group for this day
+        temps_min, temps_max = [], []
+        rain_chances, rain_maxs = [], []
+        wind_avgs, wind_maxs = [], []
+        cloud_covers, cloud_bases = [], []
+        freezing_levels = []
+
+        for loc in group:
+            days = forecast_data.get(loc, [])
+            if day_idx < len(days) and isinstance(days[day_idx], dict):
+                day = days[day_idx]
+
+                # Parse temperature
+                temp_str = day.get("temp", day.get("temp_range", "0-0"))
+                if isinstance(temp_str, str) and "-" in temp_str:
+                    parts = temp_str.split("-")
+                    try:
+                        temps_min.append(float(parts[0]))
+                        temps_max.append(float(parts[1]))
+                    except (ValueError, IndexError):
+                        pass
+
+                # Rain chance
+                rc = day.get("rain_chance", day.get("%rn", 0))
+                try:
+                    rain_chances.append(int(str(rc).replace("%", "")))
+                except ValueError:
+                    pass
+
+                # Rain max
+                prec = day.get("prec", day.get("rain", "0"))
+                if isinstance(prec, str):
+                    if "-" in prec:
+                        try:
+                            rain_maxs.append(float(prec.split("-")[1]))
+                        except (ValueError, IndexError):
+                            rain_maxs.append(0)
+                    else:
+                        try:
+                            rain_maxs.append(float(prec.replace("R", "").replace("S", "").replace("-", "")))
+                        except ValueError:
+                            rain_maxs.append(0)
+                else:
+                    rain_maxs.append(float(prec) if prec else 0)
+
+                # Wind
+                try:
+                    wind_avgs.append(int(day.get("wind_avg", day.get("wa", 0))))
+                except (ValueError, TypeError):
+                    pass
+                try:
+                    wind_maxs.append(int(day.get("wind_max", day.get("wm", 0))))
+                except (ValueError, TypeError):
+                    pass
+
+                # Cloud
+                try:
+                    cloud_covers.append(int(str(day.get("cloud", day.get("%cd", 0))).replace("%", "")))
+                except (ValueError, TypeError):
+                    pass
+                try:
+                    cloud_bases.append(int(day.get("cloud_base", day.get("cb", 12))))
+                except (ValueError, TypeError):
+                    pass
+
+                # Freezing level
+                try:
+                    freezing_levels.append(int(day.get("freezing_level", day.get("fl", 18))))
+                except (ValueError, TypeError):
+                    pass
+
+        # Build averaged day data
+        if template_days[day_idx] and isinstance(template_days[day_idx], dict):
+            day_data["day"] = template_days[day_idx].get("day", f"D{day_idx+1}")
+
+        t_min = int(sum(temps_min) / len(temps_min)) if temps_min else 0
+        t_max = int(sum(temps_max) / len(temps_max)) if temps_max else 0
+        day_data["temp"] = f"{t_min}-{t_max}"
+
+        day_data["rain_chance"] = int(sum(rain_chances) / len(rain_chances)) if rain_chances else 0
+
+        r_max = int(max(rain_maxs)) if rain_maxs else 0
+        day_data["prec"] = f"R0-{r_max}" if r_max > 0 else "-"
+
+        day_data["wind_avg"] = int(sum(wind_avgs) / len(wind_avgs)) if wind_avgs else 0
+        day_data["wind_max"] = int(max(wind_maxs)) if wind_maxs else 0
+        day_data["wind_dir"] = "W"  # Default
+
+        day_data["cloud"] = int(sum(cloud_covers) / len(cloud_covers)) if cloud_covers else 0
+        day_data["cloud_base"] = int(sum(cloud_bases) / len(cloud_bases)) if cloud_bases else 12
+        day_data["freezing_level"] = int(min(freezing_levels)) if freezing_levels else 18
+
+        # Danger - take worst case
+        day_data["danger"] = ""
+
+        result.append(day_data)
+
+    return result
+
+
+class FormatCAST7Grouped:
+    """Format 7-day forecast with dynamic grouping for CAMPS or PEAKS."""
+
+    @staticmethod
+    def format(
+        route_name: str,
+        forecast_data: dict,
+        location_type: str,  # "CAMPS" or "PEAKS"
+        start_date=None,
+        date=None
+    ) -> str:
+        """
+        Format grouped 7-day forecast.
+
+        Groups locations with similar weather (±2°C, ±2mm, ±5km/h)
+        to reduce SMS payload.
+        """
+        lines = []
+
+        # Header with grouping notice
+        lines.append(f"CAST7 {location_type} - {route_name}")
+        lines.append(f"Grouped within ±{GROUPING_THRESHOLD_TEMP}C ±{GROUPING_THRESHOLD_RAIN}mm ±{GROUPING_THRESHOLD_WIND}km/h")
+        lines.append("═" * 30)
+
+        # Group locations by weather similarity
+        groups = group_locations_by_weather(forecast_data)
+
+        from datetime import timedelta
+        if start_date is None:
+            start_date = date
+
+        for zone_idx, group in enumerate(groups, 1):
+            # Zone header with location codes
+            zone_locs = " ".join(group)
+            lines.append(f"\nZONE {zone_idx}: {zone_locs}")
+            lines.append(get_daily_header())
+
+            # Get representative forecast for this group
+            rep_forecast = get_group_representative_forecast(group, forecast_data)
+
+            for day_idx, day in enumerate(rep_forecast[:7]):
+                if start_date:
+                    d = start_date + timedelta(days=day_idx)
+                    day_label = d.strftime("%a")
+                else:
+                    day_label = day.get("day", f"D{day_idx+1}")
+
+                tmp = day.get("temp", "?-?")
+                rn = day.get("rain_chance", "?")
+                prec = day.get("prec", "-")
+                wa = day.get("wind_avg", "?")
+                wm = day.get("wind_max", "?")
+                wd = day.get("wind_dir", "W")
+                cd = day.get("cloud", "?")
+                cb = day.get("cloud_base", "?")
+                fl = day.get("freezing_level", "?")
+                danger = day.get("danger", "")
+
+                lines.append(f"{day_label}|{tmp}|{rn}%|{prec}|{wa}|{wm}|{wd}|{cd}%|{cb}|{fl}|{danger}")
+
+        # Summary
+        total_locs = sum(len(g) for g in groups)
+        lines.append(f"\n{total_locs} locations → {len(groups)} zones")
+
+        return "\n".join(lines)
+
+    @staticmethod
+    def format_multi(
+        route_name: str,
+        forecast_data: dict,
+        location_type: str,
+        start_date=None,
+        date=None
+    ) -> list:
+        """Format as multiple messages if needed."""
+        full = FormatCAST7Grouped.format(
+            route_name, forecast_data, location_type,
+            start_date=start_date, date=date
+        )
+
+        if len(full) <= 450:
+            return [full]
+
+        # Split by zone
+        messages = []
+        sections = full.split("\nZONE ")
+
+        header = sections[0]
+        zones = sections[1:] if len(sections) > 1 else []
+
+        current = header
+        for zone in zones:
+            zone_text = "\nZONE " + zone
+            if len(current) + len(zone_text) > 400:
+                messages.append(current)
+                # Start new message with abbreviated header
+                current = f"CAST7 {location_type} (cont.)\n{get_daily_header()}\nZONE " + zone
+            else:
+                current += zone_text
+
+        if current:
+            messages.append(current)
+
+        # Add part numbers
+        total = len(messages)
+        if total > 1:
+            messages = [f"[{i+1}/{total}] {m}" for i, m in enumerate(messages)]
+
+        return messages
+
+
 class FormatPEAKS:
     """Format 7-day peak summary."""
 
