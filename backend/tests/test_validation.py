@@ -992,10 +992,10 @@ class TestAdminDashboard:
         # render_admin should not crash
         html = render_admin([db_user], message="")
 
-        # Should contain user info
-        assert "+61400099003" in html
-        assert "western_arthurs" in html
-        assert "6d" in html  # duration = 5 days + 1 = 6
+        # Should contain user info (phone is masked in new format)
+        assert "+61400..." in html or "099003" in html
+        assert "Western Arthurs" in html  # Route name is title-cased now
+        assert "registered" in html  # Status
 
     def test_active_users_filtered_by_date(self):
         """get_active_users should only return users within date range."""

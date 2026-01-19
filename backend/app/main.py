@@ -157,7 +157,8 @@ async def push_forecast_to_user(user, forecast_type: str = "morning"):
         
         # Send SMS
         sms_service = get_sms_service()
-        await sms_service.send_message(user.phone, message)
+        cmd = "PUSH_AM" if forecast_type == "morning" else "PUSH_PM"
+        await sms_service.send_message(user.phone, message, command_type=cmd, message_type="scheduled_push")
         logger.info(f"Pushed {forecast_type} forecast to {PhoneUtils.mask(user.phone)}")
         
     except Exception as e:
@@ -279,7 +280,7 @@ async def notify_safecheck_contacts(user, camp, notification_type: str = "checki
     # Send to all contacts
     for contact in contacts:
         try:
-            await sms_service.send_message(contact.phone, message)
+            await sms_service.send_message(contact.phone, message, command_type="SAFECHECK", message_type="safecheck_notify")
             logger.info(f"SafeCheck {notification_type} sent to {PhoneUtils.mask(contact.phone)}")
         except Exception as e:
             logger.error(f"SafeCheck notification failed to {PhoneUtils.mask(contact.phone)}: {e}")
@@ -451,6 +452,27 @@ class TwilioInboundSMS(BaseModel):
     NumMedia: Optional[str] = "0"
 
 
+def log_twiml_response(phone: str, response_text: str, command_type: str, message_type: str = "response"):
+    """Log a TwiML response for analytics."""
+    try:
+        from app.models.database import user_store as db_store
+        from app.services.sms import SMSCostCalculator
+        segments = SMSCostCalculator.count_segments(response_text)
+        cost_aud = segments * 0.055
+        db_store.log_message(
+            user_phone=phone,
+            direction="outbound",
+            message_type=message_type,
+            command_type=command_type,
+            content=response_text[:500],
+            segments=segments,
+            cost_aud=cost_aud,
+            success=True
+        )
+    except Exception as e:
+        logger.warning(f"Failed to log TwiML response: {e}")
+
+
 @app.post("/webhook/sms/inbound")
 async def handle_inbound_sms(
     request: Request,
@@ -484,10 +506,26 @@ async def handle_inbound_sms(
         from_phone = from_phone_raw.strip()  # Fallback to stripped version
 
     logger.info(f"SMS received from {PhoneUtils.mask(from_phone)}: {body[:50]}...")
-    
+
+    # Parse command for logging
+    text_upper = body.strip().upper()
+    cmd_word = text_upper.split()[0] if text_upper else "EMPTY"
+
+    # Log inbound message
+    from app.models.database import user_store as db_store
+    db_store.log_message(
+        user_phone=from_phone,
+        direction="inbound",
+        message_type="command",
+        command_type=cmd_word,
+        content=body[:500],
+        segments=1,
+        cost_aud=0,
+        success=True
+    )
+
     # Check if user is in onboarding flow FIRST
     session = onboarding_manager.get_session(from_phone)
-    text_upper = body.strip().upper()
     
     # CAST and other critical commands should ALWAYS work, even during onboarding
     # Check for these BEFORE checking onboarding state
@@ -496,7 +534,10 @@ async def handle_inbound_sms(
         parser = CommandParser()
         parsed = parser.parse(body)
         response_text = await process_command(from_phone, parsed)
-        
+
+        # Log outbound response
+        log_twiml_response(from_phone, response_text, cmd_word, "response")
+
         twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Message>{html.escape(response_text)}</Message>
@@ -513,8 +554,11 @@ async def handle_inbound_sms(
     if is_start_command or is_active_onboarding:
         # Handle onboarding
         response_text, is_complete = onboarding_manager.process_input(from_phone, body)
-        
+
         if response_text:
+            # Log outbound response
+            log_twiml_response(from_phone, response_text, "ONBOARDING", "onboarding")
+
             # Return immediate response
             twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -525,17 +569,20 @@ async def handle_inbound_sms(
             if is_complete:
                 import asyncio
                 asyncio.create_task(send_quick_start_guide(from_phone))
-            
+
             from fastapi.responses import Response
             return Response(content=twiml, media_type="application/xml")
     
     # Not in onboarding - parse as normal command
     parser = CommandParser()
     parsed = parser.parse(body)
-    
+
     # Generate response based on command
     response_text = await process_command(from_phone, parsed)
-    
+
+    # Log outbound response
+    log_twiml_response(from_phone, response_text, cmd_word, "response")
+
     # Return TwiML response (XML-escape to handle & and < characters)
     twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -571,7 +618,7 @@ async def send_quick_start_guide(phone: str):
     for i, message in enumerate(messages):
         try:
             await asyncio.sleep(2.5)  # Delay between messages
-            await sms_service.send_message(phone, message)
+            await sms_service.send_message(phone, message, command_type="ONBOARDING", message_type="quick_start")
             logger.info(f"Sent quick start [{i+1}/{len(messages)}] to {PhoneUtils.mask(phone)}")
         except Exception as e:
             logger.error(f"Failed to send quick start message: {e}")
@@ -1464,19 +1511,20 @@ async def admin_push_forecast(phone: str, request: Request):
         sent_count = 0
         errors = []
         
+        cmd_type = "ADMIN_PUSH_AM" if is_morning else "ADMIN_PUSH_PM"
         for msg in messages:
-            result = await sms_service.send_message(to=phone, body=msg.content)
+            result = await sms_service.send_message(to=phone, body=msg.content, command_type=cmd_type, message_type="admin_push")
             if result.error:
                 errors.append(result.error)
             else:
                 sent_count += 1
-        
+
         if errors:
             return RedirectResponse(
                 f"/admin?msg=Sent {sent_count}/{len(messages)} messages. Errors: {'; '.join(errors[:2])}",
                 status_code=302
             )
-        
+
         forecast_type = "morning (hourly)" if is_morning else "evening (7-day)"
         return RedirectResponse(
             f"/admin?msg=✓ {forecast_type} forecast sent to {phone} ({sent_count} messages)",
@@ -1509,7 +1557,9 @@ async def admin_push_all(request: Request):
         try:
             result = await sms_service.send_message(
                 to=user.phone,
-                body=f"⚡ Thunderbird: Batch forecast test for {user.route_id}"
+                body=f"THUNDERBIRD: Batch forecast test for {user.route_id}",
+                command_type="ADMIN_BATCH",
+                message_type="admin_push"
             )
             if result.error:
                 errors += 1
@@ -1543,13 +1593,15 @@ async def admin_test_sms(request: Request):
         sms_service = get_sms_service()
         result = await sms_service.send_message(
             to=phone,
-            body="⚡ Thunderbird test message. If you received this, SMS delivery is working!"
+            body="THUNDERBIRD test message. If you received this, SMS delivery is working!",
+            command_type="ADMIN_TEST",
+            message_type="admin_test"
         )
-        
+
         if result.error:
             return RedirectResponse(f"/admin?msg=Error: {result.error}", status_code=302)
-        
-        return RedirectResponse(f"/admin?msg=✓ Test SMS sent to {phone}", status_code=302)
+
+        return RedirectResponse(f"/admin?msg=Test SMS sent to {phone}", status_code=302)
     except Exception as e:
         return RedirectResponse(f"/admin?msg=Error: {str(e)}", status_code=302)
 

@@ -5,7 +5,7 @@ SQLite-based persistent storage
 
 import sqlite3
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import Optional, List, Dict
 from dataclasses import dataclass, field
 from contextlib import contextmanager
@@ -82,13 +82,46 @@ class SQLiteUserStore:
                     user_phone TEXT,
                     direction TEXT NOT NULL,
                     message_type TEXT,
+                    command_type TEXT,
                     content TEXT,
-                    segments INTEGER,
-                    sent_at TEXT DEFAULT CURRENT_TIMESTAMP
+                    segments INTEGER DEFAULT 1,
+                    cost_aud REAL DEFAULT 0,
+                    sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    success INTEGER DEFAULT 1
                 )
             """)
+            # Add indexes for analytics queries
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_message_log_sent_at ON message_log(sent_at)
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_message_log_user ON message_log(user_phone)
+            """)
+
+            # Migrate: add missing columns to message_log if they don't exist
+            self._migrate_message_log(conn)
             conn.commit()
-    
+
+    def _migrate_message_log(self, conn):
+        """Add missing columns to message_log table for analytics."""
+        # Get existing columns
+        cursor = conn.execute("PRAGMA table_info(message_log)")
+        existing_columns = {row[1] for row in cursor.fetchall()}
+
+        # Add missing columns
+        migrations = [
+            ("command_type", "TEXT"),
+            ("cost_aud", "REAL DEFAULT 0"),
+            ("success", "INTEGER DEFAULT 1"),
+        ]
+
+        for col_name, col_type in migrations:
+            if col_name not in existing_columns:
+                try:
+                    conn.execute(f"ALTER TABLE message_log ADD COLUMN {col_name} {col_type}")
+                except Exception:
+                    pass  # Column might already exist
+
     @contextmanager
     def _get_connection(self):
         """Get database connection with row factory."""
@@ -261,21 +294,173 @@ class SQLiteUserStore:
         with self._get_connection() as conn:
             return self._get_contacts_for_user(conn, phone)
     
-    def log_message(self, user_phone: str, direction: str, message_type: str, content: str, segments: int = 1):
-        """Log an SMS message."""
+    def log_message(
+        self,
+        user_phone: str,
+        direction: str,
+        message_type: str,
+        content: str,
+        segments: int = 1,
+        command_type: str = None,
+        cost_aud: float = None,
+        success: bool = True
+    ):
+        """Log an SMS message with cost tracking."""
+        # Calculate cost if not provided (AU SMS ~$0.055/segment)
+        if cost_aud is None:
+            cost_aud = segments * 0.055 if direction == 'outbound' else 0
+
         with self._get_connection() as conn:
             conn.execute("""
-                INSERT INTO message_log (user_phone, direction, message_type, content, segments)
-                VALUES (?, ?, ?, ?, ?)
-            """, (user_phone, direction, message_type, content, segments))
+                INSERT INTO message_log (user_phone, direction, message_type, command_type, content, segments, cost_aud, success)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (user_phone, direction, message_type, command_type, content, segments, cost_aud, 1 if success else 0))
             conn.commit()
-    
+
+    def get_today_stats(self) -> Dict:
+        """Get today's SMS statistics."""
+        today = date.today().isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT
+                    COUNT(*) as message_count,
+                    COALESCE(SUM(segments), 0) as total_segments,
+                    COALESCE(SUM(cost_aud), 0) as total_cost,
+                    COALESCE(SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END), 0) as failed_count
+                FROM message_log
+                WHERE direction = 'outbound' AND date(sent_at) = ?
+            """, (today,))
+            row = cursor.fetchone()
+            return {
+                "message_count": row["message_count"] or 0,
+                "total_segments": row["total_segments"] or 0,
+                "total_cost": round(row["total_cost"] or 0, 2),
+                "failed_count": row["failed_count"] or 0
+            }
+
+    def get_month_stats(self) -> Dict:
+        """Get current month's SMS statistics."""
+        month_start = date.today().replace(day=1).isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT
+                    COUNT(*) as message_count,
+                    COALESCE(SUM(segments), 0) as total_segments,
+                    COALESCE(SUM(cost_aud), 0) as total_cost,
+                    COALESCE(SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END), 0) as failed_count
+                FROM message_log
+                WHERE direction = 'outbound' AND date(sent_at) >= ?
+            """, (month_start,))
+            row = cursor.fetchone()
+            return {
+                "message_count": row["message_count"] or 0,
+                "total_segments": row["total_segments"] or 0,
+                "total_cost": round(row["total_cost"] or 0, 2),
+                "failed_count": row["failed_count"] or 0
+            }
+
+    def get_command_breakdown(self, days: int = 30) -> List[Dict]:
+        """Get breakdown of SMS usage by command type."""
+        cutoff = (date.today() - timedelta(days=days)).isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT
+                    COALESCE(command_type, 'OTHER') as command,
+                    COUNT(*) as message_count,
+                    COALESCE(SUM(segments), 0) as total_segments,
+                    COALESCE(SUM(cost_aud), 0) as total_cost
+                FROM message_log
+                WHERE direction = 'outbound' AND date(sent_at) >= ?
+                GROUP BY command_type
+                ORDER BY total_segments DESC
+            """, (cutoff,))
+            return [
+                {
+                    "command": row["command"],
+                    "message_count": row["message_count"],
+                    "total_segments": row["total_segments"],
+                    "total_cost": round(row["total_cost"], 2)
+                }
+                for row in cursor
+            ]
+
+    def get_user_usage(self, phone: str) -> Dict:
+        """Get SMS usage statistics for a specific user."""
+        with self._get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT
+                    COUNT(*) as message_count,
+                    COALESCE(SUM(segments), 0) as total_segments,
+                    COALESCE(SUM(cost_aud), 0) as total_cost,
+                    MAX(sent_at) as last_activity
+                FROM message_log
+                WHERE user_phone = ? AND direction = 'outbound'
+            """, (phone,))
+            row = cursor.fetchone()
+            return {
+                "message_count": row["message_count"] or 0,
+                "total_segments": row["total_segments"] or 0,
+                "total_cost": round(row["total_cost"] or 0, 2),
+                "last_activity": row["last_activity"]
+            }
+
+    def get_all_users_usage(self) -> List[Dict]:
+        """Get SMS usage for all users."""
+        with self._get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT
+                    user_phone,
+                    COUNT(*) as message_count,
+                    COALESCE(SUM(segments), 0) as total_segments,
+                    COALESCE(SUM(cost_aud), 0) as total_cost,
+                    MAX(sent_at) as last_activity
+                FROM message_log
+                WHERE direction = 'outbound' AND user_phone IS NOT NULL
+                GROUP BY user_phone
+                ORDER BY total_segments DESC
+            """)
+            return [
+                {
+                    "phone": row["user_phone"],
+                    "message_count": row["message_count"],
+                    "total_segments": row["total_segments"],
+                    "total_cost": round(row["total_cost"], 2),
+                    "last_activity": row["last_activity"]
+                }
+                for row in cursor
+            ]
+
+    def get_daily_trend(self, days: int = 7) -> List[Dict]:
+        """Get daily SMS statistics for trending."""
+        cutoff = (date.today() - timedelta(days=days)).isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT
+                    date(sent_at) as day,
+                    COUNT(*) as message_count,
+                    COALESCE(SUM(segments), 0) as total_segments,
+                    COALESCE(SUM(cost_aud), 0) as total_cost
+                FROM message_log
+                WHERE direction = 'outbound' AND date(sent_at) >= ?
+                GROUP BY date(sent_at)
+                ORDER BY day DESC
+            """, (cutoff,))
+            return [
+                {
+                    "day": row["day"],
+                    "message_count": row["message_count"],
+                    "total_segments": row["total_segments"],
+                    "total_cost": round(row["total_cost"], 2)
+                }
+                for row in cursor
+            ]
+
     def get_message_stats(self, phone: str = None) -> Dict:
-        """Get message statistics."""
+        """Get message statistics (legacy method)."""
         with self._get_connection() as conn:
             if phone:
                 cursor = conn.execute("""
-                    SELECT 
+                    SELECT
                         COUNT(*) as total_messages,
                         SUM(segments) as total_segments,
                         SUM(CASE WHEN direction = 'outbound' THEN segments ELSE 0 END) as outbound_segments
@@ -283,7 +468,7 @@ class SQLiteUserStore:
                 """, (phone,))
             else:
                 cursor = conn.execute("""
-                    SELECT 
+                    SELECT
                         COUNT(*) as total_messages,
                         SUM(segments) as total_segments,
                         SUM(CASE WHEN direction = 'outbound' THEN segments ELSE 0 END) as outbound_segments

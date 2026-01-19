@@ -173,15 +173,19 @@ class SMSService:
     async def send_message(
         self,
         to: str,
-        body: str
+        body: str,
+        command_type: str = None,
+        message_type: str = "response"
     ) -> SMSMessage:
         """
         Send a single SMS message.
-        
+
         Args:
             to: Recipient phone number (will be normalized)
             body: Message content
-        
+            command_type: Command that triggered this (CAST12, CAST7, etc.)
+            message_type: Type of message (response, onboarding, safecheck, etc.)
+
         Returns:
             SMSMessage with send result
         """
@@ -195,22 +199,26 @@ class SMSService:
                 cost_cents=0,
                 error=str(e)
             )
-        
+
         segments = SMSCostCalculator.count_segments(body)
         cost_cents = SMSCostCalculator.calculate_cost(segments)
-        
+        cost_aud = cost_cents / 100.0
+
         try:
             message = self.client.messages.create(
                 to=normalized_to,
                 from_=self.from_number,
                 body=body
             )
-            
+
             logger.info(
                 f"SMS sent to {PhoneUtils.mask(normalized_to)}: "
                 f"{segments} segments, {len(body)} chars"
             )
-            
+
+            # Log to database for analytics
+            self._log_message(normalized_to, message_type, command_type, body, segments, cost_aud, True)
+
             return SMSMessage(
                 to=normalized_to,
                 body=body,
@@ -219,9 +227,13 @@ class SMSService:
                 sid=message.sid,
                 sent_at=datetime.now(TZ_HOBART)
             )
-            
+
         except Exception as e:
             logger.error(f"SMS send failed to {PhoneUtils.mask(normalized_to)}: {e}")
+
+            # Log failed message too
+            self._log_message(normalized_to, message_type, command_type, body, segments, 0, False)
+
             return SMSMessage(
                 to=normalized_to,
                 body=body,
@@ -229,6 +241,23 @@ class SMSService:
                 cost_cents=0,
                 error=str(e)
             )
+
+    def _log_message(self, phone: str, message_type: str, command_type: str, content: str, segments: int, cost_aud: float, success: bool):
+        """Log message to database for analytics."""
+        try:
+            from app.models.database import user_store
+            user_store.log_message(
+                user_phone=phone,
+                direction="outbound",
+                message_type=message_type,
+                command_type=command_type,
+                content=content[:500],  # Truncate for storage
+                segments=segments,
+                cost_aud=cost_aud,
+                success=success
+            )
+        except Exception as e:
+            logger.warning(f"Failed to log message to database: {e}")
     
     async def send_batch(
         self,

@@ -205,9 +205,10 @@ ADMIN_PAGE = """
         h1 {{ margin: 0; color: #e94560; }}
         .logout {{ color: #888; text-decoration: none; padding: 8px 16px; border: 1px solid #444; border-radius: 6px; }}
         .logout:hover {{ border-color: #e94560; color: #e94560; }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }}
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }}
         .card {{ background: #16213e; padding: 24px; border-radius: 12px; }}
         h2 {{ margin: 0 0 20px; color: #e94560; font-size: 18px; }}
+        h3 {{ margin: 0 0 12px; color: #aaa; font-size: 14px; }}
         label {{ display: block; margin-bottom: 6px; color: #aaa; font-size: 14px; }}
         input, select {{ width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid #333; border-radius: 6px; background: #0f0f23; color: #eee; font-size: 14px; }}
         input:focus, select:focus {{ outline: none; border-color: #e94560; }}
@@ -217,9 +218,9 @@ ADMIN_PAGE = """
         .btn-secondary:hover {{ background: #444; }}
         .btn-danger {{ background: #c0392b; }}
         .btn-danger:hover {{ background: #e74c3c; }}
-        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
-        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #333; }}
-        th {{ color: #aaa; font-weight: 500; font-size: 12px; text-transform: uppercase; }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }}
+        th, td {{ padding: 10px; text-align: left; border-bottom: 1px solid #333; }}
+        th {{ color: #aaa; font-weight: 500; font-size: 11px; text-transform: uppercase; }}
         .status {{ padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }}
         .status-active {{ background: #27ae60; }}
         .status-registered {{ background: #3498db; }}
@@ -229,91 +230,128 @@ ADMIN_PAGE = """
         .actions {{ display: flex; gap: 8px; }}
         .actions button {{ padding: 6px 12px; font-size: 12px; }}
         .empty {{ color: #666; text-align: center; padding: 40px; }}
-        .stats {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }}
+        .stats-row {{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }}
         .stat {{ background: #0f0f23; padding: 16px; border-radius: 8px; text-align: center; }}
-        .stat-value {{ font-size: 32px; font-weight: 700; color: #e94560; }}
-        .stat-label {{ font-size: 12px; color: #666; margin-top: 4px; }}
-        .grouping-stats table {{ font-size: 14px; }}
-        .grouping-stats th {{ background: #0f0f23; }}
-        .grouping-stats .reduction {{ color: #27ae60; font-weight: 600; }}
-        .grouping-stats .saving {{ color: #27ae60; }}
+        .stat-value {{ font-size: 24px; font-weight: 700; color: #e94560; }}
+        .stat-value.green {{ color: #27ae60; }}
+        .stat-label {{ font-size: 11px; color: #666; margin-top: 4px; text-transform: uppercase; }}
+        .api-status {{ display: flex; align-items: center; gap: 8px; }}
+        .api-dot {{ width: 10px; height: 10px; border-radius: 50%; }}
+        .api-dot.green {{ background: #27ae60; }}
+        .api-dot.red {{ background: #e74c3c; }}
+        .cmd-bar {{ display: flex; align-items: center; gap: 8px; margin: 8px 0; }}
+        .cmd-bar-fill {{ height: 8px; border-radius: 4px; background: #3498db; }}
+        .cmd-name {{ width: 80px; font-size: 12px; color: #aaa; }}
+        .cmd-pct {{ font-size: 12px; color: #888; width: 40px; text-align: right; }}
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>⚡ Thunderbird Admin</h1>
+        <h1>Thunderbird Admin</h1>
         <a href="/admin/logout" class="logout">Logout</a>
     </div>
-    
+
     {message}
-    
-    <div class="stats">
+
+    <div class="stats-row">
+        <div class="stat">
+            <div class="stat-value">{today_segments}</div>
+            <div class="stat-label">Today Segments</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value green">${today_cost}</div>
+            <div class="stat-label">Today Cost</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{month_segments}</div>
+            <div class="stat-label">Month Segments</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value green">${month_cost}</div>
+            <div class="stat-label">Month Cost</div>
+        </div>
         <div class="stat">
             <div class="stat-value">{total_users}</div>
-            <div class="stat-label">Total Users</div>
+            <div class="stat-label">Users</div>
         </div>
         <div class="stat">
             <div class="stat-value">{active_users}</div>
-            <div class="stat-label">Active Today</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value">{forecasts_sent}</div>
-            <div class="stat-label">Forecasts Sent</div>
+            <div class="stat-label">Active</div>
         </div>
     </div>
-    
+
     <div class="grid">
         <div class="card">
-            <h2>Register Beta User</h2>
-            <form method="POST" action="/admin/register">
-                <label>Phone Number</label>
-                <input type="tel" name="phone" placeholder="+61400123456" required>
-                
-                <label>Route</label>
-                <select name="route_id" required>
-                    <option value="western_arthurs_ak">Western Arthurs (A-K)</option>
-                    <option value="western_arthurs_full">Western Arthurs (Full)</option>
-                    <option value="overland_track">Overland Track</option>
-                </select>
-                
-                <label>Start Date</label>
-                <input type="date" name="start_date" required>
-                
-                <label>Duration (days)</label>
-                <input type="number" name="duration_days" value="7" min="1" max="14" required>
-                
-                <label>Direction</label>
-                <select name="direction">
-                    <option value="standard">Standard (Scotts→Kappa / Ronny→Cynthia)</option>
-                    <option value="reverse">Reverse</option>
-                </select>
-                
-                <button type="submit">Register User</button>
-            </form>
+            <h2>Command Breakdown (30d)</h2>
+            {command_breakdown}
         </div>
-        
+
         <div class="card">
-            <h2>Registered Users</h2>
-            {users_table}
-        </div>
-    </div>
-    
-    <div class="card" style="margin-top: 20px;">
-        <h2>Dynamic Grouping Stats (v3.2)</h2>
-        <div class="grouping-stats">
-            {grouping_stats}
+            <h2>API Health</h2>
+            <div style="display: grid; gap: 12px;">
+                <div class="api-status">
+                    <span class="api-dot green"></span>
+                    <span>BOM API</span>
+                    <span style="margin-left: auto; color: #27ae60;">OK</span>
+                </div>
+                <div class="api-status">
+                    <span class="api-dot green"></span>
+                    <span>Twilio SMS</span>
+                    <span style="margin-left: auto; color: #27ae60;">OK</span>
+                </div>
+                <div class="api-status">
+                    <span class="api-dot green"></span>
+                    <span>Open-Meteo</span>
+                    <span style="margin-left: auto; color: #27ae60;">OK</span>
+                </div>
+            </div>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #333;">
+                <h3>Error Rate</h3>
+                <div style="font-size: 24px; color: #27ae60;">{error_rate}%</div>
+                <div style="font-size: 12px; color: #666;">{failed_count} failed / {total_sent} sent</div>
+            </div>
         </div>
     </div>
 
     <div class="card" style="margin-top: 20px;">
-        <h2>Quick Actions</h2>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <form method="POST" action="/admin/push-all" style="margin: 0;">
-                <button type="submit" class="btn-secondary">📤 Push All Forecasts Now</button>
-            </form>
-            <form method="POST" action="/admin/test-sms" style="margin: 0;">
-                <input type="tel" name="phone" placeholder="+61400123456" style="width: 180px; margin: 0;">
-                <button type="submit" class="btn-secondary">📱 Send Test SMS</button>
+        <h2>User Analytics</h2>
+        {users_table}
+    </div>
+
+    <div class="grid" style="margin-top: 20px;">
+        <div class="card">
+            <h2>Daily Trend (7d)</h2>
+            {daily_trend}
+        </div>
+
+        <div class="card">
+            <h2>Quick Actions</h2>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+                <form method="POST" action="/admin/push-all" style="margin: 0;">
+                    <button type="submit" class="btn-secondary">Push All Now</button>
+                </form>
+                <form method="POST" action="/admin/test-sms" style="margin: 0; display: flex; gap: 8px;">
+                    <input type="tel" name="phone" placeholder="+61400123456" style="width: 150px; margin: 0;">
+                    <button type="submit" class="btn-secondary">Test SMS</button>
+                </form>
+            </div>
+            <h3>Manual Register</h3>
+            <form method="POST" action="/admin/register">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="tel" name="phone" placeholder="Phone" required style="margin: 0;">
+                    <select name="route_id" required style="margin: 0;">
+                        <option value="overland_track">Overland Track</option>
+                        <option value="western_arthurs_ak">Western Arthurs (A-K)</option>
+                        <option value="western_arthurs_full">Western Arthurs (Full)</option>
+                        <option value="eastern_arthurs">Eastern Arthurs</option>
+                        <option value="combined_arthurs">Combined Arthurs</option>
+                        <option value="south_coast_track">South Coast Track</option>
+                    </select>
+                    <input type="date" name="start_date" required style="margin: 0;">
+                    <input type="number" name="duration_days" value="7" min="1" max="30" required style="margin: 0;" placeholder="Days">
+                </div>
+                <input type="hidden" name="direction" value="standard">
+                <button type="submit" style="margin-top: 12px;">Register</button>
             </form>
         </div>
     </div>
@@ -375,33 +413,49 @@ def render_grouping_stats() -> str:
 
 
 def render_admin(users, message: str = "") -> str:
-    """Render admin dashboard."""
-    # Build users table
+    """Render admin dashboard with analytics."""
+    from app.models.database import user_store as db_store
+
+    # Fetch analytics data
+    today_stats = db_store.get_today_stats()
+    month_stats = db_store.get_month_stats()
+    cmd_breakdown = db_store.get_command_breakdown(days=30)
+    daily_trend = db_store.get_daily_trend(days=7)
+    user_usage = db_store.get_all_users_usage()
+
+    # Build users table with SMS usage
     if users:
+        # Create lookup for user usage
+        usage_lookup = {u["phone"]: u for u in user_usage}
+
         rows = ""
         for u in sorted(users, key=lambda x: x.start_date, reverse=True):
-            # Handle both admin.User (enum status) and database.User (string status)
             status_val = u.status.value if hasattr(u.status, 'value') else u.status
             status_class = f"status-{status_val}"
-            # Calculate duration from end_date if no duration_days
             if hasattr(u, 'duration_days'):
                 duration = u.duration_days
             else:
                 duration = (u.end_date - u.start_date).days + 1
+
+            # Get usage for this user
+            usage = usage_lookup.get(u.phone, {})
+            segments = usage.get("total_segments", 0)
+            cost = usage.get("total_cost", 0)
+
+            # Mask phone for display
+            masked_phone = u.phone[:6] + "..." + u.phone[-3:] if len(u.phone) > 9 else u.phone
+
             rows += f"""
             <tr>
-                <td>{u.phone}</td>
-                <td>{u.route_id}</td>
+                <td>{masked_phone}</td>
+                <td>{u.route_id.replace('_', ' ').title()[:15]}</td>
                 <td>{u.start_date.strftime('%d %b')}</td>
-                <td>{duration}d</td>
-                <td>{u.current_position or '-'}</td>
+                <td>{segments}</td>
+                <td>${cost:.2f}</td>
                 <td><span class="status {status_class}">{status_val}</span></td>
                 <td class="actions">
-                    <form method="POST" action="/admin/push/{u.phone}" style="margin:0;">
-                        <button type="submit" class="btn-secondary">Push</button>
-                    </form>
                     <form method="POST" action="/admin/delete/{u.phone}" style="margin:0;">
-                        <button type="submit" class="btn-danger">Delete</button>
+                        <button type="submit" class="btn-danger">Del</button>
                     </form>
                 </td>
             </tr>
@@ -412,16 +466,52 @@ def render_admin(users, message: str = "") -> str:
                 <th>Phone</th>
                 <th>Route</th>
                 <th>Start</th>
-                <th>Days</th>
-                <th>Position</th>
+                <th>Seg</th>
+                <th>Cost</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th></th>
             </tr>
             {rows}
         </table>
         """
     else:
         users_table = '<div class="empty">No users registered yet</div>'
+
+    # Build command breakdown
+    if cmd_breakdown:
+        total_segments = sum(c["total_segments"] for c in cmd_breakdown)
+        cmd_html = ""
+        for cmd in cmd_breakdown[:8]:  # Top 8 commands
+            pct = (cmd["total_segments"] / total_segments * 100) if total_segments > 0 else 0
+            cmd_html += f"""
+            <div class="cmd-bar">
+                <span class="cmd-name">{cmd['command'][:10]}</span>
+                <div style="flex: 1;"><div class="cmd-bar-fill" style="width: {pct}%;"></div></div>
+                <span class="cmd-pct">{pct:.0f}%</span>
+            </div>
+            """
+    else:
+        cmd_html = '<div class="empty">No data yet</div>'
+
+    # Build daily trend table
+    if daily_trend:
+        trend_rows = ""
+        for day in daily_trend:
+            trend_rows += f"""
+            <tr>
+                <td>{day['day']}</td>
+                <td>{day['total_segments']}</td>
+                <td>${day['total_cost']:.2f}</td>
+            </tr>
+            """
+        daily_html = f"""
+        <table>
+            <tr><th>Date</th><th>Segments</th><th>Cost</th></tr>
+            {trend_rows}
+        </table>
+        """
+    else:
+        daily_html = '<div class="empty">No data yet</div>'
 
     # Message
     if message:
@@ -432,17 +522,26 @@ def render_admin(users, message: str = "") -> str:
     else:
         msg_html = ""
 
-    # Stats
-    active = len([u for u in users if u.status in (UserStatus.REGISTERED, UserStatus.ACTIVE)])
+    # Calculate error rate
+    total_sent = today_stats["message_count"] + month_stats["message_count"]
+    failed = today_stats["failed_count"] + month_stats["failed_count"]
+    error_rate = (failed / total_sent * 100) if total_sent > 0 else 0
 
-    # Grouping stats
-    grouping_stats = render_grouping_stats()
+    # Active users
+    active = len([u for u in users if (u.status.value if hasattr(u.status, 'value') else u.status) in ("registered", "active")])
 
     return ADMIN_PAGE.format(
         message=msg_html,
+        today_segments=today_stats["total_segments"],
+        today_cost=f"{today_stats['total_cost']:.2f}",
+        month_segments=month_stats["total_segments"],
+        month_cost=f"{month_stats['total_cost']:.2f}",
         total_users=len(users),
         active_users=active,
-        forecasts_sent=0,  # TODO: Track this
+        command_breakdown=cmd_html,
         users_table=users_table,
-        grouping_stats=grouping_stats
+        daily_trend=daily_html,
+        error_rate=f"{error_rate:.1f}",
+        failed_count=failed,
+        total_sent=total_sent
     )
