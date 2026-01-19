@@ -399,7 +399,7 @@ class OnboardingManager:
             "Hr  = Hour (24hr)",
             "Tmp = Temperature C",
             "%Rn = Rain probability",
-            "Prec = R#-# rain, S#-# snow",
+            "Prec = R#-# rain(mm), S#-# snow(cm)",
             "Wa/Wm = Wind avg/max km/h",
             "Wd  = Wind direction",
             "%Cd = Cloud cover",
