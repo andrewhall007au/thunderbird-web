@@ -23,11 +23,11 @@ class SafeCheckContact:
 
 @dataclass
 class User:
-    """User data model."""
+    """User data model. v3.0: start_date/end_date are optional (pull-based system)."""
     phone: str
     route_id: str
-    start_date: date
-    end_date: date
+    start_date: Optional[date] = None  # v3.0: Optional, no longer collected
+    end_date: Optional[date] = None    # v3.0: Optional, no longer collected
     trail_name: str = None
     direction: str = "standard"
     current_position: str = None
@@ -54,8 +54,8 @@ class SQLiteUserStore:
                 CREATE TABLE IF NOT EXISTS users (
                     phone TEXT PRIMARY KEY,
                     route_id TEXT NOT NULL,
-                    start_date TEXT NOT NULL,
-                    end_date TEXT NOT NULL,
+                    start_date TEXT,
+                    end_date TEXT,
                     trail_name TEXT,
                     direction TEXT DEFAULT 'standard',
                     current_position TEXT,
@@ -133,12 +133,12 @@ class SQLiteUserStore:
             conn.close()
     
     def _row_to_user(self, row: sqlite3.Row, contacts: List[SafeCheckContact] = None) -> User:
-        """Convert database row to User object."""
+        """Convert database row to User object. v3.0: handles optional dates."""
         return User(
             phone=row["phone"],
             route_id=row["route_id"],
-            start_date=date.fromisoformat(row["start_date"]),
-            end_date=date.fromisoformat(row["end_date"]),
+            start_date=date.fromisoformat(row["start_date"]) if row["start_date"] else None,
+            end_date=date.fromisoformat(row["end_date"]) if row["end_date"] else None,
             trail_name=row["trail_name"],
             direction=row["direction"] or "standard",
             current_position=row["current_position"],
@@ -159,12 +159,12 @@ class SQLiteUserStore:
         self,
         phone: str,
         route_id: str,
-        start_date: date,
-        end_date: date,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
         direction: str = "standard",
         trail_name: str = None
     ) -> User:
-        """Create or update a user."""
+        """Create or update a user. v3.0: start_date/end_date are optional."""
         with self._get_connection() as conn:
             conn.execute("""
                 INSERT INTO users (phone, route_id, start_date, end_date, direction, trail_name, updated_at)
@@ -179,14 +179,14 @@ class SQLiteUserStore:
             """, (
                 phone,
                 route_id,
-                start_date.isoformat(),
-                end_date.isoformat(),
+                start_date.isoformat() if start_date else None,
+                end_date.isoformat() if end_date else None,
                 direction,
                 trail_name,
                 datetime.now().isoformat()
             ))
             conn.commit()
-        
+
         return User(
             phone=phone,
             route_id=route_id,

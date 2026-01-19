@@ -628,21 +628,13 @@ async def send_quick_start_guide(phone: str):
 
 
 async def complete_user_registration(session):
-    """Save the completed registration to database."""
+    """Save the completed registration to database. v3.0: No start_date/end_date."""
     from app.models.database import user_store
-    from datetime import date as date_type
 
     try:
-        # v3.1 pull-based flow: start_date and num_days may be None
-        # Use today as start and 30 days as default duration
-        start_date = session.start_date or date_type.today()
-        num_days = session.num_days or 30
-
         user_store.create_user(
             phone=session.phone,
             route_id=session.route_id,
-            start_date=start_date,
-            end_date=start_date + timedelta(days=num_days),
             direction=session.direction or "standard",
             trail_name=session.trail_name
         )
@@ -1406,7 +1398,7 @@ async def admin_logout(request: Request):
 
 @app.post("/admin/register")
 async def admin_register_user(request: Request):
-    """Register a new beta user."""
+    """Register a new beta user. v3.0: No start_date required."""
     if not require_admin(request):
         return RedirectResponse("/admin/login", status_code=302)
 
@@ -1419,25 +1411,21 @@ async def admin_register_user(request: Request):
             phone = "+61" + phone.lstrip("0")
 
         route_id = form.get("route_id", "western_arthurs_ak")
-        start_date = date.fromisoformat(form.get("start_date", ""))
-        duration_days = int(form.get("duration_days", 7))
-        direction = form.get("direction", "standard")
+        trail_name = form.get("trail_name", "").strip() or None
 
         # Create user in SQLite database
         from app.models.database import user_store as db_user_store
         db_user_store.create_user(
             phone=phone,
             route_id=route_id,
-            start_date=start_date,
-            end_date=start_date + timedelta(days=duration_days),
-            direction=direction
+            trail_name=trail_name
         )
 
         return RedirectResponse(
             f"/admin?msg=Registered {phone} for {route_id}",
             status_code=302
         )
-    
+
     except Exception as e:
         return RedirectResponse(
             f"/admin?msg=Error: {str(e)}",

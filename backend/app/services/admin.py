@@ -338,19 +338,17 @@ ADMIN_PAGE = """
             <h3>Manual Register</h3>
             <form method="POST" action="/admin/register">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <input type="tel" name="phone" placeholder="Phone" required style="margin: 0;">
-                    <select name="route_id" required style="margin: 0;">
+                    <input type="tel" name="phone" placeholder="Phone (+61...)" required style="margin: 0;">
+                    <input type="text" name="trail_name" placeholder="Name (optional)" style="margin: 0;">
+                    <select name="route_id" required style="margin: 0; grid-column: span 2;">
                         <option value="overland_track">Overland Track</option>
                         <option value="western_arthurs_ak">Western Arthurs (A-K)</option>
                         <option value="western_arthurs_full">Western Arthurs (Full)</option>
+                        <option value="federation_peak">Federation Peak</option>
                         <option value="eastern_arthurs">Eastern Arthurs</option>
-                        <option value="combined_arthurs">Combined Arthurs</option>
-                        <option value="south_coast_track">South Coast Track</option>
+                        <option value="combined_arthurs">Combined W+E Arthurs</option>
                     </select>
-                    <input type="date" name="start_date" required style="margin: 0;">
-                    <input type="number" name="duration_days" value="7" min="1" max="30" required style="margin: 0;" placeholder="Days">
                 </div>
-                <input type="hidden" name="direction" value="standard">
                 <button type="submit" style="margin-top: 12px;">Register</button>
             </form>
         </div>
@@ -429,13 +427,10 @@ def render_admin(users, message: str = "") -> str:
         usage_lookup = {u["phone"]: u for u in user_usage}
 
         rows = ""
-        for u in sorted(users, key=lambda x: x.start_date, reverse=True):
+        # Sort by trail_name or phone if no dates
+        for u in users:
             status_val = u.status.value if hasattr(u.status, 'value') else u.status
             status_class = f"status-{status_val}"
-            if hasattr(u, 'duration_days'):
-                duration = u.duration_days
-            else:
-                duration = (u.end_date - u.start_date).days + 1
 
             # Get usage for this user
             usage = usage_lookup.get(u.phone, {})
@@ -445,11 +440,13 @@ def render_admin(users, message: str = "") -> str:
             # Mask phone for display
             masked_phone = u.phone[:6] + "..." + u.phone[-3:] if len(u.phone) > 9 else u.phone
 
+            # Display name or masked phone
+            display_name = u.trail_name or masked_phone
+
             rows += f"""
             <tr>
-                <td>{masked_phone}</td>
+                <td>{display_name}</td>
                 <td>{u.route_id.replace('_', ' ').title()[:15]}</td>
-                <td>{u.start_date.strftime('%d %b')}</td>
                 <td>{segments}</td>
                 <td>${cost:.2f}</td>
                 <td><span class="status {status_class}">{status_val}</span></td>
@@ -463,9 +460,8 @@ def render_admin(users, message: str = "") -> str:
         users_table = f"""
         <table>
             <tr>
-                <th>Phone</th>
+                <th>Name</th>
                 <th>Route</th>
-                <th>Start</th>
                 <th>Seg</th>
                 <th>Cost</th>
                 <th>Status</th>
@@ -527,7 +523,7 @@ def render_admin(users, message: str = "") -> str:
     failed = today_stats["failed_count"] + month_stats["failed_count"]
     error_rate = (failed / total_sent * 100) if total_sent > 0 else 0
 
-    # Active users
+    # Active users (all registered users are considered active in pull-based system)
     active = len([u for u in users if (u.status.value if hasattr(u.status, 'value') else u.status) in ("registered", "active")])
 
     return ADMIN_PAGE.format(
