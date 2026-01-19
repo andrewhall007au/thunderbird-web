@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Waypoint, WaypointType } from '../map/WaypointMarker';
-import { Trash2, MapPin, Mountain, Tent } from 'lucide-react';
+import { Trash2, MapPin, Mountain, Tent, Save } from 'lucide-react';
 
 interface WaypointEditorProps {
   waypoint: Waypoint | null;
   onUpdate: (id: string, updates: Partial<Waypoint>) => void;
   onDelete: (id: string) => void;
+  onSave?: () => void;
   onClose: () => void;
 }
 
@@ -21,6 +22,7 @@ export default function WaypointEditor({
   waypoint,
   onUpdate,
   onDelete,
+  onSave,
   onClose
 }: WaypointEditorProps) {
   const [name, setName] = useState('');
@@ -118,14 +120,28 @@ export default function WaypointEditor({
         {waypoint.elevation && <p>Elevation: {waypoint.elevation}m</p>}
       </div>
 
-      {/* Delete button */}
-      <button
-        onClick={() => onDelete(waypoint.id)}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition-colors"
-      >
-        <Trash2 className="w-4 h-4" />
-        Delete Waypoint
-      </button>
+      {/* Action buttons */}
+      <div className="space-y-2">
+        {/* Save Waypoint button */}
+        {onSave && (
+          <button
+            onClick={onSave}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+          >
+            <Save className="w-4 h-4" />
+            Save Waypoint
+          </button>
+        )}
+
+        {/* Delete button */}
+        <button
+          onClick={() => onDelete(waypoint.id)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+          Delete Waypoint
+        </button>
+      </div>
     </div>
   );
 }

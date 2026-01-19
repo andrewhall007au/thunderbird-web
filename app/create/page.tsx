@@ -303,7 +303,12 @@ function CreateRouteContent() {
         </p>
 
         {!trackGeojson && !isLoading && (
-          <GPXUpload onUpload={handleGPXUpload} isLoading={isLoading} />
+          <>
+            <p className="text-gray-300 mb-4">
+              Upload a GPX file of your route or select one from the library
+            </p>
+            <GPXUpload onUpload={handleGPXUpload} isLoading={isLoading} />
+          </>
         )}
 
         {isLoading && !trackGeojson && (
@@ -393,9 +398,29 @@ function CreateRouteContent() {
                   waypoint={selectedWaypoint}
                   onUpdate={handleWaypointUpdate}
                   onDelete={handleWaypointDelete}
+                  onSave={handleSave}
                   onClose={() => setSelectedWaypointId(null)}
                 />
               </div>
+            </div>
+
+            {/* Finalize button */}
+            <div className="mt-8 flex flex-col items-center">
+              <button
+                onClick={handleSave}
+                disabled={isSaving || !isDirty}
+                className={`
+                  px-8 py-3 rounded-lg font-semibold text-lg transition-colors
+                  ${isSaving || !isDirty
+                    ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                    : 'bg-green-600 text-white hover:bg-green-500'}
+                `}
+              >
+                {isSaving ? 'Saving...' : 'Finalize Route'}
+              </button>
+              <p className="mt-2 text-sm text-gray-500">
+                (don&apos;t worry you can edit it at any time)
+              </p>
             </div>
           </div>
         )}

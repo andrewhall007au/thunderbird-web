@@ -13,9 +13,9 @@ export default function RouteTrack({ geojson }: RouteTrackProps) {
         id="route-line"
         type="line"
         paint={{
-          'line-color': '#3b82f6',
-          'line-width': 3,
-          'line-opacity': 0.8
+          'line-color': '#00FFFF',
+          'line-width': 4,
+          'line-opacity': 0.9
         }}
       />
     </Source>
