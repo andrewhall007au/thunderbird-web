@@ -169,11 +169,32 @@ discount_codes (id, code, discount_type, discount_value, max_uses, current_uses,
 
 ## Phase 3: Route Creation
 
+**Status:** Planned (2026-01-19)
+
 **Goal:** Users can create custom routes via GPX upload and map editing
 
 **Requirements covered:** ROUT-01 through ROUT-12
 
-**Parallel with:** Phase 2 (no dependencies between them)
+**Plans:** 7 plans in 5 waves
+
+Plans:
+- [ ] 03-01-PLAN.md - Database models and migration for routes, waypoints, library (Wave 1)
+- [ ] 03-02-PLAN.md - Backend route builder service with GPX parsing and API (Wave 2)
+- [ ] 03-03-PLAN.md - Frontend map infrastructure with GPX upload (Wave 2)
+- [ ] 03-04-PLAN.md - Waypoint creation, editing, and management (Wave 3)
+- [ ] 03-05-PLAN.md - Save/load draft routes with backend integration (Wave 4)
+- [ ] 03-06-PLAN.md - Route library with admin import and clone functionality (Wave 4)
+- [ ] 03-07-PLAN.md - Backend tests and full verification (Wave 5)
+
+### Wave Structure
+
+| Wave | Plans | Description |
+|------|-------|-------------|
+| 1 | 03-01 | Database foundation: models, migrations, gpxpy dependency |
+| 2 | 03-02, 03-03 | Backend API + Frontend map: GPX parsing, MapLibre setup |
+| 3 | 03-04 | Waypoint editing: click-to-add, drag, delete, types, SMS codes |
+| 4 | 03-05, 03-06 | Persistence: save/load routes, library browse and clone |
+| 5 | 03-07 | Verification: tests and human UI verification |
 
 ### Deliverables
 
@@ -191,30 +212,34 @@ discount_codes (id, code, discount_type, discount_value, max_uses, current_uses,
 
 ### Key Files
 
-- `backend/services/route_builder.py`
-- `backend/models/custom_route.py`
-- `backend/models/custom_waypoint.py`
-- `frontend/app/create/`
-- `frontend/components/MapEditor.tsx`
-- `frontend/components/GPXUpload.tsx`
-- `frontend/components/WaypointEditor.tsx`
+- `backend/app/services/route_builder.py`
+- `backend/app/services/route_library.py`
+- `backend/app/models/custom_route.py`
+- `backend/app/routers/routes.py`
+- `backend/app/routers/library.py`
+- `app/create/page.tsx`
+- `app/components/map/MapEditor.tsx`
+- `app/components/upload/GPXUpload.tsx`
+- `app/components/waypoint/WaypointEditor.tsx`
+- `app/library/page.tsx`
+- `app/routes/page.tsx`
 
 ### Database Tables
 
 ```sql
-custom_routes (id, user_id, name, gpx_data, status, created_at, updated_at)
-custom_waypoints (id, route_id, type, name, sms_code, lat, lng, elevation, order)
-route_library (id, name, description, gpx_data, country, region, admin_id)
+custom_routes (id, account_id, name, gpx_data, status, is_library_clone, source_library_id, created_at, updated_at)
+custom_waypoints (id, route_id, type, name, sms_code, lat, lng, elevation, order_index, created_at)
+route_library (id, name, description, gpx_data, country, region, difficulty_grade, distance_km, typical_days, is_active, created_at, updated_at)
 ```
 
 ### Success Criteria
 
 - GPX uploads parse and display correctly
 - User can add/edit/delete waypoints
-- SMS codes auto-generate from names
+- SMS codes auto-generate from names (unique across system)
 - Draft routes save and load
 - Library routes clone correctly
-- Map works on mobile
+- Map works on mobile with cooperative gestures
 
 ### Dependencies
 
@@ -224,6 +249,8 @@ route_library (id, name, description, gpx_data, country, region, admin_id)
 
 - GPX format variations
 - Mitigation: support common variants, graceful error handling
+- MapLibre SSR issues
+- Mitigation: dynamic import with ssr: false
 
 ---
 
@@ -415,4 +442,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-19 after Phase 2 planning*
+*Last updated: 2026-01-19 after Phase 3 planning*
