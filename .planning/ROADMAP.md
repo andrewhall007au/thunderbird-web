@@ -86,13 +86,13 @@ Plans:
 
 ## Phase 2: Payments
 
-**Status:** In Progress (2026-01-19)
+**Status:** Complete (2026-01-19)
 
 **Goal:** Users can purchase access and manage balance
 
 **Requirements covered:** PAY-01 through PAY-12
 
-**Plans:** 6 plans in 4 waves (5/6 complete)
+**Plans:** 6 plans in 4 waves (6/6 complete)
 
 Plans:
 - [x] 02-01-PLAN.md - Payment database models and country SMS pricing (Wave 1) (completed 2026-01-19)
@@ -100,7 +100,7 @@ Plans:
 - [x] 02-03-PLAN.md - Payment API router and Stripe webhook handler (Wave 2) (completed 2026-01-19)
 - [x] 02-04-PLAN.md - Order confirmation email service (Wave 3) (completed 2026-01-19)
 - [x] 02-05-PLAN.md - Stored card top-ups and SMS BUY command (Wave 3) (completed 2026-01-19)
-- [ ] 02-06-PLAN.md - SMS cost verification against Twilio (Wave 4)
+- [x] 02-06-PLAN.md - SMS cost verification against Twilio (Wave 4) (completed 2026-01-19)
 
 ### Wave Structure
 
@@ -113,17 +113,17 @@ Plans:
 
 ### Deliverables
 
-- [ ] Stripe Checkout integration ($29.99 purchase)
-- [ ] Dynamic pricing system (RRP $49.99, configurable launch/sale prices)
-- [ ] Discount code support with stacking
-- [ ] Order confirmation email with SMS number
-- [ ] User balance tracking
-- [ ] Stored card for one-click top-ups
-- [ ] SMS-based top-up ("BUY $10" command)
-- [ ] Low balance warning at $2
-- [ ] Country-specific SMS cost tables (8 countries)
-- [ ] Variable segments per $10 (80% margin)
-- [ ] Cost verification against Twilio actuals
+- [x] Stripe Checkout integration ($29.99 purchase)
+- [x] Dynamic pricing system (RRP $49.99, configurable launch/sale prices)
+- [x] Discount code support with stacking
+- [x] Order confirmation email with SMS number
+- [x] User balance tracking
+- [x] Stored card for one-click top-ups
+- [x] SMS-based top-up ("BUY $10" command)
+- [x] Low balance warning at $2
+- [x] Country-specific SMS cost tables (8 countries)
+- [x] Variable segments per $10 (80% margin)
+- [x] Cost verification against Twilio actuals
 
 ### Key Files
 
