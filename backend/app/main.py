@@ -639,8 +639,29 @@ async def complete_user_registration(session):
             trail_name=session.trail_name
         )
         logger.info(f"User registered: {PhoneUtils.mask(session.phone)} ({session.trail_name}) on {session.route_name}")
+
+        # Notify admin of new registration
+        await notify_admin_new_registration(session.trail_name, session.route_name)
     except Exception as e:
         logger.error(f"Failed to save user registration: {e}")
+
+
+async def notify_admin_new_registration(trail_name: str, route_name: str):
+    """Send SMS to admin when a new user registers."""
+    import os
+    admin_phone = os.environ.get("ADMIN_PHONE", "+61410663673")
+
+    try:
+        sms_service = get_sms_service()
+        await sms_service.send_message(
+            to=admin_phone,
+            body=f"{trail_name} just registered for Thunderbird on {route_name}",
+            command_type="ADMIN",
+            message_type="admin_notification"
+        )
+        logger.info(f"Admin notified of new registration: {trail_name}")
+    except Exception as e:
+        logger.error(f"Failed to notify admin of registration: {e}")
 
 
 async def process_command(phone: str, parsed) -> str:
