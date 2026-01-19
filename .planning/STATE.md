@@ -9,22 +9,22 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Foundation phase - database migrations setup complete
+**Current focus:** Foundation phase - modular architecture setup complete
 
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase (01-01 complete)
 Status: In progress
-Last activity: 2026-01-19 - Completed 01-02-PLAN.md
+Last activity: 2026-01-19 - Completed 01-01-PLAN.md
 
-Progress: ██░░░░░░░░ 6%
+Progress: ██░░░░░░░░ 8%
 
 ## Phase Status
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 1 | Foundation | In progress | 1/4 plans |
+| 1 | Foundation | In progress | 2/4 plans |
 | 2 | Payments | Not started | 0/12 requirements |
 | 3 | Route Creation | Not started | 0/12 requirements |
 | 4 | User Flows | Not started | 0/9 requirements |
@@ -35,6 +35,9 @@ Progress: ██░░░░░░░░ 6%
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-19 | Router-per-domain organization | webhook.py, admin.py, api.py for clear separation |
+| 2026-01-19 | Service stubs with dataclasses + NotImplementedError | Typed interfaces for Phase 2-6 development |
+| 2026-01-19 | Singleton factory pattern for services | get_*_service() functions for consistent access |
 | 2026-01-19 | Fork model (not multi-tenant) | Simpler architecture, evolves independently |
 | 2026-01-19 | $29.99 launch, $49.99 RRP | Dynamic pricing with admin configuration |
 | 2026-01-19 | Discount codes stack with launch pricing | Aggressive growth strategy |
@@ -57,22 +60,33 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-19 08:43Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-01-19 08:49Z
+Stopped at: Completed 01-01-PLAN.md (Modular architecture setup)
 Resume file: None
 
 ## Session Handoff
 
-**What was done:**
-- Alembic migrations initialized with SQLite batch mode
-- Initial schema migration created (users, safecheck_contacts, message_log)
-- database.py refactored to work with Alembic (with legacy fallback)
+**What was done (01-01):**
+- Extracted monolithic main.py (1685 lines) into modular routers
+- Created webhook.py (768 lines), admin.py (332 lines), api.py (300 lines)
+- main.py now 361 lines (scheduler + lifespan only)
+- Created service stubs: payments.py, route_builder.py, affiliates.py, weather_intl.py
+- Updated README with new architecture documentation
 - All 280 tests pass
 
 **What's next:**
-1. Execute 01-03-PLAN.md (accounts table and authentication)
-2. Continue through remaining Phase 1 plans
-3. Phases 2 & 3 can run in parallel after Phase 1
+1. Execute remaining Phase 1 plans (01-03, 01-04)
+2. Phase 2 (Payments) and Phase 3 (Route Creation) can run in parallel after Phase 1
+3. Service stubs ready for Phase 2-6 implementation
+
+**Key files created:**
+- `backend/app/routers/webhook.py` - SMS command processing
+- `backend/app/routers/admin.py` - Admin dashboard
+- `backend/app/routers/api.py` - Public API endpoints
+- `backend/app/services/payments.py` - Stripe integration stub (Phase 2)
+- `backend/app/services/route_builder.py` - GPX/waypoint stub (Phase 3)
+- `backend/app/services/affiliates.py` - Partner program stub (Phase 5)
+- `backend/app/services/weather_intl.py` - Multi-country weather stub (Phase 6)
 
 **Key risks to monitor:**
 - SMS margin erosion across countries (verify Twilio rates)
