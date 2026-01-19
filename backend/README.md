@@ -2,17 +2,17 @@
 
 SMS-based weather forecast service for multi-day hiking trails in Tasmania.
 
-**Version:** 2.4.0  
+**Version:** 3.0.0
 **Spec:** [THUNDERBIRD_SPEC_v2.4.md](../docs/THUNDERBIRD_SPEC_v2.4.md)
 
 ## Features
 
-- 🌤️ BOM weather forecasts with elevation adjustment
-- 📱 SMS delivery via Twilio (or Cellcast)
-- 🏔️ Route-specific forecasts (Western Arthurs, Overland Track)
-- ⚡ Danger rating system (ice, wind, cloud, precip, thunder)
-- 📍 Daily position check-ins with SafeCheck alerts
-- 🧪 LIVETEST mode for accelerated testing
+- BOM weather forecasts with elevation adjustment
+- SMS delivery via Twilio (or Cellcast)
+- Route-specific forecasts (Western Arthurs, Overland Track, + 4 more)
+- Danger rating system (ice, wind, cloud, precip, thunder)
+- Daily position check-ins with SafeCheck alerts
+- LIVETEST mode for accelerated testing
 
 ## Quick Start
 
@@ -35,39 +35,83 @@ uvicorn app.main:app --reload
 
 ```
 backend/
-├── app/
-│   ├── main.py              # FastAPI application
-│   ├── models/
-│   │   └── database.py      # SQLAlchemy models
-│   └── services/
-│       ├── bom.py           # BOM weather API
-│       ├── sms.py           # Twilio SMS
-│       ├── formatter.py     # SMS message formatting
-│       ├── commands.py      # SMS command parser
-│       └── routes.py        # Route configuration loader
-├── config/
-│   ├── settings.py          # Application settings
-│   └── routes/              # Route JSON configs
-│       ├── western_arthurs_ak.json
-│       └── overland_track.json
-├── scripts/
-│   ├── init_db.py           # Database setup
-│   ├── push_morning.py      # 6 AM forecast push
-│   ├── send_checkins.py     # 5:30 PM check-in requests
-│   └── push_evening.py      # 6 PM forecast push
-├── tests/
-│   └── test_services.py     # Pytest tests (32 passing)
-├── requirements.txt
-└── .env.example
+app/
+    main.py              # FastAPI application (lifecycle + scheduler)
+    routers/             # API route modules
+        __init__.py
+        webhook.py       # /webhook/* - Twilio SMS handlers
+        admin.py         # /admin/* - Admin dashboard
+        api.py           # /api/* - Public API endpoints
+    models/
+        database.py      # SQLite user store
+    services/
+        # Core services
+        bom.py           # BOM weather API client
+        sms.py           # Twilio SMS sending
+        formatter.py     # SMS message formatting
+        commands.py      # SMS command parser
+        routes.py        # Route configuration loader
+        onboarding.py    # User registration flow
+        forecast.py      # Forecast generation
+        pricing.py       # SMS cost calculations
+        danger.py        # Danger rating calculator
+        admin.py         # Admin interface rendering
+        safecheck.py     # Emergency contact alerts
+
+        # Future phase stubs
+        payments.py      # Phase 2: Stripe integration
+        route_builder.py # Phase 3: Custom route creation
+        affiliates.py    # Phase 5: Partner program
+        weather_intl.py  # Phase 6: Multi-country weather
+config/
+    settings.py          # Pydantic application settings
+    routes/              # Route JSON configurations
+        western_arthurs_ak.json
+        western_arthurs_full.json
+        overland_track.json
+        eastern_arthurs.json
+        federation_peak.json
+        combined_arthurs.json
+scripts/
+    init_db.py           # Database setup
+    push_morning.py      # 6 AM forecast push
+    push_evening.py      # 6 PM forecast push
+    cost_monitor.py      # SMS cost tracking
+tests/
+    conftest.py          # Pytest fixtures
+    test_validation.py   # Main validation tests (100 tests)
+    test_services.py     # Service unit tests
+    test_v3_*.py         # v3 feature tests
 ```
 
 ## API Endpoints
 
+### Health
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/health` | Service health check |
+
+### Webhook (Twilio)
+| Method | Path | Description |
+|--------|------|-------------|
 | POST | `/webhook/sms/inbound` | Twilio SMS webhook |
+
+### Admin (Password Protected)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/admin` | Admin dashboard |
+| POST | `/admin/login` | Admin login |
+| POST | `/admin/register` | Register beta user |
+| POST | `/admin/delete/{phone}` | Delete user |
+| POST | `/admin/push/{phone}` | Push forecast to user |
+| POST | `/admin/test-sms` | Send test SMS |
+| GET | `/admin/api/grouping-stats` | Grouping statistics JSON |
+
+### Public API
+| Method | Path | Description |
+|--------|------|-------------|
 | POST | `/api/forecast/push` | Trigger forecast push |
+| POST | `/api/forecast/test-push/{phone}` | Test push to specific user |
 | GET | `/api/user/{phone}/status` | User subscription status |
 | POST | `/api/user/{phone}/position` | Update user position |
 | GET | `/api/routes` | List available routes |
@@ -75,33 +119,35 @@ backend/
 | GET | `/api/route/{route_id}/cells` | BOM cells for route |
 | GET | `/api/forecast/{route_id}/{cell_id}` | Cell forecast |
 
-## SMS Commands
+## SMS Commands (v3.0)
 
 | Command | Action |
 |---------|--------|
 | START | Begin registration |
 | STOP | Cancel service |
 | HELP | Show commands |
-| STATUS | Subscription details |
-| DELAY | Weather delay (+1 day) |
-| EXTEND | Extend trip (+1 day) |
-| RESEND | Resend last forecast |
 | KEY | Column legend |
-| ALERTS | BOM warnings |
-| [CAMP] | Check in (e.g., LAKEO) |
+| CAST {code} | 12hr hourly forecast |
+| CAST24 {code} | 24hr hourly forecast |
+| CAST7 {code} | 7-day forecast for location |
+| CAST7 CAMPS | 7-day all camps (grouped) |
+| CAST7 PEAKS | 7-day all peaks (grouped) |
+| CHECKIN {code} | Check in at camp |
+| SAFE +61... Name | Add SafeCheck contact |
+| SAFELIST | List contacts |
+| SAFEDEL +61... | Remove contact |
+| ALERTS ON/OFF | Toggle BOM alerts |
+| ROUTE | Show route info |
 
-## Cron Schedule (AEST/AEDT)
+## Scheduled Jobs
 
-```cron
-# Morning forecast
-0 6 * * * python scripts/push_morning.py
+APScheduler runs these jobs in the FastAPI lifespan:
 
-# Check-in request
-30 17 * * * python scripts/send_checkins.py
-
-# Evening forecast
-0 18 * * * python scripts/push_evening.py
-```
+| Time | Job | Description |
+|------|-----|-------------|
+| 6:00 AM | Morning Push | Hourly forecast for today |
+| 6:00 PM | Evening Push | 7-day outlook |
+| :30 past hour | Overdue Check | Alert SafeCheck contacts |
 
 ## Testing
 
@@ -111,6 +157,8 @@ pytest tests/ -v
 
 # Run with coverage
 pytest tests/ -v --cov=app --cov-report=term-missing
+
+# Current: 280 passed, 6 skipped, 1 xfailed
 ```
 
 ## BOM Grid System
@@ -120,17 +168,37 @@ BOM cells are calculated from coordinates:
 ```python
 row = int((-39.12 - lat) / 0.02)
 col = int((lon - 142.75) / 0.03)
-# Example: Lake Oberon (-43.1486, 146.2722) → Cell 201-117
+# Example: Lake Oberon (-43.1486, 146.2722) -> Cell 201-117
 ```
 
 ## Environment Variables
 
 See `.env.example` for all required variables:
 
-- `DATABASE_URL` - PostgreSQL connection string
+- `DATABASE_URL` - SQLite/PostgreSQL connection string
 - `TWILIO_*` - Twilio credentials
-- `BOM_API_KEY` - BOM API key
 - `MOCK_BOM_API` - Use mock forecasts for testing
+- `ADMIN_PASSWORD` - Admin dashboard password
+- `LOG_LEVEL` - Logging level (INFO, DEBUG)
+
+## Architecture Notes
+
+### Router Modules
+
+Routes are organized into logical APIRouter modules:
+
+- `webhook.py`: SMS command processing, onboarding flow, SafeCheck notifications
+- `admin.py`: Dashboard, user management, manual push triggers
+- `api.py`: Public route/forecast APIs, health checks
+
+### Service Stubs
+
+Phase 2-6 services are stubbed out with:
+- Typed dataclasses for data models
+- Singleton factory functions
+- NotImplementedError placeholders with phase documentation
+
+This enables parallel development and clear interface contracts.
 
 ## License
 
