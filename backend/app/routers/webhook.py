@@ -863,11 +863,13 @@ async def handle_checkout_completed(session):
     1. Update order status to completed
     2. Save Stripe customer ID to account (for future charges)
     3. Add credits to balance
-    4. Trigger confirmation email (Plan 04)
+    4. Send confirmation email (PAY-05)
     """
     from app.services.balance import get_balance_service
+    from app.services.email import send_order_confirmation
     from app.models.payments import order_store
     from app.models.account import account_store
+    from config.sms_pricing import get_segments_per_topup, get_country_from_phone
 
     metadata = session.get("metadata", {}) or {}
     account_id_str = metadata.get("account_id")
@@ -902,7 +904,7 @@ async def handle_checkout_completed(session):
         account_store.update_stripe_customer_id(account_id, stripe_customer_id)
         logger.info(f"Saved Stripe customer ID for account {account_id}")
 
-    # 4. Add credits to balance
+    # 4. Add credits to balance (BEFORE email - payment fulfillment is critical)
     balance_service = get_balance_service()
     description = "Initial purchase" if purchase_type == "initial_access" else "Top-up"
     balance_service.add_credits(
@@ -914,8 +916,35 @@ async def handle_checkout_completed(session):
 
     logger.info(f"Credits added: {order.amount_cents} cents to account {account_id}")
 
-    # 5. Trigger confirmation email (implemented in Plan 04)
-    # await send_order_confirmation(account_id, order_id)
+    # 5. Send confirmation email (PAY-05)
+    # Email failure does NOT affect payment success - logged but not raised
+    account = account_store.get_by_id(account_id)
+    if account and account.email:
+        try:
+            # Get SMS number (the Twilio number users text)
+            sms_number = settings.TWILIO_PHONE_NUMBER or "+1234567890"
+
+            # Estimate segments based on country (default to US)
+            country = get_country_from_phone(account.phone) if account.phone else "US"
+            # For initial purchase, estimate based on amount paid
+            # $10 top-up gives segments_per_topup, scale accordingly
+            segments = int((order.amount_cents / 1000) * get_segments_per_topup(country))
+
+            email_result = await send_order_confirmation(
+                to_email=account.email,
+                sms_number=sms_number,
+                amount_paid_cents=order.amount_cents,
+                segments_received=segments
+            )
+
+            if email_result.success:
+                logger.info(f"Confirmation email sent to {account.email}")
+            else:
+                # Log but don't fail - payment already succeeded
+                logger.warning(f"Confirmation email failed: {email_result.error}")
+        except Exception as e:
+            # Catch-all to ensure email issues never break payment flow
+            logger.error(f"Email send error (non-fatal): {e}")
 
 
 async def handle_payment_succeeded(payment_intent):
