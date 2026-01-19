@@ -306,6 +306,125 @@ class PaymentService:
             logger.error(f"Error retrieving session {session_id}: {e}")
             return None
 
+    async def charge_stored_card(
+        self,
+        account_id: int,
+        amount_cents: int = 1000,  # Default $10
+        description: str = "Top-up"
+    ) -> PaymentResult:
+        """
+        Charge stored card for top-up (off-session payment).
+
+        PAY-07: Web top-up with stored card
+        PAY-08: SMS "BUY $10" command
+
+        Uses PaymentIntent API with saved payment method.
+        Card was saved during initial checkout (setup_future_usage).
+
+        Args:
+            account_id: Account to charge
+            amount_cents: Amount to charge (default $10 = 1000 cents)
+            description: Transaction description
+
+        Returns:
+            PaymentResult with success/error
+        """
+        if not self._stripe_available():
+            return PaymentResult(success=False, error="Stripe not configured")
+
+        # Get account with Stripe customer ID
+        from app.models.account import account_store
+        account = account_store.get_by_id(account_id)
+
+        if not account or not account.stripe_customer_id:
+            return PaymentResult(
+                success=False,
+                error="No payment method on file. Visit thunderbird.app/account to add a card."
+            )
+
+        # Get stored payment method
+        payment_method_id = self.get_stored_payment_method(account.stripe_customer_id)
+        if not payment_method_id:
+            return PaymentResult(
+                success=False,
+                error="No card on file. Add one at thunderbird.app/account"
+            )
+
+        # Create pending order
+        order = order_store.create(
+            account_id=account_id,
+            order_type="top_up",
+            amount_cents=amount_cents,
+            status="pending"
+        )
+
+        try:
+            # Create and confirm payment intent in one call
+            payment_intent = stripe.PaymentIntent.create(
+                amount=amount_cents,
+                currency="usd",
+                customer=account.stripe_customer_id,
+                payment_method=payment_method_id,
+                off_session=True,
+                confirm=True,  # Charge immediately
+                metadata={
+                    "account_id": str(account_id),
+                    "order_id": str(order.id),
+                    "purchase_type": "top_up",
+                    "description": description,
+                }
+            )
+
+            # Update order with payment intent ID
+            order_store.update_payment_intent(order.id, payment_intent.id)
+
+            # Check if payment succeeded immediately
+            if payment_intent.status == "succeeded":
+                # Fulfillment happens via webhook, but we can return success
+                return PaymentResult(
+                    success=True,
+                    transaction_id=payment_intent.id,
+                    order_id=order.id
+                )
+            elif payment_intent.status == "requires_action":
+                # Card requires 3DS - can't complete off-session
+                order_store.update_status(order.id, "failed")
+                return PaymentResult(
+                    success=False,
+                    error="Card requires authentication. Please top up at thunderbird.app/account"
+                )
+            else:
+                order_store.update_status(order.id, "failed")
+                return PaymentResult(
+                    success=False,
+                    error=f"Payment status: {payment_intent.status}"
+                )
+
+        except stripe.error.CardError as e:
+            # Card declined
+            order_store.update_status(order.id, "failed")
+            return PaymentResult(
+                success=False,
+                error=f"Card declined: {e.user_message}"
+            )
+        except stripe.error.StripeError as e:
+            order_store.update_status(order.id, "failed")
+            logger.error(f"Stripe error charging stored card: {e}")
+            return PaymentResult(success=False, error=str(e))
+
+    async def quick_topup_web(self, account_id: int) -> PaymentResult:
+        """
+        One-click web top-up for $10.
+        PAY-07: User can top up $10 blocks via web with stored card.
+
+        Args:
+            account_id: Account to top up
+
+        Returns:
+            PaymentResult with success/error
+        """
+        return await self.charge_stored_card(account_id, 1000, "Web top-up")
+
 
 # Singleton instance
 _payment_service: Optional[PaymentService] = None

@@ -26,6 +26,7 @@ class Account:
         email: Unique email address
         password_hash: Argon2 hashed password
         phone: Optional linked phone number (for connecting to SMS User)
+        stripe_customer_id: Stripe customer ID for stored card payments
         created_at: Account creation timestamp
         updated_at: Last modification timestamp
     """
@@ -33,6 +34,7 @@ class Account:
     email: str
     password_hash: str
     phone: Optional[str] = None
+    stripe_customer_id: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -113,6 +115,7 @@ class AccountStore:
                     email=row["email"],
                     password_hash=row["password_hash"],
                     phone=row["phone"],
+                    stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )
@@ -133,6 +136,7 @@ class AccountStore:
                     email=row["email"],
                     password_hash=row["password_hash"],
                     phone=row["phone"],
+                    stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )
@@ -184,6 +188,7 @@ class AccountStore:
                     email=row["email"],
                     password_hash=row["password_hash"],
                     phone=row["phone"],
+                    stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )

@@ -308,6 +308,26 @@ class OrderStore:
             conn.commit()
             return cursor.rowcount > 0
 
+    def update_payment_intent(self, order_id: int, payment_intent_id: str) -> bool:
+        """
+        Update order with Stripe payment intent ID.
+
+        Args:
+            order_id: Order to update
+            payment_intent_id: Stripe payment intent ID
+
+        Returns:
+            True if updated, False if order not found
+        """
+        now = datetime.utcnow().isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE orders SET stripe_payment_intent_id = ?, updated_at = ? WHERE id = ?",
+                (payment_intent_id, now, order_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
 
 class BalanceStore:
     """SQLite-backed balance tracking."""
