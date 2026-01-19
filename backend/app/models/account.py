@@ -161,6 +161,34 @@ class AccountStore:
             conn.commit()
             return cursor.rowcount > 0
 
+    def get_by_phone(self, phone: str) -> Optional[Account]:
+        """
+        Get account by linked phone number.
+
+        Args:
+            phone: Normalized phone number (+61...)
+
+        Returns:
+            Account if found, None otherwise
+        """
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT * FROM accounts WHERE phone = ?",
+                (phone,)
+            )
+            row = cursor.fetchone()
+
+            if row:
+                return Account(
+                    id=row["id"],
+                    email=row["email"],
+                    password_hash=row["password_hash"],
+                    phone=row["phone"],
+                    created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
+                    updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
+                )
+            return None
+
 
 # Singleton instance
 account_store = AccountStore()
