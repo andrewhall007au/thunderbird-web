@@ -1,11 +1,12 @@
 """
-Twilio SMS webhook handlers.
+Webhook handlers for Twilio SMS and Stripe payments.
 Based on THUNDERBIRD_SPEC_v2.4 Section 12.4
 """
 
 import logging
 import asyncio
 import html
+import json
 from typing import Optional
 
 from fastapi import APIRouter, Request, HTTPException, Header
@@ -13,6 +14,14 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 
 from config.settings import settings
+
+# Stripe import - only initialize if configured
+stripe = None
+try:
+    import stripe as stripe_module
+    stripe = stripe_module
+except ImportError:
+    pass  # Will log warning when used
 from app.services.sms import get_sms_service, PhoneUtils, SMSCostCalculator
 from app.services.commands import CommandParser, CommandType, ResponseGenerator
 from app.services.onboarding import onboarding_manager, OnboardingState
@@ -766,3 +775,186 @@ async def generate_cast7_all_peaks(phone: str) -> str:
     except Exception as e:
         logger.error(f"CAST7 PEAKS error: {e}")
         return "Unable to get forecasts. Please try again."
+
+
+# ============================================================================
+# Stripe Webhook Handler
+# ============================================================================
+
+# Track processed events for idempotency (in production, use Redis/DB)
+_processed_stripe_events: set = set()
+
+
+@router.post("/stripe")
+async def stripe_webhook(request: Request):
+    """
+    Handle Stripe webhook events.
+
+    CRITICAL: This is the ONLY place orders are fulfilled.
+    Never fulfill from success page redirect.
+
+    Events handled:
+    - checkout.session.completed: Initial purchase or top-up completed
+    - payment_intent.succeeded: Off-session payment (SMS top-up)
+    """
+    if stripe is None:
+        logger.error("Stripe library not installed - webhook cannot process")
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+
+    # Verify signature (skip in dev if no secret)
+    if settings.STRIPE_WEBHOOK_SECRET:
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+            )
+        except ValueError:
+            logger.error("Invalid Stripe webhook payload")
+            raise HTTPException(status_code=400, detail="Invalid payload")
+        except stripe.error.SignatureVerificationError:
+            logger.error("Invalid Stripe webhook signature")
+            raise HTTPException(status_code=400, detail="Invalid signature")
+    else:
+        # Dev mode - parse without verification
+        logger.warning("Processing Stripe webhook without signature verification (dev mode)")
+        try:
+            event = stripe.Event.construct_from(
+                json.loads(payload), stripe.api_key
+            )
+        except Exception as e:
+            logger.error(f"Failed to parse Stripe event: {e}")
+            raise HTTPException(status_code=400, detail="Invalid event data")
+
+    # Idempotency check
+    event_id = event.id
+    if event_id in _processed_stripe_events:
+        logger.info(f"Skipping duplicate Stripe event: {event_id}")
+        return {"status": "already_processed"}
+
+    # Handle event types
+    if event.type == "checkout.session.completed":
+        session = event.data.object
+        await handle_checkout_completed(session)
+    elif event.type == "payment_intent.succeeded":
+        payment_intent = event.data.object
+        await handle_payment_succeeded(payment_intent)
+    else:
+        logger.info(f"Unhandled Stripe event type: {event.type}")
+
+    # Mark as processed
+    _processed_stripe_events.add(event_id)
+    # In production: store in Redis with TTL or database
+
+    # Limit in-memory set size to prevent memory leak
+    if len(_processed_stripe_events) > 10000:
+        # Remove oldest entries (convert to list, take last 5000)
+        _processed_stripe_events.clear()
+        logger.info("Cleared processed events set (memory management)")
+
+    return {"status": "success"}
+
+
+async def handle_checkout_completed(session):
+    """
+    Handle successful checkout session.
+
+    1. Update order status to completed
+    2. Save Stripe customer ID to account (for future charges)
+    3. Add credits to balance
+    4. Trigger confirmation email (Plan 04)
+    """
+    from app.services.balance import get_balance_service
+    from app.models.payments import order_store
+    from app.models.account import account_store
+
+    metadata = session.get("metadata", {}) or {}
+    account_id_str = metadata.get("account_id")
+    order_id_str = metadata.get("order_id")
+    purchase_type = metadata.get("purchase_type", "unknown")
+
+    if not account_id_str or not order_id_str:
+        logger.error(f"Checkout session missing metadata: {session.get('id')}")
+        return
+
+    account_id = int(account_id_str)
+    order_id = int(order_id_str)
+    stripe_customer_id = session.get("customer")
+
+    logger.info(f"Checkout completed: order={order_id}, account={account_id}, type={purchase_type}")
+
+    # 1. Get and validate order
+    order = order_store.get_by_id(order_id)
+    if not order:
+        logger.error(f"Order not found: {order_id}")
+        return
+
+    if order.status == "completed":
+        logger.info(f"Order already completed: {order_id}")
+        return
+
+    # 2. Update order status
+    order_store.update_status(order_id, "completed")
+
+    # 3. Save Stripe customer ID for future stored card payments
+    if stripe_customer_id:
+        account_store.update_stripe_customer_id(account_id, stripe_customer_id)
+        logger.info(f"Saved Stripe customer ID for account {account_id}")
+
+    # 4. Add credits to balance
+    balance_service = get_balance_service()
+    description = "Initial purchase" if purchase_type == "initial_access" else "Top-up"
+    balance_service.add_credits(
+        account_id=account_id,
+        amount_cents=order.amount_cents,
+        description=description,
+        order_id=order_id
+    )
+
+    logger.info(f"Credits added: {order.amount_cents} cents to account {account_id}")
+
+    # 5. Trigger confirmation email (implemented in Plan 04)
+    # await send_order_confirmation(account_id, order_id)
+
+
+async def handle_payment_succeeded(payment_intent):
+    """
+    Handle successful off-session payment (SMS BUY command).
+    Similar to checkout but uses payment_intent metadata.
+    """
+    from app.services.balance import get_balance_service
+    from app.models.payments import order_store
+
+    metadata = payment_intent.get("metadata", {}) or {}
+    if not metadata.get("account_id"):
+        logger.debug("Payment intent without account_id metadata - not our payment")
+        return  # Not our payment
+
+    account_id = int(metadata.get("account_id"))
+    order_id_str = metadata.get("order_id")
+
+    if order_id_str:
+        order_id = int(order_id_str)
+
+        # Get order to verify it exists
+        order = order_store.get_by_id(order_id)
+        if not order:
+            logger.error(f"Order not found for payment intent: {order_id}")
+            return
+
+        if order.status == "completed":
+            logger.info(f"Order already completed: {order_id}")
+            return
+
+        order_store.update_status(order_id, "completed")
+
+        balance_service = get_balance_service()
+        amount_cents = payment_intent.get("amount", 0)
+        balance_service.add_credits(
+            account_id=account_id,
+            amount_cents=amount_cents,
+            description="SMS top-up",
+            order_id=order_id
+        )
+        logger.info(f"SMS top-up completed: {amount_cents} cents for account {account_id}")

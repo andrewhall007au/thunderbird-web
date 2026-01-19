@@ -189,6 +189,50 @@ class AccountStore:
                 )
             return None
 
+    def update_stripe_customer_id(self, account_id: int, stripe_customer_id: str) -> bool:
+        """
+        Save Stripe customer ID for stored card payments.
+
+        Called by Stripe webhook when checkout completes.
+        Enables future off-session payments with saved card.
+
+        Args:
+            account_id: Account ID to update
+            stripe_customer_id: Stripe customer ID (cus_xxx)
+
+        Returns:
+            True if updated, False if account not found
+        """
+        now = datetime.utcnow().isoformat()
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE accounts SET stripe_customer_id = ?, updated_at = ? WHERE id = ?",
+                (stripe_customer_id, now, account_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def get_stripe_customer_id(self, account_id: int) -> Optional[str]:
+        """
+        Get Stripe customer ID for an account.
+
+        Args:
+            account_id: Account ID
+
+        Returns:
+            Stripe customer ID if set, None otherwise
+        """
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT stripe_customer_id FROM accounts WHERE id = ?",
+                (account_id,)
+            )
+            row = cursor.fetchone()
+            if row:
+                return row["stripe_customer_id"]
+            return None
+
 
 # Singleton instance
 account_store = AccountStore()
