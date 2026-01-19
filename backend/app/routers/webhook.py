@@ -404,7 +404,8 @@ async def process_command(phone: str, parsed) -> str:
     elif parsed.command_type == CommandType.BUY:
         # Process BUY $10 top-up via stored card
         from app.models.account import account_store
-        from app.services.payments import payment_service
+        from app.services.payments import get_payment_service
+        from app.services.balance import get_balance_service
 
         if not parsed.is_valid:
             return parsed.error_message or "BUY requires an amount.\n\nExample: BUY $10"
@@ -423,21 +424,22 @@ async def process_command(phone: str, parsed) -> str:
 
         # Attempt to charge stored card
         try:
+            payment_service = get_payment_service()
             result = await payment_service.charge_stored_card(
                 account_id=account.id,
                 amount_cents=1000,  # $10.00
                 description="SMS top-up via BUY command"
             )
 
-            if result.get("success"):
-                from app.services.balance import balance_service
+            if result.success:
+                balance_service = get_balance_service()
                 new_balance = balance_service.get_balance(account.id)
                 balance_dollars = new_balance / 100 if new_balance else 0
                 return f"$10 top-up successful!\n\nNew balance: ${balance_dollars:.2f}"
-            elif result.get("requires_action"):
+            elif result.error and "authentication" in result.error.lower():
                 return "Card requires verification.\n\nVisit thunderbird.bot to complete the top-up."
             else:
-                error = result.get("error", "Payment failed")
+                error = result.error or "Payment failed"
                 return f"Top-up failed: {error}\n\nVisit thunderbird.bot to retry."
         except Exception as e:
             logger.error(f"BUY command failed for {PhoneUtils.mask(phone)}: {e}")
