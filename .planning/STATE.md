@@ -9,23 +9,23 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Payment foundation complete (models, pricing, tables), ready for Stripe integration
+**Current focus:** Payment services implemented, ready for API router and Stripe webhooks
 
 ## Current Position
 
 Phase: 2 of 6 (Payments)
-Plan: 1 of 6 in current phase
+Plan: 2 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 02-01-PLAN.md
+Last activity: 2026-01-19 - Completed 02-02-PLAN.md
 
-Progress: █████░░░░░ 20%
+Progress: ██████░░░░ 25%
 
 ## Phase Status
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
 | 1 | Foundation | Complete | 4/4 plans |
-| 2 | Payments | In progress | 1/6 plans |
+| 2 | Payments | In progress | 2/6 plans |
 | 3 | Route Creation | Not started | 0/? plans |
 | 4 | User Flows | Not started | 0/? plans |
 | 5 | Affiliates | Not started | 0/? plans |
@@ -35,14 +35,12 @@ Progress: █████░░░░░ 20%
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-19 | PricingConfig as class constants | Admin-configurable pricing without code changes |
+| 2026-01-19 | Graceful degradation without Stripe | Services return clear error, tests run without credentials |
+| 2026-01-19 | setup_future_usage: off_session | Save card during checkout for top-ups |
 | 2026-01-19 | Hundredths of cent for SMS pricing | Sub-cent precision without floating point |
 | 2026-01-19 | Ceiling rounding on SMS costs | Protects 80% margin on every transaction |
 | 2026-01-19 | Canadian area code detection | Distinguishes +1 CA from +1 US for pricing |
-| 2026-01-19 | Reuse PhoneUtils for normalization | Phone linking uses existing sms.py utility |
-| 2026-01-19 | Phone lookup requires auth | Prevents enumeration attacks |
-| 2026-01-19 | Argon2 via pwdlib (not bcrypt) | Modern password hashing, faster and more secure |
-| 2026-01-19 | Account model separate from User | Web login (email/pwd) vs SMS hikers (phone) |
-| 2026-01-19 | Fork model (not multi-tenant) | Simpler architecture, evolves independently |
 | 2026-01-19 | $29.99 launch, $49.99 RRP | Dynamic pricing with admin configuration |
 
 ## Blockers
@@ -59,34 +57,32 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-19 10:17Z
-Stopped at: Completed 02-01-PLAN.md (Payment models and SMS pricing)
+Last session: 2026-01-19 10:22Z
+Stopped at: Completed 02-02-PLAN.md (Payment services)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (02-01):**
-- Payment model dataclasses: Order, AccountBalance, DiscountCode, Transaction, CountrySMSCost
-- Store classes: OrderStore, BalanceStore, DiscountCodeStore
-- SMS pricing config for 8 countries (80% margin maintained)
-- Phone-to-country detection for E.164 numbers
-- Alembic migration for payment tables
-- stripe_customer_id added to accounts table
+**What was done (02-02):**
+- DynamicPricingService with launch/RRP/sale modes
+- BalanceService for atomic balance tracking
+- PaymentService with Stripe checkout integration
+- PricingConfig and Stripe settings in config
+- Card saving via setup_future_usage
 
 **What's next:**
-1. 02-02-PLAN.md: Dynamic pricing service, balance tracking, Stripe checkout
-2. 02-03-PLAN.md: Payment API router and Stripe webhook handler
-3. Continue through Wave 2-4 of Phase 2
+1. 02-03-PLAN.md: Payment API router and Stripe webhook handler
+2. Continue through Wave 2-4 of Phase 2
 
 **Key files created:**
-- `backend/app/models/payments.py` - Payment dataclasses and stores
-- `backend/config/sms_pricing.py` - Country SMS costs
-- `alembic/versions/842752b6b27d_add_payment_tables.py` - Migration
+- `backend/app/services/pricing_dynamic.py` - Dynamic pricing service
+- `backend/app/services/balance.py` - Balance tracking service
+- `backend/app/services/payments.py` - Updated with Stripe checkout
 
 **Key risks to monitor:**
-- SMS margin erosion across countries (verify Twilio rates before launch)
-- Stripe webhook reliability (implement idempotency)
+- Stripe webhook reliability (implement idempotency in Plan 03)
 - Off-session payment failures (handle 3DS requirements)
+- Need to install stripe-python package before deployment
 
 ---
 *State initialized: 2026-01-19*
