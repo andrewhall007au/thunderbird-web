@@ -203,3 +203,50 @@ export async function reorderWaypoints(
     body: JSON.stringify({ waypoint_ids: waypointIds })
   });
 }
+
+// ============================================================================
+// Route Library operations
+// ============================================================================
+
+export interface LibraryRouteResponse {
+  id: number;
+  name: string;
+  description?: string;
+  country?: string;
+  region?: string;
+  difficulty_grade?: number;
+  distance_km?: number;
+  typical_days?: string;
+}
+
+export interface LibraryRouteDetailResponse extends LibraryRouteResponse {
+  waypoint_preview: Array<{ name: string; lat: number; lng: number }>;
+  track_geojson?: GeoJSON.Feature;
+}
+
+/**
+ * List all active library routes.
+ * Public endpoint - no auth required.
+ */
+export async function getLibraryRoutes(country?: string): Promise<LibraryRouteResponse[]> {
+  const url = country
+    ? `/api/library?country=${encodeURIComponent(country)}`
+    : '/api/library';
+  return apiRequest(url);
+}
+
+/**
+ * Get detailed library route info including track preview.
+ * Public endpoint - no auth required.
+ */
+export async function getLibraryRoute(id: number): Promise<LibraryRouteDetailResponse> {
+  return apiRequest(`/api/library/${id}`);
+}
+
+/**
+ * Clone a library route to user's account.
+ * Requires authentication.
+ */
+export async function cloneLibraryRoute(id: number): Promise<{ success: boolean; route_id: number; message: string }> {
+  return apiRequest(`/api/library/${id}/clone`, { method: 'POST' });
+}
