@@ -86,16 +86,16 @@ Plans:
 
 ## Phase 2: Payments
 
-**Status:** Planned (2026-01-19)
+**Status:** In Progress (2026-01-19)
 
 **Goal:** Users can purchase access and manage balance
 
 **Requirements covered:** PAY-01 through PAY-12
 
-**Plans:** 6 plans in 4 waves
+**Plans:** 6 plans in 4 waves (1/6 complete)
 
 Plans:
-- [ ] 02-01-PLAN.md - Payment database models and country SMS pricing (Wave 1)
+- [x] 02-01-PLAN.md - Payment database models and country SMS pricing (Wave 1) (completed 2026-01-19)
 - [ ] 02-02-PLAN.md - Dynamic pricing service, balance tracking, and Stripe checkout (Wave 2)
 - [ ] 02-03-PLAN.md - Payment API router and Stripe webhook handler (Wave 2)
 - [ ] 02-04-PLAN.md - Order confirmation email service (Wave 3)
