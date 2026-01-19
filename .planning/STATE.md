@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Phase 3 - Route Creation (map editor complete, waypoint management next)
+**Current focus:** Phase 3 - Route Creation (waypoint management complete, save integration next)
 
 ## Current Position
 
 Phase: 3 of 6 (Route Creation)
-Plan: 3 of ? in current phase
+Plan: 4 of ? in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 03-03-PLAN.md
+Last activity: 2026-01-19 - Completed 03-04-PLAN.md
 
-Progress: ██████████░ 60%
+Progress: ██████████░░ 65%
 
 ## Phase Status
 
@@ -26,7 +26,7 @@ Progress: ██████████░ 60%
 |-------|------|--------|----------|
 | 1 | Foundation | Complete | 4/4 plans |
 | 2 | Payments | Complete | 6/6 plans |
-| 3 | Route Creation | In progress | 3/? plans |
+| 3 | Route Creation | In progress | 4/? plans |
 | 4 | User Flows | Not started | 0/? plans |
 | 5 | Affiliates | Not started | 0/? plans |
 | 6 | International Weather | Not started | 0/? plans |
@@ -35,6 +35,8 @@ Progress: ██████████░ 60%
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-19 | SMS code shows 3 chars in pin | Quick identification while remaining compact |
+| 2026-01-19 | Selected waypoint shows name label | Context below pin when selected |
 | 2026-01-19 | OpenFreeMap tiles (no API key) | Free map tiles for MapLibre, OpenStreetMap data |
 | 2026-01-19 | cooperativeGestures: true | Prevents mobile scroll hijacking, two-finger zoom |
 | 2026-01-19 | Client-side GPX preview | Use @we-gold/gpxjs for instant preview, server validates on save |
@@ -56,33 +58,33 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-19 11:20Z
-Stopped at: Completed 03-03-PLAN.md (Frontend map infrastructure)
+Last session: 2026-01-19 11:25Z
+Stopped at: Completed 03-04-PLAN.md (Waypoint management UI)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (03-03):**
-- MapEditor component with MapLibre GL JS and OpenFreeMap tiles
-- RouteTrack component for GeoJSON line display
-- GPXUpload component with react-dropzone drag-drop
-- Create route page at /create with dynamic map import
-- Client-side GPX parsing with @we-gold/gpxjs
+**What was done (03-04):**
+- WaypointMarker component with color-coded draggable pins
+- WaypointEditor for editing name/type, shows auto-generated SMS code
+- WaypointList sidebar showing all waypoints
+- Full waypoint workflow in /create page
+- Click-to-add, drag-to-move, delete functionality
 
 **Phase 3 Progress - Route Creation:**
 1. ROUT-01: Database models for routes/waypoints - COMPLETE (03-01)
 2. ROUT-01, ROUT-05, ROUT-06, ROUT-09: Backend API for routes - COMPLETE (03-02)
 3. ROUT-01, ROUT-02, ROUT-12: Frontend map infrastructure - COMPLETE (03-03)
+4. ROUT-03, ROUT-04, ROUT-05, ROUT-06, ROUT-07, ROUT-08: Waypoint management UI - COMPLETE (03-04)
 
 **What's next:**
-- Plan 03-04: Waypoint management UI
+- Plan 03-05: Route save and trip planning
 - Integration of frontend with backend API
 
 **Key files created this plan:**
-- `app/create/page.tsx`
-- `app/components/map/MapEditor.tsx`
-- `app/components/map/RouteTrack.tsx`
-- `app/components/upload/GPXUpload.tsx`
+- `app/components/map/WaypointMarker.tsx`
+- `app/components/waypoint/WaypointEditor.tsx`
+- `app/components/waypoint/WaypointList.tsx`
 
 ---
 *State initialized: 2026-01-19*
