@@ -292,49 +292,61 @@ function CreateRouteContent() {
 
   const selectedWaypoint = waypoints.find(w => w.id === selectedWaypointId) || null;
 
+  // Determine current step
+  const currentStep = !trackGeojson ? 1 : waypoints.length === 0 ? 2 : 3;
+
+  // Step indicator component
+  const StepIndicator = ({ step, title, isActive, isComplete }: {
+    step: number;
+    title: string;
+    isActive: boolean;
+    isComplete: boolean;
+  }) => (
+    <div className="flex items-center gap-3">
+      <span className={`
+        flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg
+        ${isComplete ? 'bg-green-600 text-white' : isActive ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'}
+      `}>
+        {isComplete ? '✓' : step}
+      </span>
+      <span className={`text-lg font-medium ${isActive || isComplete ? 'text-white' : 'text-gray-500'}`}>
+        {title}
+      </span>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="text-3xl font-bold mb-8">
           {currentRouteId ? 'Edit Route' : 'Create Your Route'}
         </h1>
-        <p className="text-gray-400 mb-8">
-          Upload a GPX file from your favorite hiking app, then add waypoints for weather forecasts.
-        </p>
 
-        {!trackGeojson && !isLoading && (
+        {/* Persistent Step Indicators */}
+        <div className="mb-8 space-y-3">
+          <StepIndicator step={1} title="Upload GPX File" isActive={currentStep === 1} isComplete={currentStep > 1} />
+          <StepIndicator step={2} title="Set Waypoints on Map" isActive={currentStep === 2} isComplete={currentStep > 2} />
+          <StepIndicator step={3} title="Finalize Route" isActive={currentStep === 3} isComplete={false} />
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
+            {error}
+          </div>
+        )}
+
+        {/* STEP 1: GPX Upload */}
+        {currentStep === 1 && !isLoading && (
           <div className="space-y-6">
-            {/* Step indicators */}
             <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-xl font-semibold text-white mb-4">How it works</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">1</span>
-                  <div>
-                    <h3 className="text-lg font-medium text-white">Upload GPX File</h3>
-                    <p className="text-gray-400 text-sm">Import your route from any hiking app</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">2</span>
-                  <div>
-                    <h3 className="text-lg font-medium text-white">Set Waypoints on Map</h3>
-                    <p className="text-gray-400 text-sm">Click to add camps, peaks, and POIs</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">3</span>
-                  <div>
-                    <h3 className="text-lg font-medium text-white">Finalize Route</h3>
-                    <p className="text-gray-400 text-sm">Save and get your SMS weather codes</p>
-                  </div>
-                </div>
-              </div>
+              <h2 className="text-xl font-semibold text-white mb-2">Upload your route</h2>
+              <p className="text-gray-400 mb-6">
+                Export a GPX file from your favorite hiking app (Gaia GPS, AllTrails, Caltopo, etc.)
+              </p>
+              <GPXUpload onUpload={handleGPXUpload} isLoading={isLoading} />
             </div>
 
-            <GPXUpload onUpload={handleGPXUpload} isLoading={isLoading} />
-
-            <p className="text-center text-gray-400">
+            <p className="text-gray-400">
               Or <a href="/library" className="text-blue-400 hover:underline">browse the route library</a> to start with a popular trail
             </p>
           </div>
@@ -347,14 +359,10 @@ function CreateRouteContent() {
           </div>
         )}
 
-        {error && (
-          <div className="mt-4 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
-            {error}
-          </div>
-        )}
-
-        {trackGeojson && (
-          <div className="mt-6 space-y-6">
+        {/* STEP 2: Set Waypoints */}
+        {currentStep >= 2 && trackGeojson && (
+          <div className="space-y-6">
+            {/* Route name input */}
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
               <div className="flex-1 max-w-md">
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -397,60 +405,76 @@ function CreateRouteContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Map takes 2 columns on large screens */}
-              <div className="lg:col-span-2">
-                <h2 className="text-xl font-semibold mb-4">Your Route</h2>
-                <MapEditor
-                  trackGeojson={trackGeojson}
-                  waypoints={waypoints}
-                  selectedWaypointId={selectedWaypointId}
-                  onMapClick={handleMapClick}
-                  onWaypointSelect={setSelectedWaypointId}
-                  onWaypointDrag={handleWaypointDrag}
-                  onWaypointDelete={handleWaypointDelete}
-                />
-                <p className="mt-2 text-sm text-gray-500">
-                  Click on the map to add waypoints. Drag to reposition. Press Delete to remove.
-                </p>
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-6">
-                <WaypointList
-                  waypoints={waypoints}
-                  selectedId={selectedWaypointId}
-                  onSelect={setSelectedWaypointId}
-                />
-
-                <WaypointEditor
-                  waypoint={selectedWaypoint}
-                  onUpdate={handleWaypointUpdate}
-                  onDelete={handleWaypointDelete}
-                  onSave={handleSave}
-                  onClose={() => setSelectedWaypointId(null)}
-                />
-              </div>
-            </div>
-
-            {/* Finalize button */}
-            <div className="mt-8 flex flex-col items-center">
-              <button
-                onClick={handleSave}
-                disabled={isSaving || !isDirty}
-                className={`
-                  px-8 py-3 rounded-lg font-semibold text-lg transition-colors
-                  ${isSaving || !isDirty
-                    ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                    : 'bg-green-600 text-white hover:bg-green-500'}
-                `}
-              >
-                {isSaving ? 'Saving...' : 'Finalize Route'}
-              </button>
-              <p className="mt-2 text-sm text-gray-500">
-                (don&apos;t worry you can edit it at any time)
+            {/* Map and waypoint editing */}
+            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+              <h2 className="text-xl font-semibold text-white mb-2">Click the map to add waypoints</h2>
+              <p className="text-gray-400 mb-4">
+                Add camps, peaks, and points of interest where you want weather forecasts
               </p>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Map takes 2 columns on large screens */}
+                <div className="lg:col-span-2">
+                  <MapEditor
+                    trackGeojson={trackGeojson}
+                    waypoints={waypoints}
+                    selectedWaypointId={selectedWaypointId}
+                    onMapClick={handleMapClick}
+                    onWaypointSelect={setSelectedWaypointId}
+                    onWaypointDrag={handleWaypointDrag}
+                    onWaypointDelete={handleWaypointDelete}
+                  />
+                  <p className="mt-2 text-sm text-gray-500">
+                    Click to add • Drag to move • Select to edit
+                  </p>
+                </div>
+
+                {/* Sidebar */}
+                <div className="space-y-6">
+                  <WaypointList
+                    waypoints={waypoints}
+                    selectedId={selectedWaypointId}
+                    onSelect={setSelectedWaypointId}
+                  />
+
+                  <WaypointEditor
+                    waypoint={selectedWaypoint}
+                    onUpdate={handleWaypointUpdate}
+                    onDelete={handleWaypointDelete}
+                    onSave={handleSave}
+                    onClose={() => setSelectedWaypointId(null)}
+                  />
+                </div>
+              </div>
             </div>
+
+            {/* STEP 3: Finalize - only shows after first waypoint */}
+            {currentStep === 3 && (
+              <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+                <h2 className="text-xl font-semibold text-white mb-2">Finalize your route</h2>
+                <p className="text-gray-400 mb-6">
+                  Save your route to get SMS codes for each waypoint
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={`
+                      px-8 py-3 rounded-lg font-semibold text-lg transition-colors
+                      ${isSaving
+                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-500'}
+                    `}
+                  >
+                    {isSaving ? 'Saving...' : 'Finalize Route'}
+                  </button>
+                  <p className="text-sm text-gray-500">
+                    (don&apos;t worry, you can edit it at any time)
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
