@@ -92,14 +92,14 @@ Plans:
 
 **Requirements covered:** PAY-01 through PAY-12
 
-**Plans:** 6 plans in 4 waves (1/6 complete)
+**Plans:** 6 plans in 4 waves (5/6 complete)
 
 Plans:
 - [x] 02-01-PLAN.md - Payment database models and country SMS pricing (Wave 1) (completed 2026-01-19)
-- [ ] 02-02-PLAN.md - Dynamic pricing service, balance tracking, and Stripe checkout (Wave 2)
-- [ ] 02-03-PLAN.md - Payment API router and Stripe webhook handler (Wave 2)
-- [ ] 02-04-PLAN.md - Order confirmation email service (Wave 3)
-- [ ] 02-05-PLAN.md - Stored card top-ups and SMS BUY command (Wave 3)
+- [x] 02-02-PLAN.md - Dynamic pricing service, balance tracking, and Stripe checkout (Wave 2) (completed 2026-01-19)
+- [x] 02-03-PLAN.md - Payment API router and Stripe webhook handler (Wave 2) (completed 2026-01-19)
+- [x] 02-04-PLAN.md - Order confirmation email service (Wave 3) (completed 2026-01-19)
+- [x] 02-05-PLAN.md - Stored card top-ups and SMS BUY command (Wave 3) (completed 2026-01-19)
 - [ ] 02-06-PLAN.md - SMS cost verification against Twilio (Wave 4)
 
 ### Wave Structure

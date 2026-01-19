@@ -9,23 +9,23 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Order confirmation email complete, ready for SMS pricing display
+**Current focus:** Payment flow complete through top-ups and warnings, ready for cost verification
 
 ## Current Position
 
 Phase: 2 of 6 (Payments)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 02-04-PLAN.md
+Last activity: 2026-01-19 - Completed 02-05-PLAN.md
 
-Progress: ████████░░ 35%
+Progress: ████████░░ 45%
 
 ## Phase Status
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
 | 1 | Foundation | Complete | 4/4 plans |
-| 2 | Payments | In progress | 4/6 plans |
+| 2 | Payments | In progress | 5/6 plans |
 | 3 | Route Creation | Not started | 0/? plans |
 | 4 | User Flows | Not started | 0/? plans |
 | 5 | Affiliates | Not started | 0/? plans |
@@ -35,12 +35,12 @@ Progress: ████████░░ 35%
 
 | Date | Decision | Context |
 |------|----------|---------|
-| 2026-01-19 | Email failure non-blocking | Email errors logged but don't break payment flow |
-| 2026-01-19 | Balance before email | Balance credited BEFORE email attempt (reliability order) |
-| 2026-01-19 | Webhook-only fulfillment | Balance credited only via Stripe webhook, never from success URL |
+| 2026-01-19 | $10 only for SMS top-ups | Simplifies validation, consistent segments |
+| 2026-01-19 | 24-hour cooldown for low balance warnings | Prevents spam while ensuring notification |
+| 2026-01-19 | $2 (200 cents) low balance threshold | Enough for 3-4 texts before empty |
+| 2026-01-19 | Webhook-only fulfillment | Balance credited only via Stripe webhook |
 | 2026-01-19 | In-memory idempotency set | 10k limit with clear, production should use Redis |
 | 2026-01-19 | Stripe customer ID storage | Saved to accounts table for future off-session payments |
-| 2026-01-19 | PricingConfig as class constants | Admin-configurable pricing without code changes |
 
 ## Blockers
 
@@ -56,36 +56,31 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-19 10:33Z
-Stopped at: Completed 02-04-PLAN.md (Order confirmation email)
+Last session: 2026-01-19 10:32Z
+Stopped at: Completed 02-05-PLAN.md (Stored card top-ups and SMS BUY command)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (02-04):**
-- SendGrid email service with EmailResult dataclass
-- Order confirmation email with SMS number and quick start link
-- Dynamic template support with plain text fallback
-- Webhook integration - email sent after checkout.session.completed
-- 7 email tests
+**What was done (02-05):**
+- charge_stored_card() for off-session Stripe payments
+- quick_topup_web() for one-click $10 top-up
+- BUY SMS command with $10 validation
+- Low balance warning at $2 with 24h cooldown
+- Account model stripe_customer_id field
 
 **What's next:**
-1. 02-05-PLAN.md: SMS pricing display (PAY-02 completion)
-2. Continue through Wave 4 of Phase 2
-
-**Key files created:**
-- `backend/app/services/email.py` - SendGrid email service
-- `backend/tests/test_email.py` - Email tests
+1. 02-06-PLAN.md: SMS cost verification against Twilio
+2. Phase 2 completion
 
 **Key files modified:**
-- `backend/config/settings.py` - Added SendGrid configuration
-- `backend/app/routers/webhook.py` - Integrated email send
-- `backend/requirements.txt` - Added sendgrid dependency
+- `backend/app/services/payments.py` - Stored card charging
+- `backend/app/services/commands.py` - BUY command parsing
+- `backend/app/services/balance.py` - Low balance warning
 
 **Key risks to monitor:**
-- Need to configure SENDGRID_API_KEY in production
-- Optional: Create SendGrid dynamic template for branded emails
-- Off-session payment failures (handle 3DS requirements)
+- Off-session payment 3DS failures (handled with error message)
+- Need to wire BUY command handler in webhook.py inbound processing
 
 ---
 *State initialized: 2026-01-19*
