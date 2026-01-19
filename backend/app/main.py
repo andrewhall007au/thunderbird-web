@@ -20,7 +20,7 @@ from app.services.routes import get_route
 from app.services.formatter import ForecastFormatter
 
 # Import routers
-from app.routers import webhook, admin, api
+from app.routers import webhook, admin, api, auth
 
 # Try to import APScheduler (optional dependency)
 try:
@@ -265,6 +265,10 @@ async def lifespan(app: FastAPI):
     """Manage application lifecycle."""
     global scheduler
 
+    # Validate JWT_SECRET in production
+    if not settings.DEBUG and not settings.JWT_SECRET:
+        raise RuntimeError("JWT_SECRET must be set in production")
+
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
 
     # Initialize scheduler
@@ -333,6 +337,7 @@ app.add_middleware(
 app.include_router(webhook.router)
 app.include_router(admin.router)
 app.include_router(api.router)
+app.include_router(auth.router)
 
 # Root health check (kept at root for compatibility)
 @app.get("/health")
