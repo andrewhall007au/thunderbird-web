@@ -61,8 +61,8 @@ export default function MapEditor({
   const mapRef = useRef<MapRef>(null);
   const hasFittedBounds = useRef(false);
 
-  // Zoom to fit GPX track when loaded
-  useEffect(() => {
+  // Fit bounds when GPX track changes
+  const fitToBounds = useCallback(() => {
     if (trackGeojson && mapRef.current && !hasFittedBounds.current) {
       const bounds = getBoundsFromGeojson(trackGeojson);
       if (bounds) {
@@ -74,6 +74,11 @@ export default function MapEditor({
       }
     }
   }, [trackGeojson]);
+
+  // Zoom to fit GPX track when loaded - also handle map load event
+  useEffect(() => {
+    fitToBounds();
+  }, [fitToBounds]);
 
   // Reset fitted bounds flag when track changes
   useEffect(() => {
@@ -94,6 +99,7 @@ export default function MapEditor({
         ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
+        onLoad={fitToBounds}
         mapStyle="https://tiles.openfreemap.org/styles/liberty"
         onClick={handleClick}
         cooperativeGestures={true}

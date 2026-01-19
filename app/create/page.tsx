@@ -303,12 +303,41 @@ function CreateRouteContent() {
         </p>
 
         {!trackGeojson && !isLoading && (
-          <>
-            <p className="text-gray-300 mb-4">
-              Upload a GPX file of your route or select one from the library
-            </p>
+          <div className="space-y-6">
+            {/* Step indicators */}
+            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
+              <h2 className="text-xl font-semibold text-white mb-4">How it works</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">1</span>
+                  <div>
+                    <h3 className="text-lg font-medium text-white">Upload GPX File</h3>
+                    <p className="text-gray-400 text-sm">Import your route from any hiking app</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">2</span>
+                  <div>
+                    <h3 className="text-lg font-medium text-white">Set Waypoints on Map</h3>
+                    <p className="text-gray-400 text-sm">Click to add camps, peaks, and POIs</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">3</span>
+                  <div>
+                    <h3 className="text-lg font-medium text-white">Finalize Route</h3>
+                    <p className="text-gray-400 text-sm">Save and get your SMS weather codes</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <GPXUpload onUpload={handleGPXUpload} isLoading={isLoading} />
-          </>
+
+            <p className="text-center text-gray-400">
+              Or <a href="/library" className="text-blue-400 hover:underline">browse the route library</a> to start with a popular trail
+            </p>
+          </div>
         )}
 
         {isLoading && !trackGeojson && (
