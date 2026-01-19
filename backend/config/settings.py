@@ -98,6 +98,11 @@ class Settings(BaseSettings):
     # Base URL for redirect URLs (Stripe checkout)
     BASE_URL: str = "http://localhost:3000"
 
+    # SendGrid configuration (PAY-05)
+    SENDGRID_API_KEY: str = ""
+    SENDGRID_FROM_EMAIL: str = "noreply@thunderbird.app"
+    SENDGRID_WELCOME_TEMPLATE_ID: str = ""  # Dynamic template ID (optional)
+
     @property
     def jwt_configured(self) -> bool:
         """Check if JWT is properly configured."""
@@ -107,6 +112,11 @@ class Settings(BaseSettings):
     def stripe_configured(self) -> bool:
         """Check if Stripe is properly configured."""
         return bool(self.STRIPE_SECRET_KEY)
+
+    @property
+    def sendgrid_configured(self) -> bool:
+        """Check if SendGrid is properly configured."""
+        return bool(self.SENDGRID_API_KEY)
 
 
 # Global settings instance
