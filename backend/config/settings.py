@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"  # development, staging, production
     
     # Database
+    # Schema managed by Alembic - see alembic/versions/
+    # Run `alembic upgrade head` to create/update schema
     DATABASE_URL: str = "postgresql://localhost:5432/thunderbird"
     
     # Redis (for caching)

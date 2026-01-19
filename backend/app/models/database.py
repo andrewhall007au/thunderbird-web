@@ -48,59 +48,85 @@ class SQLiteUserStore:
         self._init_db()
     
     def _init_db(self):
-        """Initialize database tables."""
+        """
+        Initialize database connection and verify schema exists.
+
+        Note: Schema is managed by Alembic migrations.
+        Run `alembic upgrade head` to create/update schema.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+
         with self._get_connection() as conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS users (
-                    phone TEXT PRIMARY KEY,
-                    route_id TEXT NOT NULL,
-                    start_date TEXT,
-                    end_date TEXT,
-                    trail_name TEXT,
-                    direction TEXT DEFAULT 'standard',
-                    current_position TEXT,
-                    last_checkin_at TEXT,
-                    status TEXT DEFAULT 'registered',
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            # Check if tables exist (for backwards compatibility and warning)
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+            )
+            if not cursor.fetchone():
+                logger.warning(
+                    "Database tables not found. Run 'alembic upgrade head' to initialize schema."
                 )
-            """)
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS safecheck_contacts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_phone TEXT NOT NULL,
-                    contact_phone TEXT NOT NULL,
-                    contact_name TEXT NOT NULL,
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_phone) REFERENCES users(phone) ON DELETE CASCADE,
-                    UNIQUE(user_phone, contact_phone)
-                )
-            """)
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS message_log (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_phone TEXT,
-                    direction TEXT NOT NULL,
-                    message_type TEXT,
-                    command_type TEXT,
-                    content TEXT,
-                    segments INTEGER DEFAULT 1,
-                    cost_aud REAL DEFAULT 0,
-                    sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                    success INTEGER DEFAULT 1
-                )
-            """)
-            # Add indexes for analytics queries
-            conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_message_log_sent_at ON message_log(sent_at)
-            """)
-            conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_message_log_user ON message_log(user_phone)
-            """)
+                # For backwards compatibility with existing deployments,
+                # create tables if they don't exist (will be managed by Alembic going forward)
+                self._create_tables_legacy(conn)
 
             # Migrate: add missing columns to message_log if they don't exist
+            # This handles existing databases that predate certain columns
             self._migrate_message_log(conn)
             conn.commit()
+
+    def _create_tables_legacy(self, conn):
+        """
+        Legacy table creation for backwards compatibility.
+        New installations should use `alembic upgrade head` instead.
+        """
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                phone TEXT PRIMARY KEY,
+                route_id TEXT NOT NULL,
+                start_date TEXT,
+                end_date TEXT,
+                trail_name TEXT,
+                direction TEXT DEFAULT 'standard',
+                current_position TEXT,
+                last_checkin_at TEXT,
+                status TEXT DEFAULT 'registered',
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS safecheck_contacts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_phone TEXT NOT NULL,
+                contact_phone TEXT NOT NULL,
+                contact_name TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_phone) REFERENCES users(phone) ON DELETE CASCADE,
+                UNIQUE(user_phone, contact_phone)
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS message_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_phone TEXT,
+                direction TEXT NOT NULL,
+                message_type TEXT,
+                command_type TEXT,
+                content TEXT,
+                segments INTEGER DEFAULT 1,
+                cost_aud REAL DEFAULT 0,
+                sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                success INTEGER DEFAULT 1
+            )
+        """)
+        # Add indexes for analytics queries
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_message_log_sent_at ON message_log(sent_at)
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_message_log_user ON message_log(user_phone)
+        """)
 
     def _migrate_message_log(self, conn):
         """Add missing columns to message_log table for analytics."""
