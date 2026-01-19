@@ -401,6 +401,48 @@ async def process_command(phone: str, parsed) -> str:
         response, _ = onboarding_manager.process_input(phone, "START")
         return response or "Text START to begin registration."
 
+    elif parsed.command_type == CommandType.BUY:
+        # Process BUY $10 top-up via stored card
+        from app.models.account import account_store
+        from app.services.payments import payment_service
+
+        if not parsed.is_valid:
+            return parsed.error_message or "BUY requires an amount.\n\nExample: BUY $10"
+
+        amount = parsed.args.get("amount", 10)
+        if amount != 10:
+            return "Only $10 top-ups are available via SMS.\n\nText: BUY $10"
+
+        # Look up account by phone
+        account = account_store.get_by_phone(phone)
+        if not account:
+            return "No account linked to this phone number.\n\nVisit thunderbird.bot to link your account."
+
+        if not account.stripe_customer_id:
+            return "No payment method on file.\n\nVisit thunderbird.bot to add a card for one-click top-ups."
+
+        # Attempt to charge stored card
+        try:
+            result = await payment_service.charge_stored_card(
+                account_id=account.id,
+                amount_cents=1000,  # $10.00
+                description="SMS top-up via BUY command"
+            )
+
+            if result.get("success"):
+                from app.services.balance import balance_service
+                new_balance = balance_service.get_balance(account.id)
+                balance_dollars = new_balance / 100 if new_balance else 0
+                return f"$10 top-up successful!\n\nNew balance: ${balance_dollars:.2f}"
+            elif result.get("requires_action"):
+                return "Card requires verification.\n\nVisit thunderbird.bot to complete the top-up."
+            else:
+                error = result.get("error", "Payment failed")
+                return f"Top-up failed: {error}\n\nVisit thunderbird.bot to retry."
+        except Exception as e:
+            logger.error(f"BUY command failed for {PhoneUtils.mask(phone)}: {e}")
+            return "Top-up failed. Please try again or visit thunderbird.bot."
+
     # Default response
     return "Command received. Processing..."
 
