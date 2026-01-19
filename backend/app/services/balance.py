@@ -2,15 +2,27 @@
 Balance tracking service.
 
 Handles PAY-06 (balance tracking) with atomic updates and transaction logging.
+Handles PAY-09 (low balance warning) with SMS alerts.
 """
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Optional, List
+import logging
 
 from app.models.payments import (
     balance_store,
     BalanceStore,
     Transaction
 )
+
+logger = logging.getLogger(__name__)
+
+# Low balance warning configuration (PAY-09)
+LOW_BALANCE_THRESHOLD_CENTS = 200  # $2.00
+WARNING_COOLDOWN_HOURS = 24  # Don't warn more than once per day
+
+# Track last warning time per account (in production, store in DB)
+_last_warnings: dict[int, datetime] = {}
 
 
 @dataclass
@@ -251,6 +263,80 @@ class BalanceService:
         """
         balance = self.store.get_or_create(account_id)
         return balance.balance_cents
+
+    def is_low_balance(self, account_id: int) -> bool:
+        """
+        Check if account has low balance (< $2).
+
+        PAY-09: Low balance threshold is $2.00 (200 cents).
+
+        Args:
+            account_id: Account ID
+
+        Returns:
+            True if balance <= threshold
+        """
+        return self.get_balance(account_id) <= LOW_BALANCE_THRESHOLD_CENTS
+
+    async def check_and_warn_low_balance(
+        self,
+        account_id: int,
+        phone: str,
+        country_code: str = "US"
+    ) -> bool:
+        """
+        Check if balance is low and send warning SMS if needed.
+
+        PAY-09: User receives low balance warning SMS at $2 remaining.
+
+        Args:
+            account_id: Account to check
+            phone: Phone number for SMS warning
+            country_code: Country for segment estimate
+
+        Returns:
+            True if warning was sent
+        """
+        balance_cents = self.get_balance(account_id)
+
+        if balance_cents > LOW_BALANCE_THRESHOLD_CENTS:
+            return False  # Balance OK
+
+        # Check cooldown
+        last_warning = _last_warnings.get(account_id)
+        if last_warning:
+            time_since = datetime.utcnow() - last_warning
+            if time_since < timedelta(hours=WARNING_COOLDOWN_HOURS):
+                logger.debug(f"Skipping low balance warning (cooldown): {account_id}")
+                return False
+
+        # Calculate remaining segments
+        from config.sms_pricing import get_segments_per_topup
+        segments_per_10 = get_segments_per_topup(country_code)
+        # Estimate segments from current balance
+        # If balance is 200 cents ($2), and $10 = X segments, then $2 = X * 0.2
+        segments_remaining = int((balance_cents / 1000) * segments_per_10)
+
+        # Send warning SMS
+        from app.services.sms import get_sms_service
+        sms_service = get_sms_service()
+        message = (
+            f"Low balance: ${balance_cents/100:.2f} (~{segments_remaining} texts). "
+            f"Top up: BUY $10 or thunderbird.app/topup"
+        )
+
+        try:
+            result = await sms_service.send_message(phone, message)
+            if not result.error:
+                _last_warnings[account_id] = datetime.utcnow()
+                logger.info(f"Low balance warning sent: account={account_id}")
+                return True
+            else:
+                logger.error(f"Failed to send low balance warning: {result.error}")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to send low balance warning: {e}")
+            return False
 
 
 # Singleton instance
