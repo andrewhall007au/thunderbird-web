@@ -1311,8 +1311,10 @@ async def admin_page(request: Request):
     """Admin dashboard - requires login."""
     if not require_admin(request):
         return RedirectResponse("/admin/login", status_code=302)
-    
-    users = user_store.list_all()
+
+    # Use SQLite database instead of in-memory store
+    from app.models.database import user_store as db_user_store
+    users = db_user_store.list_users()
     message = request.query_params.get("msg", "")
     return render_admin(users, message)
 
@@ -1360,33 +1362,32 @@ async def admin_register_user(request: Request):
     """Register a new beta user."""
     if not require_admin(request):
         return RedirectResponse("/admin/login", status_code=302)
-    
+
     form = await request.form()
-    
+
     try:
         # Parse form data
         phone = form.get("phone", "").strip()
         if not phone.startswith("+"):
             phone = "+61" + phone.lstrip("0")
-        
+
         route_id = form.get("route_id", "western_arthurs_ak")
         start_date = date.fromisoformat(form.get("start_date", ""))
         duration_days = int(form.get("duration_days", 7))
         direction = form.get("direction", "standard")
-        
-        # Create user
-        user = User(
+
+        # Create user in SQLite database
+        from app.models.database import user_store as db_user_store
+        db_user_store.create_user(
             phone=phone,
             route_id=route_id,
             start_date=start_date,
-            duration_days=duration_days,
+            end_date=start_date + timedelta(days=duration_days),
             direction=direction
         )
-        
-        user_store.add(user)
-        
+
         return RedirectResponse(
-            f"/admin?msg=✓ Registered {phone} for {route_id}",
+            f"/admin?msg=Registered {phone} for {route_id}",
             status_code=302
         )
     
@@ -1402,12 +1403,13 @@ async def admin_delete_user(phone: str, request: Request):
     """Delete a user."""
     if not require_admin(request):
         return RedirectResponse("/admin/login", status_code=302)
-    
+
     # URL decode phone number
     phone = phone.replace("%2B", "+")
-    
-    if user_store.delete(phone):
-        return RedirectResponse(f"/admin?msg=✓ Deleted {phone}", status_code=302)
+
+    from app.models.database import user_store as db_user_store
+    if db_user_store.delete_user(phone):
+        return RedirectResponse(f"/admin?msg=Deleted {phone}", status_code=302)
     return RedirectResponse(f"/admin?msg=Error: User not found", status_code=302)
 
 
@@ -1416,39 +1418,45 @@ async def admin_push_forecast(phone: str, request: Request):
     """Push forecast to specific user."""
     if not require_admin(request):
         return RedirectResponse("/admin/login", status_code=302)
-    
+
     phone = phone.replace("%2B", "+")
-    user = user_store.get(phone)
+    from app.models.database import user_store as db_user_store
+    user = db_user_store.get_user(phone)
     
     if not user:
         return RedirectResponse(f"/admin?msg=Error: User not found", status_code=302)
     
     try:
         from app.services.forecast import get_forecast_generator
-        
+
         # Determine forecast type based on time of day
         now = datetime.now(TZ_HOBART)
         is_morning = now.hour < 12
-        
+
+        # Calculate fields from database User
+        duration_days = (user.end_date - user.start_date).days + 1
+        current_day = max(0, (date.today() - user.start_date).days)
+        wind_threshold = "moderate"  # Default
+
         generator = get_forecast_generator()
-        
+
         if is_morning:
             # Morning: hourly forecast
             messages = await generator.generate_morning_forecast(
                 route_id=user.route_id,
                 current_position=user.current_position,
-                current_day=user.current_day,
-                duration_days=user.duration_days,
-                wind_threshold=user.wind_threshold
+                current_day=current_day,
+                duration_days=duration_days,
+                wind_threshold=wind_threshold
             )
         else:
             # Evening: 7-day summary
             messages = await generator.generate_evening_forecast(
                 route_id=user.route_id,
                 current_position=user.current_position,
-                current_day=user.current_day,
-                duration_days=user.duration_days,
-                wind_threshold=user.wind_threshold
+                current_day=current_day,
+                duration_days=duration_days,
+                wind_threshold=wind_threshold
             )
         
         # Send all messages
@@ -1485,8 +1493,9 @@ async def admin_push_all(request: Request):
     """Push forecasts to all active users."""
     if not require_admin(request):
         return RedirectResponse("/admin/login", status_code=302)
-    
-    active = user_store.list_active()
+
+    from app.models.database import user_store as db_user_store
+    active = db_user_store.get_active_users()
     
     if not active:
         return RedirectResponse("/admin?msg=No active users to push to", status_code=302)

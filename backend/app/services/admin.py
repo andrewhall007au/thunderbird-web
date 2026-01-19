@@ -374,21 +374,28 @@ def render_grouping_stats() -> str:
     """
 
 
-def render_admin(users: List[User], message: str = "") -> str:
+def render_admin(users, message: str = "") -> str:
     """Render admin dashboard."""
     # Build users table
     if users:
         rows = ""
         for u in sorted(users, key=lambda x: x.start_date, reverse=True):
-            status_class = f"status-{u.status.value}"
+            # Handle both admin.User (enum status) and database.User (string status)
+            status_val = u.status.value if hasattr(u.status, 'value') else u.status
+            status_class = f"status-{status_val}"
+            # Calculate duration from end_date if no duration_days
+            if hasattr(u, 'duration_days'):
+                duration = u.duration_days
+            else:
+                duration = (u.end_date - u.start_date).days + 1
             rows += f"""
             <tr>
                 <td>{u.phone}</td>
                 <td>{u.route_id}</td>
                 <td>{u.start_date.strftime('%d %b')}</td>
-                <td>{u.duration_days}d</td>
+                <td>{duration}d</td>
                 <td>{u.current_position or '-'}</td>
-                <td><span class="status {status_class}">{u.status.value}</span></td>
+                <td><span class="status {status_class}">{status_val}</span></td>
                 <td class="actions">
                     <form method="POST" action="/admin/push/{u.phone}" style="margin:0;">
                         <button type="submit" class="btn-secondary">Push</button>
