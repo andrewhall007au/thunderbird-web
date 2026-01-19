@@ -42,14 +42,14 @@ Phase 2: Payments            Phase 3: Route Creation                  │
 
 Plans:
 - [ ] 01-01-PLAN.md — Refactor main.py into APIRouter modules and create service stubs
-- [ ] 01-02-PLAN.md — Set up Alembic migrations with SQLite batch mode
+- [x] 01-02-PLAN.md — Set up Alembic migrations with SQLite batch mode (completed 2026-01-19)
 - [ ] 01-03-PLAN.md — Implement account registration, login, and JWT sessions
 - [ ] 01-04-PLAN.md — Add phone number linking and auth tests
 
 ### Deliverables
 
 - [ ] Refactor `main.py` (1685 lines) into service modules
-- [ ] Set up Alembic database migrations
+- [x] Set up Alembic database migrations
 - [ ] Create account system (email/password)
 - [ ] Session persistence with JWT
 - [ ] Phone number linking to accounts
@@ -387,4 +387,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-19 after Phase 1 planning*
+*Last updated: 2026-01-19 after 01-02 completion*
