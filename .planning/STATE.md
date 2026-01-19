@@ -9,22 +9,22 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Foundation phase - modular architecture setup complete
+**Current focus:** Foundation phase - authentication system complete
 
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 2 of 4 in current phase (01-01 complete)
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 01-01-PLAN.md
+Last activity: 2026-01-19 - Completed 01-03-PLAN.md
 
-Progress: ██░░░░░░░░ 8%
+Progress: ███░░░░░░░ 12%
 
 ## Phase Status
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 1 | Foundation | In progress | 2/4 plans |
+| 1 | Foundation | In progress | 3/4 plans |
 | 2 | Payments | Not started | 0/12 requirements |
 | 3 | Route Creation | Not started | 0/12 requirements |
 | 4 | User Flows | Not started | 0/9 requirements |
@@ -35,16 +35,15 @@ Progress: ██░░░░░░░░ 8%
 
 | Date | Decision | Context |
 |------|----------|---------|
-| 2026-01-19 | Router-per-domain organization | webhook.py, admin.py, api.py for clear separation |
-| 2026-01-19 | Service stubs with dataclasses + NotImplementedError | Typed interfaces for Phase 2-6 development |
-| 2026-01-19 | Singleton factory pattern for services | get_*_service() functions for consistent access |
+| 2026-01-19 | Argon2 via pwdlib (not bcrypt) | Modern password hashing, faster and more secure |
+| 2026-01-19 | Account model separate from User | Web login (email/pwd) vs SMS hikers (phone) |
+| 2026-01-19 | Case-insensitive email | Normalized to lowercase on storage |
+| 2026-01-19 | JWT_SECRET required in production | Fails startup if not set (non-DEBUG) |
+| 2026-01-19 | OAuth2 password flow | Standard /auth/token endpoint |
+| 2026-01-19 | Router-per-domain organization | webhook.py, admin.py, api.py, auth.py |
 | 2026-01-19 | Fork model (not multi-tenant) | Simpler architecture, evolves independently |
 | 2026-01-19 | $29.99 launch, $49.99 RRP | Dynamic pricing with admin configuration |
-| 2026-01-19 | Discount codes stack with launch pricing | Aggressive growth strategy |
 | 2026-01-19 | 8 countries at launch | USA, Canada, UK, France, Italy, Switzerland, NZ, South Africa |
-| 2026-01-19 | Variable segments (not variable price) | $10 everywhere, segments vary by country SMS costs |
-| 2026-01-19 | Trailing commissions on top-ups | Configurable duration in years |
-| 2026-01-19 | Kept legacy table creation in database.py | Backwards compatibility for existing deployments |
 
 ## Blockers
 
@@ -60,33 +59,30 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-19 08:49Z
-Stopped at: Completed 01-01-PLAN.md (Modular architecture setup)
+Last session: 2026-01-19 08:55Z
+Stopped at: Completed 01-03-PLAN.md (Account authentication system)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (01-01):**
-- Extracted monolithic main.py (1685 lines) into modular routers
-- Created webhook.py (768 lines), admin.py (332 lines), api.py (300 lines)
-- main.py now 361 lines (scheduler + lifespan only)
-- Created service stubs: payments.py, route_builder.py, affiliates.py, weather_intl.py
-- Updated README with new architecture documentation
+**What was done (01-03):**
+- Created Account model and AccountStore for web authentication
+- Alembic migration for accounts table with email unique index
+- JWT token generation with Argon2 password hashing
+- Auth router with /register, /token, /me endpoints
+- get_current_account dependency for protected endpoints
 - All 280 tests pass
 
 **What's next:**
-1. Execute remaining Phase 1 plans (01-03, 01-04)
+1. Execute 01-04-PLAN.md (likely phone linking or final foundation tasks)
 2. Phase 2 (Payments) and Phase 3 (Route Creation) can run in parallel after Phase 1
-3. Service stubs ready for Phase 2-6 implementation
+3. Auth system ready for frontend integration
 
 **Key files created:**
-- `backend/app/routers/webhook.py` - SMS command processing
-- `backend/app/routers/admin.py` - Admin dashboard
-- `backend/app/routers/api.py` - Public API endpoints
-- `backend/app/services/payments.py` - Stripe integration stub (Phase 2)
-- `backend/app/services/route_builder.py` - GPX/waypoint stub (Phase 3)
-- `backend/app/services/affiliates.py` - Partner program stub (Phase 5)
-- `backend/app/services/weather_intl.py` - Multi-country weather stub (Phase 6)
+- `backend/app/models/account.py` - Account dataclass and AccountStore
+- `backend/app/services/auth.py` - JWT and password handling
+- `backend/app/routers/auth.py` - Registration and login endpoints
+- `backend/alembic/versions/4fd3f14bce7e_accounts_table.py` - Accounts migration
 
 **Key risks to monitor:**
 - SMS margin erosion across countries (verify Twilio rates)
