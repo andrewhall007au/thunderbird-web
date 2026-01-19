@@ -165,6 +165,15 @@ class DangerThresholds:
     CAPE_HIGH = 400  # J/kg
 
 
+# Pricing configuration (PAY-02)
+class PricingConfig:
+    """Dynamic pricing configuration."""
+    PRICE_RRP_CENTS: int = 4999  # $49.99 RRP
+    PRICE_LAUNCH_CENTS: int = 2999  # $29.99 launch price
+    PRICE_MODE: str = "launch"  # "rrp" | "launch" | "sale"
+    PRICE_SALE_CENTS: int = 2499  # Optional sale price
+
+
 # SMS cost configuration (Section 10)
 class SMSCostConfig:
     """SMS cost per segment by provider."""
