@@ -289,6 +289,25 @@ class OrderStore:
             conn.commit()
             return cursor.rowcount > 0
 
+    def update_stripe_session(self, order_id: int, stripe_session_id: str) -> bool:
+        """
+        Update order with Stripe session ID.
+
+        Args:
+            order_id: Order to update
+            stripe_session_id: Stripe checkout session ID
+
+        Returns:
+            True if updated, False if order not found
+        """
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE orders SET stripe_session_id = ? WHERE id = ?",
+                (stripe_session_id, order_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
 
 class BalanceStore:
     """SQLite-backed balance tracking."""

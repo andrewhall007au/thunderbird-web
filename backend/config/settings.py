@@ -90,10 +90,23 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRY_MINUTES: int = 30
 
+    # Stripe configuration (PAY-01)
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""  # Set in Plan 03 for webhook verification
+
+    # Base URL for redirect URLs (Stripe checkout)
+    BASE_URL: str = "http://localhost:3000"
+
     @property
     def jwt_configured(self) -> bool:
         """Check if JWT is properly configured."""
         return bool(self.JWT_SECRET)
+
+    @property
+    def stripe_configured(self) -> bool:
+        """Check if Stripe is properly configured."""
+        return bool(self.STRIPE_SECRET_KEY)
 
 
 # Global settings instance
