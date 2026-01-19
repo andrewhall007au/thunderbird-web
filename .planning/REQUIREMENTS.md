@@ -9,11 +9,11 @@ Requirements for initial global launch. Each maps to roadmap phases.
 
 ### Foundation
 
-- [ ] **FOUN-01**: Codebase refactored with modular service structure (payments.py, route_builder.py, affiliates.py, weather_intl.py)
-- [ ] **FOUN-02**: Database migrations system in place (Alembic)
-- [ ] **FOUN-03**: User can create account with email and password
-- [ ] **FOUN-04**: User session persists across browser refresh
-- [ ] **FOUN-05**: User can link phone number to account
+- [x] **FOUN-01**: Codebase refactored with modular service structure (payments.py, route_builder.py, affiliates.py, weather_intl.py)
+- [x] **FOUN-02**: Database migrations system in place (Alembic)
+- [x] **FOUN-03**: User can create account with email and password
+- [x] **FOUN-04**: User session persists across browser refresh
+- [x] **FOUN-05**: User can link phone number to account
 
 ### Payments
 
@@ -129,11 +129,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUN-01 | Phase 1 | Pending |
-| FOUN-02 | Phase 1 | Pending |
-| FOUN-03 | Phase 1 | Pending |
-| FOUN-04 | Phase 1 | Pending |
-| FOUN-05 | Phase 1 | Pending |
+| FOUN-01 | Phase 1 | Complete |
+| FOUN-02 | Phase 1 | Complete |
+| FOUN-03 | Phase 1 | Complete |
+| FOUN-04 | Phase 1 | Complete |
+| FOUN-05 | Phase 1 | Complete |
 | PAY-01 | Phase 2 | Pending |
 | PAY-02 | Phase 2 | Pending |
 | PAY-03 | Phase 2 | Pending |
@@ -193,4 +193,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after initial definition*
+*Last updated: 2026-01-19 after Phase 1 completion*
