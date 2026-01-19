@@ -32,18 +32,18 @@ Requirements for initial global launch. Each maps to roadmap phases.
 
 ### Route Creation
 
-- [ ] **ROUT-01**: User can upload GPX file
-- [ ] **ROUT-02**: Uploaded GPX displays on interactive map
-- [ ] **ROUT-03**: User can add waypoint pins by clicking map
-- [ ] **ROUT-04**: Three pin types available: camps (color 1), peaks (color 2), POIs (color 3)
-- [ ] **ROUT-05**: User can name each waypoint
-- [ ] **ROUT-06**: System auto-generates SMS code from waypoint name ("Lake Oberon" -> "LAKEO")
-- [ ] **ROUT-07**: User can drag waypoints to reposition
-- [ ] **ROUT-08**: User can delete waypoints
-- [ ] **ROUT-09**: User can save draft routes to account
-- [ ] **ROUT-10**: Route library displays admin-uploaded popular trails
-- [ ] **ROUT-11**: User can clone and customize library routes
-- [ ] **ROUT-12**: Map is mobile-responsive with touch controls
+- [x] **ROUT-01**: User can upload GPX file
+- [x] **ROUT-02**: Uploaded GPX displays on interactive map
+- [x] **ROUT-03**: User can add waypoint pins by clicking map
+- [x] **ROUT-04**: Three pin types available: camps (color 1), peaks (color 2), POIs (color 3)
+- [x] **ROUT-05**: User can name each waypoint
+- [x] **ROUT-06**: System auto-generates SMS code from waypoint name ("Lake Oberon" -> "LAKEO")
+- [x] **ROUT-07**: User can drag waypoints to reposition
+- [x] **ROUT-08**: User can delete waypoints
+- [x] **ROUT-09**: User can save draft routes to account
+- [x] **ROUT-10**: Route library displays admin-uploaded popular trails
+- [x] **ROUT-11**: User can clone and customize library routes
+- [x] **ROUT-12**: Map is mobile-responsive with touch controls
 
 ### User Flows
 
@@ -146,18 +146,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PAY-10 | Phase 2 | Complete |
 | PAY-11 | Phase 2 | Complete |
 | PAY-12 | Phase 2 | Complete |
-| ROUT-01 | Phase 3 | Pending |
-| ROUT-02 | Phase 3 | Pending |
-| ROUT-03 | Phase 3 | Pending |
-| ROUT-04 | Phase 3 | Pending |
-| ROUT-05 | Phase 3 | Pending |
-| ROUT-06 | Phase 3 | Pending |
-| ROUT-07 | Phase 3 | Pending |
-| ROUT-08 | Phase 3 | Pending |
-| ROUT-09 | Phase 3 | Pending |
-| ROUT-10 | Phase 3 | Pending |
-| ROUT-11 | Phase 3 | Pending |
-| ROUT-12 | Phase 3 | Pending |
+| ROUT-01 | Phase 3 | Complete |
+| ROUT-02 | Phase 3 | Complete |
+| ROUT-03 | Phase 3 | Complete |
+| ROUT-04 | Phase 3 | Complete |
+| ROUT-05 | Phase 3 | Complete |
+| ROUT-06 | Phase 3 | Complete |
+| ROUT-07 | Phase 3 | Complete |
+| ROUT-08 | Phase 3 | Complete |
+| ROUT-09 | Phase 3 | Complete |
+| ROUT-10 | Phase 3 | Complete |
+| ROUT-11 | Phase 3 | Complete |
+| ROUT-12 | Phase 3 | Complete |
 | FLOW-01 | Phase 4 | Pending |
 | FLOW-02 | Phase 4 | Pending |
 | FLOW-03 | Phase 4 | Pending |

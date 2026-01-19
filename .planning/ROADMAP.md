@@ -169,22 +169,22 @@ discount_codes (id, code, discount_type, discount_value, max_uses, current_uses,
 
 ## Phase 3: Route Creation
 
-**Status:** Planned (2026-01-19)
+**Status:** Complete (2026-01-19)
 
 **Goal:** Users can create custom routes via GPX upload and map editing
 
 **Requirements covered:** ROUT-01 through ROUT-12
 
-**Plans:** 7 plans in 5 waves
+**Plans:** 7 plans in 5 waves (7/7 complete)
 
 Plans:
-- [ ] 03-01-PLAN.md - Database models and migration for routes, waypoints, library (Wave 1)
-- [ ] 03-02-PLAN.md - Backend route builder service with GPX parsing and API (Wave 2)
-- [ ] 03-03-PLAN.md - Frontend map infrastructure with GPX upload (Wave 2)
-- [ ] 03-04-PLAN.md - Waypoint creation, editing, and management (Wave 3)
-- [ ] 03-05-PLAN.md - Save/load draft routes with backend integration (Wave 4)
-- [ ] 03-06-PLAN.md - Route library with admin import and clone functionality (Wave 4)
-- [ ] 03-07-PLAN.md - Backend tests and full verification (Wave 5)
+- [x] 03-01-PLAN.md - Database models and migration for routes, waypoints, library (Wave 1) (completed 2026-01-19)
+- [x] 03-02-PLAN.md - Backend route builder service with GPX parsing and API (Wave 2) (completed 2026-01-19)
+- [x] 03-03-PLAN.md - Frontend map infrastructure with GPX upload (Wave 2) (completed 2026-01-19)
+- [x] 03-04-PLAN.md - Waypoint creation, editing, and management (Wave 3) (completed 2026-01-19)
+- [x] 03-05-PLAN.md - Save/load draft routes with backend integration (Wave 4) (completed 2026-01-19)
+- [x] 03-06-PLAN.md - Route library with admin import and clone functionality (Wave 4) (completed 2026-01-19)
+- [x] 03-07-PLAN.md - Backend tests and full verification (Wave 5) (completed 2026-01-19)
 
 ### Wave Structure
 
@@ -198,17 +198,17 @@ Plans:
 
 ### Deliverables
 
-- [ ] GPX file upload with parsing
-- [ ] MapLibre GL JS map display
-- [ ] Waypoint pin placement (click-to-add)
-- [ ] Three pin types: camps, peaks, POIs (color-coded)
-- [ ] Waypoint naming with SMS code generation
-- [ ] Drag-to-reposition waypoints
-- [ ] Delete waypoints
-- [ ] Save draft routes to account
-- [ ] Route library (admin-uploaded popular trails)
-- [ ] Clone and customize library routes
-- [ ] Mobile-responsive map with touch controls
+- [x] GPX file upload with parsing
+- [x] MapLibre GL JS map display
+- [x] Waypoint pin placement (click-to-add)
+- [x] Three pin types: camps, peaks, POIs (color-coded)
+- [x] Waypoint naming with SMS code generation
+- [x] Drag-to-reposition waypoints
+- [x] Delete waypoints
+- [x] Save draft routes to account
+- [x] Route library (admin-uploaded popular trails)
+- [x] Clone and customize library routes
+- [x] Mobile-responsive map with touch controls
 
 ### Key Files
 
