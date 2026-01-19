@@ -26,8 +26,8 @@ Phase 2: Payments            Phase 3: Route Creation                  │
                     Phase 6: International Weather ───────────────────┘
 ```
 
-**Critical path:** Foundation → Payments → User Flows (minimum viable purchase)
-**Parallel track:** Foundation → Route Creation → User Flows (route value)
+**Critical path:** Foundation -> Payments -> User Flows (minimum viable purchase)
+**Parallel track:** Foundation -> Route Creation -> User Flows (route value)
 **Independent:** International Weather (can progress alongside Phases 4-5)
 
 ---
@@ -43,10 +43,10 @@ Phase 2: Payments            Phase 3: Route Creation                  │
 **Plans:** 4 plans (4/4 complete)
 
 Plans:
-- [x] 01-01-PLAN.md — Refactor main.py into APIRouter modules and create service stubs (completed 2026-01-19)
-- [x] 01-02-PLAN.md — Set up Alembic migrations with SQLite batch mode (completed 2026-01-19)
-- [x] 01-03-PLAN.md — Implement account registration, login, and JWT sessions (completed 2026-01-19)
-- [x] 01-04-PLAN.md — Add phone number linking and auth tests (completed 2026-01-19)
+- [x] 01-01-PLAN.md - Refactor main.py into APIRouter modules and create service stubs (completed 2026-01-19)
+- [x] 01-02-PLAN.md - Set up Alembic migrations with SQLite batch mode (completed 2026-01-19)
+- [x] 01-03-PLAN.md - Implement account registration, login, and JWT sessions (completed 2026-01-19)
+- [x] 01-04-PLAN.md - Add phone number linking and auth tests (completed 2026-01-19)
 
 ### Deliverables
 
@@ -58,7 +58,7 @@ Plans:
 
 ### Key Files
 
-- `backend/main.py` → split into services/
+- `backend/main.py` -> split into services/
 - `backend/services/payments.py` (stub)
 - `backend/services/route_builder.py` (stub)
 - `backend/services/affiliates.py` (stub)
@@ -86,9 +86,30 @@ Plans:
 
 ## Phase 2: Payments
 
+**Status:** Planned (2026-01-19)
+
 **Goal:** Users can purchase access and manage balance
 
 **Requirements covered:** PAY-01 through PAY-12
+
+**Plans:** 6 plans in 4 waves
+
+Plans:
+- [ ] 02-01-PLAN.md - Payment database models and country SMS pricing (Wave 1)
+- [ ] 02-02-PLAN.md - Dynamic pricing service, balance tracking, and Stripe checkout (Wave 2)
+- [ ] 02-03-PLAN.md - Payment API router and Stripe webhook handler (Wave 2)
+- [ ] 02-04-PLAN.md - Order confirmation email service (Wave 3)
+- [ ] 02-05-PLAN.md - Stored card top-ups and SMS BUY command (Wave 3)
+- [ ] 02-06-PLAN.md - SMS cost verification against Twilio (Wave 4)
+
+### Wave Structure
+
+| Wave | Plans | Description |
+|------|-------|-------------|
+| 1 | 02-01 | Database foundation: models, migrations, SMS pricing config |
+| 2 | 02-02, 02-03 | Core payment flow: pricing, balance, checkout, webhooks |
+| 3 | 02-04, 02-05 | Enhancement: email, stored cards, SMS commands |
+| 4 | 02-06 | Verification: cost reconciliation with Twilio |
 
 ### Deliverables
 
@@ -106,29 +127,32 @@ Plans:
 
 ### Key Files
 
-- `backend/services/payments.py`
-- `backend/models/transaction.py`
-- `backend/models/user_balance.py`
-- `backend/models/discount_code.py`
-- `frontend/app/checkout/`
-- `frontend/components/PaymentForm.tsx`
+- `backend/app/services/payments.py`
+- `backend/app/services/balance.py`
+- `backend/app/services/pricing_dynamic.py`
+- `backend/app/services/email.py`
+- `backend/app/services/cost_verification.py`
+- `backend/app/models/payments.py`
+- `backend/app/routers/payments.py`
+- `backend/config/sms_pricing.py`
 
 ### Database Tables
 
 ```sql
-transactions (id, user_id, type, amount, stripe_id, created_at)
-user_balances (id, user_id, balance_cents, last_updated)
-discount_codes (id, code, discount_percent, active, created_at)
-country_sms_costs (country_code, cost_per_segment, segments_per_topup)
+orders (id, account_id, order_type, amount_cents, stripe_session_id, status, created_at)
+account_balances (id, account_id, balance_cents, updated_at)
+transactions (id, account_id, order_id, transaction_type, amount_cents, balance_after_cents, description, created_at)
+discount_codes (id, code, discount_type, discount_value, max_uses, current_uses, active, stripe_coupon_id, created_at)
 ```
 
 ### Success Criteria
 
-- User can complete $29.99 purchase
-- Discount codes apply correctly (stacking works)
+- User can complete $29.99 purchase via Stripe Checkout
+- Discount codes apply correctly (stacking works with launch price)
 - Balance updates after purchase and usage
 - SMS top-up works with stored card
 - Low balance warning sends at $2
+- 80% margin maintained across all 8 countries
 
 ### Dependencies
 
@@ -137,7 +161,9 @@ country_sms_costs (country_code, cost_per_segment, segments_per_topup)
 ### Risks
 
 - Stripe webhook reliability
-- Mitigation: idempotent webhook handlers, retry logic
+- Mitigation: idempotent webhook handlers, signature verification
+- Twilio rate changes
+- Mitigation: cost verification service with alerts
 
 ---
 
@@ -210,8 +236,8 @@ route_library (id, name, description, gpx_data, country, region, admin_id)
 ### Deliverables
 
 - [ ] Phone simulator showing example SMS forecast
-- [ ] "Create first" path: create route → see simulator → pay to activate
-- [ ] "Buy now" path: fast checkout → create route after
+- [ ] "Create first" path: create route -> see simulator -> pay to activate
+- [ ] "Buy now" path: fast checkout -> create route after
 - [ ] Analytics tracking conversion by path (A/B)
 - [ ] Paywall after simulator
 - [ ] Entry path tracking through purchase
@@ -304,7 +330,7 @@ affiliate_commissions (id, affiliate_id, user_id, transaction_id, amount, type, 
 
 **Requirements covered:** WTHR-01 through WTHR-11
 
-**Research required:** Yes — each country's API needs research before implementation
+**Research required:** Yes - each country's API needs research before implementation
 
 ### Deliverables
 
@@ -389,4 +415,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-19 after Phase 1 completion*
+*Last updated: 2026-01-19 after Phase 2 planning*
