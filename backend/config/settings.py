@@ -84,6 +84,17 @@ class Settings(BaseSettings):
     LIVETEST_ENABLED: bool = False
     MOCK_BOM_API: bool = False
 
+    # JWT Authentication
+    # Generate secret with: openssl rand -hex 32
+    JWT_SECRET: str = ""  # REQUIRED - must be set in environment for non-debug mode
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRY_MINUTES: int = 30
+
+    @property
+    def jwt_configured(self) -> bool:
+        """Check if JWT is properly configured."""
+        return bool(self.JWT_SECRET)
+
 
 # Global settings instance
 settings = Settings()
