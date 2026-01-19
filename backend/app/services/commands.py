@@ -25,7 +25,7 @@ class CommandType(str, Enum):
     KEY = "KEY"
     ALERTS = "ALERTS"
     CAST = "CAST"
-    
+
     # v3.0 new commands
     CAST12 = "CAST12"       # 12hr hourly (alias for CAST)
     CAST24 = "CAST24"       # 24hr hourly
@@ -35,7 +35,10 @@ class CommandType(str, Enum):
     ALERTS_ON = "ALERTS_ON"
     ALERTS_OFF = "ALERTS_OFF"
     SKIP = "SKIP"           # Skip onboarding step
-    
+
+    # Payment commands (PAY-08)
+    BUY = "BUY"             # SMS top-up
+
     # Legacy
     WA_PUSH = "WA_PUSH"
     SAFE = "SAFE"
@@ -261,7 +264,34 @@ class CommandParser:
                 args={},
                 is_valid=True
             )
-        
+
+        # BUY command (PAY-08: SMS top-up)
+        # Match: "BUY $10", "BUY 10", "BUY"
+        if first_word == "BUY":
+            # Parse amount (default $10)
+            amount = 10  # Default
+            if len(parts) >= 2:
+                amount_match = re.search(r'\$?(\d+)', parts[1])
+                if amount_match:
+                    amount = int(amount_match.group(1))
+
+            # Only support $10 increments for now
+            if amount != 10:
+                return ParsedCommand(
+                    command_type=CommandType.BUY,
+                    raw_input=message,
+                    args={"amount": amount},
+                    is_valid=False,
+                    error_message="Top-up amount must be $10. Text BUY $10 to add credits."
+                )
+
+            return ParsedCommand(
+                command_type=CommandType.BUY,
+                raw_input=message,
+                args={"amount": 10, "amount_cents": 1000},
+                is_valid=True
+            )
+
         # CAST / CAST12 with location (v3.0)
         if first_word in ("CAST", "CAST12"):
             return self._parse_cast(parts, CommandType.CAST, message)
