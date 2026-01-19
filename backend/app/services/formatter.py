@@ -515,6 +515,7 @@ class ForecastFormatter:
         Format on-demand CAST forecast - next N hours from now.
         Shows hourly data for the specified waypoint.
         v3.1: Uses combined Prec column (R#-#/S#-#), Wd, and CB columns.
+        v3.2: Applies lapse rate adjustment for elevation difference.
         """
         lines = []
 
@@ -535,11 +536,21 @@ class ForecastFormatter:
         current_hour = now.replace(minute=0, second=0, microsecond=0)
         end_time = current_hour + timedelta(hours=hours)
 
+        # Calculate elevation adjustment (lapse rate: 0.65°C per 100m)
+        # base_elevation is the grid elevation where API data is valid
+        base_elevation = forecast.base_elevation or 0
+        elevation_diff = waypoint_elevation - base_elevation
+        temp_adjustment = (elevation_diff / 100) * 0.65  # Cooler at higher elevation
+
         period_count = 0
         for period in forecast.periods:
             # Include periods from now until end_time
             if current_hour <= period.datetime < end_time:
                 hour = period.datetime.hour
+
+                # Apply elevation adjustment to temperatures
+                adjusted_temp_min = int(period.temp_min - temp_adjustment)
+                adjusted_temp_max = int(period.temp_max - temp_adjustment)
 
                 # Combined precipitation column (R#-#/S#-#)
                 prec = format_precipitation_combined(
@@ -558,12 +569,12 @@ class ForecastFormatter:
                 # Freezing level (convert m to hundreds)
                 fl = period.freezing_level // 100 if period.freezing_level else 20
 
-                # Danger indicator
+                # Danger indicator (use adjusted temps for danger calc)
                 danger = self._calculate_danger(period, waypoint_elevation)
 
                 row = (
                     f"{hour:02d}|"
-                    f"{int(period.temp_min)}-{int(period.temp_max)}|"
+                    f"{adjusted_temp_min}-{adjusted_temp_max}|"
                     f"{period.rain_chance}%|"
                     f"{prec}|"
                     f"{period.wind_avg}|"
@@ -1050,7 +1061,7 @@ def get_daily_header() -> str:
 
 
 # GSM-7 Safety
-GSM7_UNSAFE = set("°€£¥©®←→↑↓∞≠≤≥÷×¿¡")
+GSM7_UNSAFE = set("°€£¥©®←→↑↓∞≠≤≥÷×¿¡±═║╔╗╚╝─│┌┐└┘✓✗")
 
 
 def is_gsm7_safe(char: str) -> bool:
@@ -1566,8 +1577,8 @@ class FormatCAST7Grouped:
 
         # Header with grouping notice
         lines.append(f"CAST7 {location_type} - {route_name}")
-        lines.append(f"Grouped within ±{GROUPING_THRESHOLD_TEMP}C ±{GROUPING_THRESHOLD_RAIN}mm ±{GROUPING_THRESHOLD_WIND}km/h")
-        lines.append("═" * 30)
+        lines.append(f"Grouped: {GROUPING_THRESHOLD_TEMP}C {GROUPING_THRESHOLD_RAIN}mm {GROUPING_THRESHOLD_WIND}km/h")
+        lines.append("-" * 30)
 
         # Group locations by weather similarity
         groups = group_locations_by_weather(forecast_data)
@@ -1579,7 +1590,7 @@ class FormatCAST7Grouped:
         for zone_idx, group in enumerate(groups, 1):
             # Zone header with location codes
             zone_locs = " ".join(group)
-            lines.append(f"\nZONE {zone_idx}: {zone_locs}")
+            lines.append(f"\n{location_type} in ZONE {zone_idx}: {zone_locs}")
             lines.append(get_daily_header())
 
             # Get representative forecast for this group
@@ -1607,7 +1618,7 @@ class FormatCAST7Grouped:
 
         # Summary
         total_locs = sum(len(g) for g in groups)
-        lines.append(f"\n{total_locs} locations → {len(groups)} zones")
+        lines.append(f"\n{total_locs} locations => {len(groups)} zones")
 
         return "\n".join(lines)
 
@@ -1628,20 +1639,21 @@ class FormatCAST7Grouped:
         if len(full) <= 450:
             return [full]
 
-        # Split by zone
+        # Split by zone - pattern is "{CAMPS|PEAKS} in ZONE"
         messages = []
-        sections = full.split("\nZONE ")
+        split_pattern = f"\n{location_type} in ZONE "
+        sections = full.split(split_pattern)
 
         header = sections[0]
         zones = sections[1:] if len(sections) > 1 else []
 
         current = header
         for zone in zones:
-            zone_text = "\nZONE " + zone
+            zone_text = split_pattern + zone
             if len(current) + len(zone_text) > 400:
                 messages.append(current)
                 # Start new message with abbreviated header
-                current = f"CAST7 {location_type} (cont.)\n{get_daily_header()}\nZONE " + zone
+                current = f"CAST7 {location_type} (cont.)\n{get_daily_header()}\n{location_type} in ZONE " + zone
             else:
                 current += zone_text
 

@@ -870,14 +870,15 @@ class TestOnboarding:
         session = manager.get_session(phone)
         messages = manager.get_quick_start_guide(session)
 
-        # v3.2: 3 messages - camps list, peaks list, SafeCheck setup
-        assert len(messages) == 3
-        assert "YOUR CAMPS" in messages[0]
-        assert "RONNY" in messages[0]  # Overland Track camp code
-        assert "YOUR PEAKS" in messages[1]
-        assert "SAFECHECK" in messages[2]
-        assert "SAFE" in messages[2]
-        assert "maps.google.com" in messages[2]  # GPS link example
+        # v3.2: 4 messages - forecast key, camps list, peaks list, SafeCheck setup
+        assert len(messages) == 4
+        assert "FORECAST KEY" in messages[0]
+        assert "YOUR CAMPS" in messages[1]
+        assert "RONNY" in messages[1]  # Overland Track camp code
+        assert "YOUR PEAKS" in messages[2]
+        assert "SAFECHECK" in messages[3]
+        assert "SAFE" in messages[3]
+        assert "maps.google.com" in messages[3]  # GPS link example
     
     def test_restart_onboarding(self):
         """v3.1: START should restart onboarding at any point."""
@@ -904,6 +905,150 @@ class TestOnboarding:
         # Should be back at AWAITING_NAME
         session = manager.get_session(phone)
         assert session.state == OnboardingState.AWAITING_NAME
+
+
+class TestGSM7Compliance:
+    """Test SMS messages are GSM-7 safe to minimize segment costs."""
+
+    # GSM-7 basic character set (160 chars per segment)
+    GSM7_BASIC = set(
+        "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ ÆæßÉ "
+        "!\"#¤%&'()*+,-./0123456789:;<=>?"
+        "¡ABCDEFGHIJKLMNOPQRSTUVWXYZ§ÄÖÑܧ¿"
+        "abcdefghijklmnopqrstuvwxyz|äöñüà"
+    )
+    GSM7_EXTENDED = set("€[\\]^{|}~")  # Count as 2 chars each
+
+    # Characters that force UCS-2 encoding (70 chars per segment = 2.3x more expensive!)
+    KNOWN_UNSAFE = set("°±═║╔╗╚╝─│┌┐└┘←→↑↓∞≠≤≥÷×©®")
+
+    def is_gsm7_safe(self, text: str) -> tuple[bool, list]:
+        """Check if text uses only GSM-7 characters."""
+        unsafe = []
+        for char in text:
+            if char not in self.GSM7_BASIC and char not in self.GSM7_EXTENDED:
+                unsafe.append((char, ord(char)))
+        return len(unsafe) == 0, unsafe
+
+    def calculate_segments(self, text: str) -> tuple[int, str]:
+        """Calculate SMS segments and encoding type."""
+        is_safe, _ = self.is_gsm7_safe(text)
+        length = len(text)
+
+        if is_safe:
+            # GSM-7: 160 first segment, 153 for concatenated
+            if length <= 160:
+                return 1, "GSM-7"
+            return 1 + ((length - 160 + 152) // 153), "GSM-7"
+        else:
+            # UCS-2: 70 first segment, 67 for concatenated
+            if length <= 70:
+                return 1, "UCS-2"
+            return 1 + ((length - 70 + 66) // 67), "UCS-2"
+
+    def test_formatter_gsm7_safe(self):
+        """Formatter output should be GSM-7 safe."""
+        from app.services.formatter import FormatCAST7Grouped
+
+        # Mock forecast data
+        forecast_data = {
+            "LAKEO": [
+                {"day": "Mon", "temp": "5-12", "rain_chance": 30, "prec": "R0-2",
+                 "wind_avg": 20, "wind_max": 35, "wind_dir": "W",
+                 "cloud": 60, "cloud_base": 12, "freezing_level": 18, "danger": ""},
+            ] * 7,
+            "HIGHM": [
+                {"day": "Mon", "temp": "3-10", "rain_chance": 35, "prec": "R0-3",
+                 "wind_avg": 25, "wind_max": 40, "wind_dir": "NW",
+                 "cloud": 70, "cloud_base": 10, "freezing_level": 16, "danger": "!"},
+            ] * 7,
+        }
+
+        from datetime import datetime
+        result = FormatCAST7Grouped.format(
+            route_name="Western Arthurs",
+            forecast_data=forecast_data,
+            location_type="CAMPS",
+            date=datetime.now()
+        )
+
+        is_safe, unsafe_chars = self.is_gsm7_safe(result)
+        assert is_safe, f"Formatter output contains non-GSM7 chars: {unsafe_chars[:10]}"
+
+    def test_onboarding_gsm7_safe(self):
+        """Onboarding messages should be GSM-7 safe."""
+        from app.services.onboarding import OnboardingManager
+
+        manager = OnboardingManager()
+        phone = "+61400000099"
+
+        # Test START response
+        response, _ = manager.process_input(phone, "START")
+        is_safe, unsafe = self.is_gsm7_safe(response)
+        assert is_safe, f"START response contains non-GSM7 chars: {unsafe[:10]}"
+
+        # Test name response
+        response, _ = manager.process_input(phone, "TestUser")
+        is_safe, unsafe = self.is_gsm7_safe(response)
+        assert is_safe, f"Name response contains non-GSM7 chars: {unsafe[:10]}"
+
+        # Test route selection
+        response, _ = manager.process_input(phone, "1")
+        is_safe, unsafe = self.is_gsm7_safe(response)
+        assert is_safe, f"Route response contains non-GSM7 chars: {unsafe[:10]}"
+
+    def test_quick_start_guide_gsm7_safe(self):
+        """Quick start guide should be GSM-7 safe."""
+        from app.services.onboarding import OnboardingManager
+
+        # Complete onboarding to trigger quick start guide generation
+        manager = OnboardingManager()
+        phone = "+61400000098"
+        manager.process_input(phone, "START")
+        manager.process_input(phone, "TestUser")
+        response, _ = manager.process_input(phone, "1")  # Select route
+
+        # The completion response should be GSM-7 safe
+        is_safe, unsafe = self.is_gsm7_safe(response)
+        assert is_safe, f"Quick start response contains non-GSM7 chars: {unsafe[:10]}"
+
+    def test_segment_calculation(self):
+        """Verify segment calculation matches expected values."""
+        # GSM-7 tests
+        assert self.calculate_segments("Hello")[0] == 1  # Short message
+        assert self.calculate_segments("A" * 160)[0] == 1  # Exactly 1 segment
+        assert self.calculate_segments("A" * 161)[0] == 2  # Just over 1 segment
+        assert self.calculate_segments("A" * 306)[0] == 2  # 160 + 146 = 306 chars fits in 2 segs
+        assert self.calculate_segments("A" * 460)[0] == 3  # 160 + 153 + 153 = 466 max for 3 segs
+
+        # UCS-2 tests (with non-GSM7 char)
+        assert self.calculate_segments("Hello±World")[0] == 1  # Short with ±
+        assert self.calculate_segments("±" + "A" * 69)[0] == 1  # Exactly 70 UCS-2
+        assert self.calculate_segments("±" + "A" * 70)[0] == 2  # Just over 70
+
+    def test_cost_estimation(self):
+        """Test cost estimation based on segment count."""
+        COST_PER_SEGMENT = 0.05  # ~5 cents per segment (Twilio AU)
+
+        # GSM-7 message (1332 chars)
+        gsm7_msg = "A" * 1332
+        gsm7_segs, encoding = self.calculate_segments(gsm7_msg)
+        assert encoding == "GSM-7"
+        assert gsm7_segs == 9  # (1332 - 160) / 153 + 1 = 8.7 -> 9
+
+        # Same length but with Unicode (forces UCS-2)
+        ucs2_msg = "±" + "A" * 1331
+        ucs2_segs, encoding = self.calculate_segments(ucs2_msg)
+        assert encoding == "UCS-2"
+        assert ucs2_segs == 20  # (1332 - 70) / 67 + 1 = 19.8 -> 20
+
+        # Cost comparison
+        gsm7_cost = gsm7_segs * COST_PER_SEGMENT
+        ucs2_cost = ucs2_segs * COST_PER_SEGMENT
+
+        assert ucs2_cost > gsm7_cost * 2, "UCS-2 should be >2x more expensive"
+        print(f"\n1332 chars: GSM-7 = {gsm7_segs} segs (${gsm7_cost:.2f}), "
+              f"UCS-2 = {ucs2_segs} segs (${ucs2_cost:.2f})")
 
 
 if __name__ == "__main__":

@@ -195,17 +195,36 @@ class BOMService:
     ) -> CellForecast:
         """
         Get hourly forecast for next N hours (for FORECAST command).
-        
+
         Args:
             lat: Latitude
             lon: Longitude
             hours: Number of hours (default 12)
-        
+
         Returns:
             CellForecast with hourly periods
         """
         return await self.get_forecast(lat, lon, days=2, resolution="hourly")
-    
+
+    async def get_daily_forecast(
+        self,
+        lat: float,
+        lon: float,
+        days: int = 7
+    ) -> CellForecast:
+        """
+        Get daily forecast for next N days (for CAST7 command).
+
+        Args:
+            lat: Latitude
+            lon: Longitude
+            days: Number of days (default 7)
+
+        Returns:
+            CellForecast with 3-hourly periods for daily aggregation
+        """
+        return await self.get_forecast(lat, lon, days=days, resolution="3hourly")
+
     async def _fetch_real_forecast(
         self,
         cell_id: str,
@@ -537,19 +556,24 @@ class BOMService:
                 logger.warning(f"Error parsing BOM hourly period: {e}")
                 continue
         
+        # BOM temperatures are NOT elevation-adjusted - they use a low-elevation baseline
+        # For SW Tasmania alpine areas, assume BOM uses ~300m reference elevation
+        # This allows proper lapse rate adjustment to camp/peak elevations
+        bom_base_elevation = 300
+
         return CellForecast(
             cell_id=cell_id,
             geohash=geohash,
             lat=lat,
             lon=lon,
-            base_elevation=grid_elevation,  # Actual DEM elevation for temp adjustments
+            base_elevation=bom_base_elevation,  # BOM baseline for lapse rate adjustment
             periods=periods,
             fetched_at=now,
             expires_at=now + timedelta(hours=settings.BOM_CACHE_TTL_HOURS),
             is_cached=False,
             source="bom"
         )
-    
+
     def _parse_bom_3hourly_response(
         self,
         cell_id: str,
@@ -656,20 +680,24 @@ class BOMService:
             except (KeyError, ValueError) as e:
                 print(f"Error parsing period: {e}")
                 continue
-        
+
+        # BOM temperatures are NOT elevation-adjusted - they use a low-elevation baseline
+        # For SW Tasmania alpine areas, assume BOM uses ~300m reference elevation
+        bom_base_elevation = 300
+
         return CellForecast(
             cell_id=cell_id,
             geohash=geohash,
             lat=lat,
             lon=lon,
-            base_elevation=grid_elevation,  # Actual DEM elevation for temp adjustments
+            base_elevation=bom_base_elevation,  # BOM baseline for lapse rate adjustment
             periods=periods,
             fetched_at=now,
             expires_at=now + timedelta(hours=settings.BOM_CACHE_TTL_HOURS),
             is_cached=False,
             source="bom"
         )
-    
+
     def _generate_mock_forecast(
         self,
         cell_id: str,

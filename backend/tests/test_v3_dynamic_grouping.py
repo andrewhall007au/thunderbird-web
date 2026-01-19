@@ -262,9 +262,10 @@ class TestFormatCAST7Grouped:
             date=datetime.now(TZ_HOBART)
         )
 
-        assert "±2C" in result, "Should show temperature threshold"
-        assert "±2mm" in result, "Should show rain threshold"
-        assert "±5km/h" in result, "Should show wind threshold"
+        # GSM-7 safe format (no ± character)
+        assert "2C" in result, "Should show temperature threshold"
+        assert "2mm" in result, "Should show rain threshold"
+        assert "5km/h" in result, "Should show wind threshold"
 
     def test_format_shows_zone_headers(self):
         """Output should show ZONE headers with location codes."""

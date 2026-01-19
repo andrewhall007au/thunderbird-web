@@ -596,7 +596,7 @@ class ResponseGenerator:
         """Generate HELP/COMMANDS response (v3.2)."""
         return (
             'THUNDERBIRD COMMANDS\n'
-            '────────────────────\n'
+            '--------------------\n'
             'CAST12 [LOC] = 12hr forecast\n'
             'CAST24 [LOC] = 24hr forecast\n'
             'CAST7 [LOC] = 7-day location\n'
@@ -623,7 +623,7 @@ class ResponseGenerator:
         expires_str = expires_at.strftime('%d %b %Y')
         return (
             f'THUNDERBIRD STATUS\n'
-            f'────────────────────\n'
+            f'--------------------\n'
             f'Route: {route_name}\n'
             f'Position: {current_camp}\n'
             f'Day: {day_number} of {total_days}\n'
@@ -636,7 +636,7 @@ class ResponseGenerator:
         """Generate KEY response (v3.1 - with CB reinstated)."""
         return (
             'FORECAST COLUMN KEY\n'
-            '────────────────────\n'
+            '--------------------\n'
             'Hr  = Hour (24hr)\n'
             'Tmp = Temperature (C)\n'
             '%Rn = Rain probability\n'
@@ -665,7 +665,7 @@ class ResponseGenerator:
         time_str = timestamp.strftime('%H:%M') if timestamp else datetime.now(TZ_HOBART).strftime('%H:%M')
         
         msg = (
-            f'✓ Checked in at {camp_name}\n'
+            f'[OK] Checked in at {camp_name}\n'
             f'  {camp_code} at {time_str}\n'
         )
         
@@ -691,7 +691,7 @@ class ResponseGenerator:
         
         return (
             f'{route_name}\n'
-            f'────────────────────\n'
+            f'--------------------\n'
             f'CAMPS:\n{camps}\n\n'
             f'PEAKS:\n{peaks}\n\n'
             f'CAST [CODE] = forecast\n'
@@ -724,7 +724,7 @@ class ResponseGenerator:
                 'Text ALERTS ON to receive future warnings.'
             )
         
-        msg = 'ACTIVE WARNINGS\n────────────────────\n'
+        msg = 'ACTIVE WARNINGS\n--------------------\n'
         for w in warnings[:3]:
             msg += f"⚠️ {w.get('title', 'Warning')}\n"
             msg += f"   {w.get('description', '')}\n"

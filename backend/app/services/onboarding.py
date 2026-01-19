@@ -352,9 +352,9 @@ class OnboardingManager:
 
         # v3.2: Pull-based confirmation message
         lines = [
-            f"{route['name']} ✓\n",
+            f"{route['name']} [OK]\n",
             "FORECAST COMMANDS",
-            "─────────────────",
+            "-----------------",
             "CAST12 [CAMP/PEAK]",
             "  12hr hourly e.g. CAST12 LAKEO",
             "CAST24 [CAMP/PEAK]",
@@ -364,7 +364,7 @@ class OnboardingManager:
             "CAST7 CAMPS = 7-day all camps",
             "CAST7 PEAKS = 7-day all peaks\n",
             "OTHER COMMANDS",
-            "─────────────────",
+            "-----------------",
             "CHECKIN [CAMP]",
             "  Check in & notify SafeCheck",
             "ROUTE = List camp/peak codes",
@@ -384,26 +384,47 @@ class OnboardingManager:
         Generate the Quick Start Guide messages for the user's route.
         v3.1: Dynamically loads camps and peaks from JSON route files.
         v3.2: Groups peaks by BOM cell to show primary + nearby count.
-        Returns list of messages to send (Steps 4-6 from spec Section 7.3).
+        v3.3: Adds forecast KEY as first message.
+        Returns list of messages to send.
         """
         from app.services.routes import get_route, get_peak_groups
 
         messages = []
         route_data = get_route(session.route_id)
 
-        # [1/2] CAMPS LIST - v3.1 spec Step 4
+        # [1/3] FORECAST KEY - explain the columns first
+        key_lines = [
+            "FORECAST KEY",
+            "======================",
+            "Hr  = Hour (24hr)",
+            "Tmp = Temperature C",
+            "%Rn = Rain probability",
+            "Prec = R#-# rain, S#-# snow",
+            "Wa/Wm = Wind avg/max km/h",
+            "Wd  = Wind direction",
+            "%Cd = Cloud cover",
+            "CB  = Cloud base (x100m)",
+            "FL  = Freezing lvl (x100m)",
+            "D   = Danger (!,!!,!!!)",
+            "",
+            "CB=8 = clouds at 800m",
+            "FL=12 = freezing at 1200m"
+        ]
+        messages.append("\n".join(key_lines))
+
+        # [2/3] CAMPS LIST
         if route_data:
-            camp_lines = ["YOUR CAMPS", "══════════════════════"]
+            camp_lines = ["YOUR CAMPS", "======================"]
             for camp in route_data.camps:
                 camp_lines.append(f"{camp.code} = {camp.name}")
             camp_lines.append("")
-            camp_lines.append("Use: CAST LAKEO or CHECKIN LAKEO")
+            camp_lines.append("Use: CAST12 LAKEO or CHECKIN LAKEO")
             messages.append("\n".join(camp_lines))
 
-            # [2/2] PEAKS LIST - v3.2: Grouped by BOM cell
+            # [3/3] PEAKS LIST - Grouped by BOM cell
             if route_data.peaks:
                 peak_groups = get_peak_groups(route_data)
-                peak_lines = ["YOUR PEAKS", "══════════════════════"]
+                peak_lines = ["YOUR PEAKS", "======================"]
                 peak_lines.append(f"({len(peak_groups)} forecast zones)")
                 peak_lines.append("")
                 for group in peak_groups:
@@ -417,7 +438,7 @@ class OnboardingManager:
             # Fallback if route not found
             messages.append(
                 "YOUR CAMPS\n"
-                "══════════════════════\n"
+                "======================\n"
                 "(Route data loading...)\n\n"
                 "Text ROUTE to see all codes."
             )
@@ -425,14 +446,14 @@ class OnboardingManager:
         # [3/3] SafeCheck setup - v3.2
         messages.append(
             "SAFECHECK\n"
-            "══════════════════════\n"
+            "======================\n"
             "Notify loved ones of your\n"
             "progress on trail.\n\n"
             "To add a contact, type:\n"
             "  SAFE +61400123456 Mum\n\n"
             "(Up to 10 contacts)\n\n"
             "When you CHECKIN, they get:\n"
-            "─────────────────────\n"
+            "--------------------\n"
             "Andrew checked in at\n"
             "Lake Oberon (863m)\n"
             "14:32 18/01\n"
@@ -518,7 +539,7 @@ class OnboardingFlow:
         """Step 1: Welcome and ask for name."""
         return (
             "Welcome to Thunderbird!\n"
-            "────────────────────\n"
+            "--------------------\n"
             "Backcountry weather for hikers.\n\n"
             "What's your name? (Used for SafeCheck notifications)"
         )
@@ -547,7 +568,7 @@ class OnboardingFlow:
         """Step 3: Commands guide."""
         return (
             "QUICK COMMANDS\n"
-            "────────────────────\n"
+            "--------------------\n"
             "CAST [LOC] = 12hr forecast\n"
             "CAST24 [LOC] = 24hr forecast\n"
             "CAST7 = 7-day all camps\n"
@@ -571,7 +592,7 @@ class OnboardingFlow:
         
         return (
             f"YOUR ROUTE CAMPS\n"
-            f"────────────────────\n"
+            f"--------------------\n"
             f"{camp_list}\n\n"
             f"Use: CAST [CODE] for forecast\n"
             f"Use: CHECKIN [CODE] to check in\n\n"
@@ -589,7 +610,7 @@ class OnboardingFlow:
         """Step 6: SafeCheck and Alerts setup."""
         return (
             "OPTIONAL FEATURES\n"
-            "────────────────────\n"
+            "--------------------\n"
             "SafeCheck: Notify contacts when you check in\n"
             "  SAFE +61400123456 Kate\n\n"
             "BOM Alerts: Severe weather warnings\n"
@@ -611,7 +632,7 @@ def get_peaks_message(route_id: str) -> str:
     if not route or not route.peaks:
         return "No peaks on this route."
     
-    lines = ["YOUR ROUTE PEAKS", "────────────────────"]
+    lines = ["YOUR ROUTE PEAKS", "--------------------"]
     
     for peak in route.peaks:
         lines.append(f"{peak.code} = {peak.name} ({peak.elevation}m)")

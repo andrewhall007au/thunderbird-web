@@ -583,14 +583,20 @@ async def send_quick_start_guide(phone: str):
 async def complete_user_registration(session):
     """Save the completed registration to database."""
     from app.models.database import user_store
-    
+    from datetime import date as date_type
+
     try:
+        # v3.1 pull-based flow: start_date and num_days may be None
+        # Use today as start and 30 days as default duration
+        start_date = session.start_date or date_type.today()
+        num_days = session.num_days or 30
+
         user_store.create_user(
             phone=session.phone,
             route_id=session.route_id,
-            start_date=session.start_date,
-            end_date=session.start_date + timedelta(days=session.num_days),
-            direction=session.direction,
+            start_date=start_date,
+            end_date=start_date + timedelta(days=num_days),
+            direction=session.direction or "standard",
             trail_name=session.trail_name
         )
         logger.info(f"User registered: {PhoneUtils.mask(session.phone)} ({session.trail_name}) on {session.route_name}")

@@ -171,7 +171,7 @@ def format_notification(
     
     msg = (
         f"THUNDERBIRD SAFECHECK\n"
-        f"────────────────────\n"
+        f"--------------------\n"
         f"{name} checked in:\n"
         f"  {camp_name}"
     )
