@@ -34,25 +34,27 @@ Phase 2: Payments            Phase 3: Route Creation                  │
 
 ## Phase 1: Foundation
 
+**Status:** Complete (2026-01-19)
+
 **Goal:** Modular codebase with account system enabling all future phases
 
 **Requirements covered:** FOUN-01 through FOUN-05
 
-**Plans:** 4 plans
+**Plans:** 4 plans (4/4 complete)
 
 Plans:
-- [ ] 01-01-PLAN.md — Refactor main.py into APIRouter modules and create service stubs
+- [x] 01-01-PLAN.md — Refactor main.py into APIRouter modules and create service stubs (completed 2026-01-19)
 - [x] 01-02-PLAN.md — Set up Alembic migrations with SQLite batch mode (completed 2026-01-19)
-- [ ] 01-03-PLAN.md — Implement account registration, login, and JWT sessions
-- [ ] 01-04-PLAN.md — Add phone number linking and auth tests
+- [x] 01-03-PLAN.md — Implement account registration, login, and JWT sessions (completed 2026-01-19)
+- [x] 01-04-PLAN.md — Add phone number linking and auth tests (completed 2026-01-19)
 
 ### Deliverables
 
-- [ ] Refactor `main.py` (1685 lines) into service modules
+- [x] Refactor `main.py` (1685 lines) into service modules
 - [x] Set up Alembic database migrations
-- [ ] Create account system (email/password)
-- [ ] Session persistence with JWT
-- [ ] Phone number linking to accounts
+- [x] Create account system (email/password)
+- [x] Session persistence with JWT
+- [x] Phone number linking to accounts
 
 ### Key Files
 
@@ -387,4 +389,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-19 after 01-02 completion*
+*Last updated: 2026-01-19 after Phase 1 completion*

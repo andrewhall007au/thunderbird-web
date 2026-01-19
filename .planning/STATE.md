@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
 **Last updated:** 2026-01-19
-**Current phase:** Phase 1 (Foundation) - In progress
+**Current phase:** Phase 1 (Foundation) - Complete
 
 ## Project Reference
 
@@ -9,22 +9,22 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Foundation phase - authentication system complete
+**Current focus:** Foundation phase complete, ready for Phase 2 (Payments) or Phase 3 (Route Creation)
 
 ## Current Position
 
 Phase: 1 of 6 (Foundation)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-01-19 - Completed 01-03-PLAN.md
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-01-19 - Completed 01-04-PLAN.md
 
-Progress: ███░░░░░░░ 12%
+Progress: ████░░░░░░ 16%
 
 ## Phase Status
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 1 | Foundation | In progress | 3/4 plans |
+| 1 | Foundation | Complete | 4/4 plans |
 | 2 | Payments | Not started | 0/12 requirements |
 | 3 | Route Creation | Not started | 0/12 requirements |
 | 4 | User Flows | Not started | 0/9 requirements |
@@ -35,6 +35,8 @@ Progress: ███░░░░░░░ 12%
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-19 | Reuse PhoneUtils for normalization | Phone linking uses existing sms.py utility |
+| 2026-01-19 | Phone lookup requires auth | Prevents enumeration attacks |
 | 2026-01-19 | Argon2 via pwdlib (not bcrypt) | Modern password hashing, faster and more secure |
 | 2026-01-19 | Account model separate from User | Web login (email/pwd) vs SMS hikers (phone) |
 | 2026-01-19 | Case-insensitive email | Normalized to lowercase on storage |
@@ -43,7 +45,6 @@ Progress: ███░░░░░░░ 12%
 | 2026-01-19 | Router-per-domain organization | webhook.py, admin.py, api.py, auth.py |
 | 2026-01-19 | Fork model (not multi-tenant) | Simpler architecture, evolves independently |
 | 2026-01-19 | $29.99 launch, $49.99 RRP | Dynamic pricing with admin configuration |
-| 2026-01-19 | 8 countries at launch | USA, Canada, UK, France, Italy, Switzerland, NZ, South Africa |
 
 ## Blockers
 
@@ -59,30 +60,29 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-19 08:55Z
-Stopped at: Completed 01-03-PLAN.md (Account authentication system)
+Last session: 2026-01-19 09:00Z
+Stopped at: Completed 01-04-PLAN.md (Phone linking and auth tests)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (01-03):**
-- Created Account model and AccountStore for web authentication
-- Alembic migration for accounts table with email unique index
-- JWT token generation with Argon2 password hashing
-- Auth router with /register, /token, /me endpoints
-- get_current_account dependency for protected endpoints
-- All 280 tests pass
+**What was done (01-04):**
+- Phone linking endpoint POST /auth/phone
+- Phone lookup endpoint GET /auth/phone/{phone}
+- get_by_phone method added to AccountStore
+- Comprehensive auth test suite (21 tests)
+- All 301 tests pass (up from 280)
+- Phase 1 Foundation complete (all 5 FOUN requirements)
 
 **What's next:**
-1. Execute 01-04-PLAN.md (likely phone linking or final foundation tasks)
-2. Phase 2 (Payments) and Phase 3 (Route Creation) can run in parallel after Phase 1
+1. Phase 2 (Payments) and Phase 3 (Route Creation) can run in parallel
+2. Plan phases before executing
 3. Auth system ready for frontend integration
 
 **Key files created:**
-- `backend/app/models/account.py` - Account dataclass and AccountStore
-- `backend/app/services/auth.py` - JWT and password handling
-- `backend/app/routers/auth.py` - Registration and login endpoints
-- `backend/alembic/versions/4fd3f14bce7e_accounts_table.py` - Accounts migration
+- `backend/tests/test_auth.py` - Auth test suite (21 tests)
+- `backend/app/routers/auth.py` - Added phone endpoints
+- `backend/app/models/account.py` - Added get_by_phone
 
 **Key risks to monitor:**
 - SMS margin erosion across countries (verify Twilio rates)
