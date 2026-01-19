@@ -2,12 +2,13 @@
 """
 Cost Monitor for Thunderbird Beta Testing
 
-Monitors daily SMS costs and:
-- Sends SMS warning at $20
-- Disables service at $25
+Two modes:
+1. Regular check (every 5 min): Only alerts at thresholds
+2. Daily summary (9am): Sends yesterday's cost + today's running total
 
-Run via cron every 5 minutes:
+Cron setup:
   */5 * * * * /root/overland-weather/venv/bin/python /root/overland-weather/scripts/cost_monitor.py
+  0 9 * * * /root/overland-weather/venv/bin/python /root/overland-weather/scripts/cost_monitor.py --daily
 
 Logs to: /var/log/thunderbird-cost-monitor.log
 """
@@ -17,13 +18,14 @@ import sys
 import sqlite3
 import subprocess
 import logging
-from datetime import date, datetime
+import argparse
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 # Configuration
 WARN_THRESHOLD = 20.0   # Send warning SMS at $20
 STOP_THRESHOLD = 25.0   # Stop service at $25
-ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "+61410663673")  # Your phone
+ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "+61410663673")
 DB_PATH = "/root/overland-weather/thunderbird.db"
 STATE_FILE = "/tmp/thunderbird_cost_alerts.txt"
 LOG_FILE = "/var/log/thunderbird-cost-monitor.log"
@@ -40,16 +42,45 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_today_cost() -> float:
-    """Get today's total SMS cost from database."""
+def get_cost_for_date(target_date: date) -> float:
+    """Get total SMS cost for a specific date."""
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.execute("""
             SELECT COALESCE(SUM(cost_aud), 0) as total_cost
             FROM message_log
             WHERE direction = 'outbound'
-            AND date(sent_at) = date('now')
-        """)
+            AND date(sent_at) = ?
+        """, (target_date.isoformat(),))
+        row = cursor.fetchone()
+        conn.close()
+        return float(row[0]) if row else 0.0
+    except Exception as e:
+        logger.error(f"Failed to query database: {e}")
+        return 0.0
+
+
+def get_today_cost() -> float:
+    """Get today's total SMS cost."""
+    return get_cost_for_date(date.today())
+
+
+def get_yesterday_cost() -> float:
+    """Get yesterday's total SMS cost."""
+    return get_cost_for_date(date.today() - timedelta(days=1))
+
+
+def get_month_cost() -> float:
+    """Get current month's total SMS cost."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        month_start = date.today().replace(day=1).isoformat()
+        cursor = conn.execute("""
+            SELECT COALESCE(SUM(cost_aud), 0) as total_cost
+            FROM message_log
+            WHERE direction = 'outbound'
+            AND date(sent_at) >= ?
+        """, (month_start,))
         row = cursor.fetchone()
         conn.close()
         return float(row[0]) if row else 0.0
@@ -77,13 +108,12 @@ def mark_alert_sent(alert_type: str):
     """Mark that an alert has been sent today."""
     today = date.today().isoformat()
 
-    # Read existing alerts
     lines = []
     if Path(STATE_FILE).exists():
         with open(STATE_FILE, 'r') as f:
-            lines = [l.strip() for l in f if not l.startswith(today)]
+            # Keep only today's alerts (clean up old ones)
+            lines = [l.strip() for l in f if l.startswith(today)]
 
-    # Add new alert
     lines.append(f"{today}|{alert_type}")
 
     with open(STATE_FILE, 'w') as f:
@@ -93,7 +123,6 @@ def mark_alert_sent(alert_type: str):
 def send_sms(message: str) -> bool:
     """Send SMS via Twilio."""
     try:
-        # Add project to path
         sys.path.insert(0, '/root/overland-weather')
 
         from twilio.rest import Client
@@ -151,36 +180,53 @@ def check_service_status() -> bool:
         return False
 
 
-def main():
-    """Main monitoring loop."""
+def send_daily_summary():
+    """Send 9am daily summary SMS."""
+    logger.info("Sending daily summary...")
+
+    yesterday_cost = get_yesterday_cost()
+    today_cost = get_today_cost()
+    month_cost = get_month_cost()
+
+    message = (
+        f"THUNDERBIRD DAILY\n"
+        f"Yesterday: ${yesterday_cost:.2f}\n"
+        f"Today so far: ${today_cost:.2f}\n"
+        f"Month total: ${month_cost:.2f}\n"
+        f"Limit: ${STOP_THRESHOLD}/day"
+    )
+
+    if send_sms(message):
+        logger.info("Daily summary sent")
+    else:
+        logger.error("Failed to send daily summary")
+
+
+def check_thresholds():
+    """Check cost thresholds and alert/disable as needed."""
     logger.info("Cost monitor check starting...")
 
-    # Get current cost
     cost = get_today_cost()
     logger.info(f"Today's SMS cost: ${cost:.2f}")
 
-    # Get alerts already sent today
     alerts_sent = get_today_alerts()
 
-    # Check thresholds
     if cost >= STOP_THRESHOLD:
         if "stopped" not in alerts_sent:
             logger.warning(f"COST THRESHOLD EXCEEDED: ${cost:.2f} >= ${STOP_THRESHOLD}")
 
-            # Stop the service first
             if check_service_status():
                 stop_service()
 
-            # Send notification
             send_sms(
                 f"THUNDERBIRD DISABLED\n"
                 f"Daily cost ${cost:.2f} exceeded ${STOP_THRESHOLD} limit.\n"
-                f"Service stopped to prevent overrun.\n"
+                f"Service stopped.\n"
                 f"To restart: systemctl start overland"
             )
             mark_alert_sent("stopped")
         else:
-            logger.info("Service already stopped today, skipping")
+            logger.info("Service already stopped today")
 
     elif cost >= WARN_THRESHOLD:
         if "warning" not in alerts_sent:
@@ -188,21 +234,32 @@ def main():
 
             send_sms(
                 f"THUNDERBIRD WARNING\n"
-                f"Daily SMS cost: ${cost:.2f}\n"
-                f"Approaching ${STOP_THRESHOLD} limit.\n"
-                f"Service will auto-disable at ${STOP_THRESHOLD}."
+                f"Daily cost: ${cost:.2f}\n"
+                f"Limit: ${STOP_THRESHOLD}\n"
+                f"Service will auto-disable at limit."
             )
             mark_alert_sent("warning")
         else:
-            logger.info("Warning already sent today, skipping")
+            logger.info("Warning already sent today")
     else:
-        logger.info(f"Cost ${cost:.2f} is below warning threshold ${WARN_THRESHOLD}")
+        logger.info(f"Cost ${cost:.2f} below warning threshold ${WARN_THRESHOLD}")
 
     logger.info("Cost monitor check complete")
 
 
+def main():
+    parser = argparse.ArgumentParser(description="Thunderbird cost monitor")
+    parser.add_argument("--daily", action="store_true", help="Send daily summary (9am)")
+    args = parser.parse_args()
+
+    if args.daily:
+        send_daily_summary()
+    else:
+        check_thresholds()
+
+
 if __name__ == "__main__":
-    # Load environment from .env file if running standalone
+    # Load environment from .env file
     env_file = Path("/root/overland-weather/.env")
     if env_file.exists():
         with open(env_file) as f:
