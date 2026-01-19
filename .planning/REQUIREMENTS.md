@@ -17,18 +17,18 @@ Requirements for initial global launch. Each maps to roadmap phases.
 
 ### Payments
 
-- [ ] **PAY-01**: User can purchase access for $29.99 via Stripe Checkout
-- [ ] **PAY-02**: System applies dynamic pricing (RRP $49.99, launch $29.99, configurable in admin)
-- [ ] **PAY-03**: User can enter discount code at checkout
-- [ ] **PAY-04**: Discount codes stack with launch pricing
-- [ ] **PAY-05**: User receives order confirmation email with SMS number and quick start
-- [ ] **PAY-06**: User balance tracked per account
-- [ ] **PAY-07**: User can top up $10 blocks via web with stored card
-- [ ] **PAY-08**: User can top up via SMS command ("BUY $10")
-- [ ] **PAY-09**: User receives low balance warning SMS at $2 remaining
-- [ ] **PAY-10**: Country-specific SMS cost tables implemented (8 countries)
-- [ ] **PAY-11**: Segment count per $10 varies by country (80% min margin maintained)
-- [ ] **PAY-12**: SMS cost verification function reconciles against Twilio actuals
+- [x] **PAY-01**: User can purchase access for $29.99 via Stripe Checkout
+- [x] **PAY-02**: System applies dynamic pricing (RRP $49.99, launch $29.99, configurable in admin)
+- [x] **PAY-03**: User can enter discount code at checkout
+- [x] **PAY-04**: Discount codes stack with launch pricing
+- [x] **PAY-05**: User receives order confirmation email with SMS number and quick start
+- [x] **PAY-06**: User balance tracked per account
+- [x] **PAY-07**: User can top up $10 blocks via web with stored card
+- [x] **PAY-08**: User can top up via SMS command ("BUY $10")
+- [x] **PAY-09**: User receives low balance warning SMS at $2 remaining
+- [x] **PAY-10**: Country-specific SMS cost tables implemented (8 countries)
+- [x] **PAY-11**: Segment count per $10 varies by country (80% min margin maintained)
+- [x] **PAY-12**: SMS cost verification function reconciles against Twilio actuals
 
 ### Route Creation
 
@@ -134,18 +134,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUN-03 | Phase 1 | Complete |
 | FOUN-04 | Phase 1 | Complete |
 | FOUN-05 | Phase 1 | Complete |
-| PAY-01 | Phase 2 | Pending |
-| PAY-02 | Phase 2 | Pending |
-| PAY-03 | Phase 2 | Pending |
-| PAY-04 | Phase 2 | Pending |
-| PAY-05 | Phase 2 | Pending |
-| PAY-06 | Phase 2 | Pending |
-| PAY-07 | Phase 2 | Pending |
-| PAY-08 | Phase 2 | Pending |
-| PAY-09 | Phase 2 | Pending |
-| PAY-10 | Phase 2 | Pending |
-| PAY-11 | Phase 2 | Pending |
-| PAY-12 | Phase 2 | Pending |
+| PAY-01 | Phase 2 | Complete |
+| PAY-02 | Phase 2 | Complete |
+| PAY-03 | Phase 2 | Complete |
+| PAY-04 | Phase 2 | Complete |
+| PAY-05 | Phase 2 | Complete |
+| PAY-06 | Phase 2 | Complete |
+| PAY-07 | Phase 2 | Complete |
+| PAY-08 | Phase 2 | Complete |
+| PAY-09 | Phase 2 | Complete |
+| PAY-10 | Phase 2 | Complete |
+| PAY-11 | Phase 2 | Complete |
+| PAY-12 | Phase 2 | Complete |
 | ROUT-01 | Phase 3 | Pending |
 | ROUT-02 | Phase 3 | Pending |
 | ROUT-03 | Phase 3 | Pending |
@@ -193,4 +193,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after Phase 1 completion*
+*Last updated: 2026-01-19 after Phase 2 completion*
