@@ -20,7 +20,7 @@ from app.services.routes import get_route
 from app.services.formatter import ForecastFormatter
 
 # Import routers
-from app.routers import webhook, admin, api, auth
+from app.routers import webhook, admin, api, auth, payments
 
 # Try to import APScheduler (optional dependency)
 try:
@@ -338,6 +338,7 @@ app.include_router(webhook.router)
 app.include_router(admin.router)
 app.include_router(api.router)
 app.include_router(auth.router)
+app.include_router(payments.router)
 
 # Root health check (kept at root for compatibility)
 @app.get("/health")
