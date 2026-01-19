@@ -4,10 +4,16 @@ import { useState, useCallback } from 'react';
 import Map, { NavigationControl, MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RouteTrack from './RouteTrack';
+import WaypointMarker, { Waypoint } from './WaypointMarker';
 
 interface MapEditorProps {
   trackGeojson?: GeoJSON.Feature;
+  waypoints?: Waypoint[];
+  selectedWaypointId?: string | null;
   onMapClick?: (lat: number, lng: number) => void;
+  onWaypointSelect?: (id: string) => void;
+  onWaypointDrag?: (id: string, lat: number, lng: number) => void;
+  onWaypointDelete?: (id: string) => void;
   initialViewport?: {
     latitude: number;
     longitude: number;
@@ -17,7 +23,12 @@ interface MapEditorProps {
 
 export default function MapEditor({
   trackGeojson,
+  waypoints = [],
+  selectedWaypointId,
   onMapClick,
+  onWaypointSelect,
+  onWaypointDrag,
+  onWaypointDelete,
   initialViewport = { latitude: -42.0, longitude: 146.0, zoom: 8 }
 }: MapEditorProps) {
   const [viewState, setViewState] = useState(initialViewport);
@@ -40,6 +51,16 @@ export default function MapEditor({
       >
         <NavigationControl position="top-right" />
         {trackGeojson && <RouteTrack geojson={trackGeojson} />}
+        {waypoints.map((wp) => (
+          <WaypointMarker
+            key={wp.id}
+            waypoint={wp}
+            isSelected={selectedWaypointId === wp.id}
+            onSelect={onWaypointSelect}
+            onDragEnd={onWaypointDrag}
+            onDelete={onWaypointDelete}
+          />
+        ))}
       </Map>
     </div>
   );
