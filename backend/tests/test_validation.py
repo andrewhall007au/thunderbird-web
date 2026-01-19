@@ -907,6 +907,148 @@ class TestOnboarding:
         assert session.state == OnboardingState.AWAITING_NAME
 
 
+class TestAdminDashboard:
+    """Test admin dashboard uses SQLite database correctly."""
+
+    def test_database_users_appear_in_list(self):
+        """Users saved to database should appear in list_users()."""
+        from app.models.database import SQLiteUserStore
+        from datetime import date, timedelta
+        import tempfile
+        import os
+
+        # Create a temporary database for testing
+        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+            test_db = f.name
+
+        try:
+            store = SQLiteUserStore(db_path=test_db)
+
+            # Create a test user
+            store.create_user(
+                phone="+61400099001",
+                route_id="overland_track",
+                start_date=date.today(),
+                end_date=date.today() + timedelta(days=7),
+                direction="standard",
+                trail_name="Test Trail"
+            )
+
+            # Verify user appears in list
+            users = store.list_users()
+            assert len(users) == 1
+            assert users[0].phone == "+61400099001"
+            assert users[0].route_id == "overland_track"
+        finally:
+            os.unlink(test_db)
+
+    def test_database_user_can_be_deleted(self):
+        """Users can be deleted from database."""
+        from app.models.database import SQLiteUserStore
+        from datetime import date, timedelta
+        import tempfile
+        import os
+
+        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+            test_db = f.name
+
+        try:
+            store = SQLiteUserStore(db_path=test_db)
+
+            # Create and then delete a user
+            store.create_user(
+                phone="+61400099002",
+                route_id="overland_track",
+                start_date=date.today(),
+                end_date=date.today() + timedelta(days=7),
+                direction="standard"
+            )
+
+            assert len(store.list_users()) == 1
+            assert store.delete_user("+61400099002") is True
+            assert len(store.list_users()) == 0
+        finally:
+            os.unlink(test_db)
+
+    def test_render_admin_handles_database_user(self):
+        """render_admin should work with database User type."""
+        from app.models.database import User as DbUser, SafeCheckContact
+        from app.services.admin import render_admin
+        from datetime import date, timedelta
+
+        # Create a database-style User
+        db_user = DbUser(
+            phone="+61400099003",
+            route_id="western_arthurs",
+            start_date=date.today(),
+            end_date=date.today() + timedelta(days=5),
+            trail_name="Western Arthurs",
+            direction="standard",
+            current_position=None,
+            status="registered",
+            safecheck_contacts=[]
+        )
+
+        # render_admin should not crash
+        html = render_admin([db_user], message="")
+
+        # Should contain user info
+        assert "+61400099003" in html
+        assert "western_arthurs" in html
+        assert "6d" in html  # duration = 5 days + 1 = 6
+
+    def test_active_users_filtered_by_date(self):
+        """get_active_users should only return users within date range."""
+        from app.models.database import SQLiteUserStore
+        from datetime import date, timedelta
+        import tempfile
+        import os
+
+        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+            test_db = f.name
+
+        try:
+            store = SQLiteUserStore(db_path=test_db)
+
+            # Create active user (today is within range)
+            store.create_user(
+                phone="+61400099004",
+                route_id="overland_track",
+                start_date=date.today() - timedelta(days=2),
+                end_date=date.today() + timedelta(days=5),
+                direction="standard"
+            )
+
+            # Create expired user (ended yesterday)
+            store.create_user(
+                phone="+61400099005",
+                route_id="overland_track",
+                start_date=date.today() - timedelta(days=10),
+                end_date=date.today() - timedelta(days=1),
+                direction="standard"
+            )
+
+            # Create future user (starts tomorrow)
+            store.create_user(
+                phone="+61400099006",
+                route_id="overland_track",
+                start_date=date.today() + timedelta(days=1),
+                end_date=date.today() + timedelta(days=8),
+                direction="standard"
+            )
+
+            # Only the active user should be returned
+            active = store.get_active_users()
+            assert len(active) == 1
+            assert active[0].phone == "+61400099004"
+
+            # But list_users should return all 3
+            all_users = store.list_users()
+            assert len(all_users) == 3
+        finally:
+            os.unlink(test_db)
+
+
 class TestGSM7Compliance:
     """Test SMS messages are GSM-7 safe to minimize segment costs."""
 
