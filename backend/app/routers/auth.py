@@ -19,6 +19,7 @@ from app.services.auth import (
     get_current_account,
 )
 from app.models.account import Account, account_store
+from app.services.sms import PhoneUtils
 from config.settings import settings
 
 
@@ -31,6 +32,11 @@ class RegisterRequest(BaseModel):
     """Registration request body."""
     email: EmailStr
     password: str = Field(..., min_length=8, description="Minimum 8 characters")
+
+
+class LinkPhoneRequest(BaseModel):
+    """Request to link phone number to account."""
+    phone: str = Field(..., description="Phone number (e.g., +61412345678 or 0412345678)")
 
 
 class AccountResponse(BaseModel):
@@ -126,4 +132,86 @@ async def get_me(account: Account = Depends(get_current_account)):
         email=account.email,
         phone=account.phone,
         created_at=account.created_at.isoformat() if account.created_at else ""
+    )
+
+
+@router.post("/phone", response_model=AccountResponse)
+async def link_phone(
+    request: LinkPhoneRequest,
+    account: Account = Depends(get_current_account)
+):
+    """
+    Link a phone number to the authenticated account.
+
+    The phone number is normalized to international format (+61...).
+    This enables connecting the web Account to SMS User data.
+
+    Args:
+        request: Phone number to link
+
+    Returns:
+        Updated account info
+
+    Raises:
+        400 if phone number is invalid format
+    """
+    # Normalize phone number using existing PhoneUtils
+    try:
+        normalized_phone = PhoneUtils.normalize(request.phone)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid phone number: {str(e)}"
+        )
+
+    # Link phone to account
+    success = account_store.link_phone(account.id, normalized_phone)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Account not found"
+        )
+
+    # Return updated account
+    updated_account = account_store.get_by_id(account.id)
+
+    return AccountResponse(
+        id=updated_account.id,
+        email=updated_account.email,
+        phone=updated_account.phone,
+        created_at=updated_account.created_at.isoformat() if updated_account.created_at else ""
+    )
+
+
+@router.get("/phone/{phone}", response_model=AccountResponse)
+async def get_account_by_phone(
+    phone: str,
+    account: Account = Depends(get_current_account)
+):
+    """
+    Look up account by phone number.
+
+    Requires authentication. Used for admin/debugging.
+    """
+    try:
+        normalized = PhoneUtils.normalize(phone)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid phone format"
+        )
+
+    # Look up account by phone
+    found = account_store.get_by_phone(normalized)
+    if not found:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account with this phone number"
+        )
+
+    return AccountResponse(
+        id=found.id,
+        email=found.email,
+        phone=found.phone,
+        created_at=found.created_at.isoformat() if found.created_at else ""
     )
