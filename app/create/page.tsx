@@ -19,8 +19,8 @@ import {
 const MapEditor = dynamic(() => import('../components/map/MapEditor'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[500px] md:h-[600px] bg-gray-900 rounded-lg animate-pulse flex items-center justify-center">
-      <p className="text-gray-500">Loading map...</p>
+    <div className="w-full h-[500px] md:h-[600px] bg-gray-50 rounded-lg animate-pulse flex items-center justify-center">
+      <p className="text-gray-600">Loading map...</p>
     </div>
   )
 });
@@ -305,18 +305,19 @@ function CreateRouteContent() {
     <div className="flex items-center gap-3">
       <span className={`
         flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg
-        ${isComplete ? 'bg-green-600 text-white' : isActive ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'}
+        ${isComplete ? 'bg-green-600 text-gray-900' : isActive ? 'bg-blue-600 text-gray-900' : 'bg-gray-200 text-gray-600'}
       `}>
-        {isComplete ? '✓' : step}
+        {step}
       </span>
-      <span className={`text-lg font-medium ${isActive || isComplete ? 'text-white' : 'text-gray-500'}`}>
+      <span className={`text-lg font-medium ${isActive || isComplete ? 'text-gray-900' : 'text-gray-600'}`}>
         {title}
       </span>
+      {isComplete && <span className="text-green-500">✓</span>}
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">
           {currentRouteId ? 'Edit Route' : 'Create Your Route'}
@@ -335,27 +336,46 @@ function CreateRouteContent() {
           </div>
         )}
 
-        {/* STEP 1: GPX Upload */}
+        {/* STEP 1: Choose source */}
         {currentStep === 1 && !isLoading && (
-          <div className="space-y-6">
-            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-xl font-semibold text-white mb-2">Upload your route</h2>
-              <p className="text-gray-400 mb-6">
-                Export a GPX file from your favorite hiking app (Gaia GPS, AllTrails, Caltopo, etc.)
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Browse Library Card */}
+            <a
+              href="/library"
+              className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-blue-500 transition-colors group"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-3xl">🗺️</span>
+                <h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-400 transition-colors">
+                  Browse Route Library
+                </h2>
+              </div>
+              <p className="text-gray-600">
+                Choose from popular trails and customize them for your trip
+              </p>
+              <p className="mt-4 text-blue-400 text-sm font-medium">
+                Explore routes →
+              </p>
+            </a>
+
+            {/* Upload GPX Card */}
+            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-3xl">📁</span>
+                <h2 className="text-xl font-semibold text-gray-900">Upload GPX File</h2>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Import from Gaia GPS, AllTrails, Caltopo, or any hiking app
               </p>
               <GPXUpload onUpload={handleGPXUpload} isLoading={isLoading} />
             </div>
-
-            <p className="text-gray-400">
-              Or <a href="/library" className="text-blue-400 hover:underline">browse the route library</a> to start with a popular trail
-            </p>
           </div>
         )}
 
         {isLoading && !trackGeojson && (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <span className="ml-3 text-gray-400">Loading route...</span>
+            <span className="ml-3 text-gray-600">Loading route...</span>
           </div>
         )}
 
@@ -365,14 +385,14 @@ function CreateRouteContent() {
             {/* Route name input */}
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
               <div className="flex-1 max-w-md">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Route Name
                 </label>
                 <input
                   type="text"
                   value={routeName}
                   onChange={handleRouteNameChange}
-                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
                   placeholder="My Awesome Hike"
                 />
               </div>
@@ -384,9 +404,9 @@ function CreateRouteContent() {
                   className={`
                     px-6 py-2 rounded-lg font-medium transition-colors
                     ${isSaving
-                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                      ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
                       : isDirty
-                        ? 'bg-blue-600 text-white hover:bg-blue-500'
+                        ? 'bg-blue-600 text-gray-900 hover:bg-blue-500'
                         : 'bg-green-700 text-green-200 cursor-default'}
                   `}
                 >
@@ -406,9 +426,9 @@ function CreateRouteContent() {
             </div>
 
             {/* Map and waypoint editing */}
-            <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-xl font-semibold text-white mb-2">Click the map to add waypoints</h2>
-              <p className="text-gray-400 mb-4">
+            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">2. Click the map to add waypoints</h2>
+              <p className="text-gray-600 mb-4">
                 Add camps, peaks, and points of interest where you want weather forecasts
               </p>
 
@@ -424,7 +444,7 @@ function CreateRouteContent() {
                     onWaypointDrag={handleWaypointDrag}
                     onWaypointDelete={handleWaypointDelete}
                   />
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-gray-600">
                     Click to add • Drag to move • Select to edit
                   </p>
                 </div>
@@ -450,9 +470,9 @@ function CreateRouteContent() {
 
             {/* STEP 3: Finalize - only shows after first waypoint */}
             {currentStep === 3 && (
-              <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-                <h2 className="text-xl font-semibold text-white mb-2">Finalize your route</h2>
-                <p className="text-gray-400 mb-6">
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">3. Finalize your route</h2>
+                <p className="text-gray-600 mb-6">
                   Save your route to get SMS codes for each waypoint
                 </p>
 
@@ -463,13 +483,13 @@ function CreateRouteContent() {
                     className={`
                       px-8 py-3 rounded-lg font-semibold text-lg transition-colors
                       ${isSaving
-                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                        : 'bg-green-600 text-white hover:bg-green-500'}
+                        ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
+                        : 'bg-green-600 text-gray-900 hover:bg-green-500'}
                     `}
                   >
                     {isSaving ? 'Saving...' : 'Finalize Route'}
                   </button>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     (don&apos;t worry, you can edit it at any time)
                   </p>
                 </div>
@@ -486,7 +506,7 @@ function CreateRouteContent() {
 export default function CreateRoutePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
     }>

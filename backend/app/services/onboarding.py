@@ -25,6 +25,7 @@ class OnboardingState(Enum):
     NONE = "none"
     AWAITING_NAME = "awaiting_name"
     AWAITING_TRAIL = "awaiting_trail"
+    AWAITING_UNITS = "awaiting_units"  # v3.5: metric/imperial preference
     AWAITING_DATE = "awaiting_date"
     AWAITING_DAYS = "awaiting_days"
     AWAITING_DIRECTION = "awaiting_direction"
@@ -43,6 +44,7 @@ class OnboardingSession:
     start_date: Optional[datetime] = None
     num_days: Optional[int] = None
     direction: Optional[str] = None  # "standard" or "reverse"
+    unit_system: Optional[str] = None  # v3.5: "metric" or "imperial"
     itinerary: List[Tuple[int, str, str]] = field(default_factory=list)  # [(day, date_str, camp_code), ...]
     created_at: datetime = field(default_factory=datetime.now)
     
@@ -163,7 +165,9 @@ class OnboardingManager:
             return self._process_name(session, text)
         elif session.state == OnboardingState.AWAITING_TRAIL:
             return self._process_trail_selection(session, text)
-        
+        elif session.state == OnboardingState.AWAITING_UNITS:
+            return self._process_units_input(session, text)
+
         elif session.state == OnboardingState.AWAITING_DATE:
             return self._process_date_input(session, text)
         
@@ -218,7 +222,7 @@ class OnboardingManager:
         ), False
     
     def _process_trail_selection(self, session: OnboardingSession, text: str) -> Tuple[str, bool]:
-        """Process Q2: trail selection. v3.1: Goes straight to completion."""
+        """Process Q2: trail selection. v3.5: Goes to unit selection."""
         text = text.strip()
 
         # v3.1: 6 route options matching spec Section 7.3
@@ -249,7 +253,32 @@ class OnboardingManager:
         session.route_name = route["name"]
         session.direction = "standard"  # v3.1: No direction question
 
-        # v3.1: Skip date/days/direction - go straight to completion
+        # v3.5: Ask unit preference before completion
+        session.state = OnboardingState.AWAITING_UNITS
+        return (
+            f"{route['name']} [OK]\n\n"
+            "Last question: Units?\n\n"
+            "1 = Metric (Celsius, meters)\n"
+            "2 = Imperial (Fahrenheit, feet)\n\n"
+            "Reply 1 or 2"
+        ), False
+
+    def _process_units_input(self, session: OnboardingSession, text: str) -> Tuple[str, bool]:
+        """Process Q3: unit system preference (metric/imperial)."""
+        text = text.strip().upper()
+
+        # Accept various inputs
+        if text in ["1", "M", "METRIC", "C", "CELSIUS"]:
+            session.unit_system = "metric"
+        elif text in ["2", "I", "IMPERIAL", "F", "FAHRENHEIT", "US"]:
+            session.unit_system = "imperial"
+        else:
+            return (
+                "Please reply 1 or 2:\n"
+                "1 = Metric (Celsius, meters)\n"
+                "2 = Imperial (Fahrenheit, feet)"
+            ), False
+
         return self._complete_registration(session)
     
     def _process_date_input(self, session: OnboardingSession, text: str) -> Tuple[str, bool]:

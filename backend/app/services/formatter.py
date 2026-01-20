@@ -572,18 +572,19 @@ class ForecastFormatter:
                 # Danger indicator (use adjusted temps for danger calc)
                 danger = self._calculate_danger(period, waypoint_elevation)
 
-                row = (
-                    f"{hour:02d}|"
-                    f"{adjusted_temp_min}-{adjusted_temp_max}|"
-                    f"{period.rain_chance}%|"
-                    f"{prec}|"
-                    f"{period.wind_avg}|"
-                    f"{period.wind_max}|"
-                    f"{wd}|"
-                    f"{period.cloud_cover}%|"
-                    f"{cb}|"
-                    f"{fl}|"
-                    f"{danger}"
+                row = format_forecast_row(
+                    hour=hour,
+                    temp_min=adjusted_temp_min,
+                    temp_max=adjusted_temp_max,
+                    rain_chance=period.rain_chance,
+                    prec=prec,
+                    wind_avg=period.wind_avg,
+                    wind_max=period.wind_max,
+                    wind_dir=wd,
+                    cloud_cover=period.cloud_cover,
+                    cloud_base=cb,
+                    freezing_level=fl,
+                    danger=danger
                 )
                 lines.append(row)
                 period_count += 1
@@ -1047,12 +1048,49 @@ def is_unusual_wind_direction(direction: str) -> bool:
 
 
 # Column Headers (v3.1 - CB reinstated for alpine safety)
+# v3.3: Fixed-width columns for better alignment on all devices
 def get_forecast_header() -> str:
     """
     Get column header for hourly forecast.
     v3.1: CB reinstated - critical for alpine safety (in-cloud conditions).
+    v3.3: Fixed-width padding for column alignment.
+    Column widths: Hr(2)|Tmp(5)|%Rn(4)|Prec(4)|Wa(2)|Wm(2)|Wd(2)|%Cd(4)|CB(2)|FL(2)|D(3)
     """
-    return "Hr|Tmp|%Rn|Prec|Wa|Wm|Wd|%Cd|CB|FL|D"
+    return "Hr|Tmp  | %Rn|Prec|Wa|Wm|Wd| %Cd|CB|FL|D  "
+
+
+def format_forecast_row(
+    hour: int,
+    temp_min: int,
+    temp_max: int,
+    rain_chance: int,
+    prec: str,
+    wind_avg: int,
+    wind_max: int,
+    wind_dir: str,
+    cloud_cover: int,
+    cloud_base: int,
+    freezing_level: int,
+    danger: str
+) -> str:
+    """
+    Format a single forecast row with fixed-width columns for alignment.
+    Column widths: Hr(2)|Tmp(5)|%Rn(4)|Prec(4)|Wa(2)|Wm(2)|Wd(2)|%Cld(4)|CB(2)|FL(2)|D(3)
+    """
+    temp_str = f"{temp_min}-{temp_max}"
+    return (
+        f"{hour:02d}|"
+        f"{temp_str:>5}|"
+        f"{rain_chance:>3}%|"
+        f"{prec:>4}|"
+        f"{wind_avg:>2}|"
+        f"{wind_max:>2}|"
+        f"{wind_dir:>2}|"
+        f"{cloud_cover:>3}%|"
+        f"{cloud_base:>2}|"
+        f"{freezing_level:>2}|"
+        f"{danger:<3}"
+    )
 
 
 def get_daily_header() -> str:
@@ -1119,18 +1157,19 @@ class FormatCAST12:
                 except ValueError:
                     cb = 1200
 
-            row = (
-                f"{hour:02d}|"
-                f"{period.get('temp_min', 0)}-{period.get('temp_max', 10)}|"
-                f"{period.get('rain_chance', 0)}%|"
-                f"{prec}|"
-                f"{period.get('wind_avg', 0)}|"
-                f"{period.get('wind_max', 0)}|"
-                f"{wd}|"
-                f"{period.get('cloud_cover', 0)}%|"
-                f"{cb // 100}|"
-                f"{fl // 100}|"
-                f"{period.get('danger', '')}"
+            row = format_forecast_row(
+                hour=hour,
+                temp_min=period.get('temp_min', 0),
+                temp_max=period.get('temp_max', 10),
+                rain_chance=period.get('rain_chance', 0),
+                prec=prec,
+                wind_avg=period.get('wind_avg', 0),
+                wind_max=period.get('wind_max', 0),
+                wind_dir=wd,
+                cloud_cover=period.get('cloud_cover', 0),
+                cloud_base=cb // 100,
+                freezing_level=fl // 100,
+                danger=period.get('danger', '')
             )
             lines.append(row)
 
@@ -1179,18 +1218,19 @@ class FormatCAST24:
                 except ValueError:
                     cb = 1200
 
-            row = (
-                f"{hour:02d}|"
-                f"{period.get('temp_min', 0)}-{period.get('temp_max', 10)}|"
-                f"{period.get('rain_chance', 0)}%|"
-                f"{prec}|"
-                f"{period.get('wind_avg', 0)}|"
-                f"{period.get('wind_max', 0)}|"
-                f"{wd}|"
-                f"{period.get('cloud_cover', 0)}%|"
-                f"{cb // 100}|"
-                f"{fl // 100}|"
-                f"{period.get('danger', '')}"
+            row = format_forecast_row(
+                hour=hour,
+                temp_min=period.get('temp_min', 0),
+                temp_max=period.get('temp_max', 10),
+                rain_chance=period.get('rain_chance', 0),
+                prec=prec,
+                wind_avg=period.get('wind_avg', 0),
+                wind_max=period.get('wind_max', 0),
+                wind_dir=wd,
+                cloud_cover=period.get('cloud_cover', 0),
+                cloud_base=cb // 100,
+                freezing_level=fl // 100,
+                danger=period.get('danger', '')
             )
             lines.append(row)
 
@@ -1666,6 +1706,250 @@ class FormatCAST7Grouped:
             messages = [f"[{i+1}/{total}] {m}" for i, m in enumerate(messages)]
 
         return messages
+
+
+# =============================================================================
+# UNIT CONVERSION FUNCTIONS - v3.4
+# Support for metric (Celsius, meters) and imperial (Fahrenheit, feet)
+# =============================================================================
+
+def celsius_to_fahrenheit(celsius: float) -> int:
+    """Convert Celsius to Fahrenheit, rounded to nearest integer."""
+    return round((celsius * 9 / 5) + 32)
+
+
+def meters_to_feet(meters: float) -> int:
+    """Convert meters to feet, rounded to nearest integer."""
+    return round(meters * 3.281)
+
+
+def convert_temp(temp_c: float, unit_system: str) -> int:
+    """Convert temperature based on unit system."""
+    if unit_system == "imperial":
+        return celsius_to_fahrenheit(temp_c)
+    return int(temp_c)
+
+
+def convert_elevation_hundreds(meters_hundreds: int, unit_system: str) -> int:
+    """
+    Convert elevation from hundreds of meters to appropriate unit.
+
+    Args:
+        meters_hundreds: Elevation in hundreds of meters (e.g., 12 = 1200m)
+        unit_system: "metric" or "imperial"
+
+    Returns:
+        Value in hundreds of the appropriate unit (e.g., 39 = 3900ft)
+    """
+    if unit_system == "imperial":
+        # Convert to actual meters, then to feet, then back to hundreds
+        meters = meters_hundreds * 100
+        feet = meters_to_feet(meters)
+        return feet // 100
+    return meters_hundreds
+
+
+def get_temp_symbol(unit_system: str) -> str:
+    """Get temperature symbol for unit system."""
+    return "f" if unit_system == "imperial" else "o"
+
+
+def get_elevation_unit(unit_system: str) -> str:
+    """Get elevation unit abbreviation."""
+    return "ft" if unit_system == "imperial" else "m"
+
+
+# =============================================================================
+# LABELED SPACED FORMAT - v3.4
+# User-friendly format without pipe columns, blank line between periods
+# Key at end for reference
+# =============================================================================
+
+# SMS Key legends
+SMS_KEY_LEGEND_METRIC = "Rn=Rain W=Wind Cld=Cloud CB=CloudBase(x100m) FL=Freeze(x100m)"
+SMS_KEY_LEGEND_IMPERIAL = "Rn=Rain W=Wind Cld=Cloud CB=CloudBase(x100ft) FL=Freeze(x100ft)"
+
+# Keep old name for backwards compatibility
+SMS_KEY_LEGEND = SMS_KEY_LEGEND_METRIC
+
+
+def get_sms_key_legend(unit_system: str) -> str:
+    """Get appropriate key legend for unit system."""
+    if unit_system == "imperial":
+        return SMS_KEY_LEGEND_IMPERIAL
+    return SMS_KEY_LEGEND_METRIC
+
+
+def format_labeled_period(
+    hour: int,
+    temp_min: int,
+    temp_max: int,
+    rain_chance: int,
+    rain_mm: str,
+    wind_avg: int,
+    wind_max: int,
+    cloud_cover: int,
+    cloud_base: int,
+    freezing_level: int,
+    danger: str = "",
+    unit_system: str = "metric"
+) -> str:
+    """
+    Format a single forecast period in labeled format.
+
+    Example output (metric):   "17h 21-23o Rn45% 2-5mm W20-33 Cld38% CB12 FL48"
+    Example output (imperial): "17h 70-73f Rn45% 2-5mm W20-33 Cld38% CB39 FL157"
+
+    Note: Uses 'o'/'f' instead of '°' for GSM-7 compatibility (° would double SMS cost)
+    """
+    # Convert temperatures if imperial
+    if unit_system == "imperial":
+        temp_min = celsius_to_fahrenheit(temp_min)
+        temp_max = celsius_to_fahrenheit(temp_max)
+        temp_symbol = "f"
+        # Convert CB and FL from hundreds of meters to hundreds of feet
+        cloud_base = convert_elevation_hundreds(cloud_base, unit_system)
+        freezing_level = convert_elevation_hundreds(freezing_level, unit_system)
+    else:
+        temp_symbol = "o"
+
+    temp_str = f"{temp_min}-{temp_max}{temp_symbol}"
+    wind_str = f"W{wind_avg}-{wind_max}"
+
+    # Rain: show percentage, add mm if precipitation expected
+    if rain_mm and rain_mm != "-" and rain_mm != "0":
+        rain_str = f"Rn{rain_chance}% {rain_mm}mm"
+    else:
+        rain_str = f"Rn{rain_chance}%"
+
+    line = f"{hour:02d}h {temp_str} {rain_str} {wind_str} Cld{cloud_cover}% CB{cloud_base} FL{freezing_level}"
+
+    if danger:
+        line += f" {danger}"
+
+    return line
+
+
+class FormatCastLabeled:
+    """
+    Format CAST forecast in labeled, spaced format for better mobile readability.
+    v3.4: Removes pipe columns, adds spacing between periods, key at end.
+    v3.5: Supports unit_system for metric/imperial conversion.
+    """
+
+    @staticmethod
+    def format(
+        forecast,
+        waypoint_code: str,
+        waypoint_name: str,
+        waypoint_elevation: int,
+        hours: int = 12,
+        include_key: bool = True,
+        unit_system: str = "metric"
+    ) -> str:
+        """
+        Format on-demand CAST forecast in labeled spaced format.
+
+        Args:
+            forecast: CellForecast with periods
+            waypoint_code: Short code like "LAKEO"
+            waypoint_name: Full name like "Lake Oberon"
+            waypoint_elevation: Elevation in meters (always stored as meters)
+            hours: Number of hours to show (default 12)
+            include_key: Whether to add legend at end (default True)
+            unit_system: "metric" (Celsius, meters) or "imperial" (Fahrenheit, feet)
+
+        Returns:
+            Formatted SMS text with labeled fields and spacing
+        """
+        lines = []
+
+        # Header - compact format with appropriate elevation unit
+        if unit_system == "imperial":
+            display_elevation = meters_to_feet(waypoint_elevation)
+            elev_unit = "ft"
+        else:
+            display_elevation = waypoint_elevation
+            elev_unit = "m"
+
+        lines.append(f"CAST {waypoint_code} {display_elevation}{elev_unit}")
+
+        # Light hours
+        now = datetime.now(TZ_HOBART)
+        light_str = LightCalculator.get_light_hours(forecast.lat, forecast.lon, now.date())
+        lines.append(light_str)
+        lines.append("")  # Blank line after header
+
+        # Calculate elevation adjustment
+        base_elevation = getattr(forecast, 'base_elevation', 0) or 0
+        elevation_diff = waypoint_elevation - base_elevation
+        temp_adjustment = (elevation_diff / 100) * 0.65
+
+        # Get forecast periods
+        current_hour = now.replace(minute=0, second=0, microsecond=0)
+        end_time = current_hour + timedelta(hours=hours)
+
+        period_count = 0
+        for period in forecast.periods:
+            if current_hour <= period.datetime < end_time:
+                hour = period.datetime.hour
+
+                # Apply elevation adjustment
+                adjusted_temp_min = int(period.temp_min - temp_adjustment)
+                adjusted_temp_max = int(period.temp_max - temp_adjustment)
+
+                # Cloud base and freezing level (convert m to hundreds)
+                cb = period.cloud_base // 100 if period.cloud_base else 12
+                fl = period.freezing_level // 100 if period.freezing_level else 20
+
+                # Danger indicator
+                danger = ""
+                if period.wind_max >= 80:
+                    danger = "!!!"
+                elif period.wind_max >= 60:
+                    danger = "!!"
+                elif period.wind_max >= 45:
+                    danger = "!"
+
+                # Rain amount (mm) - show range if significant
+                rain_min = int(getattr(period, 'rain_min', 0) or 0)
+                rain_max = int(getattr(period, 'rain_max', 0) or 0)
+                if rain_max > 0:
+                    rain_mm = f"{rain_min}-{rain_max}" if rain_min != rain_max else str(rain_max)
+                else:
+                    rain_mm = ""
+
+                line = format_labeled_period(
+                    hour=hour,
+                    temp_min=adjusted_temp_min,
+                    temp_max=adjusted_temp_max,
+                    rain_chance=period.rain_chance,
+                    rain_mm=rain_mm,
+                    wind_avg=period.wind_avg,
+                    wind_max=period.wind_max,
+                    cloud_cover=period.cloud_cover,
+                    cloud_base=cb,
+                    freezing_level=fl,
+                    danger=danger,
+                    unit_system=unit_system
+                )
+                lines.append(line)
+                lines.append("")  # Blank line between periods (the "spaced" part)
+                period_count += 1
+
+        if period_count == 0:
+            lines.append("(No forecast data available)")
+            lines.append("")
+
+        # Remove trailing blank line before key
+        if lines and lines[-1] == "":
+            lines.pop()
+
+        # Add key at end (use appropriate legend for unit system)
+        if include_key:
+            lines.append(get_sms_key_legend(unit_system))
+
+        return '\n'.join(lines)
 
 
 class FormatPEAKS:

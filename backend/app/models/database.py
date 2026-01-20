@@ -33,6 +33,7 @@ class User:
     current_position: str = None
     last_checkin_at: datetime = None
     status: str = "registered"
+    unit_system: str = "metric"  # v3.5: "metric" or "imperial"
     safecheck_contacts: List[SafeCheckContact] = field(default_factory=list)
 
 
@@ -70,9 +71,10 @@ class SQLiteUserStore:
                 # create tables if they don't exist (will be managed by Alembic going forward)
                 self._create_tables_legacy(conn)
 
-            # Migrate: add missing columns to message_log if they don't exist
+            # Migrate: add missing columns to tables if they don't exist
             # This handles existing databases that predate certain columns
             self._migrate_message_log(conn)
+            self._migrate_users_table(conn)
             conn.commit()
 
     def _create_tables_legacy(self, conn):
@@ -91,6 +93,7 @@ class SQLiteUserStore:
                 current_position TEXT,
                 last_checkin_at TEXT,
                 status TEXT DEFAULT 'registered',
+                unit_system TEXT DEFAULT 'metric',
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
@@ -148,6 +151,18 @@ class SQLiteUserStore:
                 except Exception:
                     pass  # Column might already exist
 
+    def _migrate_users_table(self, conn):
+        """Add missing columns to users table for v3.5 unit preferences."""
+        cursor = conn.execute("PRAGMA table_info(users)")
+        existing_columns = {row[1] for row in cursor.fetchall()}
+
+        # Add unit_system column if not present
+        if "unit_system" not in existing_columns:
+            try:
+                conn.execute("ALTER TABLE users ADD COLUMN unit_system TEXT DEFAULT 'metric'")
+            except Exception:
+                pass  # Column might already exist
+
     @contextmanager
     def _get_connection(self):
         """Get database connection with row factory."""
@@ -160,6 +175,12 @@ class SQLiteUserStore:
     
     def _row_to_user(self, row: sqlite3.Row, contacts: List[SafeCheckContact] = None) -> User:
         """Convert database row to User object. v3.0: handles optional dates."""
+        # Handle unit_system column which may not exist in older databases
+        try:
+            unit_system = row["unit_system"] or "metric"
+        except (IndexError, KeyError):
+            unit_system = "metric"
+
         return User(
             phone=row["phone"],
             route_id=row["route_id"],
@@ -170,6 +191,7 @@ class SQLiteUserStore:
             current_position=row["current_position"],
             last_checkin_at=datetime.fromisoformat(row["last_checkin_at"]) if row["last_checkin_at"] else None,
             status=row["status"] or "registered",
+            unit_system=unit_system,
             safecheck_contacts=contacts or []
         )
     
@@ -188,19 +210,21 @@ class SQLiteUserStore:
         start_date: Optional[date] = None,
         end_date: Optional[date] = None,
         direction: str = "standard",
-        trail_name: str = None
+        trail_name: str = None,
+        unit_system: str = "metric"
     ) -> User:
         """Create or update a user. v3.0: start_date/end_date are optional."""
         with self._get_connection() as conn:
             conn.execute("""
-                INSERT INTO users (phone, route_id, start_date, end_date, direction, trail_name, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO users (phone, route_id, start_date, end_date, direction, trail_name, unit_system, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(phone) DO UPDATE SET
                     route_id = excluded.route_id,
                     start_date = excluded.start_date,
                     end_date = excluded.end_date,
                     direction = excluded.direction,
                     trail_name = excluded.trail_name,
+                    unit_system = excluded.unit_system,
                     updated_at = excluded.updated_at
             """, (
                 phone,
@@ -209,6 +233,7 @@ class SQLiteUserStore:
                 end_date.isoformat() if end_date else None,
                 direction,
                 trail_name,
+                unit_system,
                 datetime.now().isoformat()
             ))
             conn.commit()
@@ -219,7 +244,8 @@ class SQLiteUserStore:
             start_date=start_date,
             end_date=end_date,
             direction=direction,
-            trail_name=trail_name
+            trail_name=trail_name,
+            unit_system=unit_system
         )
     
     def get_user(self, phone: str) -> Optional[User]:
@@ -275,7 +301,20 @@ class SQLiteUserStore:
             )
             conn.commit()
             return cursor.rowcount > 0
-    
+
+    def update_unit_system(self, phone: str, unit_system: str) -> bool:
+        """Update user's unit system preference."""
+        if unit_system not in ("metric", "imperial"):
+            raise ValueError("unit_system must be 'metric' or 'imperial'")
+        now = datetime.now().isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE users SET unit_system = ?, updated_at = ? WHERE phone = ?",
+                (unit_system, now, phone)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
     def add_safecheck_contact(self, phone: str, contact_phone: str, contact_name: str) -> bool:
         """Add a SafeCheck emergency contact (max 10)."""
         with self._get_connection() as conn:
@@ -332,9 +371,10 @@ class SQLiteUserStore:
         success: bool = True
     ):
         """Log an SMS message with cost tracking."""
-        # Calculate cost if not provided (AU SMS ~$0.055/segment)
+        # Calculate cost if not provided
+        # AU SMS rate: $0.0515 USD/segment = ~$0.08 AUD/segment (at 1.55 exchange rate)
         if cost_aud is None:
-            cost_aud = segments * 0.055 if direction == 'outbound' else 0
+            cost_aud = segments * 0.08 if direction == 'outbound' else 0
 
         with self._get_connection() as conn:
             conn.execute("""

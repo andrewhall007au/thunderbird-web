@@ -6,27 +6,36 @@
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
-    @apply bg-thunder-950 text-white antialiased;
+    @apply bg-white text-gray-900 antialiased;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-storm-500 hover:bg-storm-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+    @apply bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
   }
 
   .btn-secondary {
-    @apply bg-thunder-800 hover:bg-thunder-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 border border-thunder-600;
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-all duration-200 border border-gray-300;
+  }
+
+  .btn-orange {
+    @apply text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  }
+
+  .btn-orange:hover {
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 50%, #9a3412 100%);
   }
 
   .card {
-    @apply bg-thunder-900/80 backdrop-blur-sm rounded-xl border border-thunder-700/50 shadow-xl;
+    @apply bg-white rounded-xl border border-gray-200 shadow-lg;
   }
 
   .nav-link {
-    @apply text-thunder-300 hover:text-white transition-colors duration-200;
+    @apply text-gray-600 hover:text-gray-900 transition-colors duration-200;
   }
 
   .danger-badge {
@@ -40,7 +49,56 @@
   .danger-4 { @apply bg-red-900/40 text-red-300; }
 
   .sms-preview {
-    @apply font-mono text-sm bg-thunder-950 p-4 rounded-lg border border-thunder-700;
+    @apply font-mono text-sm bg-gray-100 text-gray-800 p-4 rounded-lg border border-gray-300;
     white-space: pre-wrap;
+  }
+
+  /* Auto-scroll animation for iPhone previews */
+  .animate-scroll-up {
+    animation: scroll-up 12s ease-in-out infinite;
+  }
+
+  .animate-scroll-up-slow {
+    animation: scroll-up-slow 10s ease-in-out infinite;
+  }
+
+  .animate-scroll-up-watch {
+    animation: scroll-up-watch 10s ease-in-out infinite;
+  }
+}
+
+@keyframes scroll-up {
+  0%, 10% {
+    transform: translateY(0);
+  }
+  45%, 55% {
+    transform: translateY(-60%);
+  }
+  90%, 100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-up-slow {
+  0%, 15% {
+    transform: translateY(0);
+  }
+  42%, 58% {
+    transform: translateY(-40%);
+  }
+  85%, 100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-up-watch {
+  0%, 8% {
+    transform: translateY(0);
+  }
+  46%, 54% {
+    transform: translateY(-70%);
+  }
+  92%, 100% {
+    transform: translateY(0);
   }
 }

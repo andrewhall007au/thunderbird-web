@@ -8,7 +8,7 @@ export const metadata = {
 const faqs = [
   {
     q: 'What devices work with Thunderbird?',
-    a: 'Any device that can send and receive SMS via satellite: iPhone 14 or later (via Emergency SOS satellite), Garmin inReach (Mini 2, Explorer+, etc.), Zoleo, Spot X, or any satellite communicator with two-way messaging.'
+    a: 'Any device that can send and receive SMS via satellite: iPhone 14 or later with satellite SMS, Apple Watch Ultra, or any phone where your carrier has partnered with a satellite provider for SMS delivery.'
   },
   {
     q: 'Do I need cell service?',
@@ -56,7 +56,7 @@ export default function FAQPage() {
           <h1 className="text-4xl font-bold mb-4">
             Frequently Asked Questions
           </h1>
-          <p className="text-xl text-thunder-300">
+          <p className="text-xl text-gray-600">
             Everything you need to know about Thunderbird
           </p>
         </div>
@@ -65,13 +65,13 @@ export default function FAQPage() {
           {faqs.map((faq, i) => (
             <div key={i} className="card p-6">
               <h3 className="font-semibold text-lg mb-3">{faq.q}</h3>
-              <p className="text-thunder-300">{faq.a}</p>
+              <p className="text-gray-600">{faq.a}</p>
             </div>
           ))}
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-thunder-400 mb-4">Still have questions?</p>
+          <p className="text-gray-500 mb-4">Still have questions?</p>
           <Link href="/contact" className="btn-secondary">
             Contact Us
           </Link>

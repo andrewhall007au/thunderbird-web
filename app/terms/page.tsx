@@ -9,17 +9,17 @@ export default function TermsPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
         
-        <div className="prose prose-invert prose-thunder max-w-none space-y-6 text-thunder-300">
-          <p className="text-thunder-400">Last updated: January 2026</p>
+        <div className="prose prose-gray max-w-none space-y-6 text-gray-600">
+          <p className="text-gray-500">Last updated: January 2026</p>
 
-          <h2 className="text-xl font-semibold text-white mt-8">1. Service Description</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">1. Service Description</h2>
           <p>
             Thunderbird provides weather forecast information via SMS for hikers 
             undertaking multi-day walks in Tasmania. The service includes scheduled 
             forecast deliveries, position tracking, and emergency contact notifications.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8">2. User Responsibilities</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">2. User Responsibilities</h2>
           <p>
             You are solely responsible for your safety while hiking. Weather forecasts 
             are predictions based on available data and may not accurately reflect actual 
@@ -28,7 +28,7 @@ export default function TermsPage() {
             are safe for travel.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8">3. Service Limitations</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">3. Service Limitations</h2>
           <p>
             Thunderbird does not guarantee message delivery. Satellite SMS services 
             depend on device functionality, satellite coverage, and network conditions 
@@ -36,7 +36,7 @@ export default function TermsPage() {
             source outages.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8">4. Payment and Refunds</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">4. Payment and Refunds</h2>
           <p>
             Payment is required before service activation. Refunds are available as follows:
           </p>
@@ -46,7 +46,7 @@ export default function TermsPage() {
             <li>No refund after day 2 of service</li>
           </ul>
 
-          <h2 className="text-xl font-semibold text-white mt-8">5. Limitation of Liability</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">5. Limitation of Liability</h2>
           <p>
             Thunderbird is provided &ldquo;as is&rdquo; without warranties of any kind. We are 
             not liable for any damages arising from use of or inability to use the 
@@ -54,13 +54,13 @@ export default function TermsPage() {
             or loss of life.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8">6. Changes to Terms</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">6. Changes to Terms</h2>
           <p>
             We may update these terms at any time. Continued use of the service after 
             changes constitutes acceptance of the new terms.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8">7. Contact</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">7. Contact</h2>
           <p>
             Questions about these terms can be sent to hello@thunderbird.bot
           </p>

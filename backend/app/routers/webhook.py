@@ -210,7 +210,7 @@ async def send_quick_start_guide(phone: str):
 
 
 async def complete_user_registration(session):
-    """Save the completed registration to database. v3.0: No start_date/end_date."""
+    """Save the completed registration to database. v3.5: Includes unit_system preference."""
     from app.models.database import user_store
 
     try:
@@ -218,9 +218,10 @@ async def complete_user_registration(session):
             phone=session.phone,
             route_id=session.route_id,
             direction=session.direction or "standard",
-            trail_name=session.trail_name
+            trail_name=session.trail_name,
+            unit_system=session.unit_system or "metric"
         )
-        logger.info(f"User registered: {PhoneUtils.mask(session.phone)} ({session.trail_name}) on {session.route_name}")
+        logger.info(f"User registered: {PhoneUtils.mask(session.phone)} ({session.trail_name}) on {session.route_name} [{session.unit_system or 'metric'}]")
 
         # Notify admin of new registration
         await notify_admin_new_registration(session.trail_name, session.route_name)
@@ -263,7 +264,7 @@ async def process_command(phone: str, parsed) -> str:
             return parsed.error_message or "CAST requires a location.\n\nExample: CAST12 LAKEO"
 
         camp_code = parsed.args.get("location_code") or parsed.args.get("camp_code", "")
-        return await generate_cast_forecast(camp_code, hours=12)
+        return await generate_cast_forecast(camp_code, hours=12, phone=phone)
 
     elif parsed.command_type == CommandType.CAST24:
         # 24hr hourly forecast
@@ -271,7 +272,7 @@ async def process_command(phone: str, parsed) -> str:
             return parsed.error_message or "CAST24 requires a location.\n\nExample: CAST24 LAKEO"
 
         camp_code = parsed.args.get("location_code") or parsed.args.get("camp_code", "")
-        return await generate_cast_forecast(camp_code, hours=24)
+        return await generate_cast_forecast(camp_code, hours=24, phone=phone)
 
     elif parsed.command_type == CommandType.CAST7:
         # 7-day forecast - location, CAMPS, or PEAKS
@@ -284,7 +285,7 @@ async def process_command(phone: str, parsed) -> str:
             return await generate_cast7_all_peaks(phone)
         else:
             camp_code = parsed.args.get("location_code", "")
-            return await generate_cast7_forecast(camp_code)
+            return await generate_cast7_forecast(camp_code, phone=phone)
 
     elif parsed.command_type == CommandType.UNKNOWN:
         if not parsed.is_valid:
@@ -320,7 +321,7 @@ async def process_command(phone: str, parsed) -> str:
 
         # Generate forecast for this location
         try:
-            forecast_msg = await generate_cast_forecast(camp_code)
+            forecast_msg = await generate_cast_forecast(camp_code, phone=phone)
             return f"Checked in at {camp.name}\n\n{forecast_msg}"
         except Exception as e:
             logger.error(f"Forecast error on check-in: {e}")
@@ -445,6 +446,55 @@ async def process_command(phone: str, parsed) -> str:
             logger.error(f"BUY command failed for {PhoneUtils.mask(phone)}: {e}")
             return "Top-up failed. Please try again or visit thunderbird.bot."
 
+    elif parsed.command_type == CommandType.UNITS:
+        # Handle UNITS command - change unit preference
+        # v3.5: Check both Account and User models
+        from app.models.account import account_store
+        from app.models.database import user_store
+
+        # Try account first (web users), fall back to user (SMS-only users)
+        account = account_store.get_by_phone(phone)
+        user = user_store.get_user(phone)
+
+        if not account and not user:
+            return "You're not registered. Send START to begin."
+
+        # Get current unit system from user or account
+        current = "metric"
+        if user:
+            current = user.unit_system or "metric"
+        elif account:
+            current = account.unit_system or "metric"
+
+        # Check if status request (bare UNITS command)
+        if parsed.args.get("action") == "status":
+            if current == "metric":
+                return "Current units: METRIC (Celsius, meters)\n\nTo change: UNITS IMPERIAL"
+            else:
+                return "Current units: IMPERIAL (Fahrenheit, feet)\n\nTo change: UNITS METRIC"
+
+        if not parsed.is_valid:
+            return parsed.error_message or "Invalid unit system.\n\nText UNITS METRIC or UNITS IMPERIAL"
+
+        new_unit_system = parsed.args.get("unit_system")
+        if not new_unit_system:
+            return "Please specify: UNITS METRIC or UNITS IMPERIAL"
+
+        # Update unit preference in both stores if applicable
+        success = False
+        if user:
+            success = user_store.update_unit_system(phone, new_unit_system)
+        if account:
+            success = account_store.update_unit_system(account.id, new_unit_system) or success
+
+        if success:
+            if new_unit_system == "metric":
+                return "Units updated: METRIC\n\nForecasts now show Celsius and meters."
+            else:
+                return "Units updated: IMPERIAL\n\nForecasts now show Fahrenheit and feet."
+        else:
+            return "Failed to update units. Please try again."
+
     # Default response
     return "Command received. Processing..."
 
@@ -535,11 +585,24 @@ async def notify_safecheck_contacts(user, camp, notification_type: str = "checki
             logger.error(f"SafeCheck notification failed to {PhoneUtils.mask(contact.phone)}: {e}")
 
 
-async def generate_cast_forecast(camp_code: str, hours: int = 12) -> str:
+async def generate_cast_forecast(camp_code: str, hours: int = 12, phone: str = None) -> str:
     """Generate CAST forecast for a specific camp/peak."""
     from app.services.routes import RouteLoader, get_route, get_other_peaks_in_cell
     from app.services.bom import get_bom_service
-    from app.services.formatter import ForecastFormatter
+    from app.services.formatter import FormatCastLabeled
+    from app.models.account import account_store
+    from app.models.database import user_store
+
+    # Get user's unit preference - check User (SMS) first, then Account (web)
+    unit_system = "metric"
+    if phone:
+        user = user_store.get_user(phone)
+        if user and user.unit_system:
+            unit_system = user.unit_system
+        else:
+            account = account_store.get_by_phone(phone)
+            if account and account.unit_system:
+                unit_system = account.unit_system
 
     # Find the waypoint across all routes
     waypoint = None
@@ -585,14 +648,14 @@ async def generate_cast_forecast(camp_code: str, hours: int = 12) -> str:
         bom_service = get_bom_service()
         forecast = await bom_service.get_hourly_forecast(lat, lon, hours=hours)
 
-        # Format as CAST response using dedicated method
-        formatter = ForecastFormatter()
-        message = formatter.format_cast(
+        # Format as CAST response using labeled format with unit support
+        message = FormatCastLabeled.format(
             forecast=forecast,
             waypoint_code=camp_code.upper(),
             waypoint_name=name,
             waypoint_elevation=elevation,
-            hours=hours
+            hours=hours,
+            unit_system=unit_system
         )
 
         # For peaks, add "Also covers:" if other peaks share the same BOM cell
@@ -611,11 +674,24 @@ async def generate_cast_forecast(camp_code: str, hours: int = 12) -> str:
         return f"Unable to get forecast for {camp_code}. Please try again."
 
 
-async def generate_cast7_forecast(location_code: str) -> str:
+async def generate_cast7_forecast(location_code: str, phone: str = None) -> str:
     """Generate 7-day forecast for a specific camp/peak."""
     from app.services.routes import RouteLoader, get_route
     from app.services.bom import get_bom_service
     from app.services.formatter import ForecastFormatter
+    from app.models.account import account_store
+    from app.models.database import user_store
+
+    # Get user's unit preference - check User (SMS) first, then Account (web)
+    unit_system = "metric"
+    if phone:
+        user = user_store.get_user(phone)
+        if user and user.unit_system:
+            unit_system = user.unit_system
+        else:
+            account = account_store.get_by_phone(phone)
+            if account and account.unit_system:
+                unit_system = account.unit_system
 
     # Find the waypoint
     waypoint = None

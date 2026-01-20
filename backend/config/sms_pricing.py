@@ -77,8 +77,9 @@ SMS_COSTS_BY_COUNTRY: Dict[str, CountrySMSCost] = {}
 _TWILIO_RATES = [
     # (country_code, country_name, twilio_rate_hundredths)
     # twilio_rate_hundredths: rate in hundredths of a cent (1.13 cents = 113)
-    ("US", "United States", 113),    # $0.0113 = 1.13 cents
-    ("CA", "Canada", 170),           # $0.0170 = 1.70 cents
+    ("AU", "Australia", 515),        # $0.0515 = 5.15 cents (verified 2026-01-20)
+    ("US", "United States", 83),     # $0.0083 = 0.83 cents (verified 2026-01-20)
+    ("CA", "Canada", 83),            # $0.0083 = 0.83 cents (verified 2026-01-20)
     ("GB", "United Kingdom", 524),   # $0.0524 = 5.24 cents
     ("FR", "France", 798),           # $0.0798 = 7.98 cents
     ("IT", "Italy", 927),            # $0.0927 = 9.27 cents
@@ -101,6 +102,7 @@ for code, name, twilio_rate in _TWILIO_RATES:
 
 # Phone number country code mapping (E.164 prefix -> ISO country code)
 _PHONE_PREFIX_TO_COUNTRY = {
+    "61": "AU",     # Australia
     "1": "US",      # US and Canada share +1, default to US
     "44": "GB",     # United Kingdom
     "33": "FR",     # France

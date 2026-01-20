@@ -44,7 +44,13 @@ class AccountResponse(BaseModel):
     id: int
     email: str
     phone: Optional[str] = None
+    unit_system: str = "metric"  # v3.5: "metric" or "imperial"
     created_at: str
+
+
+class UpdateSettingsRequest(BaseModel):
+    """Request to update account settings."""
+    unit_system: Optional[str] = Field(None, pattern="^(metric|imperial)$", description="Unit system: metric or imperial")
 
 
 class Token(BaseModel):
@@ -85,6 +91,7 @@ async def register(request: RegisterRequest):
         id=account.id,
         email=account.email,
         phone=account.phone,
+        unit_system=account.unit_system or "metric",
         created_at=account.created_at.isoformat() if account.created_at else ""
     )
 
@@ -131,7 +138,46 @@ async def get_me(account: Account = Depends(get_current_account)):
         id=account.id,
         email=account.email,
         phone=account.phone,
+        unit_system=account.unit_system or "metric",
         created_at=account.created_at.isoformat() if account.created_at else ""
+    )
+
+
+@router.put("/settings", response_model=AccountResponse)
+async def update_settings(
+    request: UpdateSettingsRequest,
+    account: Account = Depends(get_current_account)
+):
+    """
+    Update account settings.
+
+    Currently supports:
+    - unit_system: "metric" or "imperial" for temperature/elevation units
+
+    Requires valid JWT in Authorization header.
+    """
+    updated = False
+
+    if request.unit_system:
+        success = account_store.update_unit_system(account.id, request.unit_system)
+        if success:
+            updated = True
+
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No settings updated"
+        )
+
+    # Return updated account
+    updated_account = account_store.get_by_id(account.id)
+
+    return AccountResponse(
+        id=updated_account.id,
+        email=updated_account.email,
+        phone=updated_account.phone,
+        unit_system=updated_account.unit_system or "metric",
+        created_at=updated_account.created_at.isoformat() if updated_account.created_at else ""
     )
 
 
@@ -179,6 +225,7 @@ async def link_phone(
         id=updated_account.id,
         email=updated_account.email,
         phone=updated_account.phone,
+        unit_system=updated_account.unit_system or "metric",
         created_at=updated_account.created_at.isoformat() if updated_account.created_at else ""
     )
 
@@ -213,5 +260,6 @@ async def get_account_by_phone(
         id=found.id,
         email=found.email,
         phone=found.phone,
+        unit_system=found.unit_system or "metric",
         created_at=found.created_at.isoformat() if found.created_at else ""
     )

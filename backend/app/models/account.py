@@ -27,6 +27,7 @@ class Account:
         password_hash: Argon2 hashed password
         phone: Optional linked phone number (for connecting to SMS User)
         stripe_customer_id: Stripe customer ID for stored card payments
+        unit_system: Preferred units - "metric" (Celsius, meters) or "imperial" (Fahrenheit, feet)
         created_at: Account creation timestamp
         updated_at: Last modification timestamp
     """
@@ -35,6 +36,7 @@ class Account:
     password_hash: str
     phone: Optional[str] = None
     stripe_customer_id: Optional[str] = None
+    unit_system: str = "metric"  # "metric" or "imperial"
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -116,6 +118,7 @@ class AccountStore:
                     password_hash=row["password_hash"],
                     phone=row["phone"],
                     stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
+                    unit_system=row["unit_system"] if "unit_system" in row.keys() and row["unit_system"] else "metric",
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )
@@ -137,6 +140,7 @@ class AccountStore:
                     password_hash=row["password_hash"],
                     phone=row["phone"],
                     stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
+                    unit_system=row["unit_system"] if "unit_system" in row.keys() and row["unit_system"] else "metric",
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )
@@ -189,10 +193,61 @@ class AccountStore:
                     password_hash=row["password_hash"],
                     phone=row["phone"],
                     stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
+                    unit_system=row["unit_system"] if "unit_system" in row.keys() and row["unit_system"] else "metric",
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )
             return None
+
+    def update_unit_system(self, account_id: int, unit_system: str) -> bool:
+        """
+        Update unit system preference for an account.
+
+        Args:
+            account_id: Account ID to update
+            unit_system: "metric" (Celsius, meters) or "imperial" (Fahrenheit, feet)
+
+        Returns:
+            True if updated, False if account not found
+        """
+        if unit_system not in ("metric", "imperial"):
+            raise ValueError("unit_system must be 'metric' or 'imperial'")
+
+        now = datetime.utcnow().isoformat()
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE accounts SET unit_system = ?, updated_at = ? WHERE id = ?",
+                (unit_system, now, account_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def update_unit_system_by_phone(self, phone: str, unit_system: str) -> bool:
+        """
+        Update unit system preference by phone number.
+
+        Used by SMS UNITS command.
+
+        Args:
+            phone: Normalized phone number (+61...)
+            unit_system: "metric" or "imperial"
+
+        Returns:
+            True if updated, False if account not found
+        """
+        if unit_system not in ("metric", "imperial"):
+            raise ValueError("unit_system must be 'metric' or 'imperial'")
+
+        now = datetime.utcnow().isoformat()
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE accounts SET unit_system = ?, updated_at = ? WHERE phone = ?",
+                (unit_system, now, phone)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
 
     def update_stripe_customer_id(self, account_id: int, stripe_customer_id: str) -> bool:
         """

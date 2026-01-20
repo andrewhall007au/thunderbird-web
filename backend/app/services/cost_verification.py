@@ -94,16 +94,19 @@ class CostVerificationService:
 
                 if response.status_code == 200:
                     data = response.json()
-                    # Twilio returns outbound_sms_prices array
-                    # We want the price for mobile carrier (most common)
-                    prices = data.get("outbound_sms_prices", [])
-                    if prices:
-                        # Find mobile carrier price or use first
-                        for price in prices:
-                            if "mobile" in price.get("carrier", "").lower():
-                                return Decimal(price["current_price"])
-                        # Fallback to first price
-                        return Decimal(prices[0]["current_price"])
+                    # Twilio returns outbound_sms_prices array with nested structure:
+                    # [{"carrier": "Telstra", "prices": [{"current_price": "0.0515", "number_type": "mobile"}]}]
+                    carriers = data.get("outbound_sms_prices", [])
+                    if carriers:
+                        # Get the first carrier's mobile price
+                        for carrier in carriers:
+                            carrier_prices = carrier.get("prices", [])
+                            for price in carrier_prices:
+                                if price.get("number_type") == "mobile":
+                                    return Decimal(price["current_price"])
+                        # Fallback to first carrier's first price
+                        if carriers[0].get("prices"):
+                            return Decimal(carriers[0]["prices"][0]["current_price"])
                     return None
                 elif response.status_code == 404:
                     logger.warning(f"Country not found in Twilio: {country_code}")
@@ -165,9 +168,10 @@ class CostVerificationService:
                 error=f"Country {country_code} not in configuration"
             )
 
-        # Fetch actual Twilio rate
+        # Fetch actual Twilio rate (returns dollars, e.g., 0.0515)
         actual_rate = await self.fetch_twilio_rate(country_code)
-        actual_cents = int(actual_rate * 100) if actual_rate else None
+        # Convert to hundredths of a cent to match stored format (0.0515 * 10000 = 515)
+        actual_cents = int(actual_rate * 10000) if actual_rate else None
 
         # Calculate margin based on stored rates
         margin = self.calculate_margin(

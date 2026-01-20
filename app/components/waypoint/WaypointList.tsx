@@ -29,7 +29,7 @@ export default function WaypointList({
 }: WaypointListProps) {
   if (waypoints.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-gray-600">
         <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
         <p>No waypoints yet</p>
         <p className="text-sm">Click on the map to add one</p>
@@ -39,7 +39,7 @@ export default function WaypointList({
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+      <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wider">
         Waypoints ({waypoints.length})
       </h3>
       <ul className="space-y-1">
@@ -54,16 +54,16 @@ export default function WaypointList({
                   transition-colors
                   ${selectedId === wp.id
                     ? 'bg-blue-500/20 border border-blue-500/50'
-                    : 'hover:bg-gray-700/50'}
+                    : 'hover:bg-gray-100'}
                 `}
               >
-                <GripVertical className="w-4 h-4 text-gray-600 cursor-grab" />
+                <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
                 <Icon className={`w-5 h-5 ${TYPE_COLORS[wp.type]}`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-white truncate">
+                  <p className="text-gray-900 truncate">
                     {wp.name || 'Unnamed waypoint'}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-600">
                     <code className="text-blue-400">{wp.smsCode}</code>
                     {' '}&middot;{' '}
                     {wp.lat.toFixed(3)}, {wp.lng.toFixed(3)}

@@ -35,20 +35,20 @@ export default function GPXUpload({ onUpload, isLoading }: GPXUploadProps) {
         transition-colors duration-200
         ${isDragActive
           ? 'border-blue-400 bg-blue-400/10'
-          : 'border-gray-600 hover:border-gray-500'}
+          : 'border-gray-300 hover:border-gray-400'}
         ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
       `}
     >
       <input {...getInputProps()} />
-      <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+      <Upload className="w-12 h-12 mx-auto mb-4 text-gray-600" />
       {isDragActive ? (
         <p className="text-blue-400">Drop your GPX file here...</p>
       ) : (
         <>
-          <p className="text-gray-300 mb-2">
+          <p className="text-gray-700 mb-2">
             Drag & drop a GPX file, or click to select
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-600">
             Export from Gaia GPS, AllTrails, Caltopo, or your GPS device
           </p>
         </>

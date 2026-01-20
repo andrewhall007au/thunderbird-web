@@ -121,7 +121,7 @@ def mark_alert_sent(alert_type: str):
 
 
 def send_sms(message: str) -> bool:
-    """Send SMS via Twilio."""
+    """Send SMS via Twilio and log to database."""
     try:
         sys.path.insert(0, '/root/overland-weather')
 
@@ -136,16 +136,37 @@ def send_sms(message: str) -> bool:
             return False
 
         client = Client(account_sid, auth_token)
-        client.messages.create(
+        result = client.messages.create(
             to=ADMIN_PHONE,
             from_=from_number,
             body=message
         )
-        logger.info(f"Sent SMS to {ADMIN_PHONE}: {message[:50]}...")
+
+        # Log to database for cost tracking
+        segments = int(result.num_segments) if result.num_segments else 1
+        cost_aud = segments * 0.08  # AU rate: $0.0515 USD = ~$0.08 AUD
+        log_sms_to_database(ADMIN_PHONE, message, segments, cost_aud)
+
+        logger.info(f"Sent SMS to {ADMIN_PHONE}: {message[:50]}... ({segments} segs, ${cost_aud:.2f})")
         return True
     except Exception as e:
         logger.error(f"Failed to send SMS: {e}")
         return False
+
+
+def log_sms_to_database(phone: str, content: str, segments: int, cost_aud: float):
+    """Log SMS to message_log table for cost tracking."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("""
+            INSERT INTO message_log (user_phone, direction, message_type, command_type, content, segments, cost_aud, success)
+            VALUES (?, 'outbound', 'cost_monitor', 'ADMIN_ALERT', ?, ?, ?, 1)
+        """, (phone, content, segments, cost_aud))
+        conn.commit()
+        conn.close()
+        logger.info(f"Logged SMS to database: {segments} segs, ${cost_aud:.2f}")
+    except Exception as e:
+        logger.error(f"Failed to log SMS to database: {e}")
 
 
 def stop_service():

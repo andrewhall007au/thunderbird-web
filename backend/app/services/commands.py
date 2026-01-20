@@ -39,6 +39,9 @@ class CommandType(str, Enum):
     # Payment commands (PAY-08)
     BUY = "BUY"             # SMS top-up
 
+    # Settings commands
+    UNITS = "UNITS"         # Change unit system (UNITS METRIC / UNITS IMPERIAL)
+
     # Legacy
     WA_PUSH = "WA_PUSH"
     SAFE = "SAFE"
@@ -289,6 +292,41 @@ class CommandParser:
                 command_type=CommandType.BUY,
                 raw_input=message,
                 args={"amount": 10, "amount_cents": 1000},
+                is_valid=True
+            )
+
+        # UNITS command - change unit system (v3.5)
+        # Match: "UNITS METRIC", "UNITS IMPERIAL", bare "UNITS"
+        if first_word == "UNITS":
+            if len(parts) >= 2:
+                unit_arg = parts[1].upper()
+                if unit_arg in ("METRIC", "M", "C", "CELSIUS"):
+                    return ParsedCommand(
+                        command_type=CommandType.UNITS,
+                        raw_input=message,
+                        args={"unit_system": "metric"},
+                        is_valid=True
+                    )
+                elif unit_arg in ("IMPERIAL", "I", "F", "FAHRENHEIT", "US"):
+                    return ParsedCommand(
+                        command_type=CommandType.UNITS,
+                        raw_input=message,
+                        args={"unit_system": "imperial"},
+                        is_valid=True
+                    )
+                else:
+                    return ParsedCommand(
+                        command_type=CommandType.UNITS,
+                        raw_input=message,
+                        args={},
+                        is_valid=False,
+                        error_message="Invalid unit system. Text UNITS METRIC or UNITS IMPERIAL"
+                    )
+            # Bare UNITS command - show current setting
+            return ParsedCommand(
+                command_type=CommandType.UNITS,
+                raw_input=message,
+                args={"action": "status"},
                 is_valid=True
             )
 
