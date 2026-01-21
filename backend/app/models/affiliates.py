@@ -515,6 +515,53 @@ class CommissionStore:
             conn.commit()
             return cursor.rowcount > 0
 
+    def get_by_order_id(self, order_id: int) -> List[Commission]:
+        """
+        Get all commissions for an order.
+
+        Args:
+            order_id: Order ID
+
+        Returns:
+            List of Commission objects
+        """
+        commissions = []
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT * FROM commissions WHERE order_id = ?",
+                (order_id,)
+            )
+            for row in cursor:
+                commissions.append(self._row_to_commission(row))
+        return commissions
+
+    def update_status(self, commission_id: int, status: str) -> bool:
+        """
+        Update commission status.
+
+        Args:
+            commission_id: Commission to update
+            status: New status ("pending" | "available" | "requested" | "paid" | "clawed_back")
+
+        Returns:
+            True if updated, False if commission not found
+        """
+        with self._get_connection() as conn:
+            if status == "paid":
+                # Set paid_at timestamp when marking as paid
+                now = datetime.utcnow().isoformat()
+                cursor = conn.execute(
+                    "UPDATE commissions SET status = ?, paid_at = ? WHERE id = ?",
+                    (status, now, commission_id)
+                )
+            else:
+                cursor = conn.execute(
+                    "UPDATE commissions SET status = ? WHERE id = ?",
+                    (status, commission_id)
+                )
+            conn.commit()
+            return cursor.rowcount > 0
+
 
 class AttributionStore:
     """SQLite-backed attribution storage."""
@@ -749,6 +796,38 @@ class ClickStore:
             )
             row = cursor.fetchone()
             return row["count"] if row else 0
+
+    def get_recent_by_session(
+        self,
+        affiliate_id: int,
+        session_id: str,
+        hours: int = 24
+    ) -> Optional[AffiliateClick]:
+        """
+        Get recent click for session (for deduplication).
+
+        Args:
+            affiliate_id: Affiliate ID
+            session_id: Session ID
+            hours: Hours to look back (default 24)
+
+        Returns:
+            AffiliateClick if found within time window, None otherwise
+        """
+        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff_iso = cutoff.isoformat()
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                """SELECT * FROM affiliate_clicks
+                   WHERE affiliate_id = ? AND session_id = ? AND created_at >= ?
+                   ORDER BY created_at DESC LIMIT 1""",
+                (affiliate_id, session_id, cutoff_iso)
+            )
+            row = cursor.fetchone()
+            if row:
+                return self._row_to_click(row)
+            return None
 
 
 # Singleton instances
