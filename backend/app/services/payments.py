@@ -70,7 +70,9 @@ class PaymentService:
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
         entry_path: Optional[str] = None,
-        route_id: Optional[int] = None
+        route_id: Optional[int] = None,
+        affiliate_id: Optional[int] = None,
+        sub_id: Optional[str] = None
     ) -> PaymentResult:
         """
         Create Stripe Checkout session for initial purchase.
@@ -126,6 +128,10 @@ class PaymentService:
         }
         if route_id is not None:
             metadata["route_id"] = str(route_id)
+        if affiliate_id is not None:
+            metadata["affiliate_id"] = str(affiliate_id)
+        if sub_id:
+            metadata["sub_id"] = sub_id
 
         try:
             session = stripe.checkout.Session.create(
@@ -180,7 +186,9 @@ class PaymentService:
         customer_email: Optional[str] = None,
         discount_code: Optional[str] = None,
         success_url: Optional[str] = None,
-        cancel_url: Optional[str] = None
+        cancel_url: Optional[str] = None,
+        affiliate_id: Optional[int] = None,
+        sub_id: Optional[str] = None
     ) -> PaymentResult:
         """
         Create Stripe Checkout session with entry_path tracking.
@@ -236,6 +244,10 @@ class PaymentService:
             metadata["entry_path"] = entry_path
         if customer_name:
             metadata["customer_name"] = customer_name
+        if affiliate_id is not None:
+            metadata["affiliate_id"] = str(affiliate_id)
+        if sub_id:
+            metadata["sub_id"] = sub_id
 
         try:
             session_params = {
@@ -293,7 +305,9 @@ class PaymentService:
         account_id: int,
         amount_cents: int = 1000,  # Default $10
         success_url: Optional[str] = None,
-        cancel_url: Optional[str] = None
+        cancel_url: Optional[str] = None,
+        affiliate_id: Optional[int] = None,
+        sub_id: Optional[str] = None
     ) -> PaymentResult:
         """
         Create checkout session for top-up.
@@ -355,6 +369,8 @@ class PaymentService:
                     "account_id": str(account_id),
                     "order_id": str(order.id),
                     "purchase_type": "top_up",
+                    **({"affiliate_id": str(affiliate_id)} if affiliate_id is not None else {}),
+                    **({"sub_id": sub_id} if sub_id else {}),
                 },
                 success_url=success_url,
                 cancel_url=cancel_url,
