@@ -14,7 +14,7 @@ from app.services.sms import get_sms_service, PhoneUtils
 from app.services.admin import (
     user_store, User, UserStatus,
     create_session, validate_session, clear_session, check_password,
-    render_login, render_admin
+    render_login, render_admin, render_affiliate_admin, render_affiliate_edit, render_affiliate_stats
 )
 
 logger = logging.getLogger(__name__)
@@ -330,3 +330,226 @@ async def admin_grouping_stats_api(request: Request):
         },
         "routes": routes,
     })
+
+
+# ============================================================================
+# Affiliate Management Routes (AFFL-01, AFFL-02, AFFL-03)
+# ============================================================================
+
+@router.get("/affiliates", response_class=HTMLResponse)
+async def admin_affiliates(request: Request):
+    """Affiliate management page - requires admin login. AFFL-01."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    from app.models.affiliates import affiliate_store
+    affiliates = affiliate_store.list_all(active_only=False)
+    message = request.query_params.get("msg", "")
+    return render_affiliate_admin(affiliates, message)
+
+
+@router.post("/affiliates/create")
+async def admin_create_affiliate(request: Request):
+    """Create new affiliate and auto-create linked discount code. AFFL-01, AFFL-02, AFFL-03."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    form = await request.form()
+
+    try:
+        code = form.get("code", "").strip().upper()
+        name = form.get("name", "").strip()
+        email = form.get("email", "").strip()
+        discount_percent = int(form.get("discount_percent", 10))
+        commission_percent = int(form.get("commission_percent", 20))
+        trailing_months_str = form.get("trailing_months", "")
+        trailing_months = int(trailing_months_str) if trailing_months_str and trailing_months_str != "forever" else None
+        payout_method = form.get("payout_method", "").strip() or None
+        payout_details = form.get("payout_details", "").strip() or None
+
+        # Validate required fields
+        if not code or not name or not email:
+            return RedirectResponse("/admin/affiliates?msg=Error: Code, name, and email are required", status_code=302)
+
+        from app.models.affiliates import affiliate_store
+        from app.models.payments import discount_code_store
+
+        # Validate code doesn't exist
+        if affiliate_store.get_by_code(code):
+            return RedirectResponse(f"/admin/affiliates?msg=Error: Code {code} already exists", status_code=302)
+
+        # Create affiliate
+        affiliate = affiliate_store.create(
+            code=code,
+            name=name,
+            email=email,
+            discount_percent=discount_percent,
+            commission_percent=commission_percent,
+            trailing_months=trailing_months,
+            payout_method=payout_method,
+            payout_details=payout_details
+        )
+
+        # Auto-create linked discount code (AFFL-03)
+        if discount_percent > 0:
+            discount_code_store.create(
+                code=code,
+                discount_type="percent",
+                discount_value=discount_percent,
+                affiliate_id=affiliate.id
+            )
+
+        return RedirectResponse(
+            f"/admin/affiliates?msg=Created affiliate {code} with {discount_percent}% discount code",
+            status_code=302
+        )
+
+    except Exception as e:
+        logger.error(f"Error creating affiliate: {e}")
+        return RedirectResponse(
+            f"/admin/affiliates?msg=Error: {str(e)}",
+            status_code=302
+        )
+
+
+@router.get("/affiliates/{affiliate_id}/edit", response_class=HTMLResponse)
+async def admin_edit_affiliate_page(affiliate_id: int, request: Request):
+    """Edit affiliate page. AFFL-02."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    from app.models.affiliates import affiliate_store
+    affiliate = affiliate_store.get_by_id(affiliate_id)
+    if not affiliate:
+        return RedirectResponse("/admin/affiliates?msg=Error: Affiliate not found", status_code=302)
+
+    message = request.query_params.get("msg", "")
+    return render_affiliate_edit(affiliate, message)
+
+
+@router.post("/affiliates/{affiliate_id}/edit")
+async def admin_edit_affiliate(affiliate_id: int, request: Request):
+    """Update affiliate details. AFFL-02."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    form = await request.form()
+
+    try:
+        from app.models.affiliates import affiliate_store
+        from app.models.payments import discount_code_store
+
+        affiliate = affiliate_store.get_by_id(affiliate_id)
+        if not affiliate:
+            return RedirectResponse("/admin/affiliates?msg=Error: Affiliate not found", status_code=302)
+
+        name = form.get("name", "").strip()
+        email = form.get("email", "").strip()
+        discount_percent = int(form.get("discount_percent", 10))
+        commission_percent = int(form.get("commission_percent", 20))
+        trailing_months_str = form.get("trailing_months", "")
+        trailing_months = int(trailing_months_str) if trailing_months_str and trailing_months_str != "forever" else None
+        payout_method = form.get("payout_method", "").strip() or None
+        payout_details = form.get("payout_details", "").strip() or None
+
+        # Update affiliate
+        affiliate_store.update(
+            affiliate_id,
+            name=name,
+            email=email,
+            discount_percent=discount_percent,
+            commission_percent=commission_percent,
+            trailing_months=trailing_months,
+            payout_method=payout_method,
+            payout_details=payout_details
+        )
+
+        # Update linked discount code if discount percent changed
+        discount = discount_code_store.get_by_affiliate_id(affiliate_id)
+        if discount and discount.discount_value != discount_percent:
+            # Note: We can't easily update discount codes in current schema
+            # For now, just log this. In production, might need to create new code.
+            logger.info(f"Affiliate {affiliate.code} discount changed from {discount.discount_value}% to {discount_percent}%")
+
+        return RedirectResponse(
+            f"/admin/affiliates?msg=Updated affiliate {affiliate.code}",
+            status_code=302
+        )
+
+    except Exception as e:
+        logger.error(f"Error updating affiliate: {e}")
+        return RedirectResponse(
+            f"/admin/affiliates/{affiliate_id}/edit?msg=Error: {str(e)}",
+            status_code=302
+        )
+
+
+@router.post("/affiliates/{affiliate_id}/toggle")
+async def admin_toggle_affiliate(affiliate_id: int, request: Request):
+    """Toggle affiliate active status. AFFL-01."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    try:
+        from app.models.affiliates import affiliate_store
+
+        affiliate = affiliate_store.get_by_id(affiliate_id)
+        if not affiliate:
+            return RedirectResponse("/admin/affiliates?msg=Error: Affiliate not found", status_code=302)
+
+        new_status = not affiliate.active
+        affiliate_store.update(affiliate_id, active=new_status)
+
+        status_msg = "activated" if new_status else "deactivated"
+        return RedirectResponse(
+            f"/admin/affiliates?msg=Affiliate {affiliate.code} {status_msg}",
+            status_code=302
+        )
+
+    except Exception as e:
+        logger.error(f"Error toggling affiliate: {e}")
+        return RedirectResponse(
+            f"/admin/affiliates?msg=Error: {str(e)}",
+            status_code=302
+        )
+
+
+@router.get("/affiliates/{affiliate_id}/stats", response_class=HTMLResponse)
+async def admin_affiliate_stats(affiliate_id: int, request: Request):
+    """View affiliate performance stats. AFFL-06 (partial)."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    try:
+        from app.models.affiliates import affiliate_store, commission_store, click_store
+
+        affiliate = affiliate_store.get_by_id(affiliate_id)
+        if not affiliate:
+            return RedirectResponse("/admin/affiliates?msg=Error: Affiliate not found", status_code=302)
+
+        # Get stats
+        clicks = click_store.count_by_affiliate(affiliate_id)
+        commissions = commission_store.get_by_affiliate_id(affiliate_id)
+
+        # Calculate metrics
+        unique_accounts = set(c.account_id for c in commissions)
+        conversions = len(unique_accounts)
+
+        stats = {
+            "clicks": clicks,
+            "conversions": conversions,
+            "total_commission_cents": sum(c.amount_cents for c in commissions),
+            "pending_cents": sum(c.amount_cents for c in commissions if c.status == "pending"),
+            "available_cents": sum(c.amount_cents for c in commissions if c.status == "available"),
+            "paid_cents": sum(c.amount_cents for c in commissions if c.status == "paid"),
+        }
+
+        message = request.query_params.get("msg", "")
+        return render_affiliate_stats(affiliate, stats, message)
+
+    except Exception as e:
+        logger.error(f"Error getting affiliate stats: {e}")
+        return RedirectResponse(
+            f"/admin/affiliates?msg=Error: {str(e)}",
+            status_code=302
+        )
