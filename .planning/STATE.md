@@ -14,11 +14,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 5 of 6 (Affiliates)
-Plan: 1 of 6 in current phase
+Plan: 2 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 05-01-PLAN.md
+Last activity: 2026-01-21 - Completed 05-02-PLAN.md
 
-Progress: ███████████████░░ 87%
+Progress: ███████████████░░ 88%
 
 ## Phase Status
 
@@ -28,13 +28,16 @@ Progress: ███████████████░░ 87%
 | 2 | Payments | Complete | 6/6 plans |
 | 3 | Route Creation | Complete | 7/7 plans |
 | 4 | User Flows | Complete | 5/5 plans |
-| 5 | Affiliates | In progress | 1/6 plans |
+| 5 | Affiliates | In progress | 2/6 plans |
 | 6 | International Weather | Not started | 0/? plans |
 
 ## Recent Decisions
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | Commission calculated in webhook, not checkout | Ensures accuracy on post-discount amounts, prevents fraud |
+| 2026-01-21 | Trailing attribution only for initial purchases | Top-ups check for existing attribution |
+| 2026-01-21 | Clawback marks commissions, doesn't delete | Maintains audit trail for reporting |
 | 2026-01-21 | Commission hold period 30 days | Protects against chargebacks before payout |
 | 2026-01-21 | One affiliate per account (unique constraint) | Attribution model prevents conflicts |
 | 2026-01-21 | Trailing expiry NULL = forever | Flexible attribution windows for different affiliate arrangements |
@@ -62,31 +65,33 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 15:39Z
-Stopped at: Completed 05-01-PLAN.md (Affiliate Database Foundation)
+Last session: 2026-01-21 15:43Z
+Stopped at: Completed 05-02-PLAN.md (Affiliate Service & Webhook Integration)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (05-01):**
-- Created Affiliate, Commission, Attribution, AffiliateClick models with Store classes
-- Built Alembic migration for affiliate tables with proper indexes
-- Extended DiscountCode model with affiliate_id field for code linking
-- Implemented 30-day commission hold period and status tracking
+**What was done (05-02):**
+- Implemented AffiliateService with commission calculation on post-discount amounts
+- Added affiliate_id and sub_id parameters to Stripe checkout methods
+- Integrated commission creation into Stripe webhooks (checkout.session.completed, payment_intent.succeeded)
+- Added commission clawback for refunds (charge.refunded webhook)
+- Implemented trailing attribution for recurring commissions
 
 **Key files created this plan:**
-- `backend/app/models/affiliates.py`
-- `backend/alembic/versions/7af520d0f608_add_affiliate_tables.py`
+- `backend/app/services/affiliates.py`
 
 **Key files modified:**
-- `backend/app/models/payments.py` (added affiliate_id to DiscountCode)
+- `backend/app/services/payments.py` (affiliate metadata in checkout)
+- `backend/app/routers/webhook.py` (commission webhooks)
+- `backend/app/models/affiliates.py` (added store methods)
+- `backend/app/models/payments.py` (added get_by_payment_intent)
 
 **What's next:**
-- 05-02: Backend endpoints for affiliate creation and management
-- 05-03: Commission calculation and tracking endpoints
-- 05-04: Click tracking and analytics endpoints
-- 05-05: Admin interface for affiliate management
-- 05-06: Testing and verification
+- 05-03: Backend endpoints for affiliate creation and management
+- 05-04: Commission calculation and tracking endpoints
+- 05-05: Click tracking and analytics endpoints
+- 05-06: Admin interface for affiliate management
 
 ---
 *State initialized: 2026-01-19*
