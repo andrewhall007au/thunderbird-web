@@ -27,6 +27,7 @@ class CreateCheckoutRequest(BaseModel):
     cancel_url: Optional[str] = None
     entry_path: Optional[str] = None  # 'buy', 'create', 'organic' for analytics
     route_id: Optional[int] = None  # Route to activate (for Create First flow)
+    sub_id: Optional[str] = None  # Campaign tracking ID for affiliate attribution
 
 
 class BuyNowCheckoutRequest(BaseModel):
@@ -39,6 +40,7 @@ class BuyNowCheckoutRequest(BaseModel):
     name: str = Field(..., min_length=1, description="User's full name")
     entry_path: Optional[str] = None  # 'buy', 'create', 'organic'
     discount_code: Optional[str] = None
+    sub_id: Optional[str] = None  # Campaign tracking ID for affiliate attribution
 
 
 class BuyNowCheckoutResponse(BaseModel):
@@ -100,7 +102,16 @@ async def create_checkout(
     PAY-01: Initial $29.99 purchase
     PAY-03: Discount codes via allow_promotion_codes
     FLOW-02: entry_path and route_id tracking for Create First flow
+    AFFL-03: Affiliate code lookup and attribution
     """
+    # Look up affiliate from discount code (AFFL-03)
+    affiliate_id = None
+    if request.discount_code:
+        from app.models.payments import discount_code_store
+        discount = discount_code_store.get_by_code(request.discount_code)
+        if discount and discount.affiliate_id:
+            affiliate_id = discount.affiliate_id
+
     payment_service = get_payment_service()
     result = await payment_service.create_checkout_session(
         account_id=account.id,
@@ -108,7 +119,9 @@ async def create_checkout(
         success_url=request.success_url,
         cancel_url=request.cancel_url,
         entry_path=request.entry_path,
-        route_id=request.route_id
+        route_id=request.route_id,
+        affiliate_id=affiliate_id,
+        sub_id=request.sub_id
     )
 
     if not result.success:
@@ -215,6 +228,7 @@ async def buy_now_checkout(request: BuyNowCheckoutRequest):
     - Returns checkout_url and JWT access_token
 
     This endpoint does NOT require authentication - it creates the account.
+    AFFL-03: Affiliate code lookup and attribution
     """
     # Check if email already exists
     existing = account_store.get_by_email(request.email)
@@ -231,6 +245,14 @@ async def buy_now_checkout(request: BuyNowCheckoutRequest):
     # Update account with name if provided (stored in a name field if model supports it)
     # For now, name is captured in Stripe metadata
 
+    # Look up affiliate from discount code (AFFL-03)
+    affiliate_id = None
+    if request.discount_code:
+        from app.models.payments import discount_code_store
+        discount = discount_code_store.get_by_code(request.discount_code)
+        if discount and discount.affiliate_id:
+            affiliate_id = discount.affiliate_id
+
     # Create Stripe checkout session with entry_path metadata
     payment_service = get_payment_service()
     base_url = settings.BASE_URL
@@ -242,7 +264,9 @@ async def buy_now_checkout(request: BuyNowCheckoutRequest):
         customer_email=request.email,
         discount_code=request.discount_code,
         success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
-        cancel_url=f"{base_url}/checkout"
+        cancel_url=f"{base_url}/checkout",
+        affiliate_id=affiliate_id,
+        sub_id=request.sub_id
     )
 
     if not result.success:
