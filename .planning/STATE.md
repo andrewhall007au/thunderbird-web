@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
 **Last updated:** 2026-01-21
-**Current phase:** Phase 5 (Affiliates) - IN PROGRESS
+**Current phase:** Phase 5 (Affiliates) - COMPLETE
 
 ## Project Reference
 
@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Phase 5 (Affiliates) in progress. Payout system complete with $50 minimum threshold, admin management, and milestone emails.
+**Current focus:** Phase 5 (Affiliates) complete. All AFFL-01 through AFFL-07 requirements verified. Ready for Phase 6 (International Weather).
 
 ## Current Position
 
 Phase: 5 of 6 (Affiliates)
-Plan: 5 of 6 in current phase
-Status: In progress
-Last activity: 2026-01-21 - Completed 05-05-PLAN.md
+Plan: 6 of 6 in current phase
+Status: Complete
+Last activity: 2026-01-21 - Completed 05-06-PLAN.md
 
-Progress: ████████████████░ 93%
+Progress: █████████████████ 95%
 
 ## Phase Status
 
@@ -28,13 +28,15 @@ Progress: ████████████████░ 93%
 | 2 | Payments | Complete | 6/6 plans |
 | 3 | Route Creation | Complete | 7/7 plans |
 | 4 | User Flows | Complete | 5/5 plans |
-| 5 | Affiliates | In progress | 5/6 plans |
+| 5 | Affiliates | Complete | 6/6 plans |
 | 6 | International Weather | Not started | 0/? plans |
 
 ## Recent Decisions
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | Test fixture resets both model and service singletons | Required for test isolation when module-level imports cache store references |
+| 2026-01-21 | Cron script for commission availability | Daily job: pending -> available after 30-day hold period |
 | 2026-01-21 | $50 minimum payout threshold | Enforced in request_payout() - request fails if available < $50 |
 | 2026-01-21 | Payout method required before request | Affiliates must set PayPal or bank before requesting payout |
 | 2026-01-21 | Milestone tracking via last_milestone_cents | Prevents duplicate milestone notifications |
@@ -65,31 +67,35 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 08:03Z
-Stopped at: Completed 05-05-PLAN.md (Payout Tracking & Milestone Alerts)
+Last session: 2026-01-21 08:19Z
+Stopped at: Completed 05-06-PLAN.md (Testing & Phase Verification)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (05-05):**
-- Added payout methods to AffiliateService: request_payout(), get_pending_payouts(), process_payout(), check_milestones(), send_milestone_email()
-- Added payout API endpoints: /api/affiliates/payout/method/{code}, /payout/request/{code}, /payout/status/{code}
-- Created admin payout management page at /admin/payouts with Mark Paid functionality
-- Added send_affiliate_milestone_email() for $50/$100/$500/$1000 thresholds
-- Integrated milestone check into webhook commission creation
-- Added last_milestone_cents field and migration
+**What was done (05-06):**
+- Created comprehensive test suite with 15 tests covering all affiliate functionality
+- Created commission availability cron script for 30-day hold transition
+- Verified all AFFL-01 through AFFL-07 requirements and marked complete
+- Added get_by_id method to CommissionStore
 
 **Key files modified this plan:**
-- `backend/app/services/affiliates.py` (payout methods, milestone check)
-- `backend/app/models/affiliates.py` (last_milestone_cents field)
-- `backend/app/routers/affiliates.py` (payout API endpoints)
-- `backend/app/routers/admin.py` (payout management routes)
-- `backend/app/services/admin.py` (render_payout_admin)
-- `backend/app/services/email.py` (milestone email)
-- `backend/app/routers/webhook.py` (milestone integration)
+- `backend/tests/test_affiliates.py` (new: 15 tests for affiliate system)
+- `backend/scripts/commission_available.py` (new: cron script)
+- `backend/app/models/affiliates.py` (added get_by_id)
+- `.planning/REQUIREMENTS.md` (marked AFFL-01-07 complete)
+
+**Phase 5 Complete!** All affiliate requirements verified:
+- AFFL-01: Admin create affiliates at /admin/affiliates
+- AFFL-02: Configurable discount/commission/trailing per affiliate
+- AFFL-03: Auto-created discount codes linked to affiliates
+- AFFL-04: Commission on post-discount amount
+- AFFL-05: Trailing commission on top-ups via attribution
+- AFFL-06: Stats dashboard at /admin/affiliates/{id}/stats
+- AFFL-07: Payout tracking at /admin/payouts
 
 **What's next:**
-- 05-06: Affiliate portal (self-service stats view)
+- Phase 6: International Weather
 
 ---
 *State initialized: 2026-01-19*
