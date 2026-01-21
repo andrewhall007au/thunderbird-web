@@ -256,9 +256,29 @@ route_library (id, name, description, gpx_data, country, region, difficulty_grad
 
 ## Phase 4: User Flows
 
+**Status:** In Progress
+
 **Goal:** Two purchase paths with phone simulator driving conversion
 
 **Requirements covered:** FLOW-01 through FLOW-06, CONT-01 through CONT-03
+
+**Plans:** 5 plans in 4 waves
+
+Plans:
+- [ ] 04-01-PLAN.md - PhoneSimulator component and analytics infrastructure (Wave 1)
+- [ ] 04-02-PLAN.md - "Create first" conversion path with preview and paywall (Wave 2)
+- [ ] 04-03-PLAN.md - "Buy now" conversion path with Stripe checkout (Wave 2)
+- [ ] 04-04-PLAN.md - Compatibility page and landing page enhancements (Wave 3)
+- [ ] 04-05-PLAN.md - Analytics reporting and end-to-end verification (Wave 4)
+
+### Wave Structure
+
+| Wave | Plans | Description |
+|------|-------|-------------|
+| 1 | 04-01 | Foundation: PhoneSimulator component, analytics utilities, backend storage |
+| 2 | 04-02, 04-03 | Core flows: "create first" with preview/paywall, "buy now" with Stripe |
+| 3 | 04-04 | Content: compatibility page, landing page SMS value messaging |
+| 4 | 04-05 | Verification: analytics reporting, end-to-end testing |
 
 ### Deliverables
 
@@ -268,18 +288,29 @@ route_library (id, name, description, gpx_data, country, region, difficulty_grad
 - [ ] Analytics tracking conversion by path (A/B)
 - [ ] Paywall after simulator
 - [ ] Entry path tracking through purchase
-- [ ] Landing page with Garmin/Zoleo comparison
+- [ ] Landing page with Garmin/Zoleo comparison (exists - enhance)
 - [ ] Carrier/device compatibility page
 - [ ] SMS value proposition messaging
 
 ### Key Files
 
-- `frontend/components/PhoneSimulator.tsx`
-- `frontend/app/create/flow.tsx`
-- `frontend/app/buy/page.tsx`
-- `frontend/app/page.tsx` (landing)
-- `frontend/app/compatibility/page.tsx`
-- `backend/services/analytics.py`
+- `app/components/simulator/PhoneSimulator.tsx`
+- `app/lib/analytics.ts`
+- `app/create/preview/page.tsx`
+- `app/components/paywall/PaywallModal.tsx`
+- `app/checkout/page.tsx`
+- `app/checkout/success/page.tsx`
+- `app/compatibility/page.tsx`
+- `app/page.tsx` (landing)
+- `backend/app/models/analytics.py`
+- `backend/app/routers/analytics.py`
+- `backend/scripts/analytics_report.py`
+
+### Database Tables
+
+```sql
+analytics_events (id, event, variant, entry_path, properties, account_id, created_at)
+```
 
 ### Success Criteria
 
@@ -288,6 +319,7 @@ route_library (id, name, description, gpx_data, country, region, difficulty_grad
 - Analytics captures entry path and conversion
 - Landing page communicates value vs competitors
 - Compatibility page answers satellite SMS questions
+- Entry path appears in Stripe metadata for all purchases
 
 ### Dependencies
 
@@ -442,4 +474,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-19 after Phase 3 planning*
+*Last updated: 2026-01-21 after Phase 4 planning*
