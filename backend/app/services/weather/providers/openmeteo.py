@@ -1,22 +1,29 @@
 """
 Open-Meteo weather provider - universal fallback for any coordinates.
 
-Phase 6: International Weather (WTHR-09, WTHR-10)
+Phase 6: International Weather (WTHR-04 through WTHR-10)
 
 Open-Meteo provides:
 - Global coverage (any coordinates)
 - Free, no API key required
 - 7-16 day forecasts with hourly resolution
-- Model selection (best_match, meteofrance, icon_eu, etc.)
+- Model selection (best_match, meteofrance, meteoswiss, icon_eu, gfs)
+
+Country-specific models:
+- France: Meteo-France AROME (1.5-2.5km resolution)
+- Switzerland: MeteoSwiss ICON-CH (1-2km resolution)
+- Italy/Europe: DWD ICON-EU (7km resolution)
+- NZ/South Africa: best_match (auto-selects optimal model)
 
 Used as:
 - Universal fallback when country-specific APIs fail
-- Primary provider for countries without national API
+- Primary provider for countries without native API (FR, IT, CH, NZ, ZA)
 - Reference implementation for normalization patterns
 """
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional
+from enum import Enum
+from typing import List, Optional, Union
 
 import httpx
 
@@ -30,7 +37,43 @@ from app.services.weather.base import (
 logger = logging.getLogger(__name__)
 
 
+class OpenMeteoModel(str, Enum):
+    """
+    Available Open-Meteo weather models.
+
+    Each model targets specific regions with varying resolution:
+    - BEST_MATCH: Auto-selects best model for coordinates
+    - METEOFRANCE: France AROME model (1.5-2.5km)
+    - METEOSWISS: Switzerland ICON-CH model (1-2km)
+    - ICON_EU: European DWD ICON model (7km)
+    - GFS: US NOAA GFS model (25km global)
+    """
+    BEST_MATCH = "best_match"
+    METEOFRANCE = "meteofrance"
+    METEOSWISS = "meteoswiss"
+    ICON_EU = "icon_eu"
+    GFS = "gfs"
+
+
 # Model-specific API endpoints
+MODEL_ENDPOINTS = {
+    OpenMeteoModel.BEST_MATCH: "https://api.open-meteo.com/v1/forecast",
+    OpenMeteoModel.METEOFRANCE: "https://api.open-meteo.com/v1/meteofrance",
+    OpenMeteoModel.METEOSWISS: "https://api.open-meteo.com/v1/meteoswiss",
+    OpenMeteoModel.ICON_EU: "https://api.open-meteo.com/v1/dwd-icon",
+    OpenMeteoModel.GFS: "https://api.open-meteo.com/v1/gfs",
+}
+
+# Human-readable model names for provider identification
+MODEL_NAMES = {
+    OpenMeteoModel.BEST_MATCH: "Open-Meteo",
+    OpenMeteoModel.METEOFRANCE: "Open-Meteo (Meteo-France)",
+    OpenMeteoModel.METEOSWISS: "Open-Meteo (MeteoSwiss)",
+    OpenMeteoModel.ICON_EU: "Open-Meteo (DWD ICON)",
+    OpenMeteoModel.GFS: "Open-Meteo (GFS)",
+}
+
+# Legacy string-based endpoint mapping (for backwards compatibility)
 OPENMETEO_ENDPOINTS = {
     "best_match": "https://api.open-meteo.com/v1/forecast",
     "meteofrance": "https://api.open-meteo.com/v1/meteofrance",
@@ -78,38 +121,47 @@ class OpenMeteoProvider(WeatherProvider):
     Open-Meteo weather provider for global coverage.
 
     Supports model selection for regional optimization:
-    - best_match (default): Auto-selects best model
-    - meteofrance: Optimized for France/Europe
-    - meteoswiss: Optimized for Switzerland/Alps
-    - icon_eu: German DWD ICON model for Europe
-    - gfs: US GFS model for global coverage
+    - BEST_MATCH (default): Auto-selects best model for coordinates
+    - METEOFRANCE: France AROME model (1.5-2.5km resolution)
+    - METEOSWISS: Switzerland ICON-CH model (1-2km resolution)
+    - ICON_EU: European DWD ICON model (7km resolution)
+    - GFS: US NOAA GFS model (25km global coverage)
+
+    Country-specific models provide higher resolution for hiking forecasts
+    in France, Switzerland, and Italy. New Zealand and South Africa use
+    BEST_MATCH for optimal auto-selection.
     """
 
-    def __init__(self, model: str = "best_match", timeout: float = 30.0):
+    def __init__(
+        self,
+        model: Union[OpenMeteoModel, str] = OpenMeteoModel.BEST_MATCH,
+        timeout: float = 30.0,
+    ):
         """
         Initialize Open-Meteo provider.
 
         Args:
-            model: Model to use (best_match, meteofrance, meteoswiss, icon_eu, gfs)
+            model: Model to use (OpenMeteoModel enum or string for backwards compat)
             timeout: HTTP request timeout in seconds
         """
-        self.model = model
+        # Support both enum and string model specification
+        if isinstance(model, str):
+            try:
+                self.model = OpenMeteoModel(model)
+            except ValueError:
+                logger.warning(f"Unknown model '{model}', falling back to BEST_MATCH")
+                self.model = OpenMeteoModel.BEST_MATCH
+        else:
+            self.model = model
+
         self.timeout = timeout
-        self._api_url = OPENMETEO_ENDPOINTS.get(model, OPENMETEO_ENDPOINTS["best_match"])
+        self._endpoint = MODEL_ENDPOINTS[self.model]
         self._client: Optional[httpx.AsyncClient] = None
 
     @property
     def provider_name(self) -> str:
-        """Human-readable provider name."""
-        if self.model == "best_match":
-            return "Open-Meteo"
-        model_names = {
-            "meteofrance": "Open-Meteo (Meteo-France)",
-            "meteoswiss": "Open-Meteo (MeteoSwiss)",
-            "icon_eu": "Open-Meteo (DWD ICON)",
-            "gfs": "Open-Meteo (GFS)",
-        }
-        return model_names.get(self.model, f"Open-Meteo ({self.model})")
+        """Human-readable provider name including model used."""
+        return MODEL_NAMES.get(self.model, f"Open-Meteo ({self.model.value})")
 
     @property
     def supports_alerts(self) -> bool:
@@ -176,10 +228,13 @@ class OpenMeteoProvider(WeatherProvider):
             "forecast_days": min(days, 16),
         }
 
-        logger.info(f"Fetching Open-Meteo forecast for ({lat}, {lon}), {days} days")
+        logger.info(
+            f"Fetching Open-Meteo forecast for ({lat}, {lon}), {days} days, "
+            f"model={self.model.value}"
+        )
 
         try:
-            response = await client.get(self._api_url, params=params)
+            response = await client.get(self._endpoint, params=params)
             response.raise_for_status()
             data = response.json()
         except httpx.HTTPError as e:
