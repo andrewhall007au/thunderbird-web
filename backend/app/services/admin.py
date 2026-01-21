@@ -952,3 +952,121 @@ def render_affiliate_stats(affiliate, stats: dict, message: str = "") -> str:
 </body>
 </html>
     """
+
+
+def render_payout_admin(payouts: list, message: str = "") -> str:
+    """Render payout management page for admin. AFFL-07."""
+    # Message
+    if message:
+        if "error" in message.lower():
+            msg_html = f'<div class="error">{message}</div>'
+        else:
+            msg_html = f'<div class="success">{message}</div>'
+    else:
+        msg_html = ""
+
+    # Build payouts table
+    if payouts:
+        total_pending = sum(p.requested_cents for p in payouts)
+        rows = ""
+        for payout in payouts:
+            method_display = payout.payout_method.upper() if payout.payout_method else "Not set"
+            details_display = payout.payout_details[:30] + "..." if payout.payout_details and len(payout.payout_details) > 30 else (payout.payout_details or "N/A")
+
+            rows += f"""
+            <tr>
+                <td><strong>{payout.affiliate_code}</strong></td>
+                <td>{payout.affiliate_name}</td>
+                <td>{payout.affiliate_email}</td>
+                <td style="color: #27ae60; font-weight: bold;">${payout.requested_cents/100:.2f}</td>
+                <td>{payout.commission_count}</td>
+                <td>{method_display}</td>
+                <td title="{payout.payout_details or ''}">{details_display}</td>
+                <td class="actions">
+                    <form method="POST" action="/admin/payouts/{payout.affiliate_id}/process" style="margin:0;">
+                        <button type="submit" class="btn-success">Mark Paid</button>
+                    </form>
+                </td>
+            </tr>
+            """
+
+        payouts_table = f"""
+        <div style="margin-bottom: 20px; padding: 16px; background: #0f0f23; border-radius: 8px;">
+            <span style="color: #aaa;">Total Pending:</span>
+            <span style="font-size: 24px; font-weight: 700; color: #27ae60; margin-left: 8px;">${total_pending/100:.2f}</span>
+            <span style="color: #666; margin-left: 8px;">({len(payouts)} requests)</span>
+        </div>
+        <table>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Amount</th>
+                <th>Commissions</th>
+                <th>Method</th>
+                <th>Details</th>
+                <th>Actions</th>
+            </tr>
+            {rows}
+        </table>
+        """
+    else:
+        payouts_table = '<div class="empty">No pending payout requests.</div>'
+
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payout Management - Thunderbird Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {{ box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+        body {{ background: #1a1a2e; color: #eee; margin: 0; padding: 20px; }}
+        .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333; }}
+        h1 {{ margin: 0; color: #e94560; }}
+        .nav {{ display: flex; gap: 12px; }}
+        .nav a {{ color: #888; text-decoration: none; padding: 8px 16px; border: 1px solid #444; border-radius: 6px; }}
+        .nav a:hover {{ border-color: #e94560; color: #e94560; }}
+        .card {{ background: #16213e; padding: 24px; border-radius: 12px; margin-bottom: 20px; }}
+        h2 {{ margin: 0 0 20px; color: #e94560; font-size: 18px; }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }}
+        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #333; }}
+        th {{ color: #aaa; font-weight: 500; font-size: 11px; text-transform: uppercase; }}
+        .success {{ background: #27ae60; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .error {{ background: #c0392b; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .empty {{ color: #666; text-align: center; padding: 40px; }}
+        .actions {{ display: flex; gap: 8px; }}
+        .btn-success {{ background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }}
+        .btn-success:hover {{ background: #2ecc71; }}
+        .info-box {{ background: #0f0f23; padding: 16px; border-radius: 8px; margin-bottom: 20px; }}
+        .info-box h3 {{ margin: 0 0 12px; color: #aaa; font-size: 14px; }}
+        .info-box p {{ margin: 8px 0; color: #888; font-size: 13px; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Payout Management</h1>
+        <div class="nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/affiliates">Affiliates</a>
+            <a href="/admin/logout">Logout</a>
+        </div>
+    </div>
+
+    {msg_html}
+
+    <div class="info-box">
+        <h3>Payout Process</h3>
+        <p>1. Review pending payout requests below</p>
+        <p>2. Send payment via PayPal or bank transfer using the details provided</p>
+        <p>3. Click "Mark Paid" to update the commission status to paid</p>
+        <p>Note: Commissions have a 30-day hold period before becoming available for payout request.</p>
+    </div>
+
+    <div class="card">
+        <h2>Pending Payout Requests</h2>
+        {payouts_table}
+    </div>
+</body>
+</html>
+    """

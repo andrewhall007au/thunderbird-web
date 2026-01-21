@@ -201,3 +201,73 @@ async def send_order_confirmation(
     return await service.send_order_confirmation(
         to_email, sms_number, amount_paid_cents, segments_received
     )
+
+
+async def send_affiliate_milestone_email(
+    to_email: str,
+    affiliate_name: str,
+    milestone_amount: str
+) -> EmailResult:
+    """
+    Send milestone celebration email to affiliate.
+
+    Sent when affiliates hit $50, $100, $500, $1000 in total earnings.
+
+    Args:
+        to_email: Affiliate's email
+        affiliate_name: Affiliate's name
+        milestone_amount: Formatted amount (e.g., "$500")
+
+    Returns:
+        EmailResult with success/error
+    """
+    service = get_email_service()
+
+    if not service.is_configured():
+        logger.warning("SendGrid not configured, skipping milestone email")
+        return EmailResult(success=False, error="Email service not configured")
+
+    try:
+        from sendgrid.helpers.mail import Mail, Email, To, Content
+
+        subject = f"Congratulations! You've earned {milestone_amount} with Thunderbird"
+
+        body = f"""Hi {affiliate_name},
+
+Congratulations! You've just crossed {milestone_amount} in total earnings as a Thunderbird affiliate.
+
+Thank you for spreading the word about weather forecasts for hikers. Your referrals are helping adventurers stay safe on the trail.
+
+Keep up the great work!
+
+Best,
+The Thunderbird Team
+
+---
+View your dashboard: {settings.BASE_URL}/affiliate/dashboard
+Request payout: {settings.BASE_URL}/affiliate/payout
+"""
+
+        message = Mail(
+            from_email=Email(service.from_email, "Thunderbird"),
+            to_emails=To(to_email),
+            subject=subject,
+        )
+        message.content = [Content("text/plain", body)]
+
+        response = service.client.send(message)
+
+        if response.status_code in (200, 202):
+            logger.info(f"Milestone email sent to {to_email}: {milestone_amount}")
+            return EmailResult(success=True, status_code=response.status_code)
+        else:
+            logger.error(f"Milestone email failed: {response.status_code}")
+            return EmailResult(
+                success=False,
+                status_code=response.status_code,
+                error=f"SendGrid returned {response.status_code}"
+            )
+
+    except Exception as e:
+        logger.error(f"Milestone email error: {e}")
+        return EmailResult(success=False, error=str(e))

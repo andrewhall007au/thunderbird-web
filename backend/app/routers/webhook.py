@@ -1075,6 +1075,16 @@ async def handle_checkout_completed(session):
                     if attribution:
                         logger.info(f"Trailing attribution created for account {account_id}")
 
+                # Check for milestone achievement and send celebration email
+                milestone = affiliate_service.check_milestones(affiliate_id)
+                if milestone:
+                    try:
+                        await affiliate_service.send_milestone_email(affiliate_id, milestone)
+                        logger.info(f"Milestone ${milestone/100:.0f} reached for affiliate {affiliate_id}")
+                    except Exception as e:
+                        # Don't fail commission creation if email fails
+                        logger.warning(f"Failed to send milestone email: {e}")
+
         except (ValueError, Exception) as e:
             logger.error(f"Failed to create affiliate commission: {e}")
 
@@ -1169,6 +1179,15 @@ async def handle_payment_succeeded(payment_intent):
                     f"Trailing commission created: ${commission.amount_cents/100:.2f} "
                     f"for affiliate {attribution.affiliate_id} on top-up"
                 )
+
+                # Check for milestone achievement on trailing commissions too
+                milestone = affiliate_service.check_milestones(attribution.affiliate_id)
+                if milestone:
+                    try:
+                        await affiliate_service.send_milestone_email(attribution.affiliate_id, milestone)
+                        logger.info(f"Milestone ${milestone/100:.0f} reached for affiliate {attribution.affiliate_id}")
+                    except Exception as e:
+                        logger.warning(f"Failed to send milestone email: {e}")
 
 
 async def handle_charge_refunded(charge):

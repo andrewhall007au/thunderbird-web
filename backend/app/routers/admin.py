@@ -553,3 +553,44 @@ async def admin_affiliate_stats(affiliate_id: int, request: Request):
             f"/admin/affiliates?msg=Error: {str(e)}",
             status_code=302
         )
+
+
+# ============================================================================
+# Payout Management Routes (AFFL-07)
+# ============================================================================
+
+@router.get("/payouts", response_class=HTMLResponse)
+async def admin_payouts(request: Request):
+    """Admin payout management page. AFFL-07."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    from app.services.affiliates import get_affiliate_service
+    from app.services.admin import render_payout_admin
+
+    affiliate_service = get_affiliate_service()
+    pending_payouts = affiliate_service.get_pending_payouts()
+
+    message = request.query_params.get("msg", "")
+    return render_payout_admin(pending_payouts, message)
+
+
+@router.post("/payouts/{affiliate_id}/process")
+async def admin_process_payout(affiliate_id: int, request: Request):
+    """
+    Mark payout as processed.
+
+    Admin has manually sent money via PayPal or bank transfer.
+    """
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    from app.services.affiliates import get_affiliate_service
+
+    affiliate_service = get_affiliate_service()
+    success, message = affiliate_service.process_payout(affiliate_id)
+
+    if success:
+        return RedirectResponse(f"/admin/payouts?msg={message}", status_code=302)
+    else:
+        return RedirectResponse(f"/admin/payouts?msg=Error: {message}", status_code=302)
