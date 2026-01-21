@@ -335,21 +335,21 @@ analytics_events (id, event, variant, entry_path, properties, account_id, create
 
 ## Phase 5: Affiliates
 
-**Status:** Planned (2026-01-21)
+**Status:** Complete (2026-01-21)
 
 **Goal:** Affiliate program with trailing commissions driving growth
 
 **Requirements covered:** AFFL-01 through AFFL-07
 
-**Plans:** 6 plans in 5 waves
+**Plans:** 6 plans in 5 waves (6/6 complete)
 
 Plans:
-- [ ] 05-01-PLAN.md - Database models and migration for affiliates, commissions, attributions (Wave 1)
-- [ ] 05-02-PLAN.md - Affiliate service and webhook integration for commission calculation (Wave 2)
-- [ ] 05-03-PLAN.md - Admin console for affiliate management and checkout integration (Wave 3)
-- [ ] 05-04-PLAN.md - Affiliate dashboard API and public landing page with click tracking (Wave 4)
-- [ ] 05-05-PLAN.md - Payout tracking and milestone email alerts (Wave 5)
-- [ ] 05-06-PLAN.md - Test suite and commission availability cron script (Wave 5)
+- [x] 05-01-PLAN.md - Database models and migration for affiliates, commissions, attributions (Wave 1) (completed 2026-01-21)
+- [x] 05-02-PLAN.md - Affiliate service and webhook integration for commission calculation (Wave 2) (completed 2026-01-21)
+- [x] 05-03-PLAN.md - Admin console for affiliate management and checkout integration (Wave 3) (completed 2026-01-21)
+- [x] 05-04-PLAN.md - Affiliate dashboard API and public landing page with click tracking (Wave 4) (completed 2026-01-21)
+- [x] 05-05-PLAN.md - Payout tracking and milestone email alerts (Wave 5) (completed 2026-01-21)
+- [x] 05-06-PLAN.md - Test suite and commission availability cron script (Wave 5) (completed 2026-01-21)
 
 ### Wave Structure
 
@@ -363,13 +363,13 @@ Plans:
 
 ### Deliverables
 
-- [ ] Admin console for affiliate creation
-- [ ] Per-affiliate configuration (discount %, commission %, duration)
-- [ ] Affiliate codes as discount codes
-- [ ] Commission on actual paid price
-- [ ] Trailing commission tracking on top-ups
-- [ ] Affiliate performance analytics
-- [ ] Payout tracking (pending vs paid)
+- [x] Admin console for affiliate creation
+- [x] Per-affiliate configuration (discount %, commission %, duration)
+- [x] Affiliate codes as discount codes
+- [x] Commission on actual paid price
+- [x] Trailing commission tracking on top-ups
+- [x] Affiliate performance analytics
+- [x] Payout tracking (pending vs paid)
 
 ### Key Files
 
@@ -503,4 +503,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-21 after Phase 5 planning*
+*Last updated: 2026-01-21 after Phase 5 execution complete*
