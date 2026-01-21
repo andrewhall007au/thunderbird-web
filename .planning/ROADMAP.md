@@ -414,54 +414,79 @@ discount_codes.affiliate_id (added column)
 
 ## Phase 6: International Weather
 
+**Status:** Planning complete
+
 **Goal:** Weather APIs for all 8 countries with fallback handling
 
 **Requirements covered:** WTHR-01 through WTHR-11
 
-**Research required:** Yes - each country's API needs research before implementation
+**Plans:** 7 plans in 4 waves
+
+Plans:
+- [ ] 06-01-PLAN.md - Weather provider foundation: base abstractions, Open-Meteo provider, caching (Wave 1)
+- [ ] 06-02-PLAN.md - NWS provider for USA with alerts (Wave 2)
+- [ ] 06-03-PLAN.md - Environment Canada provider (Wave 2)
+- [ ] 06-04-PLAN.md - Met Office provider for UK (Wave 2)
+- [ ] 06-05-PLAN.md - Open-Meteo country-specific models for FR/IT/CH/NZ/ZA (Wave 2)
+- [ ] 06-06-PLAN.md - Weather router with fallback and integration to weather_intl.py (Wave 3)
+- [ ] 06-07-PLAN.md - Tests and requirement verification (Wave 4)
+
+### Wave Structure
+
+| Wave | Plans | Description |
+|------|-------|-------------|
+| 1 | 06-01 | Foundation: base abstractions, Open-Meteo universal provider, 1-hour caching |
+| 2 | 06-02, 06-03, 06-04, 06-05 | Country providers: NWS (US), EC (CA), Met Office (UK), Open-Meteo models (FR/IT/CH/NZ/ZA) |
+| 3 | 06-06 | Integration: router with fallback logic, wire to weather_intl.py service |
+| 4 | 06-07 | Verification: comprehensive tests, WTHR-01 through WTHR-11 verification |
 
 ### Deliverables
 
 - [ ] USA: NWS integration (free, no auth)
-- [ ] Canada: Weather API integration
-- [ ] UK: Met Office integration
-- [ ] France: Meteo-France integration
-- [ ] Italy: Weather API integration
-- [ ] Switzerland: MeteoSwiss integration
-- [ ] New Zealand: Weather API integration (may be Open-Meteo only)
-- [ ] South Africa: Weather API integration
-- [ ] Open-Meteo fallback for all countries
+- [ ] Canada: Environment Canada integration (env-canada library)
+- [ ] UK: Met Office Weather DataHub integration
+- [ ] France: Meteo-France via Open-Meteo
+- [ ] Italy: DWD ICON via Open-Meteo
+- [ ] Switzerland: MeteoSwiss via Open-Meteo (1-2km resolution)
+- [ ] New Zealand: Open-Meteo (best_match model)
+- [ ] South Africa: Open-Meteo (best_match model)
+- [ ] Open-Meteo universal fallback for all countries
 - [ ] Weather response normalization layer
 - [ ] Data source display in forecasts
 
 ### Key Files
 
-- `backend/services/weather_intl.py`
-- `backend/services/weather/nws.py`
-- `backend/services/weather/met_office.py`
-- `backend/services/weather/meteo_france.py`
-- `backend/services/weather/open_meteo.py`
-- `backend/services/weather/normalizer.py`
+- `backend/app/services/weather/__init__.py`
+- `backend/app/services/weather/base.py`
+- `backend/app/services/weather/cache.py`
+- `backend/app/services/weather/router.py`
+- `backend/app/services/weather/providers/openmeteo.py`
+- `backend/app/services/weather/providers/nws.py`
+- `backend/app/services/weather/providers/envcanada.py`
+- `backend/app/services/weather/providers/metoffice.py`
+- `backend/app/services/weather_intl.py` (updated)
+- `backend/tests/test_weather_providers.py`
+- `backend/tests/test_weather_router.py`
 
 ### Success Criteria
 
 - Each country returns accurate forecasts
 - Fallback triggers when primary API fails
 - All responses normalize to consistent format
-- Data source shown to users
-- Rate limits respected with caching
+- Data source shown to users (provider name + fallback indicator)
+- Rate limits respected with 1-hour caching
+- Alerts fetched for supporting providers (NWS, EC)
 
 ### Dependencies
 
 - Phase 1 (service structure)
-- Can run parallel with Phases 4-5
 
 ### Risks
 
 - API availability and rate limits vary by country
-- Some APIs may require paid tiers
+- Some APIs may require paid tiers (Met Office has 360/day free limit)
 - Resolution varies significantly
-- Mitigation: research per-country, comprehensive fallback, caching
+- Mitigation: Open-Meteo universal fallback, 1-hour caching
 
 ---
 
@@ -489,7 +514,7 @@ discount_codes.affiliate_id (added column)
 
 ### Research Flags
 
-- **Phase 6:** Requires per-country API research before planning
+- **Phase 6:** Research complete (see 06-RESEARCH.md)
 - **Phases 1-5:** Standard patterns, can plan without additional research
 
 ### Critical Path to MVP
@@ -503,4 +528,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-21 after Phase 5 execution complete*
+*Last updated: 2026-01-21 after Phase 6 planning complete*
