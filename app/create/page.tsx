@@ -14,6 +14,7 @@ import {
   getRoute,
   addWaypoint
 } from '../lib/api';
+import { trackRouteCreated } from '../lib/analytics';
 
 // Dynamic import to avoid SSR issues with MapLibre
 const MapEditor = dynamic(() => import('../components/map/MapEditor'), {
@@ -132,6 +133,7 @@ function CreateRouteContent() {
     }
   }
 
+  // Standard save without redirect (for draft saves)
   async function handleSave() {
     if (!token) {
       // Redirect to login, then back here
@@ -194,11 +196,44 @@ function CreateRouteContent() {
       setWaypoints(updatedWaypoints);
 
       setIsDirty(false);
+      return routeIdToUse;
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : 'Failed to save route');
       console.error(e);
+      return null;
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  // Save and redirect to preview page
+  async function handlePreviewSMS() {
+    if (waypoints.length === 0) {
+      setSaveError('Add at least one waypoint to preview');
+      return;
+    }
+
+    if (!token) {
+      // Redirect to login, then back here
+      const returnUrl = `/create${currentRouteId ? `?id=${currentRouteId}` : ''}`;
+      router.push(`/login?redirect=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      const routeId = await handleSave();
+      if (routeId) {
+        // Track route_created analytics event
+        trackRouteCreated(waypoints.length);
+        // Redirect to preview page
+        router.push(`/create/preview?id=${routeId}`);
+      }
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save route');
+      console.error(e);
     }
   }
 
@@ -327,7 +362,7 @@ function CreateRouteContent() {
         <div className="mb-8 space-y-3">
           <StepIndicator step={1} title="Upload GPX File" isActive={currentStep === 1} isComplete={currentStep > 1} />
           <StepIndicator step={2} title="Set Waypoints on Map" isActive={currentStep === 2} isComplete={currentStep > 2} />
-          <StepIndicator step={3} title="Finalize Route" isActive={currentStep === 3} isComplete={false} />
+          <StepIndicator step={3} title="Preview SMS Forecast" isActive={currentStep === 3} isComplete={false} />
         </div>
 
         {error && (
@@ -468,29 +503,29 @@ function CreateRouteContent() {
               </div>
             </div>
 
-            {/* STEP 3: Finalize - only shows after first waypoint */}
+            {/* STEP 3: Preview SMS - only shows after first waypoint */}
             {currentStep === 3 && (
               <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">3. Finalize your route</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">3. Preview your SMS forecast</h2>
                 <p className="text-gray-600 mb-6">
-                  Save your route to get SMS codes for each waypoint
+                  See exactly what your weather forecasts will look like on your phone
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   <button
-                    onClick={handleSave}
+                    onClick={handlePreviewSMS}
                     disabled={isSaving}
                     className={`
                       px-8 py-3 rounded-lg font-semibold text-lg transition-colors
                       ${isSaving
                         ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
-                        : 'bg-green-600 text-gray-900 hover:bg-green-500'}
+                        : 'bg-orange-500 text-white hover:bg-orange-600'}
                     `}
                   >
-                    {isSaving ? 'Saving...' : 'Finalize Route'}
+                    {isSaving ? 'Saving...' : 'Preview SMS Forecast'}
                   </button>
                   <p className="text-sm text-gray-600">
-                    (don&apos;t worry, you can edit it at any time)
+                    (don&apos;t worry, you can edit your route at any time)
                   </p>
                 </div>
               </div>
