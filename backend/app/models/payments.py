@@ -255,6 +255,18 @@ class OrderStore:
                 return self._row_to_order(row)
             return None
 
+    def get_by_payment_intent(self, payment_intent_id: str) -> Optional[Order]:
+        """Get order by Stripe payment intent ID."""
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT * FROM orders WHERE stripe_payment_intent_id = ?",
+                (payment_intent_id,)
+            )
+            row = cursor.fetchone()
+            if row:
+                return self._row_to_order(row)
+            return None
+
     def update_status(
         self,
         order_id: int,

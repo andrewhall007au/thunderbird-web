@@ -26,6 +26,7 @@ from app.services.sms import get_sms_service, PhoneUtils, SMSCostCalculator
 from app.services.commands import CommandParser, CommandType, ResponseGenerator
 from app.services.onboarding import onboarding_manager, OnboardingState
 from app.services.routes import get_route
+from app.services.affiliates import get_affiliate_service
 
 logger = logging.getLogger(__name__)
 
@@ -960,6 +961,9 @@ async def stripe_webhook(request: Request):
     elif event.type == "payment_intent.succeeded":
         payment_intent = event.data.object
         await handle_payment_succeeded(payment_intent)
+    elif event.type == "charge.refunded":
+        charge = event.data.object
+        await handle_charge_refunded(charge)
     else:
         logger.info(f"Unhandled Stripe event type: {event.type}")
 
@@ -1036,7 +1040,45 @@ async def handle_checkout_completed(session):
 
     logger.info(f"Credits added: {order.amount_cents} cents to account {account_id}")
 
-    # 5. Send confirmation email (PAY-05)
+    # 5. Create affiliate commission if applicable (AFFL-04: post-discount amount)
+    affiliate_id_str = metadata.get("affiliate_id")
+    sub_id = metadata.get("sub_id")
+
+    if affiliate_id_str:
+        try:
+            affiliate_id = int(affiliate_id_str)
+            affiliate_service = get_affiliate_service()
+
+            # Calculate commission on actual paid amount (post-discount)
+            commission = affiliate_service.calculate_commission(
+                affiliate_id=affiliate_id,
+                account_id=account_id,
+                order_id=order_id,
+                amount_cents=order.amount_cents,
+                sub_id=sub_id,
+                is_initial=(purchase_type == "initial_access")
+            )
+
+            if commission:
+                logger.info(
+                    f"Commission created: ${commission.amount_cents/100:.2f} for affiliate {affiliate_id}"
+                )
+
+                # For initial purchases, also create trailing attribution
+                if purchase_type == "initial_access":
+                    attribution = affiliate_service.create_attribution(
+                        affiliate_id=affiliate_id,
+                        account_id=account_id,
+                        order_id=order_id,
+                        sub_id=sub_id
+                    )
+                    if attribution:
+                        logger.info(f"Trailing attribution created for account {account_id}")
+
+        except (ValueError, Exception) as e:
+            logger.error(f"Failed to create affiliate commission: {e}")
+
+    # 6. Send confirmation email (PAY-05)
     # Email failure does NOT affect payment success - logged but not raised
     account = account_store.get_by_id(account_id)
     if account and account.email:
@@ -1107,3 +1149,58 @@ async def handle_payment_succeeded(payment_intent):
             order_id=order_id
         )
         logger.info(f"SMS top-up completed: {amount_cents} cents for account {account_id}")
+
+        # Check for trailing attribution (AFFL-05: recurring commissions)
+        affiliate_service = get_affiliate_service()
+        attribution = affiliate_service.get_active_attribution(account_id)
+
+        if attribution:
+            # Create trailing commission
+            commission = affiliate_service.calculate_commission(
+                affiliate_id=attribution.affiliate_id,
+                account_id=account_id,
+                order_id=order_id,
+                amount_cents=amount_cents,
+                sub_id=attribution.sub_id,
+                is_initial=False
+            )
+            if commission:
+                logger.info(
+                    f"Trailing commission created: ${commission.amount_cents/100:.2f} "
+                    f"for affiliate {attribution.affiliate_id} on top-up"
+                )
+
+
+async def handle_charge_refunded(charge):
+    """
+    Handle refunded charge.
+
+    Clawback affiliate commission(s) for the refunded order.
+    """
+    from app.models.payments import order_store
+
+    # Get payment intent from charge
+    payment_intent_id = charge.get("payment_intent")
+    if not payment_intent_id:
+        logger.debug("Charge refund without payment_intent - not our charge")
+        return
+
+    # Look up order by payment intent
+    order = order_store.get_by_payment_intent(payment_intent_id)
+    if not order:
+        logger.warning(f"Order not found for refunded payment_intent: {payment_intent_id}")
+        return
+
+    logger.info(f"Charge refunded: order={order.id}, payment_intent={payment_intent_id}")
+
+    # Update order status
+    order_store.update_status(order.id, "refunded")
+
+    # Clawback any commissions for this order
+    affiliate_service = get_affiliate_service()
+    clawed_back = affiliate_service.clawback_commission(order.id)
+
+    if clawed_back:
+        logger.info(f"Commissions clawed back for refunded order {order.id}")
+    else:
+        logger.debug(f"No commissions to clawback for order {order.id}")
