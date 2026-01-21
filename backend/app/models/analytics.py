@@ -266,6 +266,261 @@ class AnalyticsStore:
 
         return result
 
+    def get_funnel_by_path(
+        self,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None
+    ) -> Dict[str, Dict[str, Any]]:
+        """
+        Get detailed funnel metrics grouped by entry path with conversion rates.
+
+        Returns counts of funnel events and calculated conversion rate for each path.
+
+        Args:
+            start_date: Start of date range (inclusive)
+            end_date: End of date range (inclusive)
+
+        Returns:
+            Dict with structure:
+            {
+                'create': {
+                    'page_views': 150,
+                    'routes_created': 80,
+                    'simulators_viewed': 75,
+                    'checkouts_started': 40,
+                    'purchases_completed': 25,
+                    'conversion_rate': 0.167  # purchases / page_views
+                },
+                'buy': {
+                    'page_views': 200,
+                    'checkouts_started': 100,
+                    'purchases_completed': 60,
+                    'conversion_rate': 0.30
+                },
+                'organic': { ... }
+            }
+        """
+        result = {
+            'create': {
+                'page_views': 0,
+                'routes_created': 0,
+                'simulators_viewed': 0,
+                'checkouts_started': 0,
+                'purchases_completed': 0,
+                'conversion_rate': 0.0
+            },
+            'buy': {
+                'page_views': 0,
+                'checkouts_started': 0,
+                'purchases_completed': 0,
+                'conversion_rate': 0.0
+            },
+            'organic': {
+                'page_views': 0,
+                'routes_created': 0,
+                'simulators_viewed': 0,
+                'checkouts_started': 0,
+                'purchases_completed': 0,
+                'conversion_rate': 0.0
+            }
+        }
+
+        # Map event names to metrics
+        event_to_metric = {
+            'page_view': 'page_views',
+            'route_created': 'routes_created',
+            'simulator_viewed': 'simulators_viewed',
+            'checkout_started': 'checkouts_started',
+            'purchase_completed': 'purchases_completed'
+        }
+
+        query = """
+            SELECT
+                COALESCE(entry_path, 'organic') as path,
+                event,
+                COUNT(*) as count
+            FROM analytics_events
+            WHERE event IN ('page_view', 'route_created', 'simulator_viewed',
+                           'checkout_started', 'purchase_completed')
+        """
+        params: List[Any] = []
+
+        if start_date:
+            query += " AND created_at >= ?"
+            params.append(start_date.isoformat())
+        if end_date:
+            query += " AND created_at <= ?"
+            params.append(end_date.isoformat())
+
+        query += " GROUP BY path, event"
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, params)
+            for row in cursor:
+                path = row["path"] if row["path"] in result else 'organic'
+                event = row["event"]
+                count = row["count"]
+
+                metric = event_to_metric.get(event)
+                if path in result and metric and metric in result[path]:
+                    result[path][metric] = count
+
+        # Calculate conversion rates
+        for path in result:
+            views = result[path].get('page_views', 0)
+            purchases = result[path].get('purchases_completed', 0)
+            if views > 0:
+                result[path]['conversion_rate'] = round(purchases / views, 4)
+
+        return result
+
+    def get_conversion_by_variant(
+        self,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None
+    ) -> Dict[str, Dict[str, Any]]:
+        """
+        Get A/B variant conversion metrics with session counts and average revenue.
+
+        Returns conversion data for each variant including unique sessions,
+        purchases, conversion rate, and average revenue.
+
+        Args:
+            start_date: Start of date range (inclusive)
+            end_date: End of date range (inclusive)
+
+        Returns:
+            Dict with structure:
+            {
+                'A': {
+                    'sessions': 175,
+                    'purchases': 40,
+                    'conversion_rate': 0.229,
+                    'avg_revenue': 2999  # cents
+                },
+                'B': {
+                    'sessions': 175,
+                    'purchases': 45,
+                    'conversion_rate': 0.257,
+                    'avg_revenue': 2999
+                }
+            }
+        """
+        result = {
+            'A': {'sessions': 0, 'purchases': 0, 'conversion_rate': 0.0, 'avg_revenue': 0},
+            'B': {'sessions': 0, 'purchases': 0, 'conversion_rate': 0.0, 'avg_revenue': 0}
+        }
+
+        # Build date filter clause
+        date_filter = ""
+        params: List[Any] = []
+        if start_date:
+            date_filter += " AND created_at >= ?"
+            params.append(start_date.isoformat())
+        if end_date:
+            date_filter += " AND created_at <= ?"
+            params.append(end_date.isoformat())
+
+        with self._get_connection() as conn:
+            # Count sessions (page_view events) per variant
+            session_query = f"""
+                SELECT variant, COUNT(*) as count
+                FROM analytics_events
+                WHERE event = 'page_view'
+                AND variant IN ('A', 'B')
+                {date_filter}
+                GROUP BY variant
+            """
+            cursor = conn.execute(session_query, params)
+            for row in cursor:
+                if row["variant"] in result:
+                    result[row["variant"]]['sessions'] = row["count"]
+
+            # Count purchases per variant
+            purchase_query = f"""
+                SELECT variant, COUNT(*) as count
+                FROM analytics_events
+                WHERE event = 'purchase_completed'
+                AND variant IN ('A', 'B')
+                {date_filter}
+                GROUP BY variant
+            """
+            cursor = conn.execute(purchase_query, params)
+            for row in cursor:
+                if row["variant"] in result:
+                    result[row["variant"]]['purchases'] = row["count"]
+
+            # Get average revenue from properties JSON (amount field)
+            revenue_query = f"""
+                SELECT variant, AVG(
+                    CAST(json_extract(properties, '$.amount') AS INTEGER)
+                ) as avg_amount
+                FROM analytics_events
+                WHERE event = 'purchase_completed'
+                AND variant IN ('A', 'B')
+                AND properties IS NOT NULL
+                {date_filter}
+                GROUP BY variant
+            """
+            cursor = conn.execute(revenue_query, params)
+            for row in cursor:
+                if row["variant"] in result and row["avg_amount"]:
+                    result[row["variant"]]['avg_revenue'] = int(row["avg_amount"])
+
+        # Calculate conversion rates
+        for variant in result:
+            sessions = result[variant]['sessions']
+            purchases = result[variant]['purchases']
+            if sessions > 0:
+                result[variant]['conversion_rate'] = round(purchases / sessions, 4)
+
+        return result
+
+    def get_daily_events(
+        self,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        event_type: str = 'purchase_completed'
+    ) -> List[tuple]:
+        """
+        Get daily event counts for charting.
+
+        Returns list of (date, count) tuples for the specified event type.
+
+        Args:
+            start_date: Start of date range (inclusive)
+            end_date: End of date range (inclusive)
+            event_type: Event type to count (default: 'purchase_completed')
+
+        Returns:
+            List of (date_string, count) tuples sorted by date:
+            [('2026-01-20', 45), ('2026-01-21', 52), ...]
+        """
+        query = """
+            SELECT DATE(created_at) as event_date, COUNT(*) as count
+            FROM analytics_events
+            WHERE event = ?
+        """
+        params: List[Any] = [event_type]
+
+        if start_date:
+            query += " AND created_at >= ?"
+            params.append(start_date.isoformat())
+        if end_date:
+            query += " AND created_at <= ?"
+            params.append(end_date.isoformat())
+
+        query += " GROUP BY event_date ORDER BY event_date"
+
+        results: List[tuple] = []
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, params)
+            for row in cursor:
+                if row["event_date"]:
+                    results.append((row["event_date"], row["count"]))
+
+        return results
+
 
 # Singleton instance
 analytics_store = AnalyticsStore()
