@@ -14,11 +14,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 5 of 6 (Affiliates)
-Plan: 3 of 6 in current phase
+Plan: 4 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 05-03-PLAN.md
+Last activity: 2026-01-21 - Completed 05-04-PLAN.md
 
-Progress: ███████████████░░ 89%
+Progress: ███████████████░░ 90%
 
 ## Phase Status
 
@@ -28,13 +28,18 @@ Progress: ███████████████░░ 89%
 | 2 | Payments | Complete | 6/6 plans |
 | 3 | Route Creation | Complete | 7/7 plans |
 | 4 | User Flows | Complete | 5/5 plans |
-| 5 | Affiliates | In progress | 3/6 plans |
+| 5 | Affiliates | In progress | 4/6 plans |
 | 6 | International Weather | Not started | 0/? plans |
 
 ## Recent Decisions
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | Cookie-based attribution with 7-day expiry | tb_affiliate cookie set on landing, read at checkout for 7-day attribution window |
+| 2026-01-21 | Session-based click deduplication | tb_session cookie (24h) prevents duplicate click counting |
+| 2026-01-21 | Aggregate-only conversion data in API | get_recent_conversions() exposes amount/status/date but no account_id or order_id |
+| 2026-01-21 | Period filtering for dashboards | Dashboard API supports today, 7d, 30d, all for time-range analysis |
+| 2026-01-21 | Campaign tracking via sub_id | /ref/{code}/{sub_id} enables channel-level performance tracking |
 | 2026-01-21 | Discount code auto-creation for affiliates | Creating affiliate auto-creates matching discount code with affiliate_id link |
 | 2026-01-21 | Affiliate lookup at checkout | Both /checkout and /buy-now endpoints look up affiliate_id from discount code before creating Stripe session |
 | 2026-01-21 | sub_id for campaign tracking | Added sub_id parameter for granular campaign tracking (e.g., PARTNER-FB vs PARTNER-IG) |
@@ -68,26 +73,28 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 07:48Z
-Stopped at: Completed 05-03-PLAN.md (Admin Console & Checkout Integration)
+Last session: 2026-01-21 07:53Z
+Stopped at: Completed 05-04-PLAN.md (Click Tracking & Analytics)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (05-03):**
-- Added affiliate admin HTML templates (list, edit, stats pages) following existing admin.py pattern
-- Added 6 affiliate admin routes (list, create, edit, toggle, stats) with require_admin checks
-- Auto-creation of discount codes when affiliates are created
-- Integrated affiliate lookup from discount codes at checkout
-- Added sub_id parameter for campaign tracking
+**What was done (05-04):**
+- Added AffiliateStats dataclass with comprehensive dashboard metrics
+- Added get_affiliate_stats() and get_recent_conversions() to AffiliateService
+- Created dashboard API endpoints: /api/affiliates/stats/{code}, /api/affiliates/conversions/{code}, /api/affiliates/summary/{code}
+- Created landing page: /ref/{code} and /ref/{code}/{sub_id} with click tracking
+- Implemented session-based click deduplication (24h window)
+- Cookie-based attribution: tb_affiliate (7d), tb_session (24h), tb_sub_id (7d)
 
 **Key files modified this plan:**
-- `backend/app/services/admin.py` (render_affiliate_admin, render_affiliate_edit, render_affiliate_stats)
-- `backend/app/routers/admin.py` (6 affiliate management routes)
-- `backend/app/routers/payments.py` (affiliate_id lookup at checkout)
+- `backend/app/services/affiliates.py` (AffiliateStats, get_affiliate_stats, get_recent_conversions)
+- `backend/app/models/affiliates.py` (count_unique_by_affiliate, count_conversions, sum_by_status)
+- `backend/app/routers/affiliates.py` (dashboard API endpoints)
+- `backend/app/routers/affiliate_landing.py` (landing page with click tracking)
+- `backend/app/main.py` (registered affiliates and affiliate_landing routers)
 
 **What's next:**
-- 05-04: Click tracking and analytics endpoints
 - 05-05: Reporting and payout management
 - 05-06: Affiliate portal (self-service stats)
 
