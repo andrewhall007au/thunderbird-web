@@ -80,6 +80,46 @@ OPENMETEO_ENDPOINTS = {
     "gfs": "https://api.open-meteo.com/v1/gfs",
 }
 
+# Country-to-model mapping for optimal regional forecasts
+# Maps ISO 3166-1 alpha-2 country codes to best available model
+COUNTRY_TO_MODEL = {
+    "FR": OpenMeteoModel.METEOFRANCE,  # France - AROME 1.5-2.5km
+    "CH": OpenMeteoModel.ICON_EU,      # Switzerland - ICON covers Alps
+    "IT": OpenMeteoModel.ICON_EU,      # Italy - ICON covers Dolomites
+    "NZ": OpenMeteoModel.BEST_MATCH,   # New Zealand - auto-select
+    "ZA": OpenMeteoModel.BEST_MATCH,   # South Africa - auto-select
+    # Other European countries could use ICON_EU
+    # Other countries default to BEST_MATCH
+}
+
+
+def get_model_for_country(country_code: str) -> OpenMeteoModel:
+    """
+    Get the optimal Open-Meteo model for a country code.
+
+    Args:
+        country_code: ISO 3166-1 alpha-2 country code (e.g., "FR", "CH", "NZ")
+
+    Returns:
+        OpenMeteoModel for best regional coverage
+    """
+    return COUNTRY_TO_MODEL.get(country_code.upper(), OpenMeteoModel.BEST_MATCH)
+
+
+def create_provider_for_country(country_code: str) -> "OpenMeteoProvider":
+    """
+    Create an OpenMeteoProvider configured for a specific country.
+
+    Args:
+        country_code: ISO 3166-1 alpha-2 country code (e.g., "FR", "CH", "NZ")
+
+    Returns:
+        OpenMeteoProvider with optimal model for the country
+    """
+    model = get_model_for_country(country_code)
+    return OpenMeteoProvider(model=model)
+
+
 # Wind direction conversion (degrees to compass)
 WIND_DIRECTIONS = [
     (0, 22.5, "N"),
