@@ -13,83 +13,99 @@ export default function SafetyPage() {
           <AlertTriangle className="w-10 h-10 text-orange-500" />
           <h1 className="text-4xl font-bold">Safety Disclaimer</h1>
         </div>
-        
+
         <div className="p-6 bg-orange-500/10 border border-orange-500/30 rounded-xl mb-8">
           <p className="text-lg font-semibold text-orange-400">
-            Thunderbird is an information service, not a safety guarantee. 
+            Thunderbird is an information service, not a safety guarantee.
             You are solely responsible for your safety decisions.
           </p>
         </div>
-        
+
         <div className="prose prose-gray max-w-none space-y-6 text-gray-600">
           <h2 className="text-xl font-semibold text-gray-900 mt-8">Weather Forecasts Are Predictions</h2>
           <p>
-            Weather forecasts are predictions based on computer models and available data. 
-            They are not guarantees of actual conditions. Mountain weather is highly 
-            variable and can change rapidly. Conditions may differ significantly from 
-            forecast, especially in alpine terrain.
+            Weather forecasts are predictions based on computer models and available data.
+            They are not guarantees of actual conditions. Mountain and backcountry weather
+            is highly variable and can change rapidly. Conditions may differ significantly
+            from forecast, especially in alpine terrain, coastal areas, and regions with
+            complex topography.
           </p>
 
           <h2 className="text-xl font-semibold text-gray-900 mt-8">You Must Make Your Own Decisions</h2>
           <p>
-            Thunderbird provides information to help you plan. It does not tell you 
+            Thunderbird provides information to help you plan. It does not tell you
             whether it is safe to proceed. Only you can assess:
           </p>
           <ul className="list-disc pl-6 space-y-2">
             <li>Your skill level and experience</li>
-            <li>Your physical condition</li>
-            <li>Your equipment and supplies</li>
-            <li>Actual conditions you observe</li>
-            <li>Your party&apos;s capabilities</li>
+            <li>Your physical condition and fitness</li>
+            <li>Your equipment, supplies, and preparedness</li>
+            <li>Actual conditions you observe on the ground</li>
+            <li>Your party&apos;s capabilities and limitations</li>
+            <li>Local hazards and terrain challenges</li>
           </ul>
 
-          <h2 className="text-xl font-semibold text-gray-900 mt-8">Danger Ratings Are Guides</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">Forecasts Are Location-Specific</h2>
           <p>
-            Our danger ratings (D=0 to D=4) are calculated from forecast data. They help 
-            identify potentially hazardous conditions but cannot account for all risks. 
-            A D=0 rating does not mean conditions are safe. A D=4 rating does not mean 
-            travel is impossible. Use these ratings as one input among many.
+            Forecasts are generated for the specific coordinates of your waypoints.
+            Conditions can vary significantly over short distances, especially with
+            changes in elevation. A forecast for a valley floor may not reflect
+            conditions at a nearby summit or ridge.
           </p>
 
           <h2 className="text-xl font-semibold text-gray-900 mt-8">Message Delivery Is Not Guaranteed</h2>
           <p>
-            SMS delivery depends on satellite coverage, device functionality, and network 
-            conditions outside our control. Do not rely on Thunderbird as your only source 
-            of weather information. Carry appropriate backup plans and equipment.
+            SMS delivery depends on satellite coverage, device functionality, atmospheric
+            conditions, and network availability — all factors outside our control.
+            Do not rely on Thunderbird as your only source of weather information.
+            Always have backup plans and alternative information sources.
           </p>
 
-          <h2 className="text-xl font-semibold text-gray-900 mt-8">Required Safety Equipment</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">Essential Safety Equipment</h2>
           <p>
-            For remote Tasmanian hikes, you should always carry:
+            For remote outdoor activities, you should always carry appropriate
+            safety equipment for your environment, which may include:
           </p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Personal Locator Beacon (PLB) or satellite communicator</li>
-            <li>Navigation equipment (map, compass, GPS)</li>
-            <li>Emergency shelter and warmth</li>
+            <li>Emergency communication device (PLB, satellite messenger, or phone with coverage)</li>
+            <li>Navigation equipment appropriate to your activity</li>
+            <li>Emergency shelter and warmth layers</li>
             <li>First aid kit</li>
-            <li>Sufficient food and water</li>
-            <li>Weather-appropriate clothing</li>
+            <li>Sufficient food, water, and emergency supplies</li>
+            <li>Weather-appropriate clothing for worst-case conditions</li>
           </ul>
 
-          <h2 className="text-xl font-semibold text-gray-900 mt-8">SafeCheck Is Not Emergency Response</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">Know Before You Go</h2>
           <p>
-            SafeCheck notifications inform your contacts of your progress. They are not 
-            monitored by emergency services. In an emergency, use your PLB or call 000.
+            Before heading into remote areas:
           </p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>Check multiple weather sources, not just Thunderbird</li>
+            <li>Inform someone of your plans and expected return</li>
+            <li>Register with local authorities where required or recommended</li>
+            <li>Understand the specific hazards of your destination</li>
+            <li>Have a clear turn-back plan if conditions deteriorate</li>
+          </ul>
 
-          <h2 className="text-xl font-semibold text-gray-900 mt-8">Trip Registration</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mt-8">Thunderbird Is Not Emergency Services</h2>
           <p>
-            Always register your trip with Tasmania Parks and Wildlife Service. 
-            Thunderbird does not replace official trip registration.
+            Thunderbird is a weather information service. We do not monitor your location,
+            we cannot dispatch help, and we are not connected to emergency services.
+            In an emergency, use your emergency communication device or contact local
+            emergency services directly.
           </p>
 
           <div className="p-6 bg-gray-100 rounded-xl mt-8">
             <p className="font-semibold text-gray-900 mb-2">In an emergency:</p>
             <ul className="space-y-2">
-              <li>• Activate your PLB</li>
-              <li>• Call 000 if you have phone signal</li>
-              <li>• Tasmania Police: 131 444</li>
+              <li>Activate your PLB or satellite emergency device</li>
+              <li>Call local emergency services if you have signal</li>
+              <li>Follow your pre-planned emergency procedures</li>
             </ul>
+            <p className="text-sm text-gray-500 mt-4">
+              Know your local emergency number before you travel (911 in US/Canada,
+              112 in EU, 000 in Australia, 999 in UK, etc.)
+            </p>
           </div>
         </div>
       </div>

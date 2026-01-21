@@ -9,199 +9,196 @@ import {
   Zap, Satellite, CloudRain, Shield, Bell, Clock,
   MapPin, Thermometer, Wind, Droplets, Mountain, Smartphone,
   Cloud, Snowflake, AlertTriangle, Navigation, Save, MessageSquare,
-  Tent, BatteryCharging
+  Tent, BatteryCharging, ChevronRight
 } from 'lucide-react'
 
-// Dynamic import for map to avoid SSR issues
 const MapEditor = dynamic(() => import('./components/map/MapEditor'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[400px] bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
-      <p className="text-gray-600">Loading map...</p>
+    <div className="w-full h-[400px] bg-zinc-100 rounded-2xl flex items-center justify-center">
+      <div className="flex items-center gap-2 text-zinc-400">
+        <div className="w-4 h-4 border-2 border-zinc-300 border-t-zinc-500 rounded-full animate-spin" />
+        <span className="text-sm">Loading map...</span>
+      </div>
     </div>
   )
 });
 
 function Hero() {
   return (
-    <section className="relative py-20 lg:py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-orange-50" />
+    <section className="relative pt-24 pb-32 lg:pt-32 lg:pb-40 overflow-hidden">
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-50 via-white to-white" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)]" />
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center">
-          <div className="flex justify-center mb-6">
-            <Zap className="w-16 h-16 text-orange-500" />
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 border border-zinc-200 text-sm text-zinc-600 mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Satellite SMS Weather Forecasts
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
-            On Demand Weather Forecasts
-            <span className="block text-orange-500">That Actually Reach You</span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-zinc-900 mb-6">
+            Weather forecasts that
+            <span className="block text-zinc-500">actually reach you</span>
           </h1>
 
-          <p className="text-lg text-gray-600 max-w-xl mx-auto mb-8">
-            Regular SMS now works with your land cell number when you are out of cell range through satellite*
+          <p className="text-lg text-zinc-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+            On-demand weather for any trail, delivered via satellite SMS.
+            No cell coverage required. No subscription. Just accurate forecasts
+            when and where you need them.
           </p>
 
-          {/* Device SMS Previews */}
-          <div className="flex flex-col md:flex-row justify-center items-center md:items-center gap-6 md:gap-4 mb-8">
+          {/* Device Previews */}
+          <div className="flex flex-col md:flex-row justify-center items-center gap-8 mb-12">
             {/* iPhone */}
             <div className="flex flex-col items-center">
-              <div className="w-[280px] h-[560px] bg-black rounded-[36px] p-[12px] shadow-2xl relative">
-                {/* iPhone notch */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100px] h-[22px] bg-black rounded-b-[12px] z-10"></div>
-                {/* Screen */}
-                <div className="w-full h-full bg-white rounded-[26px] overflow-hidden flex flex-col">
-                  {/* Header */}
-                  <div className="bg-[#f6f6f6] pt-[38px] pb-[8px] px-[12px] text-center border-b border-[#ddd]">
-                    <span className="text-black text-[15px] font-semibold">Thunderbird</span>
+              <div className="w-[260px] h-[520px] bg-zinc-900 rounded-[40px] p-3 shadow-2xl shadow-zinc-900/20 relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-zinc-900 rounded-b-2xl" />
+                <div className="w-full h-full bg-zinc-50 rounded-[32px] overflow-hidden flex flex-col">
+                  <div className="bg-zinc-100 pt-10 pb-2 px-4 text-center border-b border-zinc-200">
+                    <span className="text-zinc-900 text-sm font-medium">Thunderbird</span>
                   </div>
-                  {/* Messages area with auto-scroll */}
-                  <div className="flex-1 p-[12px] overflow-hidden">
-                    <div className="bg-[#e5e5ea] text-black p-[8px_12px] rounded-[16px] rounded-bl-[4px] max-w-[90%] text-[13px] leading-[1.4] whitespace-pre-wrap animate-scroll-up">
-{`LAKEO Lake Oberon (863m)
-24hr from 06:00 Mon
+                  <div className="flex-1 p-3 overflow-hidden">
+                    <div className="bg-zinc-200 text-zinc-800 p-3 rounded-2xl rounded-bl-sm max-w-[95%] text-xs leading-relaxed font-mono animate-scroll-up whitespace-pre-wrap">
+{`CAST LAKEO 863m
+Light 06:00-20:51
 
-06h 5-7o Rn15% W12-20 Cld40% CB18 FL22
+06h 5-7o Rn15% 0-1mm W12-20 Cld40% CB12 FL28
 
-08h 7-10o Rn18% W14-22 Cld45% CB17 FL21
+07h 6-8o Rn15% 0-1mm W13-21 Cld42% CB12 FL27
 
-10h 10-14o Rn22% 0-1mm W16-26 Cld52% CB15 FL19
+08h 7-10o Rn18% 0-2mm W14-22 Cld45% CB12 FL26
 
-12h 12-16o Rn25% 1-3mm W18-30 Cld60% CB14 FL18 !
+09h 9-12o Rn20% 0-2mm W15-24 Cld48% CB11 FL25
 
-14h 14-18o Rn30% 2-5mm W22-35 Cld70% CB12 FL16 !
+10h 10-14o Rn22% 0-3mm W16-26 Cld52% CB11 FL24
 
-16h 12-16o Rn25% 1-2mm W20-32 Cld65% CB13 FL17 !
+11h 11-15o Rn24% 0-3mm W17-28 Cld56% CB10 FL23
 
-18h 10-14o Rn20% 0-1mm W18-28 Cld50% CB14 FL18
-
-20h 8-11o Rn15% W15-24 Cld45% CB15 FL19
-
-22h 6-9o Rn12% W12-20 Cld40% CB16 FL20
-
-00h 4-6o Rn10% W10-18 Cld35% CB18 FL22
+12h 12-16o Rn25% 1-4mm W18-30 Cld60% CB10 FL22
 
 Rn=Rain W=Wind Cld=Cloud
-CB=CloudBase(x100m)
-FL=Freeze(x100m)`}
+CB=CloudBase FL=Freeze(x100m)`}
                     </div>
                   </div>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm mt-3">iPhone</p>
+              <span className="text-zinc-400 text-xs mt-4">iPhone 14+</span>
             </div>
 
-            {/* Apple Watch Ultra */}
+            {/* Apple Watch */}
             <div className="flex flex-col items-center">
-              <div className="w-[180px] h-[220px] bg-[#1a1a1a] rounded-[44px] p-[8px] shadow-2xl relative border-[3px] border-[#2a2a2a]">
-                {/* Digital Crown */}
-                <div className="absolute right-[-6px] top-[60px] w-[6px] h-[28px] bg-[#ff6b00] rounded-r-[3px]"></div>
-                {/* Side button */}
-                <div className="absolute right-[-5px] top-[100px] w-[5px] h-[18px] bg-[#333] rounded-r-[2px]"></div>
-                {/* Screen */}
-                <div className="w-full h-full bg-black rounded-[38px] overflow-hidden flex flex-col">
-                  {/* Messages area with auto-scroll */}
-                  <div className="flex-1 p-[10px] overflow-hidden">
-                    <div className="text-white text-[9px] leading-[1.3] whitespace-pre-wrap animate-scroll-up-watch">
-{`LAKEO 863m
-Mon 20 Jan
+              <div className="w-[160px] h-[200px] bg-zinc-800 rounded-[36px] p-2 shadow-xl shadow-zinc-900/20 border-2 border-zinc-700 relative">
+                <div className="absolute right-[-4px] top-14 w-1.5 h-6 bg-zinc-600 rounded-r-sm" />
+                <div className="w-full h-full bg-black rounded-[30px] overflow-hidden flex flex-col p-2">
+                  <div className="text-zinc-100 text-[8px] leading-tight font-mono animate-scroll-up-watch whitespace-pre-wrap">
+{`CAST LAKEO 863m
 
-06h 5-7o Rn15%
-W12-20 CB18 FL22
+06h 5-7o Rn15% 0-1mm
+W12-20 CB12 FL28
 
-08h 7-10o Rn18%
-W14-22 CB17 FL21
+07h 6-8o Rn15% 0-1mm
+W13-21 CB12 FL27
 
-10h 10-14o Rn22%
-W16-26 CB15 FL19
+08h 7-10o Rn18% 0-2mm
+W14-22 CB12 FL26
 
-12h 12-16o Rn25% !
-W18-30 CB14 FL18
-
-14h 14-18o Rn30% !
-W22-35 CB12 FL16
-
-16h 12-16o Rn25%
-W20-32 CB13 FL17
-
-18h 10-14o Rn20%
-W18-28 CB14 FL18
-
-Rn=Rain W=Wind
-CB=Cloud FL=Freeze`}
-                    </div>
+09h 9-12o Rn20% 0-2mm
+W15-24 CB11 FL25`}
                   </div>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm mt-3">Apple Watch Ultra</p>
+              <span className="text-zinc-400 text-xs mt-4">Apple Watch Ultra</span>
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-4 mb-8">
-            <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+            <Link
+              href="/checkout?path=buy"
+              className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+            >
               Buy Now
+              <ChevronRight className="w-4 h-4" />
             </Link>
-            <Link href="/create?path=create" className="text-gray-600 hover:text-orange-500 transition-colors underline underline-offset-4">
-              Or Create Your Route First
+            <Link
+              href="/create?path=create"
+              className="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-900 font-medium px-6 py-3.5 transition-colors"
+            >
+              Create your route first
             </Link>
           </div>
 
-          <p className="text-lg text-gray-700 max-w-xl mx-auto mb-4">
-            Use your regular phone or satellite enabled SMS watch whilst out on trail to receive the latest weather forecast for your selected weather zones.
+          <p className="text-xs text-zinc-400 max-w-lg mx-auto">
+            Works with iPhone 14+, Apple Watch Ultra, and satellite-enabled Android devices.
+            <Link href="/compatibility" className="text-zinc-500 hover:text-zinc-700 ml-1 underline underline-offset-2">
+              Check compatibility
+            </Link>
           </p>
+        </div>
+      </div>
+    </section>
+  )
+}
 
-          <p className="text-lg text-gray-700 max-w-xl mx-auto mb-8">
-            When data isn&apos;t available, your forecast still arrives.
+function HowItWorks() {
+  const steps = [
+    {
+      icon: Navigation,
+      step: '01',
+      title: 'Set waypoints',
+      description: 'Mark camps, peaks, and key locations along your route with precise elevations.'
+    },
+    {
+      icon: Save,
+      step: '02',
+      title: 'Save your route',
+      description: 'Each waypoint gets a unique SMS code. Upload GPX or build from scratch.'
+    },
+    {
+      icon: MessageSquare,
+      step: '03',
+      title: 'Request forecasts',
+      description: 'Text your waypoint code via satellite SMS. Receive detailed weather within minutes.'
+    }
+  ];
+
+  return (
+    <section className="py-24 bg-white">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            How it works
+          </h2>
+          <p className="text-zinc-500 max-w-xl mx-auto">
+            Three steps to weather intelligence on any trail, anywhere in the world.
           </p>
+        </div>
 
-          {/* How It Works */}
-          <div className="mt-12 mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">How It Works</h2>
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="card p-6 text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Navigation className="w-8 h-8 text-orange-500" />
+        <div className="grid md:grid-cols-3 gap-8">
+          {steps.map((item, i) => (
+            <div key={i} className="relative">
+              <div className="flex flex-col items-start">
+                <div className="w-12 h-12 rounded-xl bg-zinc-100 flex items-center justify-center mb-5">
+                  <item.icon className="w-5 h-5 text-zinc-600" />
                 </div>
-                <div className="text-orange-500 font-bold text-sm mb-2">Step 1</div>
-                <h3 className="font-semibold text-lg mb-2">Set Waypoints</h3>
-                <p className="text-gray-500 text-sm">Mark your camps and key locations along the trail with elevations.</p>
-              </div>
-              <div className="card p-6 text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Save className="w-8 h-8 text-orange-500" />
-                </div>
-                <div className="text-orange-500 font-bold text-sm mb-2">Step 2</div>
-                <h3 className="font-semibold text-lg mb-2">Save Route</h3>
-                <p className="text-gray-500 text-sm">Save your route with forecast zones for each waypoint.</p>
-              </div>
-              <div className="card p-6 text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="w-8 h-8 text-orange-500" />
-                </div>
-                <div className="text-orange-500 font-bold text-sm mb-2">Step 3</div>
-                <h3 className="font-semibold text-lg mb-2">Pull Forecast via Satellite SMS</h3>
-                <p className="text-gray-500 text-sm">Request your forecast on trail and receive it via satellite SMS.</p>
+                <span className="text-xs font-medium text-zinc-400 mb-2">{item.step}</span>
+                <h3 className="text-lg font-medium text-zinc-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">{item.description}</p>
               </div>
             </div>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto text-center mt-8 mb-6">
-              Use one of our pre loaded popular trail templates or upload your own GPX file and create your own
-            </p>
-            <div className="flex justify-center">
-              <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
-                Buy Now
-              </Link>
-            </div>
-          </div>
+          ))}
+        </div>
 
-          <p className="text-gray-400 text-xs max-w-2xl mx-auto text-center mt-8">
-            *Available on any satellite SMS compatible Apple phone or watch and where your terrestrial plan provider has a partnership with a satellite provider, which is becoming increasingly more common.
-          </p>
-
+        <div className="text-center mt-12">
           <Link
-            href="/compatibility"
-            className="text-gray-500 hover:text-orange-500 transition-colors text-sm mt-4 inline-block"
+            href="/checkout?path=buy"
+            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
           >
-            Check if your device is compatible
+            Buy Now
+            <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -213,51 +210,60 @@ function WhySMS() {
   const benefits = [
     {
       icon: Satellite,
-      title: "Works Everywhere",
-      description: "Satellite SMS reaches you anywhere with sky visibility - no cell towers needed."
+      title: "Works everywhere",
+      description: "Satellite SMS reaches you anywhere with sky visibility — no cell towers needed."
     },
     {
       icon: BatteryCharging,
-      title: "Battery Efficient",
+      title: "Battery efficient",
       description: "SMS uses minimal power compared to data. Your phone lasts longer on trail."
     },
     {
       icon: Shield,
-      title: "Reliable Delivery",
+      title: "Reliable delivery",
       description: "SMS is prioritized over data. Your forecast gets through even in congested areas."
     }
   ];
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+    <section className="py-24 bg-zinc-50">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
             Why SMS?
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Satellite SMS delivers weather forecasts even when you&apos;re miles from cell towers.
-            Small, reliable, battery-efficient.
+          <p className="text-zinc-500 max-w-xl mx-auto">
+            Small payload, prioritized delivery, works with brief satellite visibility.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6">
           {benefits.map((benefit, i) => (
-            <div key={i} className="card p-6 text-center">
-              <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <benefit.icon className="w-7 h-7 text-orange-500" />
+            <div key={i} className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center mb-4">
+                <benefit.icon className="w-5 h-5 text-zinc-600" />
               </div>
-              <h3 className="font-semibold text-lg mb-2">{benefit.title}</h3>
-              <p className="text-gray-500 text-sm">{benefit.description}</p>
+              <h3 className="font-medium text-zinc-900 mb-2">{benefit.title}</h3>
+              <p className="text-sm text-zinc-500 leading-relaxed">{benefit.description}</p>
             </div>
           ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <Link
+            href="/checkout?path=buy"
+            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+          >
+            Buy Now
+            <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>
   )
 }
 
-// Overland Track waypoints from spec
+// Waypoint data
 const overlandCamps = [
   { id: '1', name: 'Ronny Creek', smsCode: 'RONNY', lat: -41.6504, lng: 145.9614, elevation: 942, type: 'camp' as const },
   { id: '2', name: 'Waterfall Valley Hut', smsCode: 'WATER', lat: -41.7147, lng: 145.9469, elevation: 1020, type: 'camp' as const },
@@ -291,15 +297,9 @@ const overlandTrackGeojson: GeoJSON.Feature = {
   geometry: {
     type: 'LineString',
     coordinates: [
-      [145.9614, -41.6504],
-      [145.9525, -41.6607],
-      [145.9469, -41.7147],
-      [145.9498, -41.7641],
-      [146.0100, -41.8000],
-      [146.0464, -41.8295],
-      [146.0820, -41.8921],
-      [146.0889, -41.9321],
-      [146.1200, -41.9600],
+      [145.9614, -41.6504], [145.9525, -41.6607], [145.9469, -41.7147],
+      [145.9498, -41.7641], [146.0100, -41.8000], [146.0464, -41.8295],
+      [146.0820, -41.8921], [146.0889, -41.9321], [146.1200, -41.9600],
       [146.1667, -41.9958],
     ]
   }
@@ -307,8 +307,8 @@ const overlandTrackGeojson: GeoJSON.Feature = {
 
 const TYPE_COLORS = {
   camp: '#22c55e',
-  peak: '#f97316',
-  poi: '#3b82f6'
+  peak: '#64748b',
+  poi: '#6366f1'
 };
 
 function RouteExample() {
@@ -316,119 +316,113 @@ function RouteExample() {
   const selectedWaypoint = allOverlandWaypoints.find(w => w.id === selectedWaypointId);
 
   return (
-    <section id="route-example" className="py-20 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Overland Track Example
+    <section className="py-24 bg-white">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            See it in action
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            See how Thunderbird maps your route with camps, peaks, and weather zones. Click any waypoint to see its SMS code.
+          <p className="text-zinc-500 max-w-xl mx-auto">
+            The Overland Track with 16 waypoints. Click any marker to see its SMS code.
           </p>
         </div>
 
-        {/* Map */}
-        <div className="card p-4 mb-6">
+        <div className="bg-zinc-50 rounded-2xl border border-zinc-200 p-4 mb-6">
           <MapEditor
             trackGeojson={overlandTrackGeojson}
             waypoints={allOverlandWaypoints}
             selectedWaypointId={selectedWaypointId}
             onWaypointSelect={setSelectedWaypointId}
-            initialViewport={{
-              latitude: -41.82,
-              longitude: 146.0,
-              zoom: 9
-            }}
+            initialViewport={{ latitude: -41.82, longitude: 146.0, zoom: 9 }}
           />
 
-          {/* Legend */}
           <div className="mt-4 flex flex-wrap justify-center gap-6 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: TYPE_COLORS.camp }} />
-              <span className="text-gray-700">Camps ({overlandCamps.length})</span>
+              <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              <span className="text-zinc-600">Camps ({overlandCamps.length})</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: TYPE_COLORS.peak }} />
-              <span className="text-gray-700">Peaks ({overlandPeaks.length})</span>
+              <div className="w-3 h-3 rounded-full bg-slate-500" />
+              <span className="text-zinc-600">Peaks ({overlandPeaks.length})</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: TYPE_COLORS.poi }} />
-              <span className="text-gray-700">POI ({overlandPois.length})</span>
+              <div className="w-3 h-3 rounded-full bg-indigo-500" />
+              <span className="text-zinc-600">POI ({overlandPois.length})</span>
             </div>
           </div>
         </div>
 
-        {/* Selected Waypoint Detail */}
         {selectedWaypoint && (
-          <div className="card p-4 mb-6 border-2 border-orange-500">
+          <div className="bg-white rounded-xl border-2 border-zinc-900 p-4 mb-6">
             <div className="flex items-center gap-4">
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-medium"
                 style={{ backgroundColor: TYPE_COLORS[selectedWaypoint.type] }}
               >
                 {selectedWaypoint.smsCode.slice(0, 3)}
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">{selectedWaypoint.name}</h3>
-                <p className="text-gray-600 text-sm">
-                  Text <code className="bg-gray-100 px-2 py-0.5 rounded font-mono text-orange-600">{selectedWaypoint.smsCode}</code> for weather
-                  <span className="text-gray-400 ml-2">• {selectedWaypoint.elevation}m</span>
+              <div>
+                <h3 className="font-medium text-zinc-900">{selectedWaypoint.name}</h3>
+                <p className="text-sm text-zinc-500">
+                  Text <code className="bg-zinc-100 px-2 py-0.5 rounded font-mono text-zinc-700">{selectedWaypoint.smsCode}</code> for weather
+                  <span className="text-zinc-400 ml-2">• {selectedWaypoint.elevation}m</span>
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Waypoint Lists - Compact */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          {/* Camps */}
-          <div className="card p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Tent className="w-4 h-4 text-green-500" />
-              <h3 className="font-semibold">Camps</h3>
+        <div className="grid md:grid-cols-2 gap-4 mb-10">
+          <div className="bg-white rounded-xl border border-zinc-200 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Tent className="w-4 h-4 text-emerald-600" />
+              <h3 className="font-medium text-zinc-900">Camps</h3>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-2 gap-1.5 text-sm">
               {overlandCamps.map((camp) => (
                 <button
                   key={camp.id}
                   onClick={() => setSelectedWaypointId(camp.id)}
-                  className={`flex items-center gap-2 p-2 rounded text-left transition-colors ${
-                    selectedWaypointId === camp.id ? 'bg-green-50' : 'hover:bg-gray-50'
+                  className={`flex items-center gap-2 p-2 rounded-lg text-left transition-colors ${
+                    selectedWaypointId === camp.id ? 'bg-emerald-50' : 'hover:bg-zinc-50'
                   }`}
                 >
-                  <code className="text-green-600 font-mono text-xs">{camp.smsCode}</code>
-                  <span className="text-gray-600 truncate">{camp.name}</span>
+                  <code className="text-emerald-600 font-mono text-xs">{camp.smsCode}</code>
+                  <span className="text-zinc-600 truncate text-xs">{camp.name}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Peaks */}
-          <div className="card p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Mountain className="w-4 h-4 text-orange-500" />
-              <h3 className="font-semibold">Peaks</h3>
+          <div className="bg-white rounded-xl border border-zinc-200 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Mountain className="w-4 h-4 text-slate-600" />
+              <h3 className="font-medium text-zinc-900">Peaks</h3>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-2 gap-1.5 text-sm">
               {overlandPeaks.map((peak) => (
                 <button
                   key={peak.id}
                   onClick={() => setSelectedWaypointId(peak.id)}
-                  className={`flex items-center gap-2 p-2 rounded text-left transition-colors ${
-                    selectedWaypointId === peak.id ? 'bg-orange-50' : 'hover:bg-gray-50'
+                  className={`flex items-center gap-2 p-2 rounded-lg text-left transition-colors ${
+                    selectedWaypointId === peak.id ? 'bg-slate-50' : 'hover:bg-zinc-50'
                   }`}
                 >
-                  <code className="text-orange-600 font-mono text-xs">{peak.smsCode}</code>
-                  <span className="text-gray-600 truncate">{peak.name}</span>
+                  <code className="text-slate-600 font-mono text-xs">{peak.smsCode}</code>
+                  <span className="text-zinc-600 truncate text-xs">{peak.name}</span>
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="flex justify-center">
-          <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
+        <div className="text-center">
+          <Link
+            href="/checkout?path=buy"
+            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+          >
             Buy Now
+            <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -438,89 +432,48 @@ function RouteExample() {
 
 function Features() {
   const features = [
-    {
-      icon: Clock,
-      title: 'Hour-by-Hour',
-      description: '2-hour intervals throughout the day. Know exactly when conditions change.',
-      code: '06h'
-    },
-    {
-      icon: Thermometer,
-      title: 'Temperature Range',
-      description: 'Min-max temperature adjusted for elevation using 6.5°C/1000m lapse rate.',
-      code: '5-7o'
-    },
-    {
-      icon: Droplets,
-      icon2: Snowflake,
-      title: 'Precipitation',
-      description: 'Rain or snow probability plus expected accumulation. Snow shown when freezing level is below elevation.',
-      code: 'Rn25% 1-3mm / Sn0cm'
-    },
-    {
-      icon: Wind,
-      title: 'Wind Speed',
-      description: 'Sustained and gust speeds in km/h. Critical for exposed ridgelines.',
-      code: 'W18-30'
-    },
-    {
-      icon: Cloud,
-      title: 'Cloud Cover',
-      description: 'Percentage of sky covered. Plan your photography and navigation.',
-      code: 'Cld60%'
-    },
-    {
-      icon: Mountain,
-      title: 'Cloud Base',
-      description: 'Height where clouds begin (×100m). Know if you\'ll be hiking in cloud.',
-      code: 'CB14'
-    },
-    {
-      icon: Snowflake,
-      title: 'Freezing Level',
-      description: 'Altitude where temperature hits 0°C (×100m). Essential for snow/ice.',
-      code: 'FL18'
-    },
-    {
-      icon: AlertTriangle,
-      title: 'Danger Indicator',
-      description: 'Warning flag for hazardous conditions: high wind, ice risk, poor visibility.',
-      code: '!'
-    }
+    { icon: Clock, title: 'Hour-by-hour', description: '2-hour intervals. Know exactly when conditions change.', code: '06h' },
+    { icon: Thermometer, title: 'Temperature', description: 'Min-max adjusted for elevation (6.5°C/1000m lapse).', code: '5-7°' },
+    { icon: Droplets, title: 'Precipitation', description: 'Rain/snow probability plus expected accumulation.', code: 'Rn25%' },
+    { icon: Wind, title: 'Wind', description: 'Sustained and gust speeds. Critical for ridgelines.', code: 'W18-30' },
+    { icon: Cloud, title: 'Cloud cover', description: 'Percentage of sky covered. Plan visibility.', code: 'Cld60%' },
+    { icon: Mountain, title: 'Cloud base', description: 'Height where clouds begin (×100m).', code: 'CB14' },
+    { icon: Snowflake, title: 'Freezing level', description: 'Altitude where temp hits 0°C (×100m).', code: 'FL18' },
+    { icon: AlertTriangle, title: 'Danger flag', description: 'Warning for hazardous conditions.', code: '⚠' },
   ]
 
   return (
-    <section id="forecast-features" className="py-20 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            What&apos;s in the Forecast
+    <section className="py-24 bg-zinc-50">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            What&apos;s in the forecast
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-2">
-            Every metric you need, in order of appearance
-          </p>
-          <p className="text-gray-500 max-w-2xl mx-auto">
-            We use weather APIs with the greatest resolution to make sure you get accurate hourly forecasts.
+          <p className="text-zinc-500 max-w-xl mx-auto">
+            Every metric you need, optimized for SMS delivery.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {features.map((feature, i) => (
-            <div key={i} className="card p-6">
-              <div className="flex gap-2 mb-4">
-                <feature.icon className="w-10 h-10 text-orange-500" />
-                {feature.icon2 && <feature.icon2 className="w-10 h-10 text-orange-500" />}
+            <div key={i} className="bg-white rounded-xl border border-zinc-200 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <feature.icon className="w-5 h-5 text-zinc-400" />
+                <code className="text-xs font-mono text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded">{feature.code}</code>
               </div>
-              <span className="text-orange-500 font-bold font-mono text-sm">{feature.code}</span>
-              <h3 className="font-semibold text-lg mb-2 mt-1">{feature.title}</h3>
-              <p className="text-gray-500 text-sm">{feature.description}</p>
+              <h3 className="font-medium text-zinc-900 mb-1">{feature.title}</h3>
+              <p className="text-xs text-zinc-500 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
 
-        <div className="flex justify-center mt-12">
-          <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
+        <div className="text-center mt-12">
+          <Link
+            href="/checkout?path=buy"
+            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+          >
             Buy Now
+            <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -528,138 +481,114 @@ function Features() {
   )
 }
 
-function CostComparison() {
+function Pricing() {
   return (
-    <section id="cost-comparison" className="py-20 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Cost Comparison
+    <section className="py-24 bg-white">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            Simple pricing
           </h2>
-          <p className="text-xl text-gray-600">
-            No device to buy. No subscription to maintain.
+          <p className="text-zinc-500 max-w-xl mx-auto">
+            One-time purchase. No subscription. No device to buy.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto items-stretch">
           {/* Thunderbird */}
-          <div className="card p-6 border-orange-500 border-2 flex flex-col">
+          <div className="bg-zinc-900 rounded-2xl p-6 text-white shadow-xl shadow-orange-500/20 ring-2 ring-orange-500 flex flex-col">
             <div className="text-center mb-6">
-              <Zap className="w-10 h-10 text-orange-500 mx-auto mb-2" />
-              <h3 className="text-xl font-bold text-orange-500">Thunderbird</h3>
+              <Zap className="w-8 h-8 text-orange-500 mx-auto mb-3" />
+              <h3 className="text-lg font-medium">Thunderbird</h3>
             </div>
-            <div className="space-y-4 flex-grow">
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">Device Cost</span>
-                <span className="font-semibold text-orange-500">$0.00</span>
+            <div className="space-y-3 text-sm flex-1">
+              <div className="flex justify-between py-2 border-b border-zinc-700">
+                <span className="text-zinc-400">Device</span>
+                <span className="font-medium">$0</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">Monthly Cost</span>
-                <span className="font-semibold text-orange-500">$0.00</span>
+              <div className="flex justify-between py-2 border-b border-zinc-700">
+                <span className="text-zinc-400">Monthly</span>
+                <span className="font-medium">$0</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">1st Month (min)</span>
-                <span className="font-semibold text-orange-500">$29.99</span>
+              <div className="flex justify-between py-2 border-b border-zinc-700">
+                <span className="text-zinc-400">One-time</span>
+                <span className="font-medium">$29.99</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">12 Month (min)</span>
-                <span className="font-semibold text-orange-500">$29.99</span>
-              </div>
-              <div className="pt-2">
-                <span className="text-gray-500 text-sm block mb-1">Cost per Forecast*</span>
-                <span className="font-semibold text-orange-500">$0.07 - $0.87</span>
-                <div className="text-gray-400 text-xs mt-2">
-                  US $0.07 | AU, GB ~$0.42<br />
-                  CH, FR ~$0.60 | IT, NZ, ZA ~$0.80
-                </div>
+              <div className="flex justify-between py-2">
+                <span className="text-zinc-400">Per forecast</span>
+                <span className="font-medium">$0.07–$0.87</span>
               </div>
             </div>
-            <Link href="/checkout?path=buy" className="btn-orange w-full text-center text-lg py-4 mt-6 block">
+            <Link
+              href="/checkout?path=buy"
+              className="btn-orange block w-full text-center mt-6"
+            >
               Buy Now
             </Link>
           </div>
 
           {/* Garmin */}
-          <div className="card p-6 flex flex-col">
+          <div className="bg-white rounded-2xl border border-zinc-200 p-6 flex flex-col">
             <div className="text-center mb-6">
-              <Satellite className="w-10 h-10 text-gray-500 mx-auto mb-2" />
-              <h3 className="text-xl font-bold">Garmin inReach Mini 2</h3>
+              <Satellite className="w-8 h-8 text-zinc-400 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-zinc-900">Garmin inReach</h3>
             </div>
-            <div className="space-y-4 flex-grow">
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">Device Cost</span>
-                <span className="font-semibold">$399.00</span>
+            <div className="space-y-3 text-sm flex-1">
+              <div className="flex justify-between py-2 border-b border-zinc-100">
+                <span className="text-zinc-500">Device</span>
+                <span className="font-medium text-zinc-900">$399</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">Monthly Cost</span>
-                <span className="font-semibold">$14.95 - $64.95</span>
+              <div className="flex justify-between py-2 border-b border-zinc-100">
+                <span className="text-zinc-500">Monthly</span>
+                <span className="font-medium text-zinc-900">$15–$65</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">1st Month (min)</span>
-                <span className="font-semibold">$413.95</span>
+              <div className="flex justify-between py-2 border-b border-zinc-100">
+                <span className="text-zinc-500">One-time</span>
+                <span className="font-medium text-zinc-900">$414+</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">12 Month (min)</span>
-                <span className="font-semibold">$578.40</span>
-              </div>
-              <div className="pt-2">
-                <span className="text-gray-500 text-sm block mb-1">Cost per Forecast**</span>
-                <span className="font-semibold">$1.00 - $2.00</span>
-                <div className="text-gray-400 text-xs mt-2">
-                  On top of monthly subscription
-                </div>
+              <div className="flex justify-between py-2">
+                <span className="text-zinc-500">Per forecast</span>
+                <span className="font-medium text-zinc-900">$1–$2</span>
               </div>
             </div>
-            <div className="btn-secondary w-full text-center text-lg py-4 mt-6 opacity-50 cursor-not-allowed">
-              External Provider
+            <div className="w-full bg-zinc-100 text-zinc-400 font-medium py-3 rounded-xl text-center text-sm mt-6">
+              External provider
             </div>
           </div>
 
           {/* Zoleo */}
-          <div className="card p-6 flex flex-col">
+          <div className="bg-white rounded-2xl border border-zinc-200 p-6 flex flex-col">
             <div className="text-center mb-6">
-              <MessageSquare className="w-10 h-10 text-gray-500 mx-auto mb-2" />
-              <h3 className="text-xl font-bold">Zoleo</h3>
+              <MessageSquare className="w-8 h-8 text-zinc-400 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-zinc-900">Zoleo</h3>
             </div>
-            <div className="space-y-4 flex-grow">
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">Device Cost</span>
-                <span className="font-semibold">$199.00</span>
+            <div className="space-y-3 text-sm flex-1">
+              <div className="flex justify-between py-2 border-b border-zinc-100">
+                <span className="text-zinc-500">Device</span>
+                <span className="font-medium text-zinc-900">$199</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">Monthly Cost</span>
-                <span className="font-semibold">$20.00 - $50.00</span>
+              <div className="flex justify-between py-2 border-b border-zinc-100">
+                <span className="text-zinc-500">Monthly</span>
+                <span className="font-medium text-zinc-900">$20–$50</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">1st Month (min)</span>
-                <span className="font-semibold">$219.00</span>
+              <div className="flex justify-between py-2 border-b border-zinc-100">
+                <span className="text-zinc-500">One-time</span>
+                <span className="font-medium text-zinc-900">$219+</span>
               </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-gray-500">12 Month (min)</span>
-                <span className="font-semibold">$439.00</span>
-              </div>
-              <div className="pt-2">
-                <span className="text-gray-500 text-sm block mb-1">Cost per Forecast**</span>
-                <span className="font-semibold">$0.14 - $0.80</span>
-                <div className="text-gray-400 text-xs mt-2">
-                  Uses message credits from plan
-                </div>
+              <div className="flex justify-between py-2">
+                <span className="text-zinc-500">Per forecast</span>
+                <span className="font-medium text-zinc-900">$0.14–$0.80</span>
               </div>
             </div>
-            <div className="btn-secondary w-full text-center text-lg py-4 mt-6 opacity-50 cursor-not-allowed">
-              External Provider
+            <div className="w-full bg-zinc-100 text-zinc-400 font-medium py-3 rounded-xl text-center text-sm mt-6">
+              External provider
             </div>
           </div>
         </div>
 
-        <div className="text-gray-400 text-xs text-center space-y-1">
-          <p>All prices in USD. * Based on 4 SMS segments per forecast via satellite SMS.</p>
-          <p>** Requires active monthly subscription to use device.</p>
-        </div>
-
-        <p className="text-gray-600 text-center mt-8">
-          Already have a satellite device? Thunderbird works with your existing equipment too.{' '}
-          <Link href="/compatibility" className="text-orange-500 hover:underline">
+        <p className="text-center text-xs text-zinc-400 mt-8">
+          Already have a satellite device? Thunderbird works with your existing equipment.{' '}
+          <Link href="/compatibility" className="text-zinc-500 hover:text-zinc-700 underline underline-offset-2">
             Check compatibility
           </Link>
         </p>
@@ -668,125 +597,77 @@ function CostComparison() {
   )
 }
 
-function CTA() {
-  return (
-    <section id="pricing" className="py-20 bg-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <Zap className="w-12 h-12 text-orange-500 mx-auto mb-6" />
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">
-          Beta Launching January 2026
-        </h2>
-
-        <div className="card p-8 max-w-md mx-auto mb-8">
-          <div className="flex items-baseline justify-center gap-1 mb-2">
-            <span className="text-5xl font-bold">$29.99</span>
-            <span className="text-gray-500">USD</span>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Includes $10 SMS credits
-          </p>
-          <p className="text-gray-500 text-sm">
-            About a week on trail with full weather forecast coverage
-          </p>
-        </div>
-
-        <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
-          Buy Now
-        </Link>
-
-        <p className="text-gray-400 text-sm mt-6">
-          Works with iPhone 14+ satellite SMS and compatible devices.
-        </p>
-      </div>
-    </section>
-  )
-}
-
-// FAQ data for both display and schema
 const faqData = [
   {
     question: "What phones work with Thunderbird?",
-    answer: "Thunderbird works with any phone that supports satellite SMS, including iPhone 14 and newer, Apple Watch Ultra, and select Android phones on T-Mobile or Verizon (Pixel 9+, Galaxy S24+/S25+). Check our compatibility page for full details on supported devices and carriers."
+    answer: "Thunderbird works with any phone that supports satellite SMS, including iPhone 14 and newer, Apple Watch Ultra, and select Android phones on T-Mobile or Verizon (Pixel 9+, Galaxy S24+/S25+)."
   },
   {
-    question: "How does Thunderbird deliver weather forecasts via satellite?",
-    answer: "Thunderbird uses your phone's satellite SMS capability (available on iPhone 14 and newer, Apple Watch Ultra, and other satellite-enabled devices). Simply text your waypoint code to our service number, and you'll receive a detailed weather forecast via satellite SMS - no cellular coverage or internet required. This works anywhere in the world with satellite visibility."
+    question: "How does satellite SMS delivery work?",
+    answer: "Text your waypoint code to our service number. Your phone routes the message through satellite when out of cell range. You receive a detailed weather forecast within minutes — no app or internet required."
   },
   {
-    question: "What weather data is included in each forecast?",
-    answer: "Each forecast includes hour-by-hour data for temperature range (adjusted for elevation), rain/snow probability and accumulation, wind speed (sustained and gusts), cloud cover percentage, cloud base height, freezing level, and danger indicators for hazardous conditions. All data comes from Bureau of Meteorology's high-resolution 3km grid system."
+    question: "What weather data is included?",
+    answer: "Each forecast includes hour-by-hour temperature (elevation-adjusted), rain/snow probability, wind speed, cloud cover, cloud base height, freezing level, and danger indicators for hazardous conditions."
   },
   {
-    question: "How accurate are the elevation-adjusted forecasts?",
-    answer: "Thunderbird uses the standard atmospheric lapse rate of 6.5°C per 1000m to adjust temperature forecasts for your exact elevation. Combined with BOM's 3km resolution data, this provides significantly more accurate forecasts than generic mountain weather services. Freezing level and cloud base heights help you know exactly what conditions to expect at your camp or summit."
-  },
-  {
-    question: "Do I need a separate satellite device or subscription?",
-    answer: "No separate device is needed if you have a satellite SMS capable phone (iPhone 14+) or watch (Apple Watch Ultra). You use your existing device and carrier's satellite SMS feature. Thunderbird charges only for the forecasts you request - there's no monthly subscription or additional hardware to purchase."
+    question: "Do I need a subscription?",
+    answer: "No. Thunderbird is a one-time $29.99 purchase that includes $10 in SMS credits. Top up only when you need more. Credits never expire."
   },
   {
     question: "How much does each forecast cost?",
-    answer: "Each forecast costs approximately $0.07 to $0.87 USD depending on your country's satellite SMS rates. The $29.99 starter pack includes $10 in SMS credits, which covers approximately 140 forecasts - enough for multiple week-long trips. Credits never expire, and there are no monthly fees."
+    answer: "Each forecast costs $0.07 to $0.87 depending on your country's SMS rates. The starter pack covers approximately 140 forecasts — enough for multiple week-long trips."
   },
   {
-    question: "Can I create custom routes or only use preset trails?",
-    answer: "Both! Thunderbird offers popular trail templates like the Overland Track and Western Arthurs, or you can upload your own GPX file and create completely custom routes. Add waypoints for camps, peaks, and points of interest, and each location gets its own SMS code for on-demand forecasts."
+    question: "Can I create custom routes?",
+    answer: "Yes. Upload your own GPX file or build from scratch using our map editor. You can also start from popular trail templates and customize them."
   },
-  {
-    question: "What areas does Thunderbird cover?",
-    answer: "Thunderbird currently covers Tasmania, Australia using Bureau of Meteorology data. Coverage is expanding to include mainland Australia alpine regions, New Zealand, and other remote hiking destinations. The satellite SMS delivery works globally wherever your device has satellite visibility."
-  },
-  {
-    question: "How do I request a forecast while on trail?",
-    answer: "Simply send an SMS with your waypoint code (like 'PELIO' for New Pelion Hut) to the Thunderbird service number. Within minutes, you'll receive a detailed 24-hour forecast for that exact location. No app needed, no internet required - just standard SMS that routes through satellite when out of cell range."
-  }
 ];
 
 function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-20 bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-zinc-50">
+      <div className="max-w-2xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Frequently Asked Questions
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            Questions
           </h2>
-          <p className="text-xl text-gray-600">
-            Everything you need to know about Thunderbird
-          </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           {faqData.map((faq, index) => (
-            <div
-              key={index}
-              className="card overflow-hidden"
-            >
+            <div key={index} className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-6 py-4 text-left flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors"
+                className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-zinc-50 transition-colors"
               >
-                <span className="font-semibold text-gray-900">{faq.question}</span>
-                <span className="text-gray-400 text-2xl flex-shrink-0">
+                <span className="font-medium text-zinc-900 text-sm">{faq.question}</span>
+                <span className="text-zinc-400 text-lg flex-shrink-0">
                   {openIndex === index ? '−' : '+'}
                 </span>
               </button>
-              <div
-                className={`overflow-hidden transition-all duration-300 ${
-                  openIndex === index ? 'max-h-96' : 'max-h-0'
-                }`}
-              >
-                <div className="px-6 pb-4 text-gray-600 leading-relaxed">
+              <div className={`overflow-hidden transition-all duration-200 ${openIndex === index ? 'max-h-48' : 'max-h-0'}`}>
+                <div className="px-5 pb-4 text-sm text-zinc-500 leading-relaxed">
                   {faq.answer}
                 </div>
               </div>
             </div>
           ))}
         </div>
+
+        <div className="text-center mt-12">
+          <Link
+            href="/checkout?path=buy"
+            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+          >
+            Buy Now
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
 
-      {/* JSON-LD FAQPage Schema for Google AI Overview & LLM optimization */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -796,10 +677,7 @@ function FAQ() {
             "mainEntity": faqData.map(faq => ({
               "@type": "Question",
               "name": faq.question,
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": faq.answer
-              }
+              "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
             }))
           })
         }}
@@ -808,27 +686,47 @@ function FAQ() {
   )
 }
 
-// Component that uses searchParams - needs to be wrapped in Suspense
+function FinalCTA() {
+  return (
+    <section className="py-24 bg-white">
+      <div className="max-w-2xl mx-auto px-6 lg:px-8 text-center">
+        <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+          Ready to get started?
+        </h2>
+        <p className="text-zinc-500 mb-8">
+          $29.99 one-time. Includes $10 SMS credits. No subscription.
+        </p>
+        <Link
+          href="/checkout?path=buy"
+          className="btn-orange inline-flex items-center gap-2 px-8 py-4"
+        >
+          Buy Now
+          <ChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
+    </section>
+  )
+}
+
 function HomeContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Initialize path tracking on first visit
     const params = new URLSearchParams(searchParams.toString());
     initPathTracking(params);
-    // Track landing page view
     trackPageView('/');
   }, [searchParams]);
 
   return (
     <>
       <Hero />
+      <HowItWorks />
       <WhySMS />
       <RouteExample />
       <Features />
-      <CTA />
-      <CostComparison />
+      <Pricing />
       <FAQ />
+      <FinalCTA />
     </>
   );
 }

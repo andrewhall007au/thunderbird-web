@@ -203,6 +203,71 @@ async def send_order_confirmation(
     )
 
 
+async def send_password_reset_email(
+    to_email: str,
+    reset_token: str
+) -> EmailResult:
+    """
+    Send password reset email with reset link.
+
+    Args:
+        to_email: User's email address
+        reset_token: JWT token for password reset
+
+    Returns:
+        EmailResult with success/error
+    """
+    service = get_email_service()
+
+    if not service.is_configured():
+        logger.warning("SendGrid not configured, skipping password reset email")
+        return EmailResult(success=False, error="Email service not configured")
+
+    try:
+        from sendgrid.helpers.mail import Mail, Email, To, Content
+
+        reset_url = f"{settings.BASE_URL}/reset-password?token={reset_token}"
+
+        subject = "Reset your Thunderbird password"
+        body = f"""Hi,
+
+You requested to reset your Thunderbird password.
+
+Click this link to set a new password:
+{reset_url}
+
+This link expires in 15 minutes.
+
+If you didn't request this, you can safely ignore this email.
+
+- The Thunderbird Team
+"""
+
+        message = Mail(
+            from_email=Email(service.from_email, "Thunderbird"),
+            to_emails=To(to_email),
+            subject=subject,
+        )
+        message.content = [Content("text/plain", body)]
+
+        response = service.client.send(message)
+
+        if response.status_code in (200, 202):
+            logger.info(f"Password reset email sent to {to_email}")
+            return EmailResult(success=True, status_code=response.status_code)
+        else:
+            logger.error(f"Password reset email failed: {response.status_code}")
+            return EmailResult(
+                success=False,
+                status_code=response.status_code,
+                error=f"SendGrid returned {response.status_code}"
+            )
+
+    except Exception as e:
+        logger.error(f"Password reset email error: {e}")
+        return EmailResult(success=False, error=str(e))
+
+
 async def send_affiliate_milestone_email(
     to_email: str,
     affiliate_name: str,

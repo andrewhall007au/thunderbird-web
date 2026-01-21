@@ -2,6 +2,8 @@ import './globals.css'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Zap, Menu } from 'lucide-react'
+import { AuthProvider } from '@/app/lib/auth'
+import { HeaderAuth } from '@/app/components/HeaderAuth'
 
 export const metadata: Metadata = {
   title: 'Thunderbird - Alpine Weather Forecasts via Satellite SMS',
@@ -30,16 +32,12 @@ function Navigation() {
           <div className="hidden md:flex items-center gap-8">
             <Link href="/how-it-works" className="nav-link">How It Works</Link>
             <Link href="/#route-example" className="nav-link">Route Example</Link>
-            <Link href="/#forecast-features" className="nav-link">What&apos;s in the Forecast</Link>
             <Link href="/#pricing" className="nav-link">Pricing</Link>
-            <Link href="/#cost-comparison" className="nav-link">Pricing Comparison</Link>
             <Link href="/#faq" className="nav-link">FAQ</Link>
           </div>
 
-          <div className="hidden md:block">
-            <Link href="/checkout" className="btn-orange">
-              Buy Now
-            </Link>
+          <div className="hidden md:flex items-center gap-3">
+            <HeaderAuth />
           </div>
 
           <button className="md:hidden text-gray-900">
@@ -68,10 +66,9 @@ function Footer() {
             <ul className="space-y-2 text-gray-500 text-sm">
               <li><Link href="/how-it-works" className="hover:text-gray-900">How It Works</Link></li>
               <li><Link href="/#route-example" className="hover:text-gray-900">Route Example</Link></li>
-              <li><Link href="/#forecast-features" className="hover:text-gray-900">What&apos;s in the Forecast</Link></li>
-              <li><Link href="/pricing" className="hover:text-gray-900">Pricing</Link></li>
-              <li><Link href="/faq" className="hover:text-gray-900">FAQ</Link></li>
-              <li><Link href="/contact" className="hover:text-gray-900">Contact</Link></li>
+              <li><Link href="/compatibility" className="hover:text-gray-900">Device Compatibility</Link></li>
+              <li><Link href="/#pricing" className="hover:text-gray-900">Pricing</Link></li>
+              <li><Link href="/#faq" className="hover:text-gray-900">FAQ</Link></li>
             </ul>
           </div>
 
@@ -86,7 +83,7 @@ function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
-          <p>© {new Date().getFullYear()} Thunderbird. Weather data from Bureau of Meteorology.</p>
+          <p>&copy; {new Date().getFullYear()} Thunderbird. Weather data from government and third-party providers.</p>
         </div>
       </div>
     </footer>
@@ -120,15 +117,15 @@ const serviceSchema = {
   },
   "serviceType": "Weather Forecast Service",
   "areaServed": {
-    "@type": "Country",
-    "name": "Australia"
+    "@type": "Place",
+    "name": "Worldwide"
   },
   "offers": {
     "@type": "Offer",
     "price": "29.99",
     "priceCurrency": "USD",
     "description": "Starter Pack with $10 SMS credits (~140 forecasts)",
-    "availability": "https://schema.org/PreOrder"
+    "availability": "https://schema.org/InStock"
   }
 };
 
@@ -137,7 +134,7 @@ const softwareSchema = {
   "@type": "SoftwareApplication",
   "name": "Thunderbird",
   "applicationCategory": "WeatherApplication",
-  "operatingSystem": "iOS, watchOS",
+  "operatingSystem": "iOS, watchOS, Android",
   "description": "Satellite SMS weather forecasts for hikers. Create custom routes with waypoints and receive elevation-specific forecasts via satellite when out of cell range.",
   "offers": {
     "@type": "Offer",
@@ -150,7 +147,7 @@ const softwareSchema = {
     "Hour-by-hour precipitation and wind data",
     "Cloud base and freezing level information",
     "Custom route creation with GPX upload",
-    "BOM 3km resolution weather data"
+    "International weather data coverage"
   ]
 };
 
@@ -176,11 +173,13 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Navigation />
-        <main className="pt-16 min-h-screen">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Navigation />
+          <main className="pt-16 min-h-screen">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )

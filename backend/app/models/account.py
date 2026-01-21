@@ -294,5 +294,27 @@ class AccountStore:
             return None
 
 
+    def update_password(self, email: str, password_hash: str) -> bool:
+        """
+        Update password for an account.
+
+        Args:
+            email: Account email
+            password_hash: New hashed password
+
+        Returns:
+            True if updated, False if account not found
+        """
+        now = datetime.utcnow().isoformat()
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE accounts SET password_hash = ?, updated_at = ? WHERE email = ?",
+                (password_hash, now, email.lower())
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+
 # Singleton instance
 account_store = AccountStore()

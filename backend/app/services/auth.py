@@ -77,6 +77,51 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     )
 
 
+def create_password_reset_token(email: str) -> str:
+    """
+    Create a short-lived JWT token for password reset.
+
+    Token expires in 15 minutes.
+
+    Args:
+        email: Account email to reset
+
+    Returns:
+        JWT token string for reset link
+    """
+    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    return jwt.encode(
+        {"sub": email, "purpose": "password_reset", "exp": expire},
+        settings.JWT_SECRET,
+        algorithm=settings.JWT_ALGORITHM
+    )
+
+
+def verify_password_reset_token(token: str) -> Optional[str]:
+    """
+    Verify a password reset token and return the email.
+
+    Args:
+        token: JWT reset token
+
+    Returns:
+        Email address if valid, None if invalid/expired
+    """
+    try:
+        payload = jwt.decode(
+            token,
+            settings.JWT_SECRET,
+            algorithms=[settings.JWT_ALGORITHM]
+        )
+        if payload.get("purpose") != "password_reset":
+            return None
+        return payload.get("sub")
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+
 async def get_current_account(token: str = Depends(oauth2_scheme)) -> Account:
     """
     FastAPI dependency to get the current authenticated account.

@@ -17,7 +17,10 @@ from app.services.auth import (
     verify_password,
     create_access_token,
     get_current_account,
+    create_password_reset_token,
+    verify_password_reset_token,
 )
+from app.services.email import send_password_reset_email
 from app.models.account import Account, account_store
 from app.services.sms import PhoneUtils
 from config.settings import settings
@@ -263,3 +266,77 @@ async def get_account_by_phone(
         unit_system=found.unit_system or "metric",
         created_at=found.created_at.isoformat() if found.created_at else ""
     )
+
+
+# Password Reset Models
+
+class ForgotPasswordRequest(BaseModel):
+    """Request to initiate password reset."""
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Request to set new password with reset token."""
+    token: str
+    new_password: str = Field(..., min_length=8, description="Minimum 8 characters")
+
+
+# Password Reset Endpoints
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """
+    Request a password reset email.
+
+    Always returns success to prevent email enumeration.
+    If the email exists, a reset link is sent.
+
+    Args:
+        request: Email address to reset
+    """
+    account = account_store.get_by_email(request.email)
+
+    if account:
+        # Generate reset token and send email
+        reset_token = create_password_reset_token(account.email)
+        await send_password_reset_email(account.email, reset_token)
+
+    # Always return success to prevent email enumeration
+    return {"message": "If an account exists with this email, a reset link has been sent."}
+
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """
+    Reset password using a valid reset token.
+
+    Args:
+        request: Token and new password
+
+    Returns:
+        Success message
+
+    Raises:
+        400 if token is invalid or expired
+    """
+    email = verify_password_reset_token(request.token)
+
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+
+    # Verify account exists
+    account = account_store.get_by_email(email)
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+
+    # Update password
+    new_hash = hash_password(request.new_password)
+    account_store.update_password(email, new_hash)
+
+    return {"message": "Password has been reset successfully"}
