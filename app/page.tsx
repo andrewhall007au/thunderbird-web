@@ -9,7 +9,7 @@ import {
   Zap, Satellite, CloudRain, Shield, Bell, Clock,
   MapPin, Thermometer, Wind, Droplets, Mountain, Smartphone,
   Cloud, Snowflake, AlertTriangle, Navigation, Save, MessageSquare,
-  Tent
+  Tent, BatteryCharging
 } from 'lucide-react'
 
 // Dynamic import for map to avoid SSR issues
@@ -196,6 +196,61 @@ CB=Cloud FL=Freeze`}
           <p className="text-gray-400 text-xs max-w-2xl mx-auto text-center mt-8">
             *Available on any satellite SMS compatible Apple phone or watch and where your terrestrial plan provider has a partnership with a satellite provider, which is becoming increasingly more common.
           </p>
+
+          <Link
+            href="/compatibility"
+            className="text-gray-500 hover:text-orange-500 transition-colors text-sm mt-4 inline-block"
+          >
+            Check if your device is compatible
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function WhySMS() {
+  const benefits = [
+    {
+      icon: Satellite,
+      title: "Works Everywhere",
+      description: "Satellite SMS reaches you anywhere with sky visibility - no cell towers needed."
+    },
+    {
+      icon: BatteryCharging,
+      title: "Battery Efficient",
+      description: "SMS uses minimal power compared to data. Your phone lasts longer on trail."
+    },
+    {
+      icon: Shield,
+      title: "Reliable Delivery",
+      description: "SMS is prioritized over data. Your forecast gets through even in congested areas."
+    }
+  ];
+
+  return (
+    <section className="py-16 bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+            Why SMS?
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Satellite SMS delivers weather forecasts even when you&apos;re miles from cell towers.
+            Small, reliable, battery-efficient.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          {benefits.map((benefit, i) => (
+            <div key={i} className="card p-6 text-center">
+              <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <benefit.icon className="w-7 h-7 text-orange-500" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">{benefit.title}</h3>
+              <p className="text-gray-500 text-sm">{benefit.description}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -601,6 +656,13 @@ function CostComparison() {
           <p>All prices in USD. * Based on 4 SMS segments per forecast via satellite SMS.</p>
           <p>** Requires active monthly subscription to use device.</p>
         </div>
+
+        <p className="text-gray-600 text-center mt-8">
+          Already have a satellite device? Thunderbird works with your existing equipment too.{' '}
+          <Link href="/compatibility" className="text-orange-500 hover:underline">
+            Check compatibility
+          </Link>
+        </p>
       </div>
     </section>
   )
@@ -642,6 +704,10 @@ function CTA() {
 
 // FAQ data for both display and schema
 const faqData = [
+  {
+    question: "What phones work with Thunderbird?",
+    answer: "Thunderbird works with any phone that supports satellite SMS, including iPhone 14 and newer, Apple Watch Ultra, and select Android phones on T-Mobile or Verizon (Pixel 9+, Galaxy S24+/S25+). Check our compatibility page for full details on supported devices and carriers."
+  },
   {
     question: "How does Thunderbird deliver weather forecasts via satellite?",
     answer: "Thunderbird uses your phone's satellite SMS capability (available on iPhone 14 and newer, Apple Watch Ultra, and other satellite-enabled devices). Simply text your waypoint code to our service number, and you'll receive a detailed weather forecast via satellite SMS - no cellular coverage or internet required. This works anywhere in the world with satellite visibility."
@@ -757,6 +823,7 @@ function HomeContent() {
   return (
     <>
       <Hero />
+      <WhySMS />
       <RouteExample />
       <Features />
       <CTA />
