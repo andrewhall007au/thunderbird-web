@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
-**Last updated:** 2026-01-19
-**Current phase:** Phase 3 (Route Creation) - COMPLETE
+**Last updated:** 2026-01-21
+**Current phase:** Phase 4 (User Flows) - IN PROGRESS
 
 ## Project Reference
 
@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Phase 3 complete. Ready for Phase 4 - User Flows.
+**Current focus:** Phase 4 plan 01 complete. Foundation components (PhoneSimulator, analytics) ready for conversion flow implementation.
 
 ## Current Position
 
-Phase: 3 of 6 (Route Creation)
-Plan: 7 of 7 in current phase - COMPLETE
-Status: Phase complete
-Last activity: 2026-01-19 - Completed 03-07-PLAN.md
+Phase: 4 of 6 (User Flows)
+Plan: 1 of ? in current phase
+Status: In progress
+Last activity: 2026-01-21 - Completed 04-01-PLAN.md
 
-Progress: ████████████░░░░░ 75%
+Progress: █████████████░░░░ 76%
 
 ## Phase Status
 
@@ -27,7 +27,7 @@ Progress: ████████████░░░░░ 75%
 | 1 | Foundation | Complete | 4/4 plans |
 | 2 | Payments | Complete | 6/6 plans |
 | 3 | Route Creation | Complete | 7/7 plans |
-| 4 | User Flows | Not started | 0/? plans |
+| 4 | User Flows | In progress | 1/? plans |
 | 5 | Affiliates | Not started | 0/? plans |
 | 6 | International Weather | Not started | 0/? plans |
 
@@ -35,17 +35,16 @@ Progress: ████████████░░░░░ 75%
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | CSS-only phone mockups | No external device libraries, extracted from landing page |
+| 2026-01-21 | Client-side A/B assignment | localStorage + Math.random(), sufficient for MVP |
+| 2026-01-21 | Fire-and-forget analytics | Never block UI, silent error handling |
+| 2026-01-21 | No auth on analytics endpoint | Anonymous users need tracking for funnel analysis |
 | 2026-01-19 | Cyan route line (#00FFFF) | Better visibility on terrain maps than blue |
 | 2026-01-19 | Auto-zoom to GPX bounds | fitBounds with 50px padding on load |
 | 2026-01-19 | Save Waypoint above delete | Positive action more prominent than destructive |
 | 2026-01-19 | Library list/detail endpoints are public | Maximize discoverability without login |
 | 2026-01-19 | Clone requires auth | Creates route in user's account |
 | 2026-01-19 | SMS codes regenerated on clone | Ensure global uniqueness |
-| 2026-01-19 | Admin import via CLI script | import_library_route.py for adding routes |
-| 2026-01-19 | localStorage token for API auth | Matches existing auth pattern in codebase |
-| 2026-01-19 | Server SMS codes replace client preview | Backend is authoritative for SMS codes after save |
-| 2026-01-19 | OpenFreeMap tiles (no API key) | Free map tiles for MapLibre, OpenStreetMap data |
-| 2026-01-19 | Client-side GPX preview | Use @we-gold/gpxjs for instant preview, server validates on save |
 
 ## Blockers
 
@@ -61,38 +60,29 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-19 12:16Z
-Stopped at: Completed 03-07-PLAN.md (Testing and verification)
+Last session: 2026-01-21 03:28Z
+Stopped at: Completed 04-01-PLAN.md (Foundation Components)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (03-07):**
-- Backend test suites for route builder and library services
-- UX improvements from user testing: auto-zoom, cyan route line, Save Waypoint button, Finalize button
-- All 12 ROUT requirements verified and tested
-
-**Phase 3 Complete - Route Creation:**
-All 12 ROUT requirements implemented:
-1. ROUT-01: GPX upload with parsing
-2. ROUT-02: Track visualization on map
-3. ROUT-03: Click to add waypoints
-4. ROUT-04: Color-coded waypoint types
-5. ROUT-05: Waypoint naming
-6. ROUT-06: Auto SMS code generation
-7. ROUT-07: Drag to reposition waypoints
-8. ROUT-08: Delete waypoints
-9. ROUT-09: Save draft routes
-10. ROUT-10: Route library display
-11. ROUT-11: Clone and customize library routes
-12. ROUT-12: Mobile-responsive map
-
-**What's next:**
-- Phase 4: User Flows (trip planning, weather integration, SMS notifications)
+**What was done (04-01):**
+- PhoneSimulator component (iPhone + Watch variants with typing animation)
+- Client-side analytics (path tracking, A/B variant, event logging)
+- Backend analytics storage (SQLite, POST /api/analytics)
+- Visual test page at /test-simulator
 
 **Key files created this plan:**
-- `backend/tests/test_route_builder.py`
-- `backend/tests/test_route_library.py`
+- `app/components/simulator/PhoneSimulator.tsx`
+- `app/lib/analytics.ts`
+- `backend/app/models/analytics.py`
+- `backend/app/routers/analytics.py`
+
+**What's next:**
+- Plan 04-02: "Create First" conversion flow
+- Plan 04-03: "Buy Now" conversion flow
+- Integrate PhoneSimulator into route creation
+- Add analytics tracking to pages
 
 ---
 *State initialized: 2026-01-19*
