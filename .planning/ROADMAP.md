@@ -414,22 +414,22 @@ discount_codes.affiliate_id (added column)
 
 ## Phase 6: International Weather
 
-**Status:** Planning complete
+**Status:** Complete (2026-01-21)
 
 **Goal:** Weather APIs for all 8 countries with fallback handling
 
 **Requirements covered:** WTHR-01 through WTHR-11
 
-**Plans:** 7 plans in 4 waves
+**Plans:** 7 plans in 4 waves (7/7 complete)
 
 Plans:
-- [ ] 06-01-PLAN.md - Weather provider foundation: base abstractions, Open-Meteo provider, caching (Wave 1)
-- [ ] 06-02-PLAN.md - NWS provider for USA with alerts (Wave 2)
-- [ ] 06-03-PLAN.md - Environment Canada provider (Wave 2)
-- [ ] 06-04-PLAN.md - Met Office provider for UK (Wave 2)
-- [ ] 06-05-PLAN.md - Open-Meteo country-specific models for FR/IT/CH/NZ/ZA (Wave 2)
-- [ ] 06-06-PLAN.md - Weather router with fallback and integration to weather_intl.py (Wave 3)
-- [ ] 06-07-PLAN.md - Tests and requirement verification (Wave 4)
+- [x] 06-01-PLAN.md - Weather provider foundation: base abstractions, Open-Meteo provider, caching (Wave 1) (completed 2026-01-21)
+- [x] 06-02-PLAN.md - NWS provider for USA with alerts (Wave 2) (completed 2026-01-21)
+- [x] 06-03-PLAN.md - Environment Canada provider (Wave 2) (completed 2026-01-21)
+- [x] 06-04-PLAN.md - Met Office provider for UK (Wave 2) (completed 2026-01-21)
+- [x] 06-05-PLAN.md - Open-Meteo country-specific models for FR/IT/CH/NZ/ZA (Wave 2) (completed 2026-01-21)
+- [x] 06-06-PLAN.md - Weather router with fallback and integration to weather_intl.py (Wave 3) (completed 2026-01-21)
+- [x] 06-07-PLAN.md - Tests and requirement verification (Wave 4) (completed 2026-01-21)
 
 ### Wave Structure
 
@@ -442,17 +442,17 @@ Plans:
 
 ### Deliverables
 
-- [ ] USA: NWS integration (free, no auth)
-- [ ] Canada: Environment Canada integration (env-canada library)
-- [ ] UK: Met Office Weather DataHub integration
-- [ ] France: Meteo-France via Open-Meteo
-- [ ] Italy: DWD ICON via Open-Meteo
-- [ ] Switzerland: MeteoSwiss via Open-Meteo (1-2km resolution)
-- [ ] New Zealand: Open-Meteo (best_match model)
-- [ ] South Africa: Open-Meteo (best_match model)
-- [ ] Open-Meteo universal fallback for all countries
-- [ ] Weather response normalization layer
-- [ ] Data source display in forecasts
+- [x] USA: NWS integration (free, no auth)
+- [x] Canada: Environment Canada integration (env-canada library)
+- [x] UK: Met Office Weather DataHub integration
+- [x] France: Meteo-France via Open-Meteo
+- [x] Italy: DWD ICON via Open-Meteo
+- [x] Switzerland: ICON-EU via Open-Meteo (MeteoSwiss endpoint doesn't exist)
+- [x] New Zealand: Open-Meteo (best_match model)
+- [x] South Africa: Open-Meteo (best_match model)
+- [x] Open-Meteo universal fallback for all countries
+- [x] Weather response normalization layer
+- [x] Data source display in forecasts
 
 ### Key Files
 
@@ -528,4 +528,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-21 after Phase 6 planning complete*
+*Last updated: 2026-01-21 after Phase 6 complete - ALL PHASES DONE*
