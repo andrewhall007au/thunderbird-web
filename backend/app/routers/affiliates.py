@@ -4,12 +4,15 @@ Affiliate dashboard API endpoints.
 GET /api/affiliates/stats/{code} - Get affiliate statistics by period
 GET /api/affiliates/conversions/{code} - Get recent conversions
 GET /api/affiliates/summary/{code} - Get quick summary for dashboard header
+POST /api/affiliates/payout/method/{code} - Update payout method
+POST /api/affiliates/payout/request/{code} - Request payout
+GET /api/affiliates/payout/status/{code} - Get payout status
 """
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional, List
 
-from app.services.affiliates import get_affiliate_service
+from app.services.affiliates import get_affiliate_service, PAYOUT_MINIMUM_CENTS
 from app.models.affiliates import affiliate_store
 
 router = APIRouter(prefix="/api/affiliates", tags=["affiliates"])
@@ -182,4 +185,160 @@ async def get_affiliate_summary(code: str):
         available_cents=stats.available_cents,
         pending_cents=stats.pending_cents,
         conversion_rate=stats.conversion_rate
+    )
+
+
+# =============================================================================
+# Payout Management Endpoints (AFFL-07)
+# =============================================================================
+
+class PayoutMethodRequest(BaseModel):
+    """Request to update payout method."""
+    payout_method: str  # "paypal" or "bank"
+    payout_details: str  # PayPal email or bank info
+
+
+class PayoutRequestResponse(BaseModel):
+    """Response for payout request."""
+    success: bool
+    message: str
+    amount_requested: Optional[str] = None
+
+
+class PayoutStatusResponse(BaseModel):
+    """Response for payout status."""
+    affiliate_code: str
+    payout_method: Optional[str]
+    payout_details_set: bool
+    available_cents: int
+    available: str
+    requested_cents: int
+    requested: str
+    paid_cents: int
+    paid: str
+    can_request_payout: bool
+    minimum_payout: str
+
+
+@router.post("/payout/method/{code}")
+async def update_payout_method(
+    code: str,
+    request: PayoutMethodRequest
+):
+    """
+    Update affiliate's payout method.
+
+    Must be set before requesting payout.
+    Accepts "paypal" or "bank" as payout_method.
+
+    Args:
+        code: Affiliate code (e.g., "PARTNER")
+        request: PayoutMethodRequest with method and details
+
+    Returns:
+        Success status
+
+    Raises:
+        404: Affiliate not found or inactive
+        400: Invalid payout method
+    """
+    affiliate = affiliate_store.get_by_code(code.upper())
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Affiliate not found")
+
+    if request.payout_method not in ("paypal", "bank"):
+        raise HTTPException(status_code=400, detail="Invalid payout method. Use 'paypal' or 'bank'")
+
+    affiliate_service = get_affiliate_service()
+    success = affiliate_service.update_payout_method(
+        affiliate.id,
+        request.payout_method,
+        request.payout_details
+    )
+
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update payout method")
+
+    return {"success": True, "message": "Payout method updated"}
+
+
+@router.post("/payout/request/{code}", response_model=PayoutRequestResponse)
+async def request_payout(code: str):
+    """
+    Request payout of available commission.
+
+    From CONTEXT.md:
+    - $50 minimum threshold
+    - Manual approval by admin
+    - PayPal or bank transfer
+
+    Args:
+        code: Affiliate code (e.g., "PARTNER")
+
+    Returns:
+        PayoutRequestResponse with success status and message
+
+    Raises:
+        404: Affiliate not found
+    """
+    affiliate = affiliate_store.get_by_code(code.upper())
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Affiliate not found")
+
+    affiliate_service = get_affiliate_service()
+    success, message = affiliate_service.request_payout(affiliate.id)
+
+    if not success:
+        return PayoutRequestResponse(success=False, message=message)
+
+    # Get amount for response
+    stats = affiliate_service.get_affiliate_stats(affiliate.id, "all")
+    requested_amount = f"${stats.requested_cents/100:.2f}" if stats else "Unknown"
+
+    return PayoutRequestResponse(
+        success=True,
+        message=message,
+        amount_requested=requested_amount
+    )
+
+
+@router.get("/payout/status/{code}", response_model=PayoutStatusResponse)
+async def get_payout_status(code: str):
+    """
+    Get current payout status and balance breakdown.
+
+    Shows available, requested, and paid amounts.
+
+    Args:
+        code: Affiliate code (e.g., "PARTNER")
+
+    Returns:
+        PayoutStatusResponse with balance breakdown
+
+    Raises:
+        404: Affiliate not found or inactive
+    """
+    affiliate = affiliate_store.get_by_code(code.upper())
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Affiliate not found")
+
+    affiliate_service = get_affiliate_service()
+    stats = affiliate_service.get_affiliate_stats(affiliate.id, "all")
+
+    available_cents = stats.available_cents if stats else 0
+    requested_cents = stats.requested_cents if stats else 0
+    paid_cents = stats.paid_cents if stats else 0
+
+    return PayoutStatusResponse(
+        affiliate_code=affiliate.code,
+        payout_method=affiliate.payout_method,
+        payout_details_set=bool(affiliate.payout_details),
+        available_cents=available_cents,
+        available=f"${available_cents/100:.2f}",
+        requested_cents=requested_cents,
+        requested=f"${requested_cents/100:.2f}",
+        paid_cents=paid_cents,
+        paid=f"${paid_cents/100:.2f}",
+        can_request_payout=available_cents >= PAYOUT_MINIMUM_CENTS and bool(affiliate.payout_method),
+        minimum_payout=f"${PAYOUT_MINIMUM_CENTS/100:.2f}"
     )
