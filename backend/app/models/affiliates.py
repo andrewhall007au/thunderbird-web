@@ -32,6 +32,7 @@ class Affiliate:
         payout_details: JSON blob with PayPal email or bank details
         active: Whether affiliate is active
         created_at: Creation timestamp
+        last_milestone_cents: Last notified milestone amount in cents
     """
     id: int
     code: str
@@ -44,6 +45,7 @@ class Affiliate:
     payout_details: Optional[str] = None
     active: bool = True
     created_at: Optional[datetime] = None
+    last_milestone_cents: Optional[int] = None
 
 
 @dataclass
@@ -143,6 +145,13 @@ class AffiliateStore:
 
     def _row_to_affiliate(self, row: sqlite3.Row) -> Affiliate:
         """Convert database row to Affiliate object."""
+        # Handle last_milestone_cents column (may not exist in older DBs)
+        last_milestone = None
+        try:
+            last_milestone = row["last_milestone_cents"]
+        except (IndexError, KeyError):
+            pass
+
         return Affiliate(
             id=row["id"],
             code=row["code"],
@@ -154,7 +163,8 @@ class AffiliateStore:
             payout_method=row["payout_method"],
             payout_details=row["payout_details"],
             active=bool(row["active"]),
-            created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None
+            created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
+            last_milestone_cents=last_milestone
         )
 
     def create(
@@ -280,7 +290,8 @@ class AffiliateStore:
         """
         allowed_fields = {
             'name', 'email', 'discount_percent', 'commission_percent',
-            'trailing_months', 'payout_method', 'payout_details', 'active'
+            'trailing_months', 'payout_method', 'payout_details', 'active',
+            'last_milestone_cents'
         }
 
         updates = {k: v for k, v in kwargs.items() if k in allowed_fields}
@@ -313,6 +324,25 @@ class AffiliateStore:
             True if deactivated, False if affiliate not found
         """
         return self.update(affiliate_id, active=False)
+
+    def update_last_milestone(self, affiliate_id: int, milestone_cents: int) -> bool:
+        """
+        Update affiliate's last notified milestone.
+
+        Args:
+            affiliate_id: Affiliate to update
+            milestone_cents: Milestone amount in cents
+
+        Returns:
+            True if updated, False if affiliate not found
+        """
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE affiliates SET last_milestone_cents = ? WHERE id = ?",
+                (milestone_cents, affiliate_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
 
 
 class CommissionStore:

@@ -22,6 +22,35 @@ from app.models.affiliates import (
 
 logger = logging.getLogger(__name__)
 
+# Payout configuration
+PAYOUT_MINIMUM_CENTS = 5000  # $50 minimum payout
+MILESTONE_THRESHOLDS = [5000, 10000, 50000, 100000]  # $50, $100, $500, $1000
+
+
+@dataclass
+class PayoutRequest:
+    """
+    Payout request data for admin review.
+
+    Attributes:
+        affiliate_id: Affiliate ID
+        affiliate_code: Affiliate code
+        affiliate_name: Affiliate name
+        affiliate_email: Affiliate email
+        requested_cents: Total amount requested
+        payout_method: "paypal" | "bank"
+        payout_details: JSON blob with payout info
+        commission_count: Number of commissions in request
+    """
+    affiliate_id: int
+    affiliate_code: str
+    affiliate_name: str
+    affiliate_email: str
+    requested_cents: int
+    payout_method: Optional[str]
+    payout_details: Optional[str]
+    commission_count: int
+
 
 @dataclass
 class AffiliateStats:
@@ -388,6 +417,186 @@ class AffiliateService:
             }
             for c in active_commissions
         ]
+
+    # ==========================================================================
+    # Payout Management Methods (AFFL-07)
+    # ==========================================================================
+
+    def request_payout(self, affiliate_id: int) -> tuple[bool, str]:
+        """
+        Request payout for available commissions.
+
+        From CONTEXT.md:
+        - $50 minimum threshold
+        - Manual approval required
+        - Commission states: Available -> Requested
+
+        Args:
+            affiliate_id: Affiliate requesting payout
+
+        Returns:
+            (success, message) tuple
+        """
+        affiliate = self.affiliate_store.get_by_id(affiliate_id)
+        if not affiliate:
+            return False, "Affiliate not found"
+
+        if not affiliate.active:
+            return False, "Affiliate account inactive"
+
+        # Check available balance
+        available_cents = self.commission_store.sum_by_status(affiliate_id, "available")
+
+        if available_cents < PAYOUT_MINIMUM_CENTS:
+            return False, f"Minimum payout is ${PAYOUT_MINIMUM_CENTS/100:.2f}. Current available: ${available_cents/100:.2f}"
+
+        if not affiliate.payout_method:
+            return False, "Please set your payout method first"
+
+        # Mark all available commissions as requested
+        available_commissions = self.commission_store.get_by_affiliate_id(affiliate_id, status="available")
+        for commission in available_commissions:
+            self.commission_store.update_status(commission.id, "requested")
+
+        logger.info(f"Payout requested: ${available_cents/100:.2f} for affiliate {affiliate.code}")
+
+        return True, f"Payout of ${available_cents/100:.2f} requested. Admin will process within 5 business days."
+
+    def get_pending_payouts(self) -> List[PayoutRequest]:
+        """
+        Get all pending payout requests for admin review.
+
+        Returns:
+            List of PayoutRequest objects
+        """
+        # Get all affiliates with "requested" status commissions
+        affiliates = self.affiliate_store.list_all(active_only=False)
+        pending = []
+
+        for affiliate in affiliates:
+            requested = self.commission_store.get_by_affiliate_id(affiliate.id, status="requested")
+            if requested:
+                amount = sum(c.amount_cents for c in requested)
+                earliest_request = min(
+                    (c.created_at for c in requested if c.created_at),
+                    default=None
+                )
+
+                pending.append(PayoutRequest(
+                    affiliate_id=affiliate.id,
+                    affiliate_code=affiliate.code,
+                    affiliate_name=affiliate.name,
+                    affiliate_email=affiliate.email,
+                    requested_cents=amount,
+                    payout_method=affiliate.payout_method,
+                    payout_details=affiliate.payout_details,
+                    commission_count=len(requested)
+                ))
+
+        # Sort by amount descending (largest payouts first)
+        return sorted(pending, key=lambda p: p.requested_cents, reverse=True)
+
+    def process_payout(self, affiliate_id: int) -> tuple[bool, str]:
+        """
+        Mark payout as processed (admin action).
+
+        Args:
+            affiliate_id: Affiliate whose payout was processed
+
+        Returns:
+            (success, message) tuple
+        """
+        requested = self.commission_store.get_by_affiliate_id(affiliate_id, status="requested")
+        if not requested:
+            return False, "No pending payout request"
+
+        amount = sum(c.amount_cents for c in requested)
+
+        # Mark all as paid
+        for commission in requested:
+            self.commission_store.update_status(commission.id, "paid")
+
+        affiliate = self.affiliate_store.get_by_id(affiliate_id)
+        logger.info(f"Payout processed: ${amount/100:.2f} for affiliate {affiliate.code if affiliate else affiliate_id}")
+
+        return True, f"Payout of ${amount/100:.2f} marked as paid"
+
+    def update_payout_method(
+        self,
+        affiliate_id: int,
+        payout_method: str,
+        payout_details: str
+    ) -> bool:
+        """
+        Update affiliate's payout method.
+
+        Args:
+            affiliate_id: Affiliate ID
+            payout_method: "paypal" or "bank"
+            payout_details: PayPal email or bank details
+
+        Returns:
+            True if updated
+        """
+        return self.affiliate_store.update(
+            affiliate_id,
+            payout_method=payout_method,
+            payout_details=payout_details
+        )
+
+    def check_milestones(self, affiliate_id: int) -> Optional[int]:
+        """
+        Check if affiliate hit a new milestone.
+
+        From CONTEXT.md: Milestone email alerts at thresholds.
+        Thresholds: $50, $100, $500, $1000
+
+        Args:
+            affiliate_id: Affiliate to check
+
+        Returns:
+            Milestone amount if new milestone hit, None otherwise
+        """
+        affiliate = self.affiliate_store.get_by_id(affiliate_id)
+        if not affiliate:
+            return None
+
+        # Get total lifetime earnings (all statuses except clawed_back)
+        total_cents = 0
+        for status in ("pending", "available", "requested", "paid"):
+            total_cents += self.commission_store.sum_by_status(affiliate_id, status)
+
+        # Get last notified milestone
+        last_milestone = affiliate.last_milestone_cents or 0
+
+        # Check each threshold
+        for threshold in MILESTONE_THRESHOLDS:
+            if total_cents >= threshold > last_milestone:
+                # New milestone hit!
+                self.affiliate_store.update_last_milestone(affiliate_id, threshold)
+                return threshold
+
+        return None
+
+    async def send_milestone_email(self, affiliate_id: int, milestone_cents: int):
+        """
+        Send milestone celebration email.
+
+        Args:
+            affiliate_id: Affiliate who hit milestone
+            milestone_cents: Milestone amount in cents
+        """
+        affiliate = self.affiliate_store.get_by_id(affiliate_id)
+        if not affiliate or not affiliate.email:
+            return
+
+        from app.services.email import send_affiliate_milestone_email
+        await send_affiliate_milestone_email(
+            to_email=affiliate.email,
+            affiliate_name=affiliate.name,
+            milestone_amount=f"${milestone_cents/100:.0f}"
+        )
+        logger.info(f"Milestone email sent: ${milestone_cents/100:.0f} to {affiliate.email}")
 
 
 _affiliate_service: Optional[AffiliateService] = None
