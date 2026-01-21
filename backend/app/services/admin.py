@@ -541,3 +541,414 @@ def render_admin(users, message: str = "") -> str:
         failed_count=failed,
         total_sent=total_sent
     )
+
+
+def render_affiliate_admin(affiliates: list, message: str = "") -> str:
+    """Render affiliate management page."""
+    # Message
+    if message:
+        if "error" in message.lower():
+            msg_html = f'<div class="error">{message}</div>'
+        else:
+            msg_html = f'<div class="success">{message}</div>'
+    else:
+        msg_html = ""
+
+    # Build affiliates table
+    if affiliates:
+        rows = ""
+        for aff in affiliates:
+            status_class = "status-active" if aff.active else "status-completed"
+            status_text = "Active" if aff.active else "Inactive"
+            trailing_text = f"{aff.trailing_months}mo" if aff.trailing_months else "Forever"
+
+            rows += f"""
+            <tr>
+                <td><strong>{aff.code}</strong></td>
+                <td>{aff.name}</td>
+                <td>{aff.email}</td>
+                <td>{aff.discount_percent}%</td>
+                <td>{aff.commission_percent}%</td>
+                <td>{trailing_text}</td>
+                <td><span class="status {status_class}">{status_text}</span></td>
+                <td class="actions">
+                    <a href="/admin/affiliates/{aff.id}/edit"><button class="btn-secondary">Edit</button></a>
+                    <form method="POST" action="/admin/affiliates/{aff.id}/toggle" style="margin:0; display:inline;">
+                        <button type="submit" class="btn-secondary">{'Deactivate' if aff.active else 'Activate'}</button>
+                    </form>
+                    <a href="/admin/affiliates/{aff.id}/stats"><button class="btn-secondary">Stats</button></a>
+                </td>
+            </tr>
+            """
+
+        affiliates_table = f"""
+        <table>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Discount</th>
+                <th>Commission</th>
+                <th>Trailing</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            {rows}
+        </table>
+        """
+    else:
+        affiliates_table = '<div class="empty">No affiliates yet. Create your first affiliate below.</div>'
+
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Affiliate Management - Thunderbird Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {{ box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+        body {{ background: #1a1a2e; color: #eee; margin: 0; padding: 20px; }}
+        .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333; }}
+        h1 {{ margin: 0; color: #e94560; }}
+        .nav {{ display: flex; gap: 12px; }}
+        .nav a {{ color: #888; text-decoration: none; padding: 8px 16px; border: 1px solid #444; border-radius: 6px; }}
+        .nav a:hover {{ border-color: #e94560; color: #e94560; }}
+        .card {{ background: #16213e; padding: 24px; border-radius: 12px; margin-bottom: 20px; }}
+        h2 {{ margin: 0 0 20px; color: #e94560; font-size: 18px; }}
+        label {{ display: block; margin-bottom: 6px; color: #aaa; font-size: 14px; }}
+        input, select {{ width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid #333; border-radius: 6px; background: #0f0f23; color: #eee; font-size: 14px; }}
+        input:focus, select:focus {{ outline: none; border-color: #e94560; }}
+        button {{ padding: 12px 24px; background: #e94560; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }}
+        button:hover {{ background: #ff6b6b; }}
+        .btn-secondary {{ background: #333; padding: 6px 12px; font-size: 12px; }}
+        .btn-secondary:hover {{ background: #444; }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }}
+        th, td {{ padding: 10px; text-align: left; border-bottom: 1px solid #333; }}
+        th {{ color: #aaa; font-weight: 500; font-size: 11px; text-transform: uppercase; }}
+        .status {{ padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }}
+        .status-active {{ background: #27ae60; }}
+        .status-completed {{ background: #666; }}
+        .success {{ background: #27ae60; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .error {{ background: #c0392b; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .actions {{ display: flex; gap: 8px; }}
+        .empty {{ color: #666; text-align: center; padding: 40px; }}
+        .form-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }}
+        .form-grid input, .form-grid select {{ margin: 0; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Affiliate Management</h1>
+        <div class="nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/logout">Logout</a>
+        </div>
+    </div>
+
+    {msg_html}
+
+    <div class="card">
+        <h2>All Affiliates</h2>
+        {affiliates_table}
+    </div>
+
+    <div class="card">
+        <h2>Create New Affiliate</h2>
+        <form method="POST" action="/admin/affiliates/create">
+            <div class="form-grid">
+                <div>
+                    <label>Affiliate Code (uppercase)</label>
+                    <input type="text" name="code" placeholder="PARTNER" required pattern="[A-Z0-9]+" style="text-transform: uppercase;">
+                </div>
+                <div>
+                    <label>Affiliate Name</label>
+                    <input type="text" name="name" placeholder="Partner Name" required>
+                </div>
+            </div>
+
+            <label>Email</label>
+            <input type="email" name="email" placeholder="partner@example.com" required>
+
+            <div class="form-grid">
+                <div>
+                    <label>Discount % (for customers)</label>
+                    <input type="number" name="discount_percent" value="10" min="0" max="100" required>
+                </div>
+                <div>
+                    <label>Commission % (for affiliate)</label>
+                    <input type="number" name="commission_percent" value="20" min="0" max="100" required>
+                </div>
+            </div>
+
+            <label>Trailing Attribution Duration</label>
+            <select name="trailing_months">
+                <option value="6">6 months</option>
+                <option value="12" selected>12 months</option>
+                <option value="24">24 months</option>
+                <option value="forever">Forever</option>
+            </select>
+
+            <div class="form-grid">
+                <div>
+                    <label>Payout Method (optional)</label>
+                    <select name="payout_method">
+                        <option value="">Not set</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="bank">Bank Transfer</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Payout Details (optional)</label>
+                    <input type="text" name="payout_details" placeholder="PayPal email or bank info">
+                </div>
+            </div>
+
+            <button type="submit">Create Affiliate</button>
+        </form>
+    </div>
+</body>
+</html>
+    """
+
+
+def render_affiliate_edit(affiliate, message: str = "") -> str:
+    """Render affiliate edit page."""
+    # Message
+    if message:
+        if "error" in message.lower():
+            msg_html = f'<div class="error">{message}</div>'
+        else:
+            msg_html = f'<div class="success">{message}</div>'
+    else:
+        msg_html = ""
+
+    trailing_options = {
+        "6": "6 months",
+        "12": "12 months",
+        "24": "24 months",
+        "forever": "Forever"
+    }
+
+    # Determine selected trailing option
+    if affiliate.trailing_months is None:
+        selected_trailing = "forever"
+    else:
+        selected_trailing = str(affiliate.trailing_months)
+
+    trailing_select = ""
+    for value, label in trailing_options.items():
+        selected = "selected" if value == selected_trailing else ""
+        trailing_select += f'<option value="{value}" {selected}>{label}</option>'
+
+    payout_method_select = f"""
+    <option value="" {'selected' if not affiliate.payout_method else ''}>Not set</option>
+    <option value="paypal" {'selected' if affiliate.payout_method == 'paypal' else ''}>PayPal</option>
+    <option value="bank" {'selected' if affiliate.payout_method == 'bank' else ''}>Bank Transfer</option>
+    """
+
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Affiliate - Thunderbird Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {{ box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+        body {{ background: #1a1a2e; color: #eee; margin: 0; padding: 20px; }}
+        .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333; }}
+        h1 {{ margin: 0; color: #e94560; }}
+        .nav {{ display: flex; gap: 12px; }}
+        .nav a {{ color: #888; text-decoration: none; padding: 8px 16px; border: 1px solid #444; border-radius: 6px; }}
+        .nav a:hover {{ border-color: #e94560; color: #e94560; }}
+        .card {{ background: #16213e; padding: 24px; border-radius: 12px; max-width: 800px; }}
+        h2 {{ margin: 0 0 20px; color: #e94560; font-size: 18px; }}
+        label {{ display: block; margin-bottom: 6px; color: #aaa; font-size: 14px; }}
+        input, select {{ width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid #333; border-radius: 6px; background: #0f0f23; color: #eee; font-size: 14px; }}
+        input:focus, select:focus {{ outline: none; border-color: #e94560; }}
+        button {{ padding: 12px 24px; background: #e94560; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 12px; }}
+        button:hover {{ background: #ff6b6b; }}
+        .btn-secondary {{ background: #333; }}
+        .btn-secondary:hover {{ background: #444; }}
+        .success {{ background: #27ae60; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .error {{ background: #c0392b; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .form-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }}
+        .form-grid input, .form-grid select {{ margin: 0; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Edit Affiliate: {affiliate.code}</h1>
+        <div class="nav">
+            <a href="/admin/affiliates">Back to Affiliates</a>
+            <a href="/admin">Dashboard</a>
+        </div>
+    </div>
+
+    {msg_html}
+
+    <div class="card">
+        <h2>Edit Affiliate Details</h2>
+        <form method="POST" action="/admin/affiliates/{affiliate.id}/edit">
+            <label>Affiliate Code (read-only)</label>
+            <input type="text" value="{affiliate.code}" disabled>
+
+            <label>Affiliate Name</label>
+            <input type="text" name="name" value="{affiliate.name}" required>
+
+            <label>Email</label>
+            <input type="email" name="email" value="{affiliate.email}" required>
+
+            <div class="form-grid">
+                <div>
+                    <label>Discount % (for customers)</label>
+                    <input type="number" name="discount_percent" value="{affiliate.discount_percent}" min="0" max="100" required>
+                </div>
+                <div>
+                    <label>Commission % (for affiliate)</label>
+                    <input type="number" name="commission_percent" value="{affiliate.commission_percent}" min="0" max="100" required>
+                </div>
+            </div>
+
+            <label>Trailing Attribution Duration</label>
+            <select name="trailing_months">
+                {trailing_select}
+            </select>
+
+            <div class="form-grid">
+                <div>
+                    <label>Payout Method</label>
+                    <select name="payout_method">
+                        {payout_method_select}
+                    </select>
+                </div>
+                <div>
+                    <label>Payout Details</label>
+                    <input type="text" name="payout_details" value="{affiliate.payout_details or ''}" placeholder="PayPal email or bank info">
+                </div>
+            </div>
+
+            <button type="submit">Save Changes</button>
+            <a href="/admin/affiliates"><button type="button" class="btn-secondary">Cancel</button></a>
+        </form>
+    </div>
+</body>
+</html>
+    """
+
+
+def render_affiliate_stats(affiliate, stats: dict, message: str = "") -> str:
+    """Render affiliate stats page."""
+    # Message
+    if message:
+        if "error" in message.lower():
+            msg_html = f'<div class="error">{message}</div>'
+        else:
+            msg_html = f'<div class="success">{message}</div>'
+    else:
+        msg_html = ""
+
+    # Calculate conversion rate
+    clicks = stats.get("clicks", 0)
+    conversions = stats.get("conversions", 0)
+    conversion_rate = (conversions / clicks * 100) if clicks > 0 else 0
+
+    # Format currency
+    total_commission = stats.get("total_commission_cents", 0) / 100
+    pending = stats.get("pending_cents", 0) / 100
+    available = stats.get("available_cents", 0) / 100
+    paid = stats.get("paid_cents", 0) / 100
+
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Affiliate Stats - Thunderbird Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {{ box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+        body {{ background: #1a1a2e; color: #eee; margin: 0; padding: 20px; }}
+        .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333; }}
+        h1 {{ margin: 0; color: #e94560; }}
+        .nav {{ display: flex; gap: 12px; }}
+        .nav a {{ color: #888; text-decoration: none; padding: 8px 16px; border: 1px solid #444; border-radius: 6px; }}
+        .nav a:hover {{ border-color: #e94560; color: #e94560; }}
+        .card {{ background: #16213e; padding: 24px; border-radius: 12px; margin-bottom: 20px; }}
+        h2 {{ margin: 0 0 20px; color: #e94560; font-size: 18px; }}
+        .stats-row {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }}
+        .stat {{ background: #0f0f23; padding: 16px; border-radius: 8px; text-align: center; }}
+        .stat-value {{ font-size: 24px; font-weight: 700; color: #e94560; }}
+        .stat-value.green {{ color: #27ae60; }}
+        .stat-label {{ font-size: 11px; color: #666; margin-top: 4px; text-transform: uppercase; }}
+        .commission-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }}
+        .commission-card {{ background: #0f0f23; padding: 16px; border-radius: 8px; }}
+        .commission-card h3 {{ margin: 0 0 8px; font-size: 14px; color: #aaa; }}
+        .commission-card .amount {{ font-size: 20px; font-weight: 700; color: #fff; }}
+        .success {{ background: #27ae60; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .error {{ background: #c0392b; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Stats: {affiliate.code} - {affiliate.name}</h1>
+        <div class="nav">
+            <a href="/admin/affiliates">Back to Affiliates</a>
+            <a href="/admin">Dashboard</a>
+        </div>
+    </div>
+
+    {msg_html}
+
+    <div class="card">
+        <h2>Performance Overview</h2>
+        <div class="stats-row">
+            <div class="stat">
+                <div class="stat-value">{clicks}</div>
+                <div class="stat-label">Total Clicks</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value green">{conversions}</div>
+                <div class="stat-label">Conversions</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{conversion_rate:.1f}%</div>
+                <div class="stat-label">Conversion Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Commission Breakdown</h2>
+        <div class="stats-row" style="margin-bottom: 16px;">
+            <div class="stat">
+                <div class="stat-value green">${total_commission:.2f}</div>
+                <div class="stat-label">Total Earned</div>
+            </div>
+        </div>
+        <div class="commission-grid">
+            <div class="commission-card">
+                <h3>Pending (30d hold)</h3>
+                <div class="amount" style="color: #f39c12;">${pending:.2f}</div>
+            </div>
+            <div class="commission-card">
+                <h3>Available</h3>
+                <div class="amount" style="color: #27ae60;">${available:.2f}</div>
+            </div>
+            <div class="commission-card">
+                <h3>Paid Out</h3>
+                <div class="amount" style="color: #3498db;">${paid:.2f}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Affiliate Details</h2>
+        <p><strong>Code:</strong> {affiliate.code}</p>
+        <p><strong>Email:</strong> {affiliate.email}</p>
+        <p><strong>Discount:</strong> {affiliate.discount_percent}%</p>
+        <p><strong>Commission:</strong> {affiliate.commission_percent}%</p>
+        <p><strong>Trailing:</strong> {affiliate.trailing_months if affiliate.trailing_months else 'Forever'}</p>
+        <p><strong>Payout Method:</strong> {affiliate.payout_method or 'Not set'}</p>
+    </div>
+</body>
+</html>
+    """
