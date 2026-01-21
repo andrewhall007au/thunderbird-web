@@ -335,9 +335,31 @@ analytics_events (id, event, variant, entry_path, properties, account_id, create
 
 ## Phase 5: Affiliates
 
+**Status:** Planned (2026-01-21)
+
 **Goal:** Affiliate program with trailing commissions driving growth
 
 **Requirements covered:** AFFL-01 through AFFL-07
+
+**Plans:** 6 plans in 5 waves
+
+Plans:
+- [ ] 05-01-PLAN.md - Database models and migration for affiliates, commissions, attributions (Wave 1)
+- [ ] 05-02-PLAN.md - Affiliate service and webhook integration for commission calculation (Wave 2)
+- [ ] 05-03-PLAN.md - Admin console for affiliate management and checkout integration (Wave 3)
+- [ ] 05-04-PLAN.md - Affiliate dashboard API and public landing page with click tracking (Wave 4)
+- [ ] 05-05-PLAN.md - Payout tracking and milestone email alerts (Wave 5)
+- [ ] 05-06-PLAN.md - Test suite and commission availability cron script (Wave 5)
+
+### Wave Structure
+
+| Wave | Plans | Description |
+|------|-------|-------------|
+| 1 | 05-01 | Database foundation: affiliate, commission, attribution, click tables |
+| 2 | 05-02 | Commission service: calculate on webhooks, trailing attribution, clawback |
+| 3 | 05-03 | Admin console: CRUD affiliates, auto-create discount codes, checkout integration |
+| 4 | 05-04 | Affiliate dashboard: stats API, landing page, click tracking |
+| 5 | 05-05, 05-06 | Payouts: request/process flow, milestone emails, tests, cron script |
 
 ### Deliverables
 
@@ -351,17 +373,23 @@ analytics_events (id, event, variant, entry_path, properties, account_id, create
 
 ### Key Files
 
-- `backend/services/affiliates.py`
-- `backend/models/affiliate.py`
-- `backend/models/affiliate_commission.py`
-- `frontend/app/admin/affiliates/`
-- `backend/admin/affiliate_routes.py`
+- `backend/app/models/affiliates.py`
+- `backend/app/services/affiliates.py`
+- `backend/app/routers/admin.py` (extended)
+- `backend/app/routers/affiliates.py`
+- `backend/app/routers/affiliate_landing.py`
+- `backend/app/routers/webhook.py` (extended)
+- `backend/tests/test_affiliates.py`
+- `backend/scripts/commission_available.py`
 
 ### Database Tables
 
 ```sql
-affiliates (id, name, email, code, discount_percent, commission_percent, trailing_months, active, created_at)
-affiliate_commissions (id, affiliate_id, user_id, transaction_id, amount, type, status, created_at)
+affiliates (id, code, name, email, discount_percent, commission_percent, trailing_months, payout_method, payout_details, active, last_milestone_cents, created_at)
+commissions (id, affiliate_id, account_id, order_id, amount_cents, status, sub_id, created_at, available_at, paid_at)
+affiliate_attributions (id, affiliate_id, account_id, order_id, sub_id, trailing_expires_at, created_at)
+affiliate_clicks (id, affiliate_id, sub_id, session_id, created_at)
+discount_codes.affiliate_id (added column)
 ```
 
 ### Success Criteria
@@ -371,6 +399,7 @@ affiliate_commissions (id, affiliate_id, user_id, transaction_id, amount, type, 
 - Commission calculated on post-discount amount
 - Trailing commissions track for configured duration
 - Analytics show clicks, conversions, revenue per affiliate
+- Payouts can be requested and processed
 
 ### Dependencies
 
@@ -474,4 +503,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-21 after Phase 4 execution*
+*Last updated: 2026-01-21 after Phase 5 planning*
