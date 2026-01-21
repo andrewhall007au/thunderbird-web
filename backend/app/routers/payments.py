@@ -2,16 +2,18 @@
 Payment API endpoints.
 
 Handles checkout initiation, balance queries, and order history.
-PAY-01, PAY-03, PAY-06, PAY-07
+PAY-01, PAY-03, PAY-06, PAY-07, FLOW-03 (Buy Now path)
 """
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 
 from app.services.payments import get_payment_service
 from app.services.balance import get_balance_service
-from app.services.auth import get_current_account
-from app.models.account import Account
+from app.services.auth import get_current_account, hash_password, create_access_token
+from app.models.account import Account, account_store
+from datetime import timedelta
+from config.settings import settings
 
 router = APIRouter(prefix="/api/payments", tags=["payments"])
 
@@ -23,6 +25,26 @@ class CreateCheckoutRequest(BaseModel):
     discount_code: Optional[str] = None
     success_url: Optional[str] = None
     cancel_url: Optional[str] = None
+
+
+class BuyNowCheckoutRequest(BaseModel):
+    """Request to create account and Stripe checkout session in one step.
+
+    FLOW-03: Buy Now conversion path.
+    """
+    email: EmailStr
+    password: str = Field(..., min_length=8, description="Minimum 8 characters")
+    name: str = Field(..., min_length=1, description="User's full name")
+    entry_path: Optional[str] = None  # 'buy', 'create', 'organic'
+    discount_code: Optional[str] = None
+
+
+class BuyNowCheckoutResponse(BaseModel):
+    """Response with checkout URL and auth token."""
+    success: bool
+    checkout_url: Optional[str] = None
+    access_token: Optional[str] = None  # JWT for future requests
+    error: Optional[str] = None
 
 
 class CreateCheckoutResponse(BaseModel):
@@ -175,3 +197,80 @@ async def get_orders(
             for o in orders
         ]
     )
+
+
+@router.post("/buy-now", response_model=BuyNowCheckoutResponse)
+async def buy_now_checkout(request: BuyNowCheckoutRequest):
+    """
+    Create account and Stripe Checkout session in one step.
+
+    FLOW-03: Buy Now conversion path.
+    - Creates new account if email not registered
+    - Creates Stripe checkout session with entry_path in metadata
+    - Returns checkout_url and JWT access_token
+
+    This endpoint does NOT require authentication - it creates the account.
+    """
+    # Check if email already exists
+    existing = account_store.get_by_email(request.email)
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered. Please log in."
+        )
+
+    # Create account
+    hashed = hash_password(request.password)
+    account = account_store.create(email=request.email, password_hash=hashed)
+
+    # Update account with name if provided (stored in a name field if model supports it)
+    # For now, name is captured in Stripe metadata
+
+    # Create Stripe checkout session with entry_path metadata
+    payment_service = get_payment_service()
+    base_url = settings.BASE_URL
+
+    result = await payment_service.create_checkout_session_with_metadata(
+        account_id=account.id,
+        entry_path=request.entry_path,
+        customer_name=request.name,
+        customer_email=request.email,
+        discount_code=request.discount_code,
+        success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
+        cancel_url=f"{base_url}/checkout"
+    )
+
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.error)
+
+    # Create JWT for the new user
+    access_token = create_access_token(
+        data={"sub": account.email},
+        expires_delta=timedelta(minutes=settings.JWT_EXPIRY_MINUTES)
+    )
+
+    return BuyNowCheckoutResponse(
+        success=True,
+        checkout_url=result.checkout_url,
+        access_token=access_token
+    )
+
+
+@router.get("/session/{session_id}")
+async def get_session(session_id: str):
+    """
+    Get Stripe checkout session details.
+
+    Used by success page to verify payment and get metadata.
+    Returns session status, payment status, and metadata.
+    """
+    payment_service = get_payment_service()
+    session_data = payment_service.get_checkout_session(session_id)
+
+    if not session_data:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "success": True,
+        "session": session_data
+    }

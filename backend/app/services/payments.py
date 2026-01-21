@@ -161,6 +161,122 @@ class PaymentService:
                 order_id=order.id
             )
 
+    async def create_checkout_session_with_metadata(
+        self,
+        account_id: int,
+        entry_path: Optional[str] = None,
+        customer_name: Optional[str] = None,
+        customer_email: Optional[str] = None,
+        discount_code: Optional[str] = None,
+        success_url: Optional[str] = None,
+        cancel_url: Optional[str] = None
+    ) -> PaymentResult:
+        """
+        Create Stripe Checkout session with entry_path tracking.
+
+        FLOW-03: Buy Now path - includes entry_path in metadata for analytics.
+
+        Args:
+            account_id: Account making purchase
+            entry_path: How user entered the funnel ('buy', 'create', 'organic')
+            customer_name: Customer name for Stripe
+            customer_email: Customer email for Stripe
+            discount_code: Optional pre-validated discount code
+            success_url: Redirect after success
+            cancel_url: Redirect on cancel
+
+        Returns:
+            PaymentResult with checkout_url for redirect
+        """
+        if not self._stripe_available():
+            return PaymentResult(
+                success=False,
+                error="Stripe not configured"
+            )
+
+        # Get price from pricing service
+        pricing = get_pricing_service()
+        price_calc = pricing.get_checkout_price(discount_code)
+
+        # Create pending order in our database
+        order = order_store.create(
+            account_id=account_id,
+            order_type="initial_access",
+            amount_cents=price_calc.final_price_cents,
+            stripe_session_id=None,
+            stripe_payment_intent_id=None,
+            discount_code_id=None
+        )
+
+        # Build success/cancel URLs
+        base_url = settings.BASE_URL
+        if success_url is None:
+            success_url = f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"
+        if cancel_url is None:
+            cancel_url = f"{base_url}/checkout"
+
+        # Build metadata including entry_path for analytics
+        metadata = {
+            "account_id": str(account_id),
+            "order_id": str(order.id),
+            "purchase_type": "initial_access",
+        }
+        if entry_path:
+            metadata["entry_path"] = entry_path
+        if customer_name:
+            metadata["customer_name"] = customer_name
+
+        try:
+            session_params = {
+                "customer_creation": "always",
+                "line_items": [{
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {
+                            "name": "Thunderbird Access",
+                            "description": "Global weather forecasts via SMS for hikers",
+                        },
+                        "unit_amount": price_calc.final_price_cents,
+                    },
+                    "quantity": 1,
+                }],
+                "mode": "payment",
+                "payment_intent_data": {
+                    "setup_future_usage": "off_session",
+                },
+                "allow_promotion_codes": True,
+                "metadata": metadata,
+                "success_url": success_url,
+                "cancel_url": cancel_url,
+            }
+
+            # Pre-fill customer email if provided
+            if customer_email:
+                session_params["customer_email"] = customer_email
+
+            session = stripe.checkout.Session.create(**session_params)
+
+            # Update order with Stripe session ID
+            order_store.update_stripe_session(order.id, session.id)
+
+            logger.info(f"Created checkout session {session.id} for account {account_id} (entry_path={entry_path})")
+
+            return PaymentResult(
+                success=True,
+                checkout_url=session.url,
+                order_id=order.id,
+                transaction_id=session.id
+            )
+
+        except stripe.error.StripeError as e:
+            logger.error(f"Stripe error creating checkout: {e}")
+            order_store.update_status(order.id, "failed")
+            return PaymentResult(
+                success=False,
+                error=str(e),
+                order_id=order.id
+            )
+
     async def create_topup_checkout(
         self,
         account_id: int,

@@ -1,64 +1,141 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, Lock, CreditCard, Mail, User, Eye, EyeOff, Check, Shield } from 'lucide-react';
+import { Zap, Lock, Mail, User, Eye, EyeOff, Check, Shield, Loader2, AlertCircle, LogOut } from 'lucide-react';
+import { initPathTracking, getTrackingContext, trackCheckoutStarted, trackPageView } from '@/app/lib/analytics';
 
-export default function CheckoutPage() {
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+function CheckoutForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loggedInEmail, setLoggedInEmail] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
   });
 
-  const handleInputChange = (field: string, value: string) => {
-    // Format card number with spaces
-    if (field === 'cardNumber') {
-      value = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
-      if (value.length > 19) return;
-    }
-    // Format expiry as MM/YY
-    if (field === 'expiry') {
-      value = value.replace(/\D/g, '');
-      if (value.length >= 2) {
-        value = value.slice(0, 2) + '/' + value.slice(2, 4);
-      }
-      if (value.length > 5) return;
-    }
-    // Limit CVC to 3-4 digits
-    if (field === 'cvc') {
-      value = value.replace(/\D/g, '');
-      if (value.length > 4) return;
-    }
+  // Initialize tracking on mount
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    initPathTracking(params);
+    trackPageView('/checkout');
 
+    // Check if user is logged in
+    const token = localStorage.getItem('tb_token');
+    if (token) {
+      // Verify token and get user email
+      fetch(`${API_BASE}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) {
+            setIsLoggedIn(true);
+            setLoggedInEmail(data.email);
+          }
+        })
+        .catch(() => {
+          // Token invalid, clear it
+          localStorage.removeItem('tb_token');
+        });
+    }
+  }, [searchParams]);
+
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setError(null); // Clear error when user types
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('tb_token');
+    setIsLoggedIn(false);
+    setLoggedInEmail(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+    setError(null);
 
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Track checkout started
+    trackCheckoutStarted();
 
-    // Redirect to route creation
-    router.push('/create');
+    const trackingContext = getTrackingContext();
+
+    try {
+      if (isLoggedIn) {
+        // Logged in user - use existing checkout endpoint
+        const token = localStorage.getItem('tb_token');
+        const response = await fetch(`${API_BASE}/api/payments/checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            success_url: `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${window.location.origin}/checkout`
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Failed to create checkout session');
+        }
+
+        // Redirect to Stripe
+        if (data.checkout_url) {
+          window.location.href = data.checkout_url;
+        }
+      } else {
+        // New user - use buy-now endpoint (creates account + checkout)
+        const response = await fetch(`${API_BASE}/api/payments/buy-now`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            name: formData.name,
+            entry_path: trackingContext?.entry_path || 'organic'
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Failed to create account');
+        }
+
+        // Store the token for later (after Stripe redirect)
+        if (data.access_token) {
+          localStorage.setItem('tb_token', data.access_token);
+        }
+
+        // Redirect to Stripe Checkout
+        if (data.checkout_url) {
+          window.location.href = data.checkout_url;
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setIsProcessing(false);
+    }
   };
 
-  const isFormValid =
+  const isFormValid = isLoggedIn || (
     formData.email.includes('@') &&
     formData.password.length >= 8 &&
-    formData.name.length > 0 &&
-    formData.cardNumber.replace(/\s/g, '').length === 16 &&
-    formData.expiry.length === 5 &&
-    formData.cvc.length >= 3;
+    formData.name.length > 0
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -129,135 +206,142 @@ export default function CheckoutPage() {
           {/* Checkout Form - Left side on desktop */}
           <div className="md:col-span-3 md:order-1">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Account Creation */}
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-red-800 font-medium">Error</p>
+                    <p className="text-red-600 text-sm">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Account Section */}
               <div className="card p-6">
-                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5 text-gray-400" />
-                  Create Account
-                </h2>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder="John Smith"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="you@example.com"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={formData.password}
-                        onChange={(e) => handleInputChange('password', e.target.value)}
-                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        placeholder="Minimum 8 characters"
-                        minLength={8}
-                        required
-                      />
+                {isLoggedIn ? (
+                  <>
+                    <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <User className="w-5 h-5 text-gray-400" />
+                      Account
+                    </h2>
+                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                          <Check className="w-5 h-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Logged in as</p>
+                          <p className="text-gray-600 text-sm">{loggedInEmail}</p>
+                        </div>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        onClick={handleLogout}
+                        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
                       >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        <LogOut className="w-4 h-4" />
+                        Log out
                       </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
-                  </div>
-                </div>
-              </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <User className="w-5 h-5 text-gray-400" />
+                      Create Account
+                    </h2>
 
-              {/* Payment Details */}
-              <div className="card p-6">
-                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-gray-400" />
-                  Payment Details
-                </h2>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          placeholder="John Smith"
+                          required
+                        />
+                      </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Card Number
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={formData.cardNumber}
-                        onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono"
-                        placeholder="4242 4242 4242 4242"
-                        required
-                      />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                        <div className="w-8 h-5 bg-gradient-to-r from-blue-600 to-blue-800 rounded text-white text-[8px] flex items-center justify-center font-bold">VISA</div>
-                        <div className="w-8 h-5 bg-gradient-to-r from-red-500 to-yellow-500 rounded text-white text-[8px] flex items-center justify-center font-bold">MC</div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Email Address
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <input
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            placeholder="you@example.com"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Password
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={formData.password}
+                            onChange={(e) => handleInputChange('password', e.target.value)}
+                            className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            placeholder="Minimum 8 characters"
+                            minLength={8}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Expiry Date
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.expiry}
-                        onChange={(e) => handleInputChange('expiry', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono"
-                        placeholder="MM/YY"
-                        required
-                      />
+                    <div className="mt-4 text-sm text-gray-500">
+                      Already have an account?{' '}
+                      <Link href="/login" className="text-orange-500 hover:underline">Log in</Link>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        CVC
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.cvc}
-                        onChange={(e) => handleInputChange('cvc', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono"
-                        placeholder="123"
-                        required
-                      />
-                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Payment Info */}
+              <div className="card p-6">
+                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-gray-400" />
+                  Payment
+                </h2>
+
+                <div className="bg-gray-50 rounded-lg p-4 text-center">
+                  <p className="text-gray-600 mb-2">
+                    You&apos;ll be redirected to Stripe&apos;s secure checkout to complete payment.
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                    <Shield className="w-4 h-4" />
+                    <span>Your payment info is handled securely by Stripe</span>
                   </div>
                 </div>
 
-                {/* Test card hint */}
-                <div className="mt-4 p-3 bg-gray-100 rounded-lg text-sm text-gray-600">
-                  <p className="font-medium">Test Mode</p>
-                  <p>Use card number <code className="bg-gray-200 px-1 rounded">4242 4242 4242 4242</code> with any future expiry and CVC.</p>
+                {/* Payment method logos */}
+                <div className="mt-4 flex items-center justify-center gap-3">
+                  <div className="w-10 h-6 bg-gradient-to-r from-blue-600 to-blue-800 rounded text-white text-[8px] flex items-center justify-center font-bold">VISA</div>
+                  <div className="w-10 h-6 bg-gradient-to-r from-red-500 to-yellow-500 rounded text-white text-[8px] flex items-center justify-center font-bold">MC</div>
+                  <div className="w-10 h-6 bg-blue-500 rounded text-white text-[8px] flex items-center justify-center font-bold">AMEX</div>
+                  <div className="px-2 h-6 bg-black rounded text-white text-[8px] flex items-center justify-center font-bold">Apple Pay</div>
                 </div>
               </div>
 
@@ -273,13 +357,13 @@ export default function CheckoutPage() {
               >
                 {isProcessing ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Processing...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Redirecting to Stripe...
                   </>
                 ) : (
                   <>
                     <Lock className="w-5 h-5" />
-                    Pay $29.99 USD
+                    Continue to Payment
                   </>
                 )}
               </button>
@@ -295,5 +379,17 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
+    }>
+      <CheckoutForm />
+    </Suspense>
   );
 }
