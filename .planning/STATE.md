@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Phase 6 (International Weather) started. Plan 01 complete - weather provider foundation with Open-Meteo fallback and caching.
+**Current focus:** Phase 6 (International Weather) in progress. Plan 04 complete - Met Office Weather DataHub provider for UK.
 
 ## Current Position
 
 Phase: 6 of 6 (International Weather)
-Plan: 1 of 7 in current phase
+Plan: 4 of 7 in current phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 06-01-PLAN.md
+Last activity: 2026-01-21 - Completed 06-04-PLAN.md
 
-Progress: █████████████████░ 96%
+Progress: █████████████████░ 97%
 
 ## Phase Status
 
@@ -29,12 +29,13 @@ Progress: █████████████████░ 96%
 | 3 | Route Creation | Complete | 7/7 plans |
 | 4 | User Flows | Complete | 5/5 plans |
 | 5 | Affiliates | Complete | 6/6 plans |
-| 6 | International Weather | In progress | 1/7 plans |
+| 6 | International Weather | In progress | 4/7 plans |
 
 ## Recent Decisions
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | Weather DataHub API for Met Office | DataPoint deprecated; DataHub is current API |
 | 2026-01-21 | Open-Meteo as universal fallback | Free API, no key required, global coverage |
 | 2026-01-21 | 3-hour period aggregation | Matches existing BOM provider pattern |
 | 2026-01-21 | In-memory cache for weather | Simple dict-based cache sufficient for single-server MVP |
@@ -65,33 +66,28 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 09:04Z
-Stopped at: Completed 06-01-PLAN.md (Weather Provider Foundation)
+Last session: 2026-01-21 09:09Z
+Stopped at: Completed 06-04-PLAN.md (Met Office Provider)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (06-01):**
-- Created WeatherProvider ABC with get_forecast and get_alerts interface
-- Created NormalizedForecast/NormalizedDailyForecast dataclasses for consistent format
-- Implemented OpenMeteoProvider with 3-hour aggregation and model selection
-- Implemented WeatherCache with 1-hour TTL and singleton accessor
+**What was done (06-04):**
+- Created MetOfficeProvider implementing WeatherProvider ABC
+- Integrated with Weather DataHub API (Site Specific endpoint)
+- Added UK significant weather code mapping (31 codes)
+- Wind speed conversion from m/s to km/h
+- 3-hour period aggregation for consistency
 
 **Key files created this plan:**
-- `backend/app/services/weather/__init__.py` (package exports)
-- `backend/app/services/weather/base.py` (ABC and dataclasses)
-- `backend/app/services/weather/providers/openmeteo.py` (Open-Meteo integration)
-- `backend/app/services/weather/cache.py` (1-hour TTL cache)
+- `backend/app/services/weather/providers/metoffice.py` (Met Office integration)
 
 **Patterns established:**
-- WeatherProvider ABC: `get_forecast(lat, lon, days)` returns `NormalizedDailyForecast`
-- Cache key format: `provider:lat,lon:days` with 4 decimal precision
-- All weather values in metric: Celsius, mm, cm, km/h, meters
+- API key from environment variable with clear error message
+- Wind speed m/s to km/h conversion (* 3.6)
+- Weather code to description mapping
 
 **What's next:**
-- 06-02: NWS Provider (USA)
-- 06-03: Environment Canada Provider
-- 06-04: Met Office Provider (UK)
 - 06-05: European Providers (France, Italy, Switzerland)
 - 06-06: Southern Hemisphere Providers (NZ, South Africa)
 - 06-07: Provider Registry and Fallback
