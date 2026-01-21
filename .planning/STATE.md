@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Phase 6 (International Weather) in progress. Plan 05 complete - 5 of 7 plans done. Environment Canada, NWS, and Met Office providers implemented.
+**Current focus:** Phase 6 (International Weather) in progress. Plan 06 complete - 6 of 7 plans done. Weather router implemented with provider mapping and fallback.
 
 ## Current Position
 
 Phase: 6 of 6 (International Weather)
-Plan: 5 of 7 in current phase
+Plan: 6 of 7 in current phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 06-03-PLAN.md (Environment Canada)
+Last activity: 2026-01-21 - Completed 06-06-PLAN.md (Weather Router)
 
-Progress: █████████████████░ 97%
+Progress: ██████████████████░ 98%
 
 ## Phase Status
 
@@ -29,12 +29,14 @@ Progress: █████████████████░ 97%
 | 3 | Route Creation | Complete | 7/7 plans |
 | 4 | User Flows | Complete | 5/5 plans |
 | 5 | Affiliates | Complete | 6/6 plans |
-| 6 | International Weather | In progress | 5/7 plans |
+| 6 | International Weather | In progress | 6/7 plans |
 
 ## Recent Decisions
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | Open-Meteo countries have is_fallback=False | FR/IT/CH/NZ/ZA use Open-Meteo as primary, not fallback |
+| 2026-01-21 | Fallback only for native API providers | Only NWS/EC/MetOffice can trigger fallback to Open-Meteo |
 | 2026-01-21 | EC API graceful fallback | env-canada library broken due to EC API changes; raises RuntimeError for Open-Meteo fallback |
 | 2026-01-21 | Switzerland uses ICON_EU not MeteoSwiss | Open-Meteo has no /v1/meteoswiss endpoint; ICON_EU covers Alps well |
 | 2026-01-21 | NWS grid caching by coordinates | 4 decimal precision (~11m) avoids redundant /points calls |
@@ -66,31 +68,33 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 09:13Z
-Stopped at: Completed 06-03-PLAN.md (Environment Canada Provider)
+Last session: 2026-01-21 09:17Z
+Stopped at: Completed 06-06-PLAN.md (Weather Router)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (06-03):**
-- Added env-canada>=0.6.0 dependency for EC API access
-- Implemented EnvironmentCanadaProvider with WeatherProvider ABC
-- Coordinate bounds validation for Canada (41-84N, 141-52W)
-- Weather alerts support with EC severity mapping
-- Graceful error handling when EC API unavailable
+**What was done (06-06):**
+- Created WeatherRouter with country-to-provider mapping
+- Implemented transparent Open-Meteo fallback on provider failure
+- Added is_fallback tracking for data source display (WTHR-11)
+- Wired InternationalWeatherService to use router
+- Added get_data_source() method for UI display
 
 **Key files created this plan:**
-- `backend/app/services/weather/providers/envcanada.py` (EC provider)
-- `backend/requirements.txt` (env-canada dependency)
+- `backend/app/services/weather/router.py` (provider routing with fallback)
+
+**Key files modified:**
+- `backend/app/services/weather_intl.py` (wired to router)
+- `backend/app/services/weather/providers/__init__.py` (export all providers)
 
 **Patterns established:**
-- API unavailability handling: Raise clear RuntimeError for registry fallback
-- Coordinate bounds validation before API calls
-- Alert severity mapping from provider-specific types
+- Router pattern: WeatherRouter.get_provider() for country selection
+- Fallback tracking: is_fallback flag on NormalizedDailyForecast
+- Data source display: get_data_source() returns provider name with "(fallback)" suffix
 
 **What's next:**
-- 06-06: Provider Registry and Routing
-- 06-07: Testing and Verification
+- 06-07: Testing and Verification (final plan)
 
 ---
 *State initialized: 2026-01-19*
