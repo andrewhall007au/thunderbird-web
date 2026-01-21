@@ -25,6 +25,8 @@ class CreateCheckoutRequest(BaseModel):
     discount_code: Optional[str] = None
     success_url: Optional[str] = None
     cancel_url: Optional[str] = None
+    entry_path: Optional[str] = None  # 'buy', 'create', 'organic' for analytics
+    route_id: Optional[int] = None  # Route to activate (for Create First flow)
 
 
 class BuyNowCheckoutRequest(BaseModel):
@@ -97,13 +99,16 @@ async def create_checkout(
 
     PAY-01: Initial $29.99 purchase
     PAY-03: Discount codes via allow_promotion_codes
+    FLOW-02: entry_path and route_id tracking for Create First flow
     """
     payment_service = get_payment_service()
     result = await payment_service.create_checkout_session(
         account_id=account.id,
         discount_code=request.discount_code,
         success_url=request.success_url,
-        cancel_url=request.cancel_url
+        cancel_url=request.cancel_url,
+        entry_path=request.entry_path,
+        route_id=request.route_id
     )
 
     if not result.success:

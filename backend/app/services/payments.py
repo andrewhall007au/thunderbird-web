@@ -68,19 +68,24 @@ class PaymentService:
         account_id: int,
         discount_code: Optional[str] = None,
         success_url: Optional[str] = None,
-        cancel_url: Optional[str] = None
+        cancel_url: Optional[str] = None,
+        entry_path: Optional[str] = None,
+        route_id: Optional[int] = None
     ) -> PaymentResult:
         """
         Create Stripe Checkout session for initial purchase.
 
         PAY-01: $29.99 via Stripe Checkout
         PAY-03: User can enter discount code (allow_promotion_codes=True)
+        FLOW-02: entry_path tracking for Create First flow
 
         Args:
             account_id: Account making purchase
             discount_code: Optional pre-validated discount code
             success_url: Redirect after success (with {CHECKOUT_SESSION_ID})
             cancel_url: Redirect on cancel
+            entry_path: How user entered the funnel ('buy', 'create', 'organic')
+            route_id: Route to activate after purchase (for Create First flow)
 
         Returns:
             PaymentResult with checkout_url for redirect
@@ -112,6 +117,16 @@ class PaymentService:
         if cancel_url is None:
             cancel_url = f"{base_url}/payment/cancel"
 
+        # Build metadata including entry_path and route_id for analytics
+        metadata = {
+            "account_id": str(account_id),
+            "order_id": str(order.id),
+            "purchase_type": "initial_access",
+            "entry_path": entry_path or "unknown",
+        }
+        if route_id is not None:
+            metadata["route_id"] = str(route_id)
+
         try:
             session = stripe.checkout.Session.create(
                 customer_creation="always",
@@ -131,11 +146,7 @@ class PaymentService:
                     "setup_future_usage": "off_session",  # Save card for top-ups
                 },
                 allow_promotion_codes=True,  # PAY-03: discount code field in Stripe UI
-                metadata={
-                    "account_id": str(account_id),
-                    "order_id": str(order.id),
-                    "purchase_type": "initial_access",
-                },
+                metadata=metadata,
                 success_url=success_url,
                 cancel_url=cancel_url,
             )
@@ -143,7 +154,7 @@ class PaymentService:
             # Update order with Stripe session ID
             order_store.update_stripe_session(order.id, session.id)
 
-            logger.info(f"Created checkout session {session.id} for account {account_id}")
+            logger.info(f"Created checkout session {session.id} for account {account_id} (entry_path={entry_path}, route_id={route_id})")
 
             return PaymentResult(
                 success=True,

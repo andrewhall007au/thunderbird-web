@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Zap, ArrowLeft, MessageSquare } from 'lucide-react';
 import { getRoute, RouteDetailResponse } from '../../lib/api';
 import { PhoneSimulator } from '../../components/simulator/PhoneSimulator';
+import { PaywallModal } from '../../components/paywall/PaywallModal';
 import { trackSimulatorViewed } from '../../lib/analytics';
 
 /**
@@ -171,19 +172,18 @@ function PreviewContent() {
         </div>
       </div>
 
-      {/* PaywallModal will be added in Task 2 */}
+      {/* PaywallModal */}
       {showPaywall && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md mx-4">
-            <p className="text-gray-600">PaywallModal coming in Task 2...</p>
-            <button
-              onClick={() => setShowPaywall(false)}
-              className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+        <PaywallModal
+          routeId={parseInt(routeId!)}
+          routeName={route.name}
+          waypointCount={route.waypoints.length}
+          onSuccess={() => {
+            // Redirect to success page after purchase
+            router.push(`/create/success?id=${routeId}`);
+          }}
+          onClose={() => setShowPaywall(false)}
+        />
       )}
     </div>
   );
