@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Phase 5 (Affiliates) in progress. Database foundation complete with affiliate models, commission tracking, and attribution system.
+**Current focus:** Phase 5 (Affiliates) in progress. Payout system complete with $50 minimum threshold, admin management, and milestone emails.
 
 ## Current Position
 
 Phase: 5 of 6 (Affiliates)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 05-04-PLAN.md
+Last activity: 2026-01-21 - Completed 05-05-PLAN.md
 
-Progress: ███████████████░░ 90%
+Progress: ████████████████░ 93%
 
 ## Phase Status
 
@@ -28,13 +28,17 @@ Progress: ███████████████░░ 90%
 | 2 | Payments | Complete | 6/6 plans |
 | 3 | Route Creation | Complete | 7/7 plans |
 | 4 | User Flows | Complete | 5/5 plans |
-| 5 | Affiliates | In progress | 4/6 plans |
+| 5 | Affiliates | In progress | 5/6 plans |
 | 6 | International Weather | Not started | 0/? plans |
 
 ## Recent Decisions
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | $50 minimum payout threshold | Enforced in request_payout() - request fails if available < $50 |
+| 2026-01-21 | Payout method required before request | Affiliates must set PayPal or bank before requesting payout |
+| 2026-01-21 | Milestone tracking via last_milestone_cents | Prevents duplicate milestone notifications |
+| 2026-01-21 | Milestone emails on all commissions | Both initial and trailing commissions trigger milestone checks |
 | 2026-01-21 | Cookie-based attribution with 7-day expiry | tb_affiliate cookie set on landing, read at checkout for 7-day attribution window |
 | 2026-01-21 | Session-based click deduplication | tb_session cookie (24h) prevents duplicate click counting |
 | 2026-01-21 | Aggregate-only conversion data in API | get_recent_conversions() exposes amount/status/date but no account_id or order_id |
@@ -42,22 +46,10 @@ Progress: ███████████████░░ 90%
 | 2026-01-21 | Campaign tracking via sub_id | /ref/{code}/{sub_id} enables channel-level performance tracking |
 | 2026-01-21 | Discount code auto-creation for affiliates | Creating affiliate auto-creates matching discount code with affiliate_id link |
 | 2026-01-21 | Affiliate lookup at checkout | Both /checkout and /buy-now endpoints look up affiliate_id from discount code before creating Stripe session |
-| 2026-01-21 | sub_id for campaign tracking | Added sub_id parameter for granular campaign tracking (e.g., PARTNER-FB vs PARTNER-IG) |
 | 2026-01-21 | Commission calculated in webhook, not checkout | Ensures accuracy on post-discount amounts, prevents fraud |
 | 2026-01-21 | Trailing attribution only for initial purchases | Top-ups check for existing attribution |
 | 2026-01-21 | Clawback marks commissions, doesn't delete | Maintains audit trail for reporting |
 | 2026-01-21 | Commission hold period 30 days | Protects against chargebacks before payout |
-| 2026-01-21 | One affiliate per account (unique constraint) | Attribution model prevents conflicts |
-| 2026-01-21 | Trailing expiry NULL = forever | Flexible attribution windows for different affiliate arrangements |
-| 2026-01-21 | Query functions return pre-calculated rates | Analytics queries include conversion_rate so consumers don't calculate |
-| 2026-01-21 | CLI supports text and JSON output | Text for human review, JSON for programmatic use |
-| 2026-01-21 | Daily events query is generic | Takes event_type param for any event charting |
-| 2026-01-21 | Device sections structured by platform | iPhone, Watch, Android each get dedicated sections on /compatibility |
-| 2026-01-21 | Carrier table shows partnership status | Active vs Coming status badges for satellite partnerships |
-| 2026-01-21 | WhySMS positioned after Hero | Immediately reinforces value proposition after device previews |
-| 2026-01-21 | Stripe Checkout redirect (not Elements) | Simpler, more trusted, handles PCI compliance |
-| 2026-01-21 | Combined buy-now endpoint | Single call creates account + Stripe session |
-| 2026-01-21 | entry_path in Stripe metadata | Enables attribution analysis in Stripe dashboard |
 
 ## Blockers
 
@@ -73,30 +65,31 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 07:53Z
-Stopped at: Completed 05-04-PLAN.md (Click Tracking & Analytics)
+Last session: 2026-01-21 08:03Z
+Stopped at: Completed 05-05-PLAN.md (Payout Tracking & Milestone Alerts)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (05-04):**
-- Added AffiliateStats dataclass with comprehensive dashboard metrics
-- Added get_affiliate_stats() and get_recent_conversions() to AffiliateService
-- Created dashboard API endpoints: /api/affiliates/stats/{code}, /api/affiliates/conversions/{code}, /api/affiliates/summary/{code}
-- Created landing page: /ref/{code} and /ref/{code}/{sub_id} with click tracking
-- Implemented session-based click deduplication (24h window)
-- Cookie-based attribution: tb_affiliate (7d), tb_session (24h), tb_sub_id (7d)
+**What was done (05-05):**
+- Added payout methods to AffiliateService: request_payout(), get_pending_payouts(), process_payout(), check_milestones(), send_milestone_email()
+- Added payout API endpoints: /api/affiliates/payout/method/{code}, /payout/request/{code}, /payout/status/{code}
+- Created admin payout management page at /admin/payouts with Mark Paid functionality
+- Added send_affiliate_milestone_email() for $50/$100/$500/$1000 thresholds
+- Integrated milestone check into webhook commission creation
+- Added last_milestone_cents field and migration
 
 **Key files modified this plan:**
-- `backend/app/services/affiliates.py` (AffiliateStats, get_affiliate_stats, get_recent_conversions)
-- `backend/app/models/affiliates.py` (count_unique_by_affiliate, count_conversions, sum_by_status)
-- `backend/app/routers/affiliates.py` (dashboard API endpoints)
-- `backend/app/routers/affiliate_landing.py` (landing page with click tracking)
-- `backend/app/main.py` (registered affiliates and affiliate_landing routers)
+- `backend/app/services/affiliates.py` (payout methods, milestone check)
+- `backend/app/models/affiliates.py` (last_milestone_cents field)
+- `backend/app/routers/affiliates.py` (payout API endpoints)
+- `backend/app/routers/admin.py` (payout management routes)
+- `backend/app/services/admin.py` (render_payout_admin)
+- `backend/app/services/email.py` (milestone email)
+- `backend/app/routers/webhook.py` (milestone integration)
 
 **What's next:**
-- 05-05: Reporting and payout management
-- 05-06: Affiliate portal (self-service stats)
+- 05-06: Affiliate portal (self-service stats view)
 
 ---
 *State initialized: 2026-01-19*
