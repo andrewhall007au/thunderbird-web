@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Phase 4 plan 01 complete. Foundation components (PhoneSimulator, analytics) ready for conversion flow implementation.
+**Current focus:** Phase 4 plan 02 complete. Create First conversion flow implemented with preview page and PaywallModal.
 
 ## Current Position
 
 Phase: 4 of 6 (User Flows)
-Plan: 1 of ? in current phase
+Plan: 2 of ? in current phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 04-01-PLAN.md
+Last activity: 2026-01-21 - Completed 04-02-PLAN.md
 
-Progress: █████████████░░░░ 76%
+Progress: █████████████░░░░ 78%
 
 ## Phase Status
 
@@ -27,7 +27,7 @@ Progress: █████████████░░░░ 76%
 | 1 | Foundation | Complete | 4/4 plans |
 | 2 | Payments | Complete | 6/6 plans |
 | 3 | Route Creation | Complete | 7/7 plans |
-| 4 | User Flows | In progress | 1/? plans |
+| 4 | User Flows | In progress | 2/? plans |
 | 5 | Affiliates | Not started | 0/? plans |
 | 6 | International Weather | Not started | 0/? plans |
 
@@ -35,6 +35,9 @@ Progress: █████████████░░░░ 76%
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | Static sample SMS for preview | No real API call needed for conversion preview |
+| 2026-01-21 | Modal-based checkout | PaywallModal keeps user on preview page |
+| 2026-01-21 | entry_path in Stripe metadata | Enables attribution analysis in Stripe dashboard |
 | 2026-01-21 | CSS-only phone mockups | No external device libraries, extracted from landing page |
 | 2026-01-21 | Client-side A/B assignment | localStorage + Math.random(), sufficient for MVP |
 | 2026-01-21 | Fire-and-forget analytics | Never block UI, silent error handling |
@@ -42,9 +45,6 @@ Progress: █████████████░░░░ 76%
 | 2026-01-19 | Cyan route line (#00FFFF) | Better visibility on terrain maps than blue |
 | 2026-01-19 | Auto-zoom to GPX bounds | fitBounds with 50px padding on load |
 | 2026-01-19 | Save Waypoint above delete | Positive action more prominent than destructive |
-| 2026-01-19 | Library list/detail endpoints are public | Maximize discoverability without login |
-| 2026-01-19 | Clone requires auth | Creates route in user's account |
-| 2026-01-19 | SMS codes regenerated on clone | Ensure global uniqueness |
 
 ## Blockers
 
@@ -60,29 +60,33 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 03:28Z
-Stopped at: Completed 04-01-PLAN.md (Foundation Components)
+Last session: 2026-01-21 03:35Z
+Stopped at: Completed 04-02-PLAN.md (Create First Conversion Flow)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (04-01):**
-- PhoneSimulator component (iPhone + Watch variants with typing animation)
-- Client-side analytics (path tracking, A/B variant, event logging)
-- Backend analytics storage (SQLite, POST /api/analytics)
-- Visual test page at /test-simulator
+**What was done (04-02):**
+- Preview page with PhoneSimulator showing user's waypoint
+- PaywallModal for inline account creation and payment
+- Success page with SMS code instructions
+- entry_path tracked to Stripe metadata for attribution
+- Analytics events at each funnel step
 
 **Key files created this plan:**
-- `app/components/simulator/PhoneSimulator.tsx`
-- `app/lib/analytics.ts`
-- `backend/app/models/analytics.py`
-- `backend/app/routers/analytics.py`
+- `app/create/preview/page.tsx`
+- `app/create/success/page.tsx`
+- `app/components/paywall/PaywallModal.tsx`
+
+**Key files modified:**
+- `app/create/page.tsx` (finalize -> preview redirect)
+- `backend/app/services/payments.py` (entry_path, route_id params)
+- `backend/app/routers/payments.py` (checkout endpoint update)
 
 **What's next:**
-- Plan 04-02: "Create First" conversion flow
 - Plan 04-03: "Buy Now" conversion flow
-- Integrate PhoneSimulator into route creation
-- Add analytics tracking to pages
+- Test Create First flow end-to-end
+- May need to create plans for remaining user flow pages
 
 ---
 *State initialized: 2026-01-19*
