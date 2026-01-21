@@ -78,6 +78,7 @@ class DiscountCode:
         current_uses: Current use count
         active: Whether code is active
         stripe_coupon_id: Linked Stripe coupon ID
+        affiliate_id: Links to affiliates table (if this is an affiliate code)
         created_at: Creation timestamp
     """
     id: int
@@ -88,6 +89,7 @@ class DiscountCode:
     current_uses: int = 0
     active: bool = True
     stripe_coupon_id: Optional[str] = None
+    affiliate_id: Optional[int] = None
     created_at: Optional[datetime] = None
 
 
@@ -581,6 +583,7 @@ class DiscountCodeStore:
             current_uses=row["current_uses"],
             active=bool(row["active"]),
             stripe_coupon_id=row["stripe_coupon_id"],
+            affiliate_id=row["affiliate_id"] if row["affiliate_id"] else None,
             created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None
         )
 
@@ -590,7 +593,8 @@ class DiscountCodeStore:
         discount_type: str,
         discount_value: int,
         max_uses: Optional[int] = None,
-        stripe_coupon_id: Optional[str] = None
+        stripe_coupon_id: Optional[str] = None,
+        affiliate_id: Optional[int] = None
     ) -> DiscountCode:
         """
         Create a new discount code.
@@ -601,6 +605,7 @@ class DiscountCodeStore:
             discount_value: Percent (10 for 10%) or cents for fixed
             max_uses: Maximum uses (None for unlimited)
             stripe_coupon_id: Linked Stripe coupon ID
+            affiliate_id: Links to affiliates table (if this is an affiliate code)
 
         Returns:
             Created DiscountCode object
@@ -615,10 +620,10 @@ class DiscountCodeStore:
             cursor = conn.execute(
                 """INSERT INTO discount_codes
                    (code, discount_type, discount_value, max_uses, current_uses,
-                    active, stripe_coupon_id, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    active, stripe_coupon_id, affiliate_id, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (code_upper, discount_type, discount_value, max_uses, 0,
-                 True, stripe_coupon_id, now)
+                 True, stripe_coupon_id, affiliate_id, now)
             )
             conn.commit()
 
@@ -631,6 +636,7 @@ class DiscountCodeStore:
                 current_uses=0,
                 active=True,
                 stripe_coupon_id=stripe_coupon_id,
+                affiliate_id=affiliate_id,
                 created_at=datetime.fromisoformat(now)
             )
 
@@ -696,6 +702,26 @@ class DiscountCodeStore:
             return False, "Discount code has reached its usage limit"
 
         return True, None
+
+    def get_by_affiliate_id(self, affiliate_id: int) -> Optional[DiscountCode]:
+        """
+        Get discount code linked to an affiliate.
+
+        Args:
+            affiliate_id: Affiliate ID
+
+        Returns:
+            DiscountCode if found, None otherwise
+        """
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT * FROM discount_codes WHERE affiliate_id = ?",
+                (affiliate_id,)
+            )
+            row = cursor.fetchone()
+            if row:
+                return self._row_to_discount_code(row)
+            return None
 
 
 # Singleton instances
