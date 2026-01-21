@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
 **Last updated:** 2026-01-21
-**Current phase:** Phase 4 (User Flows) - IN PROGRESS
+**Current phase:** Phase 4 (User Flows) - COMPLETE
 
 ## Project Reference
 
@@ -9,16 +9,16 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** Phase 4 plan 04 complete. Content pages done (compatibility, SMS value proposition). Both conversion flows implemented. Ready for testing or phase completion.
+**Current focus:** Phase 4 complete. All FLOW and CONT requirements verified. Analytics reporting ready. Proceed to Phase 5 (Affiliates) when planned.
 
 ## Current Position
 
 Phase: 4 of 6 (User Flows)
-Plan: 4 of ? in current phase
-Status: In progress
-Last activity: 2026-01-21 - Completed 04-04-PLAN.md
+Plan: 5 of 5 in current phase (COMPLETE)
+Status: Phase complete
+Last activity: 2026-01-21 - Completed 04-05-PLAN.md
 
-Progress: █████████████░░░░ 82%
+Progress: ██████████████░░░ 85%
 
 ## Phase Status
 
@@ -27,7 +27,7 @@ Progress: █████████████░░░░ 82%
 | 1 | Foundation | Complete | 4/4 plans |
 | 2 | Payments | Complete | 6/6 plans |
 | 3 | Route Creation | Complete | 7/7 plans |
-| 4 | User Flows | In progress | 4/? plans |
+| 4 | User Flows | Complete | 5/5 plans |
 | 5 | Affiliates | Not started | 0/? plans |
 | 6 | International Weather | Not started | 0/? plans |
 
@@ -35,15 +35,14 @@ Progress: █████████████░░░░ 82%
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | Query functions return pre-calculated rates | Analytics queries include conversion_rate so consumers don't calculate |
+| 2026-01-21 | CLI supports text and JSON output | Text for human review, JSON for programmatic use |
+| 2026-01-21 | Daily events query is generic | Takes event_type param for any event charting |
 | 2026-01-21 | Device sections structured by platform | iPhone, Watch, Android each get dedicated sections on /compatibility |
 | 2026-01-21 | Carrier table shows partnership status | Active vs Coming status badges for satellite partnerships |
 | 2026-01-21 | WhySMS positioned after Hero | Immediately reinforces value proposition after device previews |
-| 2026-01-21 | Multiple compatibility links | Hero, CostComparison, FAQ all link to /compatibility |
 | 2026-01-21 | Stripe Checkout redirect (not Elements) | Simpler, more trusted, handles PCI compliance |
 | 2026-01-21 | Combined buy-now endpoint | Single call creates account + Stripe session |
-| 2026-01-21 | Session verification on success | Verify payment before showing success UI |
-| 2026-01-21 | Static sample SMS for preview | No real API call needed for conversion preview |
-| 2026-01-21 | Modal-based checkout | PaywallModal keeps user on preview page |
 | 2026-01-21 | entry_path in Stripe metadata | Enables attribution analysis in Stripe dashboard |
 
 ## Blockers
@@ -60,30 +59,34 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 03:40Z
-Stopped at: Completed 04-04-PLAN.md (Content Pages)
+Last session: 2026-01-21 03:46Z
+Stopped at: Completed 04-05-PLAN.md (Analytics & Verification)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (04-04):**
-- Created /compatibility page with device/carrier satellite SMS info
-- iPhone, Apple Watch, Android sections with supported models
-- Carrier partnership table (Apple/Globalstar, T-Mobile/Starlink, Verizon/Skylo)
-- FAQ accordion on compatibility page
-- Enhanced landing page with "Why SMS?" section (3 benefit cards)
-- Added compatibility links in Hero, CostComparison, FAQ
+**What was done (04-05):**
+- Added analytics query functions: get_funnel_by_path(), get_conversion_by_variant(), get_daily_events()
+- Created CLI script for conversion analytics reporting (text + JSON)
+- Verified all FLOW-01 through FLOW-06 requirements
+- Updated REQUIREMENTS.md marking Phase 4 requirements complete
 
 **Key files created this plan:**
-- `app/compatibility/page.tsx`
+- `backend/scripts/analytics_report.py`
+- `backend/tests/test_analytics.py`
 
 **Key files modified:**
-- `app/page.tsx` (WhySMS section, compatibility links, new FAQ)
+- `backend/app/models/analytics.py` (new query methods)
+- `.planning/REQUIREMENTS.md` (FLOW and CONT marked complete)
+
+**Phase 4 Requirements Status:**
+- FLOW-01 to FLOW-06: All complete
+- CONT-01 to CONT-03: All complete
 
 **What's next:**
-- Test all user flows end-to-end
-- May need plans for: login page, account page, routes list
-- Phase 5: Affiliates (when ready)
+- Phase 5: Affiliates (when planned)
+- Phase 6: International Weather (when planned)
+- May need additional plans for: login page, account page, routes list
 
 ---
 *State initialized: 2026-01-19*
