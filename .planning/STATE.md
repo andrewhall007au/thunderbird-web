@@ -35,6 +35,7 @@ Progress: █████████████████░ 97%
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | NWS grid caching by coordinates | 4 decimal precision (~11m) avoids redundant /points calls |
 | 2026-01-21 | Weather DataHub API for Met Office | DataPoint deprecated; DataHub is current API |
 | 2026-01-21 | Open-Meteo as universal fallback | Free API, no key required, global coverage |
 | 2026-01-21 | 3-hour period aggregation | Matches existing BOM provider pattern |
