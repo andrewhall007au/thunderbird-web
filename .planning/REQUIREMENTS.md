@@ -56,13 +56,13 @@ Requirements for initial global launch. Each maps to roadmap phases.
 
 ### Affiliates
 
-- [ ] **AFFL-01**: Admin can create affiliates in admin console
-- [ ] **AFFL-02**: Each affiliate has configurable: discount %, commission %, trailing duration (years)
-- [ ] **AFFL-03**: Affiliate codes function as discount codes at checkout
-- [ ] **AFFL-04**: Commission calculated on actual paid price (not RRP)
-- [ ] **AFFL-05**: Trailing commission tracked on all user top-ups within duration
-- [ ] **AFFL-06**: Admin can view affiliate performance analytics (clicks, conversions, revenue)
-- [ ] **AFFL-07**: Commission payout tracking (pending vs paid)
+- [x] **AFFL-01**: Admin can create affiliates in admin console
+- [x] **AFFL-02**: Each affiliate has configurable: discount %, commission %, trailing duration (years)
+- [x] **AFFL-03**: Affiliate codes function as discount codes at checkout
+- [x] **AFFL-04**: Commission calculated on actual paid price (not RRP)
+- [x] **AFFL-05**: Trailing commission tracked on all user top-ups within duration
+- [x] **AFFL-06**: Admin can view affiliate performance analytics (clicks, conversions, revenue)
+- [x] **AFFL-07**: Commission payout tracking (pending vs paid)
 
 ### International Weather
 
@@ -167,13 +167,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONT-01 | Phase 4 | Complete |
 | CONT-02 | Phase 4 | Complete |
 | CONT-03 | Phase 4 | Complete |
-| AFFL-01 | Phase 5 | Pending |
-| AFFL-02 | Phase 5 | Pending |
-| AFFL-03 | Phase 5 | Pending |
-| AFFL-04 | Phase 5 | Pending |
-| AFFL-05 | Phase 5 | Pending |
-| AFFL-06 | Phase 5 | Pending |
-| AFFL-07 | Phase 5 | Pending |
+| AFFL-01 | Phase 5 | Complete |
+| AFFL-02 | Phase 5 | Complete |
+| AFFL-03 | Phase 5 | Complete |
+| AFFL-04 | Phase 5 | Complete |
+| AFFL-05 | Phase 5 | Complete |
+| AFFL-06 | Phase 5 | Complete |
+| AFFL-07 | Phase 5 | Complete |
 | WTHR-01 | Phase 6 | Pending |
 | WTHR-02 | Phase 6 | Pending |
 | WTHR-03 | Phase 6 | Pending |
@@ -193,4 +193,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-21 after Phase 4 completion*
+*Last updated: 2026-01-21 after Phase 5 completion*
