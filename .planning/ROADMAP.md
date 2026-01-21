@@ -256,20 +256,20 @@ route_library (id, name, description, gpx_data, country, region, difficulty_grad
 
 ## Phase 4: User Flows
 
-**Status:** In Progress
+**Status:** Complete (2026-01-21)
 
 **Goal:** Two purchase paths with phone simulator driving conversion
 
 **Requirements covered:** FLOW-01 through FLOW-06, CONT-01 through CONT-03
 
-**Plans:** 5 plans in 4 waves
+**Plans:** 5 plans in 4 waves (5/5 complete)
 
 Plans:
-- [ ] 04-01-PLAN.md - PhoneSimulator component and analytics infrastructure (Wave 1)
-- [ ] 04-02-PLAN.md - "Create first" conversion path with preview and paywall (Wave 2)
-- [ ] 04-03-PLAN.md - "Buy now" conversion path with Stripe checkout (Wave 2)
-- [ ] 04-04-PLAN.md - Compatibility page and landing page enhancements (Wave 3)
-- [ ] 04-05-PLAN.md - Analytics reporting and end-to-end verification (Wave 4)
+- [x] 04-01-PLAN.md - PhoneSimulator component and analytics infrastructure (Wave 1) (completed 2026-01-21)
+- [x] 04-02-PLAN.md - "Create first" conversion path with preview and paywall (Wave 2) (completed 2026-01-21)
+- [x] 04-03-PLAN.md - "Buy now" conversion path with Stripe checkout (Wave 2) (completed 2026-01-21)
+- [x] 04-04-PLAN.md - Compatibility page and landing page enhancements (Wave 3) (completed 2026-01-21)
+- [x] 04-05-PLAN.md - Analytics reporting and end-to-end verification (Wave 4) (completed 2026-01-21)
 
 ### Wave Structure
 
@@ -282,15 +282,15 @@ Plans:
 
 ### Deliverables
 
-- [ ] Phone simulator showing example SMS forecast
-- [ ] "Create first" path: create route -> see simulator -> pay to activate
-- [ ] "Buy now" path: fast checkout -> create route after
-- [ ] Analytics tracking conversion by path (A/B)
-- [ ] Paywall after simulator
-- [ ] Entry path tracking through purchase
-- [ ] Landing page with Garmin/Zoleo comparison (exists - enhance)
-- [ ] Carrier/device compatibility page
-- [ ] SMS value proposition messaging
+- [x] Phone simulator showing example SMS forecast
+- [x] "Create first" path: create route -> see simulator -> pay to activate
+- [x] "Buy now" path: fast checkout -> create route after
+- [x] Analytics tracking conversion by path (A/B)
+- [x] Paywall after simulator
+- [x] Entry path tracking through purchase
+- [x] Landing page with Garmin/Zoleo comparison (exists - enhance)
+- [x] Carrier/device compatibility page
+- [x] SMS value proposition messaging
 
 ### Key Files
 
@@ -474,4 +474,4 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-21 after Phase 4 planning*
+*Last updated: 2026-01-21 after Phase 4 execution*
