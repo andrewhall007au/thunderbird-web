@@ -461,6 +461,26 @@ class CommissionStore:
                 commissions.append(self._row_to_commission(row))
         return commissions
 
+    def get_by_id(self, commission_id: int) -> Optional[Commission]:
+        """
+        Get commission by ID.
+
+        Args:
+            commission_id: Commission ID
+
+        Returns:
+            Commission object if found, None otherwise
+        """
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT * FROM commissions WHERE id = ?",
+                (commission_id,)
+            )
+            row = cursor.fetchone()
+            if row:
+                return self._row_to_commission(row)
+            return None
+
     def get_pending(self) -> List[Commission]:
         """Get all pending commissions (for batch processing to mark available)."""
         commissions = []
