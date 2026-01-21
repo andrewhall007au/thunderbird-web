@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link'
 import dynamic from 'next/dynamic';
+import { initPathTracking, trackPageView } from '@/app/lib/analytics';
 import {
   Zap, Satellite, CloudRain, Shield, Bell, Clock,
   MapPin, Thermometer, Wind, Droplets, Mountain, Smartphone,
@@ -135,9 +137,12 @@ CB=Cloud FL=Freeze`}
             </div>
           </div>
 
-          <div className="flex justify-center mb-8">
-            <Link href="/checkout" className="btn-orange text-lg px-16 py-4">
+          <div className="flex flex-col items-center gap-4 mb-8">
+            <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
               Buy Now
+            </Link>
+            <Link href="/create?path=create" className="text-gray-600 hover:text-orange-500 transition-colors underline underline-offset-4">
+              Or Create Your Route First
             </Link>
           </div>
 
@@ -182,7 +187,7 @@ CB=Cloud FL=Freeze`}
               Use one of our pre loaded popular trail templates or upload your own GPX file and create your own
             </p>
             <div className="flex justify-center">
-              <Link href="/checkout" className="btn-orange text-lg px-16 py-4">
+              <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
                 Buy Now
               </Link>
             </div>
@@ -367,7 +372,7 @@ function RouteExample() {
         </div>
 
         <div className="flex justify-center">
-          <Link href="/checkout" className="btn-orange text-lg px-16 py-4">
+          <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
             Buy Now
           </Link>
         </div>
@@ -459,7 +464,7 @@ function Features() {
         </div>
 
         <div className="flex justify-center mt-12">
-          <Link href="/checkout" className="btn-orange text-lg px-16 py-4">
+          <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
             Buy Now
           </Link>
         </div>
@@ -514,7 +519,7 @@ function CostComparison() {
                 </div>
               </div>
             </div>
-            <Link href="/checkout" className="btn-orange w-full text-center text-lg py-4 mt-6 block">
+            <Link href="/checkout?path=buy" className="btn-orange w-full text-center text-lg py-4 mt-6 block">
               Buy Now
             </Link>
           </div>
@@ -623,7 +628,7 @@ function CTA() {
           </p>
         </div>
 
-        <Link href="/checkout" className="btn-orange text-lg px-16 py-4">
+        <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
           Buy Now
         </Link>
 
@@ -737,7 +742,18 @@ function FAQ() {
   )
 }
 
-export default function Home() {
+// Component that uses searchParams - needs to be wrapped in Suspense
+function HomeContent() {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Initialize path tracking on first visit
+    const params = new URLSearchParams(searchParams.toString());
+    initPathTracking(params);
+    // Track landing page view
+    trackPageView('/');
+  }, [searchParams]);
+
   return (
     <>
       <Hero />
@@ -747,5 +763,13 @@ export default function Home() {
       <CostComparison />
       <FAQ />
     </>
-  )
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
+  );
 }
