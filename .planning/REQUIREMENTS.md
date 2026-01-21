@@ -47,12 +47,12 @@ Requirements for initial global launch. Each maps to roadmap phases.
 
 ### User Flows
 
-- [ ] **FLOW-01**: Phone simulator shows example SMS forecast for user's route
-- [ ] **FLOW-02**: "Create first" path: user creates route, sees simulator, then pays to activate
-- [ ] **FLOW-03**: "Buy now" path: fast checkout, create route after purchase
-- [ ] **FLOW-04**: Analytics tracks conversion rate by path (A/B capability)
-- [ ] **FLOW-05**: Paywall appears after simulator — pay to activate route and receive SMS number
-- [ ] **FLOW-06**: Entry path tracked at session start and persisted through purchase
+- [x] **FLOW-01**: Phone simulator shows example SMS forecast for user's route
+- [x] **FLOW-02**: "Create first" path: user creates route, sees simulator, then pays to activate
+- [x] **FLOW-03**: "Buy now" path: fast checkout, create route after purchase
+- [x] **FLOW-04**: Analytics tracks conversion rate by path (A/B capability)
+- [x] **FLOW-05**: Paywall appears after simulator — pay to activate route and receive SMS number
+- [x] **FLOW-06**: Entry path tracked at session start and persisted through purchase
 
 ### Affiliates
 
@@ -80,9 +80,9 @@ Requirements for initial global launch. Each maps to roadmap phases.
 
 ### Content
 
-- [ ] **CONT-01**: Landing page with Garmin/Zoleo comparison messaging
-- [ ] **CONT-02**: Carrier/device compatibility page (satellite SMS support by carrier)
-- [ ] **CONT-03**: SMS value proposition messaging (small payload, prioritized delivery)
+- [x] **CONT-01**: Landing page with Garmin/Zoleo comparison messaging
+- [x] **CONT-02**: Carrier/device compatibility page (satellite SMS support by carrier)
+- [x] **CONT-03**: SMS value proposition messaging (small payload, prioritized delivery)
 
 ## v2 Requirements
 
@@ -158,12 +158,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ROUT-10 | Phase 3 | Complete |
 | ROUT-11 | Phase 3 | Complete |
 | ROUT-12 | Phase 3 | Complete |
-| FLOW-01 | Phase 4 | Pending |
-| FLOW-02 | Phase 4 | Pending |
-| FLOW-03 | Phase 4 | Pending |
-| FLOW-04 | Phase 4 | Pending |
-| FLOW-05 | Phase 4 | Pending |
-| FLOW-06 | Phase 4 | Pending |
+| FLOW-01 | Phase 4 | Complete |
+| FLOW-02 | Phase 4 | Complete |
+| FLOW-03 | Phase 4 | Complete |
+| FLOW-04 | Phase 4 | Complete |
+| FLOW-05 | Phase 4 | Complete |
+| FLOW-06 | Phase 4 | Complete |
+| CONT-01 | Phase 4 | Complete |
+| CONT-02 | Phase 4 | Complete |
+| CONT-03 | Phase 4 | Complete |
 | AFFL-01 | Phase 5 | Pending |
 | AFFL-02 | Phase 5 | Pending |
 | AFFL-03 | Phase 5 | Pending |
@@ -182,9 +185,6 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WTHR-09 | Phase 6 | Pending |
 | WTHR-10 | Phase 6 | Pending |
 | WTHR-11 | Phase 6 | Pending |
-| CONT-01 | Phase 4 | Pending |
-| CONT-02 | Phase 4 | Pending |
-| CONT-03 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 53 total
@@ -193,4 +193,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after Phase 2 completion*
+*Last updated: 2026-01-21 after Phase 4 completion*
