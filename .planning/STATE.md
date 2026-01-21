@@ -14,11 +14,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 5 of 6 (Affiliates)
-Plan: 2 of 6 in current phase
+Plan: 3 of 6 in current phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 05-02-PLAN.md
+Last activity: 2026-01-21 - Completed 05-03-PLAN.md
 
-Progress: ███████████████░░ 88%
+Progress: ███████████████░░ 89%
 
 ## Phase Status
 
@@ -28,13 +28,16 @@ Progress: ███████████████░░ 88%
 | 2 | Payments | Complete | 6/6 plans |
 | 3 | Route Creation | Complete | 7/7 plans |
 | 4 | User Flows | Complete | 5/5 plans |
-| 5 | Affiliates | In progress | 2/6 plans |
+| 5 | Affiliates | In progress | 3/6 plans |
 | 6 | International Weather | Not started | 0/? plans |
 
 ## Recent Decisions
 
 | Date | Decision | Context |
 |------|----------|---------|
+| 2026-01-21 | Discount code auto-creation for affiliates | Creating affiliate auto-creates matching discount code with affiliate_id link |
+| 2026-01-21 | Affiliate lookup at checkout | Both /checkout and /buy-now endpoints look up affiliate_id from discount code before creating Stripe session |
+| 2026-01-21 | sub_id for campaign tracking | Added sub_id parameter for granular campaign tracking (e.g., PARTNER-FB vs PARTNER-IG) |
 | 2026-01-21 | Commission calculated in webhook, not checkout | Ensures accuracy on post-discount amounts, prevents fraud |
 | 2026-01-21 | Trailing attribution only for initial purchases | Top-ups check for existing attribution |
 | 2026-01-21 | Clawback marks commissions, doesn't delete | Maintains audit trail for reporting |
@@ -65,33 +68,28 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-01-21 15:43Z
-Stopped at: Completed 05-02-PLAN.md (Affiliate Service & Webhook Integration)
+Last session: 2026-01-21 07:48Z
+Stopped at: Completed 05-03-PLAN.md (Admin Console & Checkout Integration)
 Resume file: None
 
 ## Session Handoff
 
-**What was done (05-02):**
-- Implemented AffiliateService with commission calculation on post-discount amounts
-- Added affiliate_id and sub_id parameters to Stripe checkout methods
-- Integrated commission creation into Stripe webhooks (checkout.session.completed, payment_intent.succeeded)
-- Added commission clawback for refunds (charge.refunded webhook)
-- Implemented trailing attribution for recurring commissions
+**What was done (05-03):**
+- Added affiliate admin HTML templates (list, edit, stats pages) following existing admin.py pattern
+- Added 6 affiliate admin routes (list, create, edit, toggle, stats) with require_admin checks
+- Auto-creation of discount codes when affiliates are created
+- Integrated affiliate lookup from discount codes at checkout
+- Added sub_id parameter for campaign tracking
 
-**Key files created this plan:**
-- `backend/app/services/affiliates.py`
-
-**Key files modified:**
-- `backend/app/services/payments.py` (affiliate metadata in checkout)
-- `backend/app/routers/webhook.py` (commission webhooks)
-- `backend/app/models/affiliates.py` (added store methods)
-- `backend/app/models/payments.py` (added get_by_payment_intent)
+**Key files modified this plan:**
+- `backend/app/services/admin.py` (render_affiliate_admin, render_affiliate_edit, render_affiliate_stats)
+- `backend/app/routers/admin.py` (6 affiliate management routes)
+- `backend/app/routers/payments.py` (affiliate_id lookup at checkout)
 
 **What's next:**
-- 05-03: Backend endpoints for affiliate creation and management
-- 05-04: Commission calculation and tracking endpoints
-- 05-05: Click tracking and analytics endpoints
-- 05-06: Admin interface for affiliate management
+- 05-04: Click tracking and analytics endpoints
+- 05-05: Reporting and payout management
+- 05-06: Affiliate portal (self-service stats)
 
 ---
 *State initialized: 2026-01-19*
