@@ -562,6 +562,80 @@ class CommissionStore:
             conn.commit()
             return cursor.rowcount > 0
 
+    def count_conversions(
+        self,
+        affiliate_id: int,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None
+    ) -> int:
+        """
+        Count total conversions for an affiliate (excludes clawed_back).
+
+        Args:
+            affiliate_id: Affiliate ID
+            start_date: Start of range (optional)
+            end_date: End of range (optional)
+
+        Returns:
+            Total conversion count
+        """
+        with self._get_connection() as conn:
+            if start_date and end_date:
+                start_iso = start_date.isoformat()
+                end_iso = end_date.isoformat()
+                cursor = conn.execute(
+                    """SELECT COUNT(*) as count FROM commissions
+                       WHERE affiliate_id = ? AND status != 'clawed_back'
+                       AND created_at >= ? AND created_at <= ?""",
+                    (affiliate_id, start_iso, end_iso)
+                )
+            else:
+                cursor = conn.execute(
+                    """SELECT COUNT(*) as count FROM commissions
+                       WHERE affiliate_id = ? AND status != 'clawed_back'""",
+                    (affiliate_id,)
+                )
+            row = cursor.fetchone()
+            return row["count"] if row else 0
+
+    def sum_by_status(
+        self,
+        affiliate_id: int,
+        status: str,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None
+    ) -> int:
+        """
+        Sum commission amounts by status.
+
+        Args:
+            affiliate_id: Affiliate ID
+            status: Commission status
+            start_date: Start of range (optional)
+            end_date: End of range (optional)
+
+        Returns:
+            Total cents for status
+        """
+        with self._get_connection() as conn:
+            if start_date and end_date:
+                start_iso = start_date.isoformat()
+                end_iso = end_date.isoformat()
+                cursor = conn.execute(
+                    """SELECT SUM(amount_cents) as total FROM commissions
+                       WHERE affiliate_id = ? AND status = ?
+                       AND created_at >= ? AND created_at <= ?""",
+                    (affiliate_id, status, start_iso, end_iso)
+                )
+            else:
+                cursor = conn.execute(
+                    """SELECT SUM(amount_cents) as total FROM commissions
+                       WHERE affiliate_id = ? AND status = ?""",
+                    (affiliate_id, status)
+                )
+            row = cursor.fetchone()
+            return row["total"] if row and row["total"] else 0
+
 
 class AttributionStore:
     """SQLite-backed attribution storage."""
@@ -828,6 +902,39 @@ class ClickStore:
             if row:
                 return self._row_to_click(row)
             return None
+
+    def count_unique_by_affiliate(self, affiliate_id: int, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> int:
+        """
+        Count unique session clicks for an affiliate.
+
+        Args:
+            affiliate_id: Affiliate ID
+            start_date: Start of range (optional)
+            end_date: End of range (optional)
+
+        Returns:
+            Unique session count
+        """
+        with self._get_connection() as conn:
+            if start_date and end_date:
+                start_iso = start_date.isoformat()
+                end_iso = end_date.isoformat()
+                cursor = conn.execute(
+                    """SELECT COUNT(DISTINCT session_id) as count
+                       FROM affiliate_clicks
+                       WHERE affiliate_id = ? AND session_id IS NOT NULL
+                       AND created_at >= ? AND created_at <= ?""",
+                    (affiliate_id, start_iso, end_iso)
+                )
+            else:
+                cursor = conn.execute(
+                    """SELECT COUNT(DISTINCT session_id) as count
+                       FROM affiliate_clicks
+                       WHERE affiliate_id = ? AND session_id IS NOT NULL""",
+                    (affiliate_id,)
+                )
+            row = cursor.fetchone()
+            return row["count"] if row else 0
 
 
 # Singleton instances

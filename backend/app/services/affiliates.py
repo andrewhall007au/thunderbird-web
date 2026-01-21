@@ -6,6 +6,7 @@ Commission is calculated on post-discount amount and has a 30-day hold period.
 """
 from typing import Optional, List
 from datetime import datetime, timedelta
+from dataclasses import dataclass
 import logging
 
 from app.models.affiliates import (
@@ -20,6 +21,37 @@ from app.models.affiliates import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AffiliateStats:
+    """
+    Aggregate statistics for affiliate analytics.
+
+    Attributes:
+        total_clicks: Total click count
+        unique_clicks: Unique session click count
+        total_conversions: Total number of conversions
+        conversion_rate: Conversion rate (conversions / unique_clicks)
+        total_commission_cents: Total commissions earned (all statuses)
+        pending_cents: Commissions still pending (30-day hold)
+        available_cents: Commissions available for payout
+        requested_cents: Commissions requested but not yet paid
+        paid_cents: Commissions already paid out
+        topup_count: Number of top-up conversions
+        topup_commission_cents: Commission from top-ups only
+    """
+    total_clicks: int
+    unique_clicks: int
+    total_conversions: int
+    conversion_rate: float
+    total_commission_cents: int
+    pending_cents: int
+    available_cents: int
+    requested_cents: int
+    paid_cents: int
+    topup_count: int
+    topup_commission_cents: int
 
 
 class AffiliateService:
@@ -235,6 +267,127 @@ class AffiliateService:
                     )
 
         return clawed_back_count > 0
+
+    def get_affiliate_stats(self, affiliate_id: int, period: str = "all") -> Optional[AffiliateStats]:
+        """
+        Get aggregate statistics for affiliate dashboard.
+
+        Args:
+            affiliate_id: Affiliate ID
+            period: Time period ("today" | "7d" | "30d" | "all")
+
+        Returns:
+            AffiliateStats object, or None if affiliate not found
+        """
+        # Verify affiliate exists
+        affiliate = self.affiliate_store.get_by_id(affiliate_id)
+        if not affiliate:
+            logger.warning(f"Stats requested for unknown affiliate {affiliate_id}")
+            return None
+
+        # Calculate date range
+        now = datetime.utcnow()
+        start_date = None
+        end_date = now
+
+        if period == "today":
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif period == "7d":
+            start_date = now - timedelta(days=7)
+        elif period == "30d":
+            start_date = now - timedelta(days=30)
+        # "all" = no start_date filter
+
+        # Get click metrics
+        if start_date:
+            total_clicks = self.click_store.count_by_date_range(affiliate_id, start_date, end_date)
+            unique_clicks = self.click_store.count_unique_by_affiliate(affiliate_id, start_date, end_date)
+        else:
+            total_clicks = self.click_store.count_by_affiliate(affiliate_id)
+            unique_clicks = self.click_store.count_unique_by_affiliate(affiliate_id)
+
+        # Get conversion metrics
+        total_conversions = self.commission_store.count_conversions(affiliate_id, start_date, end_date)
+
+        # Calculate conversion rate
+        conversion_rate = (total_conversions / unique_clicks * 100) if unique_clicks > 0 else 0.0
+
+        # Get commission breakdowns by status
+        pending_cents = self.commission_store.sum_by_status(affiliate_id, "pending", start_date, end_date)
+        available_cents = self.commission_store.sum_by_status(affiliate_id, "available", start_date, end_date)
+        requested_cents = self.commission_store.sum_by_status(affiliate_id, "requested", start_date, end_date)
+        paid_cents = self.commission_store.sum_by_status(affiliate_id, "paid", start_date, end_date)
+
+        total_commission_cents = pending_cents + available_cents + requested_cents + paid_cents
+
+        # Get topup metrics (commissions where account_id already has attribution)
+        # For now, we'll count total conversions from attributed accounts
+        # A more sophisticated query would join attributions and check if conversion is after initial
+        topup_count = 0
+        topup_commission_cents = 0
+
+        # Get all commissions in period
+        all_commissions = self.commission_store.get_by_affiliate_id(affiliate_id)
+        for commission in all_commissions:
+            # Filter by date if needed
+            if start_date and commission.created_at:
+                if commission.created_at < start_date or commission.created_at > end_date:
+                    continue
+
+            # Check if this is a topup (account already has attribution and this isn't the initial order)
+            attribution = self.attribution_store.get_by_account_id(commission.account_id)
+            if attribution and attribution.order_id != commission.order_id:
+                # This is a topup
+                if commission.status != "clawed_back":
+                    topup_count += 1
+                    topup_commission_cents += commission.amount_cents
+
+        return AffiliateStats(
+            total_clicks=total_clicks,
+            unique_clicks=unique_clicks,
+            total_conversions=total_conversions,
+            conversion_rate=round(conversion_rate, 2),
+            total_commission_cents=total_commission_cents,
+            pending_cents=pending_cents,
+            available_cents=available_cents,
+            requested_cents=requested_cents,
+            paid_cents=paid_cents,
+            topup_count=topup_count,
+            topup_commission_cents=topup_commission_cents
+        )
+
+    def get_recent_conversions(self, affiliate_id: int, limit: int = 10) -> List[dict]:
+        """
+        Get recent conversions for affiliate (aggregate data only, no personal info).
+
+        Args:
+            affiliate_id: Affiliate ID
+            limit: Maximum number of conversions to return
+
+        Returns:
+            List of conversion dicts with amount, status, date
+        """
+        # Get recent commissions
+        commissions = self.commission_store.get_by_affiliate_id(affiliate_id)
+
+        # Filter out clawed back
+        active_commissions = [c for c in commissions if c.status != "clawed_back"]
+
+        # Sort by created_at desc and limit
+        active_commissions.sort(key=lambda c: c.created_at or datetime.min, reverse=True)
+        active_commissions = active_commissions[:limit]
+
+        # Return aggregate data only (no account_id or order_id exposed)
+        return [
+            {
+                "amount_cents": c.amount_cents,
+                "status": c.status,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+                "available_at": c.available_at.isoformat() if c.available_at else None,
+                "sub_id": c.sub_id
+            }
+            for c in active_commissions
+        ]
 
 
 _affiliate_service: Optional[AffiliateService] = None
