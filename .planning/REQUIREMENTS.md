@@ -66,17 +66,17 @@ Requirements for initial global launch. Each maps to roadmap phases.
 
 ### International Weather
 
-- [ ] **WTHR-01**: Weather API integration for USA (NWS)
-- [ ] **WTHR-02**: Weather API integration for Canada
-- [ ] **WTHR-03**: Weather API integration for UK (Met Office)
-- [ ] **WTHR-04**: Weather API integration for France (Meteo-France)
-- [ ] **WTHR-05**: Weather API integration for Italy
-- [ ] **WTHR-06**: Weather API integration for Switzerland (MeteoSwiss)
-- [ ] **WTHR-07**: Weather API integration for New Zealand
-- [ ] **WTHR-08**: Weather API integration for South Africa
-- [ ] **WTHR-09**: Open-Meteo fallback for all countries
-- [ ] **WTHR-10**: Weather response normalization layer (consistent format across APIs)
-- [ ] **WTHR-11**: Data source displayed in forecasts
+- [x] **WTHR-01**: Weather API integration for USA (NWS)
+- [x] **WTHR-02**: Weather API integration for Canada
+- [x] **WTHR-03**: Weather API integration for UK (Met Office)
+- [x] **WTHR-04**: Weather API integration for France (Meteo-France)
+- [x] **WTHR-05**: Weather API integration for Italy
+- [x] **WTHR-06**: Weather API integration for Switzerland (ICON-EU via Open-Meteo)
+- [x] **WTHR-07**: Weather API integration for New Zealand
+- [x] **WTHR-08**: Weather API integration for South Africa
+- [x] **WTHR-09**: Open-Meteo fallback for all countries
+- [x] **WTHR-10**: Weather response normalization layer (consistent format across APIs)
+- [x] **WTHR-11**: Data source displayed in forecasts
 
 ### Content
 
@@ -174,17 +174,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AFFL-05 | Phase 5 | Complete |
 | AFFL-06 | Phase 5 | Complete |
 | AFFL-07 | Phase 5 | Complete |
-| WTHR-01 | Phase 6 | Pending |
-| WTHR-02 | Phase 6 | Pending |
-| WTHR-03 | Phase 6 | Pending |
-| WTHR-04 | Phase 6 | Pending |
-| WTHR-05 | Phase 6 | Pending |
-| WTHR-06 | Phase 6 | Pending |
-| WTHR-07 | Phase 6 | Pending |
-| WTHR-08 | Phase 6 | Pending |
-| WTHR-09 | Phase 6 | Pending |
-| WTHR-10 | Phase 6 | Pending |
-| WTHR-11 | Phase 6 | Pending |
+| WTHR-01 | Phase 6 | Complete |
+| WTHR-02 | Phase 6 | Complete |
+| WTHR-03 | Phase 6 | Complete |
+| WTHR-04 | Phase 6 | Complete |
+| WTHR-05 | Phase 6 | Complete |
+| WTHR-06 | Phase 6 | Complete |
+| WTHR-07 | Phase 6 | Complete |
+| WTHR-08 | Phase 6 | Complete |
+| WTHR-09 | Phase 6 | Complete |
+| WTHR-10 | Phase 6 | Complete |
+| WTHR-11 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 53 total
@@ -193,4 +193,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-21 after Phase 5 completion*
+*Last updated: 2026-01-21 after Phase 6 completion*
