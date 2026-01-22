@@ -213,7 +213,7 @@ class BOMService:
         days: int = 7
     ) -> CellForecast:
         """
-        Get daily forecast for next N days (for CAST7 command).
+        Get daily forecast for next N days (for CAST7, CAMPS7, PEAKS7 commands).
 
         Args:
             lat: Latitude
@@ -221,9 +221,154 @@ class BOMService:
             days: Number of days (default 7)
 
         Returns:
-            CellForecast with 3-hourly periods for daily aggregation
+            CellForecast with daily periods
         """
-        return await self.get_forecast(lat, lon, days=days, resolution="3hourly")
+        cell = BOMGridConfig.lat_lon_to_cell(lat, lon)
+        cell_id = BOMGridConfig.cell_to_string(*cell)
+        geohash = self._lat_lon_to_geohash(lat, lon)
+        grid_elevation = await self.get_grid_elevation(lat, lon)
+
+        if self.use_mock:
+            return self._generate_mock_forecast(cell_id, geohash, lat, lon, days, "daily", grid_elevation)
+
+        client = await self.get_client()
+
+        # Try BOM daily endpoint first
+        try:
+            url = f"{self.BOM_API_BASE}/locations/{geohash}/forecasts/daily"
+            response = await client.get(url)
+            response.raise_for_status()
+            data = response.json()
+
+            logger.info(f"BOM API success for {geohash} (daily)")
+            return self._parse_bom_daily_response(cell_id, geohash, lat, lon, data, days, grid_elevation)
+
+        except httpx.HTTPError as e:
+            logger.warning(f"BOM daily API failed for {geohash}: {e}")
+
+        # Fall back to Open-Meteo
+        logger.info(f"Falling back to Open-Meteo for daily forecast at {lat}, {lon}")
+        return await self._fetch_openmeteo_forecast(
+            cell_id, geohash, lat, lon, days, resolution="hourly", grid_elevation=grid_elevation
+        )
+
+    def _parse_bom_daily_response(
+        self,
+        cell_id: str,
+        geohash: str,
+        lat: float,
+        lon: float,
+        data: Dict[str, Any],
+        days: int,
+        grid_elevation: int = 500
+    ) -> CellForecast:
+        """
+        Parse BOM daily API response.
+
+        Response structure:
+        {
+            "data": [
+                {
+                    "date": "2026-01-22T16:00:00Z",
+                    "temp_max": 25,
+                    "temp_min": 17,
+                    "rain": {"chance": 20, "amount": {"min": 0, "max": null}},
+                    "icon_descriptor": "mostly_sunny",
+                    ...
+                }
+            ]
+        }
+        """
+        periods = []
+        now = datetime.now(TZ_HOBART)
+
+        for day_data in data.get("data", [])[:days]:
+            try:
+                date_str = day_data.get("date")
+                if not date_str:
+                    continue
+
+                period_time = parse_iso_datetime(date_str)
+                local_time = period_time.astimezone(TZ_HOBART)
+
+                # Get temperature
+                temp_max = day_data.get("temp_max")
+                temp_min = day_data.get("temp_min")
+
+                # Skip if no temp data
+                if temp_max is None and temp_min is None:
+                    continue
+
+                temp_max = temp_max if temp_max is not None else (temp_min + 10 if temp_min else 20)
+                temp_min = temp_min if temp_min is not None else (temp_max - 10 if temp_max else 10)
+
+                # Get rain data
+                rain = day_data.get("rain", {})
+                rain_amount = rain.get("amount", {})
+                rain_chance = rain.get("chance", 0) or 0
+                rain_min = rain_amount.get("min", 0) or 0
+                rain_max = rain_amount.get("max") or rain_amount.get("upper_range", 0) or 0
+
+                # Estimate wind from icon/conditions (BOM daily doesn't include wind)
+                icon = day_data.get("icon_descriptor", "")
+                if "storm" in icon or "wind" in icon:
+                    wind_avg, wind_max = 35, 55
+                elif "shower" in icon or "rain" in icon:
+                    wind_avg, wind_max = 25, 40
+                else:
+                    wind_avg, wind_max = 15, 25
+
+                # Estimate cloud cover from icon
+                if "sunny" in icon:
+                    cloud_cover = 10
+                elif "mostly_sunny" in icon:
+                    cloud_cover = 30
+                elif "cloudy" in icon:
+                    cloud_cover = 70
+                elif "overcast" in icon:
+                    cloud_cover = 90
+                else:
+                    cloud_cover = 50
+
+                # Calculate freezing level and cloud base
+                freezing_level = self.calculate_freezing_level(temp_max, grid_elevation)
+                cloud_base = 800 if cloud_cover > 70 else 1500
+
+                period = ForecastPeriod(
+                    datetime=local_time,
+                    period="DAY",
+                    temp_min=temp_min,
+                    temp_max=temp_max,
+                    rain_chance=rain_chance,
+                    rain_min=rain_min,
+                    rain_max=rain_max,
+                    snow_min=0,
+                    snow_max=0,
+                    wind_avg=wind_avg,
+                    wind_max=wind_max,
+                    cloud_cover=cloud_cover,
+                    cloud_base=cloud_base,
+                    freezing_level=freezing_level,
+                    cape=0
+                )
+                periods.append(period)
+
+            except (KeyError, ValueError) as e:
+                logger.warning(f"Error parsing BOM daily period: {e}")
+                continue
+
+        return CellForecast(
+            cell_id=cell_id,
+            geohash=geohash,
+            lat=lat,
+            lon=lon,
+            base_elevation=grid_elevation,
+            periods=periods,
+            fetched_at=now,
+            expires_at=now + timedelta(hours=settings.BOM_CACHE_TTL_HOURS),
+            is_cached=False,
+            source="bom"
+        )
 
     async def _fetch_real_forecast(
         self,
@@ -556,17 +701,15 @@ class BOMService:
                 logger.warning(f"Error parsing BOM hourly period: {e}")
                 continue
         
-        # BOM temperatures are NOT elevation-adjusted - they use a low-elevation baseline
-        # For SW Tasmania alpine areas, assume BOM uses ~300m reference elevation
-        # This allows proper lapse rate adjustment to camp/peak elevations
-        bom_base_elevation = 300
+        # BOM provides temps at 2m height above the grid cell's average terrain elevation
+        # Use the actual grid elevation for proper lapse rate adjustment to waypoint elevation
 
         return CellForecast(
             cell_id=cell_id,
             geohash=geohash,
             lat=lat,
             lon=lon,
-            base_elevation=bom_base_elevation,  # BOM baseline for lapse rate adjustment
+            base_elevation=grid_elevation,  # Grid cell elevation for lapse rate adjustment
             periods=periods,
             fetched_at=now,
             expires_at=now + timedelta(hours=settings.BOM_CACHE_TTL_HOURS),
@@ -681,16 +824,15 @@ class BOMService:
                 print(f"Error parsing period: {e}")
                 continue
 
-        # BOM temperatures are NOT elevation-adjusted - they use a low-elevation baseline
-        # For SW Tasmania alpine areas, assume BOM uses ~300m reference elevation
-        bom_base_elevation = 300
+        # BOM provides temps at 2m height above the grid cell's average terrain elevation
+        # Use the actual grid elevation for proper lapse rate adjustment to waypoint elevation
 
         return CellForecast(
             cell_id=cell_id,
             geohash=geohash,
             lat=lat,
             lon=lon,
-            base_elevation=bom_base_elevation,  # BOM baseline for lapse rate adjustment
+            base_elevation=grid_elevation,  # Grid cell elevation for lapse rate adjustment
             periods=periods,
             fetched_at=now,
             expires_at=now + timedelta(hours=settings.BOM_CACHE_TTL_HOURS),

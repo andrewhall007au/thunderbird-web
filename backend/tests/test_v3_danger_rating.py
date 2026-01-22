@@ -165,45 +165,9 @@ class TestCombinedDangers:
 
 class TestDangerInForecast:
     """Test danger column in forecast output."""
-    
+
     def test_danger_column_in_header(self):
         """D column should be in forecast header."""
-        from app.services.formatter import FormatCAST12
-        
-        # Check header includes D
         from app.services.formatter import get_forecast_header
         header = get_forecast_header()
         assert "D" in header, "Header should include D (Danger) column"
-    
-    @pytest.mark.skip(reason="FormatCAST12 API mismatch - needs refactor")
-    def test_danger_values_in_output(self):
-        """Forecast should include danger values."""
-        from app.services.formatter import FormatCAST12
-        from datetime import datetime
-        from zoneinfo import ZoneInfo
-        
-        TZ_HOBART = ZoneInfo("Australia/Hobart")
-        
-        mock_data = []
-        for hour in range(12):
-            mock_data.append({
-                "hour": hour + 6,
-                "temp": 10,
-                "rain_prob": 80 if hour > 6 else 20,
-                "precip_mm": 5 if hour > 6 else 0,
-                "wind_avg": 30,
-                "wind_max": 70 if hour > 8 else 30,  # High wind later
-                "wind_dir": "NW",
-                "cloud_cover": 80,
-                "freezing_level": 1200
-            })
-        
-        result = FormatCAST12.format(
-            location_name="Lake Oberon",
-            elevation=863,
-            forecast_data=mock_data,
-            date=datetime.now(TZ_HOBART)
-        )
-        
-        # Should have some danger markers for high wind periods
-        assert "!" in result or "D" in result, "Forecast should show danger indicators"

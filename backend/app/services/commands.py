@@ -38,6 +38,7 @@ class CommandType(str, Enum):
 
     # Payment commands (PAY-08)
     BUY = "BUY"             # SMS top-up
+    TOPUP = "TOPUP"         # SMS top-up confirmation (YES$10, YES$25, YES$50)
 
     # Settings commands
     UNITS = "UNITS"         # Change unit system (UNITS METRIC / UNITS IMPERIAL)
@@ -190,7 +191,8 @@ class CommandParser:
     def sanitize(self, message: str) -> str:
         """Sanitize incoming SMS message."""
         cleaned = message.strip()
-        cleaned = re.sub(r'[^A-Za-z0-9@ +]', '', cleaned)
+        # Allow alphanumeric, @, +, space, and GPS coordinate chars (-, ., ,)
+        cleaned = re.sub(r'[^A-Za-z0-9@ +\-.,]', '', cleaned)
         return cleaned
     
     def parse(self, message: str) -> ParsedCommand:
@@ -232,8 +234,45 @@ class CommandParser:
             )
         
         first_word = parts[0]
-        
-        # Check simple commands first
+
+        # YES$X command (PAY-08: SMS top-up confirmation) - check BEFORE simple commands
+        # Match: "YES$10", "YES$25", "YES$50", "YES 10", "YES 25", "YES 50"
+        # Note: After sanitization, $ is stripped, so YES$10 becomes YES10
+        if first_word.startswith("YES"):
+            amount = None
+
+            # Check for YES10 format (amount directly attached after YES)
+            if len(first_word) > 3:
+                amount_match = re.match(r'^YES(\d+)$', first_word)
+                if amount_match:
+                    amount = int(amount_match.group(1))
+
+            # Check for YES 10 format (space separated)
+            if amount is None and len(parts) >= 2:
+                amount_match = re.match(r'^(\d+)$', parts[1])
+                if amount_match:
+                    amount = int(amount_match.group(1))
+
+            # Valid amounts: $10, $25, $50
+            valid_amounts = {10: 1000, 25: 2500, 50: 5000}
+            if amount in valid_amounts:
+                return ParsedCommand(
+                    command_type=CommandType.TOPUP,
+                    raw_input=message,
+                    args={"amount": amount, "amount_cents": valid_amounts[amount]},
+                    is_valid=True
+                )
+            elif amount is not None:
+                return ParsedCommand(
+                    command_type=CommandType.TOPUP,
+                    raw_input=message,
+                    args={"amount": amount},
+                    is_valid=False,
+                    error_message="Valid amounts: YES$10, YES$25, or YES$50"
+                )
+            # Just "YES" without amount - fall through to simple YES command
+
+        # Check simple commands
         if first_word in self.SIMPLE_COMMANDS:
             return ParsedCommand(
                 command_type=self.SIMPLE_COMMANDS[first_word],
@@ -432,10 +471,82 @@ class CommandParser:
             error_message="Command not recognized. Text COMMANDS for help."
         )
     
+    def _parse_gps_coordinates(self, text: str) -> Optional[Tuple[float, float]]:
+        """
+        Parse GPS coordinates from text.
+        Supports formats:
+        - "-41.8921,146.0820" (comma separated)
+        - "-41.8921 146.0820" (space separated)
+        - "41.8921S,146.0820E" (with cardinal directions)
+        Returns (lat, lon) tuple or None if not valid GPS.
+        """
+        # Pattern for decimal degrees with optional cardinal directions
+        patterns = [
+            # Format: -41.8921,146.0820 or -41.8921, 146.0820
+            r'^(-?\d{1,3}\.?\d*)\s*,\s*(-?\d{1,3}\.?\d*)$',
+            # Format: -41.8921 146.0820 (space separated)
+            r'^(-?\d{1,3}\.?\d*)\s+(-?\d{1,3}\.?\d*)$',
+            # Format: 41.8921S,146.0820E or 41.8921S 146.0820E
+            r'^(\d{1,3}\.?\d*)([NS])\s*[,\s]\s*(\d{1,3}\.?\d*)([EW])$',
+        ]
+
+        # Try comma-separated with optional negative
+        match = re.match(patterns[0], text)
+        if match:
+            lat = float(match.group(1))
+            lon = float(match.group(2))
+            if -90 <= lat <= 90 and -180 <= lon <= 180:
+                return (lat, lon)
+
+        # Try space-separated with optional negative
+        match = re.match(patterns[1], text)
+        if match:
+            lat = float(match.group(1))
+            lon = float(match.group(2))
+            if -90 <= lat <= 90 and -180 <= lon <= 180:
+                return (lat, lon)
+
+        # Try cardinal direction format
+        match = re.match(patterns[2], text, re.IGNORECASE)
+        if match:
+            lat = float(match.group(1))
+            lat_dir = match.group(2).upper()
+            lon = float(match.group(3))
+            lon_dir = match.group(4).upper()
+
+            if lat_dir == 'S':
+                lat = -lat
+            if lon_dir == 'W':
+                lon = -lon
+
+            if -90 <= lat <= 90 and -180 <= lon <= 180:
+                return (lat, lon)
+
+        return None
+
     def _parse_cast(self, parts: List[str], cmd_type: CommandType, message: str) -> ParsedCommand:
         """Parse CAST/CAST12/CAST24 command."""
         if len(parts) >= 2:
+            # Check if it's GPS coordinates (could be in parts[1] alone or parts[1:] joined)
+            # Try single part first (e.g., "-41.8921,146.0820")
             location = parts[1]
+            gps = self._parse_gps_coordinates(location)
+
+            # Try joining parts for space-separated GPS (e.g., "-41.8921 146.0820")
+            if not gps and len(parts) >= 3:
+                combined = f"{parts[1]} {parts[2]}"
+                gps = self._parse_gps_coordinates(combined)
+
+            if gps:
+                lat, lon = gps
+                return ParsedCommand(
+                    command_type=cmd_type,
+                    raw_input=message,
+                    args={"gps_lat": lat, "gps_lon": lon, "is_gps": True},
+                    is_valid=True
+                )
+
+            # Check if it's a valid camp/peak code
             if location in self.valid_camps or location in self.valid_peaks:
                 return ParsedCommand(
                     command_type=cmd_type,
@@ -661,7 +772,7 @@ class ResponseGenerator:
     
     @staticmethod
     def help_message() -> str:
-        """Generate HELP/COMMANDS response (v3.2)."""
+        """Generate HELP/COMMANDS response (v3.3)."""
         return (
             'THUNDERBIRD COMMANDS\n'
             '--------------------\n'
@@ -670,6 +781,7 @@ class ResponseGenerator:
             'CAST7 [LOC] = 7-day location\n'
             'CAST7 CAMPS = 7-day all camps\n'
             'CAST7 PEAKS = 7-day all peaks\n'
+            'CAST -41.89,146.08 = GPS point\n'
             'CHECKIN [CAMP] = Check in\n'
             'ROUTE = List codes\n'
             'ALERTS ON/OFF = Warnings\n'

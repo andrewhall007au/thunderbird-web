@@ -146,25 +146,39 @@ function RoutesCard() {
         </div>
       ) : (
         <div className="space-y-2">
-          {routes.slice(0, 5).map((route) => (
-            <Link
-              key={route.id}
-              href={`/create?route=${route.id}`}
-              className="flex items-center justify-between p-3 rounded-lg hover:bg-zinc-50 transition-colors group"
-            >
-              <div>
-                <div className="font-medium text-zinc-900">{route.name}</div>
-                <div className="text-sm text-zinc-500">
-                  {route.waypoint_count} waypoint{route.waypoint_count !== 1 ? 's' : ''}
-                  <span className="mx-1.5 text-zinc-300">·</span>
-                  <span className={route.status === 'active' ? 'text-emerald-600' : 'text-zinc-400'}>
-                    {route.status}
-                  </span>
-                </div>
+          {routes.slice(0, 5).map((route) => {
+            // Generate 5-letter track code from route name
+            const trackCode = route.name
+              .replace(/[^A-Za-z]/g, '')
+              .toUpperCase()
+              .slice(0, 5);
+
+            return (
+              <div key={route.id} className="p-3 rounded-lg hover:bg-zinc-50 transition-colors">
+                <Link
+                  href={`/create?id=${route.id}`}
+                  className="flex items-center justify-between group"
+                >
+                  <div>
+                    <div className="font-medium text-zinc-900">{route.name}</div>
+                    <div className="text-sm text-zinc-500">
+                      {route.waypoint_count} waypoint{route.waypoint_count !== 1 ? 's' : ''}
+                      <span className="mx-1.5 text-zinc-300">·</span>
+                      <span className={route.status === 'active' ? 'text-emerald-600' : 'text-zinc-400'}>
+                        {route.status}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-zinc-300 group-hover:text-zinc-500" />
+                </Link>
+                {route.status === 'active' && (
+                  <div className="mt-2 text-sm text-zinc-600">
+                    Activate by sending "<span className="font-bold text-zinc-800">START {trackCode}</span>" to +1 (555) 123-4567
+                  </div>
+                )}
               </div>
-              <ChevronRight className="w-5 h-5 text-zinc-300 group-hover:text-zinc-500" />
-            </Link>
-          ))}
+            );
+          })}
           {routes.length > 5 && (
             <Link
               href="/routes"

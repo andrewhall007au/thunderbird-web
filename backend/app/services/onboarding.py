@@ -392,6 +392,11 @@ class OnboardingManager:
             "  7-day for location",
             "CAST7 CAMPS = 7-day all camps",
             "CAST7 PEAKS = 7-day all peaks\n",
+            "GPS COORDINATES",
+            "-----------------",
+            "CAST -41.89,146.08",
+            "CAST24 -41.89,146.08",
+            "  Any GPS point worldwide!\n",
             "OTHER COMMANDS",
             "-----------------",
             "CHECKIN [CAMP]",
@@ -603,6 +608,11 @@ class OnboardingFlow:
             "CAST7 = 7-day all camps\n"
             "CHECKIN [CAMP] = Check in\n"
             "PEAKS = Peak forecasts\n\n"
+            "GPS COORDINATES\n"
+            "--------------------\n"
+            "CAST -41.89,146.08\n"
+            "CAST24 -41.89,146.08\n"
+            "  Any GPS point worldwide!\n\n"
             "Reply NEXT to continue."
         )
     

@@ -16,6 +16,7 @@ function CheckoutForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInEmail, setLoggedInEmail] = useState<string | null>(null);
+  const [saveCard, setSaveCard] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -82,7 +83,8 @@ function CheckoutForm() {
           },
           body: JSON.stringify({
             success_url: `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${window.location.origin}/checkout`
+            cancel_url: `${window.location.origin}/checkout`,
+            save_card: saveCard
           })
         });
 
@@ -105,7 +107,8 @@ function CheckoutForm() {
             email: formData.email,
             password: formData.password,
             name: formData.name,
-            entry_path: trackingContext?.entry_path || 'organic'
+            entry_path: trackingContext?.entry_path || 'organic',
+            save_card: saveCard
           })
         });
 
@@ -133,8 +136,9 @@ function CheckoutForm() {
 
   const isFormValid = isLoggedIn || (
     formData.email.includes('@') &&
+    formData.email.includes('.') &&
     formData.password.length >= 8 &&
-    formData.name.length > 0
+    formData.name.trim().length > 0
   );
 
   return (
@@ -157,16 +161,22 @@ function CheckoutForm() {
               <h2 className="font-semibold text-lg mb-4">Order Summary</h2>
 
               <div className="space-y-4 mb-6">
+                <div className="bg-orange-100 border border-orange-200 rounded-lg p-3 text-center mb-4">
+                  <span className="text-orange-800 font-medium">Launch Offer: </span>
+                  <span className="text-orange-600 line-through">USD $49.99</span>
+                  <span className="text-orange-800 font-bold ml-2">USD $29.99</span>
+                  <span className="text-orange-600 text-sm ml-2">— ends Feb 28th 2026</span>
+                </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Thunderbird Starter Pack</span>
-                  <span className="font-medium">$29.99</span>
+                  <span className="font-medium">USD $29.99</span>
                 </div>
                 <div className="text-sm text-gray-500 -mt-2">
-                  Includes $10 SMS credits (~140 forecasts)
+                  Includes $10 USD SMS credits — up to 30 days on trail
                 </div>
                 <div className="border-t border-gray-200 pt-4 flex justify-between">
                   <span className="font-semibold">Total</span>
-                  <span className="font-bold text-xl">$29.99 <span className="text-sm font-normal text-gray-500">USD</span></span>
+                  <span className="font-bold text-xl">USD $29.99</span>
                 </div>
               </div>
 
@@ -179,15 +189,22 @@ function CheckoutForm() {
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-orange-500" />
-                    $10 SMS credit balance
+                    $10 USD SMS credits
                   </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-orange-500" />
-                    ~140 weather forecasts
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-orange-500 mt-0.5" />
+                    <div>
+                      Up to 30 days on trail (30 US / 7 AU)
+                      <div className="text-xs text-orange-500/70">SMS network access costs differ</div>
+                    </div>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-orange-500" />
                     No monthly subscription
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-orange-500" />
+                    Pay-as-you-go top ups
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-orange-500" />
@@ -334,6 +351,25 @@ function CheckoutForm() {
                     <Shield className="w-4 h-4" />
                     <span>Your payment info is handled securely by Stripe</span>
                   </div>
+                </div>
+
+                {/* Save Card Opt-in */}
+                <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={saveCard}
+                      onChange={(e) => setSaveCard(e.target.checked)}
+                      className="mt-1 w-5 h-5 rounded border-orange-300 text-orange-500 focus:ring-orange-500"
+                    />
+                    <div>
+                      <span className="font-medium text-orange-800">Save card for SMS top-ups on trail</span>
+                      <p className="text-sm text-orange-700 mt-1">
+                        Top up credits via satellite SMS while hiking — no internet required.
+                        Reply YES$10, YES$25, or YES$50 when your balance is low.
+                      </p>
+                    </div>
+                  </label>
                 </div>
 
                 {/* Payment method logos */}

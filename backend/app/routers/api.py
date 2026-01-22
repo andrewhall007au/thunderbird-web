@@ -238,9 +238,9 @@ async def get_cell_forecast(route_id: str, cell_id: str):
     }
 
 
-@router.get("/routes")
-async def list_routes():
-    """List available routes."""
+@router.get("/route-templates")
+async def list_route_templates():
+    """List available route templates (predefined routes)."""
     route_ids = RouteLoader.list_routes()
     routes = []
 
@@ -261,9 +261,9 @@ async def list_routes():
     return {"routes": routes}
 
 
-@router.get("/routes/{route_id}")
-async def get_route_info(route_id: str):
-    """Get detailed route information."""
+@router.get("/route-templates/{route_id}")
+async def get_route_template_info(route_id: str):
+    """Get detailed route template information."""
     route = get_route(route_id)
     if not route:
         raise HTTPException(status_code=404, detail="Route not found")

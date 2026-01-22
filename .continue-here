@@ -1,0 +1,121 @@
+# Continue Here - Preview Page & Live Data Integration
+
+## TODO Next Session
+
+### 1. Phone Number Placeholder
+Replace "+1 (555) 123-4567" with real Thunderbird SMS number in:
+- app/create/preview/page.tsx
+- app/account/page.tsx
+
+### 2. Deploy to thunderbird.bot
+Replace existing website with new Thunderbird web app.
+- [ ] Set up hosting (Vercel for frontend, Railway/Fly.io for backend?)
+- [ ] Configure DNS for thunderbird.bot
+- [ ] Set up production environment variables (JWT_SECRET, etc.)
+- [ ] Configure production database
+- [ ] Set up SSL certificates
+- [ ] Test production deployment
+- [ ] Switch DNS to new deployment
+
+---
+
+## Future Work
+
+### PostgreSQL Migration (Estimated: 2-3 days)
+
+**Current state:** SQLite single-file database (`thunderbird.db`)
+
+**Why migrate:**
+- SQLite has single-writer lock (bottleneck at scale)
+- No horizontal scaling (single server only)
+- PostgreSQL needed for: >10K users, multi-server, high write concurrency
+
+**Files to migrate (6 files, ~136 DB operations):**
+| File | Operations | Complexity |
+|------|------------|------------|
+| database.py | 33 | Medium (core user/contacts) |
+| affiliates.py | 35 | Low (simple CRUD) |
+| payments.py | 26 | Medium (transactions) |
+| custom_route.py | 18 | Low (routes/waypoints) |
+| analytics.py | 13 | Low (event logging) |
+| account.py | 11 | Low (auth) |
+
+**Migration steps:**
+1. Add `asyncpg` or `psycopg2` dependency
+2. Create database connection pool
+3. Update each model file:
+   - Replace `sqlite3.connect()` with pool connection
+   - Change `?` placeholders to `$1, $2` (PostgreSQL style)
+   - Update `AUTOINCREMENT` to `SERIAL`
+   - Handle `datetime` type differences
+4. Create migration script for existing data
+5. Update tests
+6. Test with PostgreSQL locally
+7. Deploy with managed PostgreSQL (Supabase, RDS, or Neon)
+
+**Estimated effort:** 2-3 days for full migration + testing
+
+---
+
+## Completed (January 22, 2026)
+
+### CAMPS7/PEAKS7 Weather Format Fix
+Added rain mm range to match CAST12/24 format.
+**Location:** app/create/preview/page.tsx in generateSampleSMS()
+
+### CAMPS7/PEAKS7 Live Data Wiring
+- Backend: Extended `/api/routes/forecast-preview` endpoint to handle CAMPS7/PEAKS7 commands
+  - Accepts waypoints array, filters by type (camp/peak)
+  - Uses BOM `/forecasts/daily` endpoint for 7-day forecasts (proper temp_min/max, rain range)
+  - Added `_parse_bom_daily_response()` in bom.py
+  - Falls back to Open-Meteo if BOM fails
+  - **Location:** backend/app/routers/routes.py, backend/app/services/bom.py
+- Frontend API: Added WaypointForForecast type, updated getForecastPreview to accept waypoints
+  - **Location:** app/lib/api.ts
+- Frontend Preview: Removed CAST12/CAST24-only restriction, passes all waypoints for CAMPS7/PEAKS7
+  - **Location:** app/create/preview/page.tsx (useEffect for forecast fetching)
+- Format includes: Temp range, Rain %, Rain mm, Wind, Cloud %, Cloud Base, Freezing Level
+- Line spacing between days for readability
+
+---
+
+## Completed This Session
+
+### Landing Page (app/page.tsx)
+- Made phone/watch forecast text scroll (animate-scroll-up)
+- User input now starts at top of phone display (justify-start)
+- Removed "Create your route first" link from CTAs
+
+### Route Creation (app/create/page.tsx)
+- Added "Save Route" button in Step 2 card (bottom left, orange, min-w-[250px])
+- Updated Save Draft button in route name area to match same style
+- Step indicators: white circles with black text (default), orange fill with white checkmark (completed)
+
+### Preview Page (app/create/preview/page.tsx)
+- Removed payment flow - "Activate Route" now just activates and redirects to /account
+- Added START instruction: "Activate by sending 'START [5-LETTER CODE]' to..."
+- Added command selector buttons: CAST12, CAST24, CAMPS7, PEAKS7
+- Added waypoint selector to preview different waypoints
+- Phone simulator now scrollable (overflow-y-auto) for long content
+- Full forecast format for CAST12 (12 hourly with line breaks) and CAST24 (24 hourly)
+- CAMPS7/PEAKS7 show 7-day forecasts with GPS coordinates for each waypoint
+
+### Live Weather Data Integration
+- Created `/api/routes/forecast-preview` endpoint (backend/app/routers/routes.py)
+- Endpoint fetches real weather from BOM API (or Open-Meteo fallback)
+- Added getForecastPreview() to frontend API client (app/lib/api.ts)
+- Frontend calls live API for CAST12/CAST24 commands
+- Shows "(Live weather data)" in green when using real data
+- Falls back to sample data with "(Sample data shown)" if API fails
+
+### Account Page (app/account/page.tsx)
+- Fixed route link to use `id=` instead of `route=`
+- Added "Activate by sending 'START [CODE]' to +1 (555) 123-4567" for active routes
+
+### Backend Fixes
+- Renamed `/api/routes` to `/api/route-templates` in api.py to avoid conflict with user routes endpoint
+- Database reset with all migrations applied
+
+## Dev Servers
+- Frontend: http://localhost:3000
+- Backend: Running with JWT_SECRET=dev-secret-key-12345 on port 8000

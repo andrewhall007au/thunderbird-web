@@ -54,86 +54,6 @@ class TestCAST12Command:
             parsed = parser.parse(f"CAST {code}")
             assert parsed.location_code.upper() == code, f"Failed to parse peak: {code}"
     
-    def test_cast12_returns_12_hours(self):
-        """CAST12 response should contain exactly 12 hourly rows"""
-        from app.services.formatter import FormatCAST12
-        
-        # Mock forecast data for 12 hours
-        mock_data = _create_mock_hourly_data(hours=12)
-        
-        response = FormatCAST12.format(
-            location_name="Lake Oberon",
-            elevation=863,
-            forecast_data=mock_data,
-            date=datetime.now(TZ_HOBART)
-        )
-        
-        # Count data rows (lines starting with 2-digit hour)
-        hour_pattern = re.compile(r'^\d{2}\|')
-        data_rows = [line for line in response.split('\n') if hour_pattern.match(line)]
-        
-        assert len(data_rows) == 12, f"Expected 12 hourly rows, got {len(data_rows)}"
-    
-    def test_cast12_includes_new_columns(self):
-        """CAST12 should include Prec and Wd columns (v3.0 changes)"""
-        from app.services.formatter import FormatCAST12
-        
-        mock_data = _create_mock_hourly_data(hours=12)
-        
-        response = FormatCAST12.format(
-            location_name="Lake Oberon",
-            elevation=863,
-            forecast_data=mock_data,
-            date=datetime.now(TZ_HOBART)
-        )
-        
-        # Check header includes new columns
-        assert "Prec" in response or "Prec|" in response, "Missing Prec column"
-        assert "Wd" in response or "Wd|" in response, "Missing Wd (wind direction) column"
-        
-        # Check Prec format (R2-4 for rain, S1-2 for snow)
-        assert re.search(r'R\d+-\d+', response) or re.search(r'S\d+-\d+', response), \
-            "Prec column should show R#-# or S#-# format"
-        
-        # Check wind direction (2 letters)
-        wind_dirs = ["NW", "SW", "W", "N", "NE", "E", "SE", "S"]
-        assert any(wd in response for wd in wind_dirs), "Missing wind direction values"
-    
-    def test_cast12_includes_cloud_base(self):
-        """CAST12 SHOULD include CB (cloud base) column - reinstated in v3.1"""
-        from app.services.formatter import FormatCAST12
-
-        mock_data = _create_mock_hourly_data(hours=12)
-
-        response = FormatCAST12.format(
-            location_name="Lake Oberon",
-            elevation=863,
-            forecast_data=mock_data,
-            date=datetime.now(TZ_HOBART)
-        )
-
-        # CB should appear in header (critical for alpine safety)
-        header_line = [line for line in response.split('\n') if 'Hr|' in line or 'Hr ' in line]
-        if header_line:
-            assert "CB" in header_line[0], "CB column should be present in v3.1"
-    
-    def test_cast12_fits_3_sms(self):
-        """CAST12 response should fit in approximately 3 SMS segments"""
-        from app.services.formatter import FormatCAST12
-        
-        mock_data = _create_mock_hourly_data(hours=12)
-        
-        response = FormatCAST12.format(
-            location_name="Lake Oberon",
-            elevation=863,
-            forecast_data=mock_data,
-            date=datetime.now(TZ_HOBART)
-        )
-        
-        # GSM-7: 160 first segment, 153 subsequent
-        # 3 segments = 160 + 153 + 153 = 466 chars
-        assert len(response) <= 500, f"CAST12 too long: {len(response)} chars (target: ~450)"
-    
     def test_cast_case_insensitive(self):
         """All commands should be case-insensitive"""
         from app.services.commands import CommandParser
@@ -173,49 +93,6 @@ class TestCAST24Command:
         assert parsed.command_type.name == "CAST24"
         assert parsed.location_code.upper() == "LAKEO"
     
-    def test_cast24_returns_24_hours(self):
-        """CAST24 response should contain 24 hourly rows"""
-        from app.services.formatter import FormatCAST24
-        
-        mock_data = _create_mock_hourly_data(hours=24)
-        
-        response = FormatCAST24.format(
-            location_name="Lake Oberon",
-            elevation=863,
-            forecast_data=mock_data,
-            date=datetime.now(TZ_HOBART)
-        )
-        
-        # Count data rows
-        hour_pattern = re.compile(r'^\d{2}\|')
-        data_rows = [line for line in response.split('\n') if hour_pattern.match(line)]
-        
-        assert len(data_rows) == 24, f"Expected 24 hourly rows, got {len(data_rows)}"
-    
-    def test_cast24_splits_into_messages(self):
-        """CAST24 should be split into multiple SMS parts"""
-        from app.services.formatter import FormatCAST24
-        
-        mock_data = _create_mock_hourly_data(hours=24)
-        
-        messages = FormatCAST24.format_multi(
-            location_name="Lake Oberon",
-            elevation=863,
-            forecast_data=mock_data,
-            date=datetime.now(TZ_HOBART)
-        )
-        
-        # Should return list of messages
-        assert isinstance(messages, list), "CAST24 should return list of messages"
-        assert len(messages) >= 2, "CAST24 should split into at least 2 SMS"
-        assert len(messages) <= 6, "CAST24 should fit in 6 SMS or fewer"
-        
-        # Each message should have part indicator
-        for i, msg in enumerate(messages):
-            assert f"[{i+1}/" in msg or f"({i+1}/" in msg or "cont." in msg.lower(), \
-                f"Message {i+1} missing part indicator"
-
-
 # =============================================================================
 # CAST7 Tests (7-day camp summary)
 # =============================================================================

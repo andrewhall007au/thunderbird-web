@@ -84,8 +84,8 @@ function IPhoneVariant({ content, className }: { content: string; className: str
             <span className="text-black text-[15px] font-semibold">Thunderbird</span>
           </div>
 
-          {/* Messages area */}
-          <div className="flex-1 p-[12px] overflow-hidden">
+          {/* Messages area - scrollable */}
+          <div className="flex-1 p-[12px] overflow-y-auto">
             {/* SMS bubble - gray background, left-aligned */}
             <div className="bg-[#e5e5ea] text-black p-[8px_12px] rounded-[16px] rounded-bl-[4px] max-w-[90%] text-[13px] leading-[1.4] whitespace-pre-wrap">
               {content}

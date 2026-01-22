@@ -205,17 +205,17 @@ export function PaywallModal({
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">Thunderbird Starter Pack</span>
-              <span className="font-medium">$29.99</span>
+              <span className="font-medium">USD $29.99</span>
             </div>
             <div className="text-sm text-gray-500 mb-3">
-              Includes $10 SMS credits (~140 forecasts)
+              Includes USD $10 SMS credits (~140 forecasts)
             </div>
             <div className="text-sm text-gray-600 mb-3 pb-3 border-b border-gray-200">
               Route: <span className="font-medium">{routeName}</span> ({waypointCount} waypoint{waypointCount !== 1 ? 's' : ''})
             </div>
             <div className="border-t border-gray-200 pt-3 flex justify-between">
               <span className="font-semibold">Total</span>
-              <span className="font-bold text-lg">$29.99 <span className="text-sm font-normal text-gray-500">USD</span></span>
+              <span className="font-bold text-lg">USD $29.99</span>
             </div>
           </div>
 
@@ -229,7 +229,7 @@ export function PaywallModal({
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-orange-500" />
-                $10 SMS credit balance
+                USD $10 SMS credit balance
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-orange-500" />
@@ -397,7 +397,7 @@ export function PaywallModal({
             ) : (
               <>
                 <Lock className="w-5 h-5" />
-                Pay $29.99
+                Pay USD $29.99
               </>
             )}
           </button>

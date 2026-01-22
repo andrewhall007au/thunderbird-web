@@ -264,6 +264,12 @@ async def process_command(phone: str, parsed) -> str:
         if not parsed.is_valid:
             return parsed.error_message or "CAST requires a location.\n\nExample: CAST12 LAKEO"
 
+        # Check for GPS coordinates
+        if parsed.args.get("is_gps"):
+            lat = parsed.args.get("gps_lat")
+            lon = parsed.args.get("gps_lon")
+            return await generate_cast_forecast_gps(lat, lon, hours=12, phone=phone)
+
         camp_code = parsed.args.get("location_code") or parsed.args.get("camp_code", "")
         return await generate_cast_forecast(camp_code, hours=12, phone=phone)
 
@@ -271,6 +277,12 @@ async def process_command(phone: str, parsed) -> str:
         # 24hr hourly forecast
         if not parsed.is_valid:
             return parsed.error_message or "CAST24 requires a location.\n\nExample: CAST24 LAKEO"
+
+        # Check for GPS coordinates
+        if parsed.args.get("is_gps"):
+            lat = parsed.args.get("gps_lat")
+            lon = parsed.args.get("gps_lon")
+            return await generate_cast_forecast_gps(lat, lon, hours=24, phone=phone)
 
         camp_code = parsed.args.get("location_code") or parsed.args.get("camp_code", "")
         return await generate_cast_forecast(camp_code, hours=24, phone=phone)
@@ -447,6 +459,49 @@ async def process_command(phone: str, parsed) -> str:
             logger.error(f"BUY command failed for {PhoneUtils.mask(phone)}: {e}")
             return "Top-up failed. Please try again or visit thunderbird.bot."
 
+    elif parsed.command_type == CommandType.TOPUP:
+        # Process YES$10/YES$25/YES$50 top-up confirmation via stored card
+        from app.models.account import account_store
+        from app.services.payments import get_payment_service
+        from app.services.balance import get_balance_service
+
+        if not parsed.is_valid:
+            return parsed.error_message or "Valid amounts: YES$10, YES$25, or YES$50"
+
+        amount = parsed.args.get("amount")
+        amount_cents = parsed.args.get("amount_cents")
+
+        # Look up account by phone
+        account = account_store.get_by_phone(phone)
+        if not account:
+            return "No account linked to this phone.\n\nVisit thunderbird.bot to set up your account."
+
+        if not account.stripe_customer_id:
+            return "No card on file.\n\nVisit thunderbird.bot to add a payment method first."
+
+        # Attempt to charge stored card
+        try:
+            payment_service = get_payment_service()
+            result = await payment_service.charge_stored_card(
+                account_id=account.id,
+                amount_cents=amount_cents,
+                description=f"SMS top-up ${amount} via YES command"
+            )
+
+            if result.success:
+                balance_service = get_balance_service()
+                new_balance = balance_service.get_balance(account.id)
+                balance_dollars = new_balance / 100 if new_balance else 0
+                return f"${amount} top-up successful!\n\nNew balance: ${balance_dollars:.2f}\n\nText CAST [location] for forecast."
+            elif result.error and "authentication" in result.error.lower():
+                return "Card requires verification.\n\nVisit thunderbird.bot to complete."
+            else:
+                error = result.error or "Payment failed"
+                return f"Top-up failed: {error}\n\nTry again or visit thunderbird.bot"
+        except Exception as e:
+            logger.error(f"TOPUP command failed for {PhoneUtils.mask(phone)}: {e}")
+            return "Top-up failed. Please try again."
+
     elif parsed.command_type == CommandType.UNITS:
         # Handle UNITS command - change unit preference
         # v3.5: Check both Account and User models
@@ -586,6 +641,28 @@ async def notify_safecheck_contacts(user, camp, notification_type: str = "checki
             logger.error(f"SafeCheck notification failed to {PhoneUtils.mask(contact.phone)}: {e}")
 
 
+def get_low_balance_warning(account_id: int) -> str:
+    """
+    Check if account has low balance and return warning message if needed.
+
+    Returns empty string if balance is OK, warning message otherwise.
+    """
+    from app.services.balance import get_balance_service
+
+    balance_service = get_balance_service()
+    balance_cents = balance_service.get_balance(account_id)
+
+    # Warn if balance <= $2.00
+    if balance_cents <= 200:
+        balance_dollars = balance_cents / 100
+        return (
+            f"\n\n---\n"
+            f"Low balance: ${balance_dollars:.2f}\n"
+            f"Reply: YES$10 | YES$25 | YES$50"
+        )
+    return ""
+
+
 async def generate_cast_forecast(camp_code: str, hours: int = 12, phone: str = None) -> str:
     """Generate CAST forecast for a specific camp/peak."""
     from app.services.routes import RouteLoader, get_route, get_other_peaks_in_cell
@@ -668,11 +745,70 @@ async def generate_cast_forecast(camp_code: str, hours: int = 12, phone: str = N
                     other_names += f" +{len(other_peaks) - 3} more"
                 message += f"\n\nAlso covers: {other_names}"
 
+        # Check for low balance and append warning if needed
+        if phone:
+            account = account_store.get_by_phone(phone)
+            if account and account.stripe_customer_id:
+                message += get_low_balance_warning(account.id)
+
         return message
 
     except Exception as e:
         logger.error(f"CAST forecast error for {camp_code}: {e}")
         return f"Unable to get forecast for {camp_code}. Please try again."
+
+
+async def generate_cast_forecast_gps(lat: float, lon: float, hours: int = 12, phone: str = None) -> str:
+    """Generate CAST forecast for GPS coordinates."""
+    from app.services.bom import get_bom_service
+    from app.services.formatter import FormatCastLabeled
+    from app.models.account import account_store
+    from app.models.database import user_store
+
+    # Get user's unit preference
+    unit_system = "metric"
+    if phone:
+        user = user_store.get_user(phone)
+        if user and user.unit_system:
+            unit_system = user.unit_system
+        else:
+            account = account_store.get_by_phone(phone)
+            if account and account.unit_system:
+                unit_system = account.unit_system
+
+    try:
+        bom_service = get_bom_service()
+
+        # Get elevation for the GPS point from grid data
+        elevation = await bom_service.get_grid_elevation(lat, lon)
+
+        # Get forecast
+        forecast = await bom_service.get_hourly_forecast(lat, lon, hours=hours)
+
+        # Format GPS coordinates as the waypoint name
+        gps_display = f"{lat:.4f},{lon:.4f}"
+
+        # Format as CAST response
+        message = FormatCastLabeled.format(
+            forecast=forecast,
+            waypoint_code="GPS",
+            waypoint_name=gps_display,
+            waypoint_elevation=elevation or 0,
+            hours=hours,
+            unit_system=unit_system
+        )
+
+        # Check for low balance and append warning if needed
+        if phone:
+            account = account_store.get_by_phone(phone)
+            if account and account.stripe_customer_id:
+                message += get_low_balance_warning(account.id)
+
+        return message
+
+    except Exception as e:
+        logger.error(f"CAST GPS forecast error for {lat},{lon}: {e}")
+        return f"Unable to get forecast for GPS {lat:.4f},{lon:.4f}. Please try again."
 
 
 async def generate_cast7_forecast(location_code: str, phone: str = None) -> str:

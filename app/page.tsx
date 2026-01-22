@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link'
 import dynamic from 'next/dynamic';
@@ -9,7 +9,7 @@ import {
   Zap, Satellite, CloudRain, Shield, Bell, Clock,
   MapPin, Thermometer, Wind, Droplets, Mountain, Smartphone,
   Cloud, Snowflake, AlertTriangle, Navigation, Save, MessageSquare,
-  Tent, BatteryCharging, ChevronRight
+  Tent, BatteryCharging, ChevronRight, ExternalLink, Mail
 } from 'lucide-react'
 
 const MapEditor = dynamic(() => import('./components/map/MapEditor'), {
@@ -24,46 +24,15 @@ const MapEditor = dynamic(() => import('./components/map/MapEditor'), {
   )
 });
 
-function Hero() {
-  return (
-    <section className="relative pt-24 pb-32 lg:pt-32 lg:pb-40 overflow-hidden">
-      {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-50 via-white to-white" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)]" />
-
-      <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
-        <div className="text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 border border-zinc-200 text-sm text-zinc-600 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Satellite SMS Weather Forecasts
-          </div>
-
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-zinc-900 mb-6">
-            Weather forecasts that
-            <span className="block text-zinc-500">actually reach you</span>
-          </h1>
-
-          <p className="text-lg text-zinc-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            On-demand weather for any trail, delivered via satellite SMS.
-            No cell coverage required. No subscription. Just accurate forecasts
-            when and where you need them.
-          </p>
-
-          {/* Device Previews */}
-          <div className="flex flex-col md:flex-row justify-center items-center gap-8 mb-12">
-            {/* iPhone */}
-            <div className="flex flex-col items-center">
-              <div className="w-[260px] h-[520px] bg-zinc-900 rounded-[40px] p-3 shadow-2xl shadow-zinc-900/20 relative">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-zinc-900 rounded-b-2xl" />
-                <div className="w-full h-full bg-zinc-50 rounded-[32px] overflow-hidden flex flex-col">
-                  <div className="bg-zinc-100 pt-10 pb-2 px-4 text-center border-b border-zinc-200">
-                    <span className="text-zinc-900 text-sm font-medium">Thunderbird</span>
-                  </div>
-                  <div className="flex-1 p-3 overflow-hidden">
-                    <div className="bg-zinc-200 text-zinc-800 p-3 rounded-2xl rounded-bl-sm max-w-[95%] text-xs leading-relaxed font-mono animate-scroll-up whitespace-pre-wrap">
-{`CAST LAKEO 863m
+// Demo sequence showing the full user experience
+const demoSequence = [
+  {
+    command: 'CAST12 LAKEO',
+    label: '12 Hour Forecast',
+    phone: `CAST12 LAKEO 863m
+-41.8921, 146.0820
 Light 06:00-20:51
+12 hour detailed forecast
 
 06h 5-7o Rn15% 0-1mm W12-20 Cld40% CB12 FL28
 
@@ -80,21 +49,10 @@ Light 06:00-20:51
 12h 12-16o Rn25% 1-4mm W18-30 Cld60% CB10 FL22
 
 Rn=Rain W=Wind Cld=Cloud
-CB=CloudBase FL=Freeze(x100m)`}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <span className="text-zinc-400 text-xs mt-4">iPhone 14+</span>
-            </div>
-
-            {/* Apple Watch */}
-            <div className="flex flex-col items-center">
-              <div className="w-[160px] h-[200px] bg-zinc-800 rounded-[36px] p-2 shadow-xl shadow-zinc-900/20 border-2 border-zinc-700 relative">
-                <div className="absolute right-[-4px] top-14 w-1.5 h-6 bg-zinc-600 rounded-r-sm" />
-                <div className="w-full h-full bg-black rounded-[30px] overflow-hidden flex flex-col p-2">
-                  <div className="text-zinc-100 text-[8px] leading-tight font-mono animate-scroll-up-watch whitespace-pre-wrap">
-{`CAST LAKEO 863m
+CB=CloudBase FL=Freeze(x100m)`,
+    watch: `CAST12 LAKEO 863m
+-41.8921, 146.0820
+12hr detailed forecast
 
 06h 5-7o Rn15% 0-1mm
 W12-20 CB12 FL28
@@ -106,16 +64,261 @@ W13-21 CB12 FL27
 W14-22 CB12 FL26
 
 09h 9-12o Rn20% 0-2mm
-W15-24 CB11 FL25`}
-                  </div>
-                </div>
+W15-24 CB11 FL25`,
+  },
+  {
+    command: 'CAST7 LAKEO',
+    label: '7 Day Forecast',
+    phone: `CAST7 LAKEO 863m
+-41.8921, 146.0820
+7-Day Forecast
+
+Mon 4-12o Rn15% W10-25 Cld35%
+
+Tue 6-14o Rn25% 0-2mm W12-28 Cld55%
+
+Wed 3-9o Rn65% 4-12mm W20-45 Cld85%
+
+Thu 2-8o Rn45% 2-6mm W18-38 Cld70%
+
+Fri 5-13o Rn20% W8-22 Cld40%
+
+Sat 7-16o Rn10% W6-18 Cld25%
+
+Sun 8-17o Rn5% W5-15 Cld20%
+
+Rn=Rain W=Wind Cld=Cloud`,
+    watch: `CAST7 LAKEO 863m
+-41.8921, 146.0820
+
+Mon 4-12o Rn15% W10-25
+
+Tue 6-14o Rn25% W12-28
+
+Wed 3-9o Rn65% W20-45
+
+Thu 2-8o Rn45% W18-38
+
+Fri 5-13o Rn20% W8-22
+
+Sat 7-16o Rn10% W6-18
+
+Sun 8-17o Rn5% W5-15`,
+  },
+  {
+    command: 'CAST12 -41.89, 146.08',
+    label: 'GPS Forecast',
+    phone: `CAST12 -41.89, 146.08
+Elevation: 863m
+12 hour detailed forecast
+
+06h 5-7o Rn15% 0-1mm W12-20 Cld40% CB12 FL28
+
+07h 6-8o Rn15% 0-1mm W13-21 Cld42% CB12 FL27
+
+08h 7-10o Rn18% 0-2mm W14-22 Cld45% CB12 FL26
+
+09h 9-12o Rn20% 0-2mm W15-24 Cld48% CB11 FL25
+
+10h 10-14o Rn22% 0-3mm W16-26 Cld52% CB11 FL24
+
+11h 11-15o Rn24% 0-3mm W17-28 Cld56% CB10 FL23
+
+12h 12-16o Rn25% 1-4mm W18-30 Cld60% CB10 FL22
+
+Rn=Rain W=Wind Cld=Cloud
+CB=CloudBase FL=Freeze(x100m)`,
+    watch: `CAST12 -41.89, 146.08
+Elevation: 863m
+
+06h 5-7o Rn15% 0-1mm
+W12-20 CB12 FL28
+
+07h 6-8o Rn15% 0-1mm
+W13-21 CB12 FL27
+
+08h 7-10o Rn18% 0-2mm
+W14-22 CB12 FL26
+
+09h 9-12o Rn20% 0-2mm
+W15-24 CB11 FL25`,
+  },
+];
+
+function DevicePreviews() {
+  const [sequenceIndex, setSequenceIndex] = useState(0);
+  const [phase, setPhase] = useState<'typing' | 'sending' | 'response'>('typing');
+  const [typedChars, setTypedChars] = useState(0);
+
+  const current = demoSequence[sequenceIndex];
+  const command = current.command;
+
+  // Use refs to avoid stale closure issues
+  const phaseRef = useRef(phase);
+  const typedCharsRef = useRef(typedChars);
+  const sequenceIndexRef = useRef(sequenceIndex);
+
+  phaseRef.current = phase;
+  typedCharsRef.current = typedChars;
+  sequenceIndexRef.current = sequenceIndex;
+
+  useEffect(() => {
+    const commandLength = demoSequence[sequenceIndexRef.current].command.length;
+
+    const tick = () => {
+      const currentPhase = phaseRef.current;
+      const currentTyped = typedCharsRef.current;
+      const currentCommand = demoSequence[sequenceIndexRef.current].command;
+
+      if (currentPhase === 'typing') {
+        if (currentTyped < currentCommand.length) {
+          setTypedChars(prev => prev + 1);
+        } else {
+          setPhase('sending');
+        }
+      } else if (currentPhase === 'sending') {
+        setPhase('response');
+      } else if (currentPhase === 'response') {
+        // Move to next in sequence
+        const nextIndex = (sequenceIndexRef.current + 1) % demoSequence.length;
+        setSequenceIndex(nextIndex);
+        setPhase('typing');
+        setTypedChars(0);
+      }
+    };
+
+    // Different intervals for different phases
+    const getInterval = () => {
+      if (phaseRef.current === 'typing') return 80; // typing speed
+      if (phaseRef.current === 'sending') return 800; // pause before response
+      return 4000; // show response for 4 seconds
+    };
+
+    const interval = setInterval(tick, getInterval());
+    return () => clearInterval(interval);
+  }, [phase]); // Re-create interval when phase changes to get new timing
+
+  const displayedCommand = command.slice(0, typedChars);
+
+  return (
+    <div className="mb-8 md:mb-12">
+      <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-8">
+        {/* iPhone */}
+        <div className="flex flex-col items-center">
+          <div className="text-center mb-3">
+            <span className="text-xs font-medium text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full transition-all">
+              {phase === 'response' ? current.label : 'Live Demo'}
+            </span>
+          </div>
+          <div className="w-[260px] h-[520px] bg-zinc-900 rounded-[40px] p-3 shadow-2xl shadow-zinc-900/20 relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-zinc-900 rounded-b-2xl" />
+            <div className="w-full h-full bg-zinc-50 rounded-[32px] overflow-hidden flex flex-col">
+              <div className="bg-zinc-100 pt-10 pb-2 px-4 text-center border-b border-zinc-200">
+                <span className="text-zinc-900 text-sm font-medium">Thunderbird</span>
               </div>
-              <span className="text-zinc-400 text-xs mt-4">Apple Watch Ultra</span>
+              <div className="flex-1 p-3 overflow-hidden flex flex-col justify-start gap-2">
+                {/* User's sent message */}
+                {(phase === 'typing' || phase === 'sending') && (
+                  <div className="flex justify-end">
+                    <div className="bg-orange-500 text-white p-3 rounded-2xl rounded-br-sm max-w-[85%] text-xs font-mono min-w-[20px] min-h-[20px]">
+                      {displayedCommand || '\u00A0'}
+                      {phase === 'typing' && <span className="animate-pulse">|</span>}
+                    </div>
+                  </div>
+                )}
+                {phase === 'sending' && (
+                  <div className="flex justify-end">
+                    <span className="text-[10px] text-zinc-400 mr-2">Sending via satellite...</span>
+                  </div>
+                )}
+                {/* Response */}
+                {phase === 'response' && (
+                  <>
+                    <div className="flex justify-end mb-1">
+                      <div className="bg-orange-500 text-white p-2 rounded-2xl rounded-br-sm text-xs font-mono">
+                        {command}
+                      </div>
+                    </div>
+                    <div className="bg-zinc-200 text-zinc-800 rounded-2xl rounded-bl-sm max-w-[95%] overflow-hidden max-h-[280px]">
+                      <div className="p-3 text-xs leading-relaxed font-mono whitespace-pre-wrap animate-scroll-up">
+                        {current.phone}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
+          <span className="text-zinc-400 text-xs mt-4">iPhone 14+</span>
+        </div>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+        {/* Apple Watch */}
+        <div className="flex flex-col items-center">
+          <div className="text-center mb-3">
+            <span className="text-xs font-medium text-zinc-500 bg-zinc-100 px-3 py-1 rounded-full transition-all">
+              {phase === 'response' ? current.label : 'Live Demo'}
+            </span>
+          </div>
+          <div className="w-[260px] h-[320px] bg-zinc-800 rounded-[44px] p-2 shadow-xl shadow-zinc-900/20 border-2 border-zinc-700 relative">
+            <div className="absolute right-[-6px] top-20 w-2 h-10 bg-zinc-600 rounded-r-sm" />
+            <div className="w-full h-full bg-black rounded-[38px] overflow-hidden flex flex-col p-3 justify-end">
+              {/* User's sent message */}
+              {(phase === 'typing' || phase === 'sending') && (
+                <div className="mb-2">
+                  <div className="bg-orange-500 text-white p-2 rounded-xl text-[10px] font-mono inline-block min-w-[16px] min-h-[16px]">
+                    {displayedCommand || '\u00A0'}
+                    {phase === 'typing' && <span className="animate-pulse">|</span>}
+                  </div>
+                  {phase === 'sending' && (
+                    <div className="text-[9px] text-zinc-500 mt-1">Sending...</div>
+                  )}
+                </div>
+              )}
+              {/* Response */}
+              {phase === 'response' && (
+                <div className="overflow-hidden max-h-[240px]">
+                  <div className="text-zinc-100 text-[11px] leading-relaxed font-mono whitespace-pre-wrap animate-scroll-up-watch">
+                    {current.watch}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <span className="text-zinc-400 text-xs mt-4">Apple Watch Ultra 3</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="relative pt-20 pb-6 lg:pt-32 lg:pb-40 overflow-hidden">
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-50 via-white to-white" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)]" />
+
+      <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-center max-w-4xl mx-auto mb-4 md:mb-6 leading-tight">
+            <span className="text-zinc-900">Introducing Thunderbird.</span>
+            <br />
+            <span className="text-zinc-500">Hyper-detailed text based weather forecasts via Satellite SMS.</span>
+          </h1>
+
+          <ul className="text-lg text-zinc-500 max-w-2xl mx-auto mb-4 leading-relaxed space-y-2">
+            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>BYO phone (or Satellite SMS enabled watch)*</li>
+            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Detailed forecast enables decisions with confidence</li>
+            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Library of trails or customise with GPX files</li>
+            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>No subscriptions, pay as you go</li>
+            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Leverages recent Satellite / Terrestrial network partnerships</li>
+          </ul>
+          <p className="text-xs text-zinc-400 max-w-xl mx-auto mb-8 md:mb-10">
+            *Works on any satellite SMS enabled device: iPhone 14+, Apple Watch Ultra 3, Samsung Galaxy S25+ (with carrier support), and Garmin inReach devices
+          </p>
+
+          {/* CTA after bullet points */}
+          <div className="flex items-center justify-center mb-10">
             <Link
               href="/checkout?path=buy"
               className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
@@ -123,20 +326,26 @@ W15-24 CB11 FL25`}
               Buy Now
               <ChevronRight className="w-4 h-4" />
             </Link>
-            <Link
-              href="/create?path=create"
-              className="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-900 font-medium px-6 py-3.5 transition-colors"
-            >
-              Create your route first
-            </Link>
           </div>
 
-          <p className="text-xs text-zinc-400 max-w-lg mx-auto">
-            Works with iPhone 14+, Apple Watch Ultra, and satellite-enabled Android devices.
-            <Link href="/compatibility" className="text-zinc-500 hover:text-zinc-700 ml-1 underline underline-offset-2">
-              Check compatibility
+          {/* SMS Weather Forecast Example Title */}
+          <div className="text-center mb-6">
+            <h3 className="text-sm font-semibold text-zinc-600 uppercase tracking-wide">SMS Weather Forecast Example</h3>
+          </div>
+
+          {/* Device Previews - Animated */}
+          <DevicePreviews />
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-3">
+            <Link
+              href="/checkout?path=buy"
+              className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+            >
+              Buy Now
+              <ChevronRight className="w-4 h-4" />
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </section>
@@ -144,7 +353,7 @@ W15-24 CB11 FL25`}
 }
 
 function HowItWorks() {
-  const steps = [
+  const optionA = [
     {
       icon: Navigation,
       step: '01',
@@ -166,30 +375,51 @@ function HowItWorks() {
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section id="how-it-works" className="pt-12 pb-24 md:py-24 bg-white scroll-mt-20">
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
             How it works
           </h2>
           <p className="text-zinc-500 max-w-xl mx-auto">
-            Three steps to weather intelligence on any trail, anywhere in the world.
+            Two ways to get forecasts: pre-configure your route or text GPS coordinates on the fly.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {steps.map((item, i) => (
-            <div key={i} className="relative">
-              <div className="flex flex-col items-start">
-                <div className="w-12 h-12 rounded-xl bg-zinc-100 flex items-center justify-center mb-5">
-                  <item.icon className="w-5 h-5 text-zinc-600" />
+        {/* Pre-configure route */}
+        <div className="mb-12">
+          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-6 text-center">Pre-configure before departure</p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {optionA.map((item, i) => (
+              <div key={i} className="relative">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-xl bg-zinc-100 flex items-center justify-center mb-5">
+                    <item.icon className="w-5 h-5 text-zinc-600" />
+                  </div>
+                  <span className="text-xs font-medium text-zinc-400 mb-2">{item.step}</span>
+                  <h3 className="text-lg font-medium text-zinc-900 mb-2">{item.title}</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">{item.description}</p>
                 </div>
-                <span className="text-xs font-medium text-zinc-400 mb-2">{item.step}</span>
-                <h3 className="text-lg font-medium text-zinc-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{item.description}</p>
               </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-zinc-200 pt-12">
+          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-6 text-center">Or text GPS coordinates on trail</p>
+          <div className="max-w-xl mx-auto text-center">
+            <p className="text-zinc-600 mb-4">
+              No pre-planning needed. Text your GPS coordinates from anywhere and get an instant forecast.
+            </p>
+            <div className="bg-zinc-50 rounded-xl border border-zinc-200 p-4 font-mono text-sm mb-6">
+              <span className="text-zinc-500">Send:</span> <span className="text-zinc-900">CAST -41.89, 146.08</span>
             </div>
-          ))}
+            <ul className="text-sm text-zinc-500 space-y-2">
+              <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Unplanned detours or route changes</li>
+              <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Checking conditions at your current position</li>
+              <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Exploring new areas without pre-setup</li>
+            </ul>
+          </div>
         </div>
 
         <div className="text-center mt-12">
@@ -211,7 +441,7 @@ function WhySMS() {
     {
       icon: Satellite,
       title: "Works everywhere",
-      description: "Satellite SMS reaches you anywhere with sky visibility — no cell towers needed."
+      description: "Satellite SMS reaches you anywhere with sky visibility — no cell towers needed. Better than data: ~1KB vs ~3MB to get your forecast."
     },
     {
       icon: BatteryCharging,
@@ -221,12 +451,12 @@ function WhySMS() {
     {
       icon: Shield,
       title: "Reliable delivery",
-      description: "SMS is prioritized over data. Your forecast gets through even in congested areas."
+      description: "SMS over satellite works on all providers, data only a few. SMS guaranteed to get through."
     }
   ];
 
   return (
-    <section className="py-24 bg-zinc-50">
+    <section id="why-sms" className="py-24 bg-zinc-50 scroll-mt-20">
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
@@ -239,8 +469,8 @@ function WhySMS() {
 
         <div className="grid md:grid-cols-3 gap-6">
           {benefits.map((benefit, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm">
-              <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center mb-4">
+            <div key={i} className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm text-center">
+              <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center mb-4 mx-auto">
                 <benefit.icon className="w-5 h-5 text-zinc-600" />
               </div>
               <h3 className="font-medium text-zinc-900 mb-2">{benefit.title}</h3>
@@ -250,6 +480,120 @@ function WhySMS() {
         </div>
 
         <div className="text-center mt-12">
+          <Link
+            href="/checkout?path=buy"
+            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+          >
+            Buy Now
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function CompatibleDevices() {
+  return (
+    <section id="compatible-devices" className="py-24 bg-white scroll-mt-20">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            Compatible devices
+          </h2>
+          <p className="text-zinc-500 max-w-xl mx-auto">
+            Works with your existing satellite-capable phone or dedicated device.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8 max-w-4xl mx-auto">
+          {/* Apple Satellite */}
+          <div className="flex flex-col items-center">
+            <div className="w-full h-[200px] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl p-4 shadow-lg border border-zinc-300 flex flex-col justify-start pt-6">
+              <div className="text-center mb-3">
+                <div className="h-10 flex items-end justify-center mb-2">
+                  <svg className="w-8 h-8 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  </svg>
+                </div>
+                <span className="text-xs font-semibold text-zinc-700">Apple</span>
+              </div>
+              <div className="space-y-2 text-[11px] text-zinc-600 text-center">
+                <div>iPhone 14, 15, 16</div>
+                <div>Apple Watch Ultra 3</div>
+                <div className="text-zinc-500 text-[10px] mt-2">Built-in satellite SMS<br />No carrier required</div>
+              </div>
+            </div>
+            <span className="text-zinc-400 text-xs mt-4">Apple Satellite SMS</span>
+          </div>
+
+          {/* Android Satellite */}
+          <div className="flex flex-col items-center">
+            <div className="w-full h-[200px] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl p-4 shadow-lg border border-zinc-300 flex flex-col justify-start pt-6">
+              <div className="text-center mb-3">
+                <div className="h-10 flex items-end justify-center mb-2">
+                  <svg className="w-8 h-8 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-1.4-.59-2.94-.92-4.47-.92s-3.07.33-4.47.92L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.18-.37.54-.22.83L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/>
+                  </svg>
+                </div>
+                <span className="text-xs font-semibold text-zinc-700">Android</span>
+              </div>
+              <div className="space-y-2 text-[11px] text-zinc-600 text-center">
+                <div>Samsung Galaxy S25+</div>
+                <div>Google Pixel 9, 10</div>
+                <div>Pixel Watch 4</div>
+                <div className="text-zinc-500 text-[10px] mt-2">Requires carrier support*</div>
+              </div>
+            </div>
+            <span className="text-zinc-400 text-xs mt-4">Android Satellite SMS</span>
+          </div>
+
+          {/* Carrier Partnerships */}
+          <div className="flex flex-col items-center">
+            <div className="w-full h-[200px] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl p-4 shadow-lg border border-zinc-300 flex flex-col justify-start pt-6">
+              <div className="text-center mb-3">
+                <div className="h-10 flex items-end justify-center mb-2">
+                  <Satellite className="w-8 h-8 text-zinc-600" />
+                </div>
+                <span className="text-xs font-semibold text-zinc-700">Starlink Direct</span>
+              </div>
+              <div className="space-y-1 text-[10px] text-zinc-600">
+                <div className="flex justify-between"><span>USA</span><span className="font-medium">T-Mobile</span></div>
+                <div className="flex justify-between"><span>Australia</span><span className="font-medium">Telstra, Optus</span></div>
+                <div className="flex justify-between"><span>Canada</span><span className="font-medium">Rogers</span></div>
+                <div className="flex justify-between"><span>NZ</span><span className="font-medium">One NZ</span></div>
+                <div className="flex justify-between"><span>Europe</span><span className="font-medium">Orange</span></div>
+              </div>
+            </div>
+            <span className="text-zinc-400 text-xs mt-4">Carrier Satellite SMS*</span>
+          </div>
+
+          {/* Garmin */}
+          <div className="flex flex-col items-center">
+            <div className="w-full h-[200px] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl p-4 shadow-lg border border-zinc-300 flex flex-col justify-start pt-6">
+              <div className="text-center mb-3">
+                <div className="h-10 flex items-end justify-center mb-2">
+                  <Navigation className="w-8 h-8 text-zinc-600" />
+                </div>
+                <span className="text-xs font-semibold text-zinc-700">Garmin inReach</span>
+              </div>
+              <div className="space-y-2 text-[11px] text-zinc-600 text-center">
+                <div>All Garmin satellite devices</div>
+                <div className="text-zinc-500 text-[10px] mt-2">May require subscription<br />to access SMS services</div>
+              </div>
+            </div>
+            <span className="text-zinc-400 text-xs mt-4">Iridium Satellite SMS</span>
+          </div>
+        </div>
+
+        <p className="text-center text-xs text-zinc-400 mb-8">
+          *Carrier satellite SMS requires compatible plan. Available on most modern smartphones with participating carriers.
+          <Link href="/compatibility" className="text-zinc-500 hover:text-zinc-700 ml-1 underline underline-offset-2">
+            Check compatibility
+          </Link>
+        </p>
+
+        <div className="text-center">
           <Link
             href="/checkout?path=buy"
             className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
@@ -313,15 +657,15 @@ const TYPE_COLORS = {
 
 function GlobalCoverage() {
   const markets = [
-    { country: 'Australia', resolution: '3×3' },
-    { country: 'USA', resolution: '2.5×2.5' },
-    { country: 'Canada', resolution: '2.5×2.5' },
-    { country: 'UK', resolution: 'Point', noKm: true },
-    { country: 'France', resolution: '1.5×1.5' },
-    { country: 'Switzerland', resolution: '1×1' },
-    { country: 'Italy', resolution: '7×7' },
-    { country: 'New Zealand', resolution: '4×4' },
-    { country: 'South Africa', resolution: '11×11' },
+    { country: 'Australia', resolution: '3.0km × 3.0km' },
+    { country: 'USA', resolution: '2.5km × 2.5km' },
+    { country: 'Canada', resolution: '2.5km × 2.5km' },
+    { country: 'UK', resolution: 'Point' },
+    { country: 'France', resolution: '1.5km × 1.5km' },
+    { country: 'Switzerland', resolution: '1.0km × 1.0km' },
+    { country: 'Italy', resolution: '7.0km × 7.0km' },
+    { country: 'New Zealand', resolution: '4.0km × 4.0km' },
+    { country: 'South Africa', resolution: '11.0km × 11.0km' },
   ];
 
   return (
@@ -344,7 +688,7 @@ function GlobalCoverage() {
               className="bg-zinc-50 rounded-lg p-3 text-center border border-zinc-100"
             >
               <div className="text-xs font-semibold text-zinc-900 truncate">{market.country}</div>
-              <div className="text-sm text-zinc-500 mt-1">{market.resolution}{!market.noKm && ' km'}</div>
+              <div className="text-[10px] text-zinc-500 mt-1 whitespace-nowrap">{market.resolution}</div>
             </div>
           ))}
         </div>
@@ -365,7 +709,7 @@ function GlobalCoverage() {
               <tr>
                 {markets.map((market) => (
                   <td key={market.country} className="py-3 px-2 text-center text-zinc-500 whitespace-nowrap">
-                    {market.resolution}{!market.noKm && ' km'}
+                    {market.resolution}
                   </td>
                 ))}
               </tr>
@@ -396,7 +740,7 @@ function RouteExample() {
   const selectedWaypoint = allOverlandWaypoints.find(w => w.id === selectedWaypointId);
 
   return (
-    <section className="py-24 bg-white">
+    <section id="see-it-in-action" className="py-24 bg-white scroll-mt-20">
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
@@ -434,14 +778,14 @@ function RouteExample() {
 
         {selectedWaypoint && (
           <div className="bg-white rounded-xl border-2 border-zinc-900 p-4 mb-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center gap-4">
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-medium"
                 style={{ backgroundColor: TYPE_COLORS[selectedWaypoint.type] }}
               >
                 {selectedWaypoint.smsCode.slice(0, 3)}
               </div>
-              <div>
+              <div className="text-center">
                 <h3 className="font-medium text-zinc-900">{selectedWaypoint.name}</h3>
                 <p className="text-sm text-zinc-500">
                   Text <code className="bg-zinc-100 px-2 py-0.5 rounded font-mono text-zinc-700">{selectedWaypoint.smsCode}</code> for weather
@@ -454,7 +798,7 @@ function RouteExample() {
 
         <div className="grid md:grid-cols-2 gap-4 mb-10">
           <div className="bg-white rounded-xl border border-zinc-200 p-5">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center justify-center gap-2 mb-4">
               <Tent className="w-4 h-4 text-emerald-600" />
               <h3 className="font-medium text-zinc-900">Camps</h3>
             </div>
@@ -463,7 +807,7 @@ function RouteExample() {
                 <button
                   key={camp.id}
                   onClick={() => setSelectedWaypointId(camp.id)}
-                  className={`flex items-center gap-2 p-2 rounded-lg text-left transition-colors ${
+                  className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors ${
                     selectedWaypointId === camp.id ? 'bg-emerald-50' : 'hover:bg-zinc-50'
                   }`}
                 >
@@ -475,7 +819,7 @@ function RouteExample() {
           </div>
 
           <div className="bg-white rounded-xl border border-zinc-200 p-5">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center justify-center gap-2 mb-4">
               <Mountain className="w-4 h-4 text-slate-600" />
               <h3 className="font-medium text-zinc-900">Peaks</h3>
             </div>
@@ -484,7 +828,7 @@ function RouteExample() {
                 <button
                   key={peak.id}
                   onClick={() => setSelectedWaypointId(peak.id)}
-                  className={`flex items-center gap-2 p-2 rounded-lg text-left transition-colors ${
+                  className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors ${
                     selectedWaypointId === peak.id ? 'bg-slate-50' : 'hover:bg-zinc-50'
                   }`}
                 >
@@ -514,12 +858,12 @@ function Features() {
   const features = [
     { icon: Clock, title: 'Hour-by-hour', description: '2-hour intervals. Know exactly when conditions change.', code: '06h' },
     { icon: Thermometer, title: 'Temperature', description: 'Min-max adjusted for elevation (6.5°C/1000m lapse).', code: '5-7°' },
-    { icon: Droplets, title: 'Precipitation', description: 'Rain/snow probability plus expected accumulation.', code: 'Rn25%' },
+    { icon: Droplets, title: 'Precipitation', description: 'Rain/snow probability plus expected accumulation.', code: 'Rn25% 0-3mm' },
     { icon: Wind, title: 'Wind', description: 'Sustained and gust speeds. Critical for ridgelines.', code: 'W18-30' },
     { icon: Cloud, title: 'Cloud cover', description: 'Percentage of sky covered. Plan visibility.', code: 'Cld60%' },
     { icon: Mountain, title: 'Cloud base', description: 'Height where clouds begin (×100m).', code: 'CB14' },
     { icon: Snowflake, title: 'Freezing level', description: 'Altitude where temp hits 0°C (×100m).', code: 'FL18' },
-    { icon: AlertTriangle, title: 'Danger flag', description: 'Warning for hazardous conditions.', code: '⚠' },
+    { icon: AlertTriangle, title: 'Danger flag', description: 'Lightning risk, high wind, trails in cloud, ice conditions.', code: '⚠' },
   ]
 
   return (
@@ -530,14 +874,14 @@ function Features() {
             What&apos;s in the forecast
           </h2>
           <p className="text-zinc-500 max-w-xl mx-auto">
-            Every metric you need, optimized for SMS delivery.
+            Every metric you need to plan your day out on trail, optimized for SMS delivery.
           </p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {features.map((feature, i) => (
-            <div key={i} className="bg-white rounded-xl border border-zinc-200 p-5">
-              <div className="flex items-center justify-between mb-3">
+            <div key={i} className="bg-white rounded-xl border border-zinc-200 p-5 text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
                 <feature.icon className="w-5 h-5 text-zinc-400" />
                 <code className="text-xs font-mono text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded">{feature.code}</code>
               </div>
@@ -563,14 +907,14 @@ function Features() {
 
 function Pricing() {
   return (
-    <section className="py-24 bg-white">
+    <section id="pricing" className="py-24 bg-white scroll-mt-20">
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
             Simple pricing
           </h2>
           <p className="text-zinc-500 max-w-xl mx-auto">
-            One-time purchase. No subscription. No device to buy.
+            One-off purchase with USD $10 SMS credits included. Top up anytime with pay-as-you-go credits.
           </p>
         </div>
 
@@ -584,19 +928,19 @@ function Pricing() {
             <div className="space-y-3 text-sm flex-1">
               <div className="flex justify-between py-2 border-b border-zinc-700">
                 <span className="text-zinc-400">Device</span>
-                <span className="font-medium">$0</span>
+                <span className="font-medium">USD $0</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-700">
                 <span className="text-zinc-400">Monthly</span>
-                <span className="font-medium">$0</span>
+                <span className="font-medium">USD $0</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-700">
                 <span className="text-zinc-400">One-time</span>
-                <span className="font-medium">$29.99</span>
+                <span className="font-medium">USD $29.99</span>
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-zinc-400">Per forecast</span>
-                <span className="font-medium">$0.07–$0.87</span>
+                <span className="font-medium">USD $0.07–$0.87</span>
               </div>
             </div>
             <Link
@@ -616,19 +960,19 @@ function Pricing() {
             <div className="space-y-3 text-sm flex-1">
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">Device</span>
-                <span className="font-medium text-zinc-900">$399</span>
+                <span className="font-medium text-zinc-900">USD $399</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">Monthly</span>
-                <span className="font-medium text-zinc-900">$15–$65</span>
+                <span className="font-medium text-zinc-900">USD $15–$65</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">One-time</span>
-                <span className="font-medium text-zinc-900">$414+</span>
+                <span className="font-medium text-zinc-900">USD $414+</span>
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-zinc-500">Per forecast</span>
-                <span className="font-medium text-zinc-900">$1–$2</span>
+                <span className="font-medium text-zinc-900">USD $1–$2</span>
               </div>
             </div>
             <div className="w-full bg-zinc-100 text-zinc-400 font-medium py-3 rounded-xl text-center text-sm mt-6">
@@ -645,19 +989,19 @@ function Pricing() {
             <div className="space-y-3 text-sm flex-1">
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">Device</span>
-                <span className="font-medium text-zinc-900">$199</span>
+                <span className="font-medium text-zinc-900">USD $199</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">Monthly</span>
-                <span className="font-medium text-zinc-900">$20–$50</span>
+                <span className="font-medium text-zinc-900">USD $20–$50</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">One-time</span>
-                <span className="font-medium text-zinc-900">$219+</span>
+                <span className="font-medium text-zinc-900">USD $219+</span>
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-zinc-500">Per forecast</span>
-                <span className="font-medium text-zinc-900">$0.14–$0.80</span>
+                <span className="font-medium text-zinc-900">USD $0.14–$0.80</span>
               </div>
             </div>
             <div className="w-full bg-zinc-100 text-zinc-400 font-medium py-3 rounded-xl text-center text-sm mt-6">
@@ -687,10 +1031,76 @@ function Pricing() {
   )
 }
 
+function About() {
+  return (
+    <section id="about" className="py-24 bg-zinc-50 scroll-mt-20">
+      <div className="max-w-3xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            About Thunderbird
+          </h2>
+        </div>
+
+        <div className="space-y-6 text-zinc-600 text-center">
+          <p className="text-lg leading-relaxed">
+            Thunderbird is an AI agent built by{' '}
+            <a
+              href="https://www.linkedin.com/in/andrewcwhall/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
+            >
+              Andrew Hall
+              <ExternalLink className="w-4 h-4" />
+            </a>
+            , an avid AI entrepreneur and hiker.
+          </p>
+
+          <p className="text-lg leading-relaxed">
+            Thunderbird is Andrew&apos;s response to being frustrated by not being able to get
+            detailed weather forecasts out on trail to make decisions on when to go and when
+            to stay. No more having to buy a specialist satellite device, no more guessing,
+            no more hoping for the best — just the detailed data you need to make on trail
+            decisions, delivered directly to your satellite enabled phone, watch or even
+            specialist satellite device (our forecasts are better).
+          </p>
+
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <Mail className="w-5 h-5 text-orange-600" />
+              <span className="font-semibold text-zinc-900">Get in Touch</span>
+            </div>
+            <p className="text-zinc-700">
+              Come say hi at{' '}
+              <a
+                href="mailto:hello@thunderbird.bot"
+                className="text-orange-600 hover:text-orange-700 font-medium"
+              >
+                hello@thunderbird.bot
+              </a>
+              {' '}— see you out on trail soon.
+            </p>
+          </div>
+
+          <div className="text-center mt-10">
+            <Link
+              href="/checkout?path=buy"
+              className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+            >
+              Buy Now
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 const faqData = [
   {
     question: "What phones work with Thunderbird?",
-    answer: "Thunderbird works with any phone that supports satellite SMS, including iPhone 14 and newer, Apple Watch Ultra, and select Android phones on T-Mobile or Verizon (Pixel 9+, Galaxy S24+/S25+)."
+    answer: "Thunderbird works with any phone that supports satellite SMS, including iPhone 14 and newer, Apple Watch Ultra 3, and select Android phones on T-Mobile or Verizon (Pixel 9+, Galaxy S24+/S25+)."
   },
   {
     question: "How does satellite SMS delivery work?",
@@ -706,7 +1116,7 @@ const faqData = [
   },
   {
     question: "How much does each forecast cost?",
-    answer: "Each forecast costs $0.07 to $0.87 depending on your country's SMS rates. The starter pack covers approximately 140 forecasts — enough for multiple week-long trips."
+    answer: "Costs vary by country. The $10 USD starter credits cover up to 30 days on trail (30 US / 7 AU). Top up anytime — credits never expire."
   },
   {
     question: "Can I create custom routes?",
@@ -718,7 +1128,7 @@ function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-24 bg-zinc-50">
+    <section id="faq" className="py-24 bg-zinc-50 scroll-mt-20">
       <div className="max-w-2xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
@@ -810,12 +1220,14 @@ function HomeContent() {
   return (
     <>
       <Hero />
-      <HowItWorks />
-      <WhySMS />
-      <GlobalCoverage />
-      <RouteExample />
       <Features />
+      <GlobalCoverage />
+      <WhySMS />
+      <CompatibleDevices />
+      <HowItWorks />
+      <RouteExample />
       <Pricing />
+      <About />
       <FAQ />
       <FinalCTA />
     </>

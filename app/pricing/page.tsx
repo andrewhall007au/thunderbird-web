@@ -27,10 +27,9 @@ export default function PricingPage() {
             </div>
             <h2 className="text-2xl font-bold mb-2">Get Started</h2>
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-5xl font-bold">$29.99</span>
-              <span className="text-gray-500">USD</span>
+              <span className="text-5xl font-bold">USD $29.99</span>
             </div>
-            <p className="text-orange-500 mt-2 font-medium">Includes $10 SMS credits</p>
+            <p className="text-orange-500 mt-2 font-medium">Includes USD $10 SMS credits</p>
             <p className="text-gray-500 mt-1 text-sm">About a week on trail with full weather forecast coverage</p>
           </div>
 
@@ -82,21 +81,21 @@ export default function PricingPage() {
               <tbody className="text-gray-700">
                 <tr className="border-b border-gray-200">
                   <td className="py-3 pr-4">Garmin inReach</td>
-                  <td className="py-3 pr-4">$549</td>
-                  <td className="py-3 pr-4">$30-65</td>
-                  <td className="py-3 text-gray-500">$599+</td>
+                  <td className="py-3 pr-4">USD $549</td>
+                  <td className="py-3 pr-4">USD $30-65</td>
+                  <td className="py-3 text-gray-500">USD $599+</td>
                 </tr>
                 <tr className="border-b border-gray-200">
                   <td className="py-3 pr-4">Zoleo</td>
-                  <td className="py-3 pr-4">$349</td>
-                  <td className="py-3 pr-4">$25-50</td>
-                  <td className="py-3 text-gray-500">$399+</td>
+                  <td className="py-3 pr-4">USD $349</td>
+                  <td className="py-3 pr-4">USD $25-50</td>
+                  <td className="py-3 text-gray-500">USD $399+</td>
                 </tr>
                 <tr className="bg-orange-50">
                   <td className="py-3 pr-4 font-semibold">Thunderbird</td>
-                  <td className="py-3 pr-4 text-orange-500">$0*</td>
-                  <td className="py-3 pr-4 text-orange-500">$0</td>
-                  <td className="py-3 text-orange-500 font-bold">$29.99</td>
+                  <td className="py-3 pr-4 text-orange-500">USD $0*</td>
+                  <td className="py-3 pr-4 text-orange-500">USD $0</td>
+                  <td className="py-3 text-orange-500 font-bold">USD $29.99</td>
                 </tr>
               </tbody>
             </table>

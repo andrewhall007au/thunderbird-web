@@ -205,6 +205,45 @@ export async function reorderWaypoints(
 }
 
 // ============================================================================
+// Forecast Preview
+// ============================================================================
+
+export interface ForecastPreviewResponse {
+  sms_content: string;
+  source: 'live' | 'sample';
+}
+
+export interface WaypointForForecast {
+  lat: number;
+  lng: number;
+  elevation: number;
+  name: string;
+  sms_code: string;
+  type: string;
+}
+
+/**
+ * Get a live forecast preview for a waypoint.
+ * Returns formatted SMS content exactly as user would receive.
+ *
+ * For CAMPS7/PEAKS7 commands, pass all waypoints to get multi-waypoint forecasts.
+ */
+export async function getForecastPreview(data: {
+  lat: number;
+  lng: number;
+  elevation: number;
+  name: string;
+  sms_code: string;
+  command: string;
+  waypoints?: WaypointForForecast[];
+}): Promise<ForecastPreviewResponse> {
+  return apiRequest('/api/routes/forecast-preview', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+// ============================================================================
 // Route Library operations
 // ============================================================================
 

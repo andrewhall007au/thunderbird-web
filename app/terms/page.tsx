@@ -22,7 +22,7 @@ export default function TermsPage() {
 
           <h2 className="text-xl font-semibold text-gray-900 mt-8">2. Account and Credits</h2>
           <p>
-            The service requires a one-time purchase of $29.99 USD which includes $10 in SMS
+            The service requires a one-time purchase of $29.99 USD which includes USD $10 in SMS
             credits. Additional credits can be purchased at any time. Credits do not expire
             and remain available until used. Each forecast request deducts credits based on
             the SMS delivery cost to your country.

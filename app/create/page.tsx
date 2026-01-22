@@ -339,15 +339,16 @@ function CreateRouteContent() {
   }) => (
     <div className="flex items-center gap-3">
       <span className={`
-        flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg
-        ${isComplete ? 'bg-green-600 text-gray-900' : isActive ? 'bg-blue-600 text-gray-900' : 'bg-gray-200 text-gray-600'}
+        flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2
+        ${isComplete
+          ? 'bg-orange-500 text-white border-orange-500'
+          : 'bg-white text-gray-900 border-gray-300'}
       `}>
-        {step}
+        {isComplete ? '✓' : step}
       </span>
       <span className={`text-lg font-medium ${isActive || isComplete ? 'text-gray-900' : 'text-gray-600'}`}>
         {title}
       </span>
-      {isComplete && <span className="text-green-500">✓</span>}
     </div>
   );
 
@@ -435,27 +436,27 @@ function CreateRouteContent() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={handleSave}
-                  disabled={isSaving}
+                  disabled={isSaving || !isDirty}
                   className={`
-                    px-6 py-2 rounded-lg font-medium transition-colors
+                    min-w-[250px] px-8 py-3 rounded-lg font-semibold text-lg transition-colors
                     ${isSaving
                       ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
-                      : isDirty
-                        ? 'bg-blue-600 text-gray-900 hover:bg-blue-500'
-                        : 'bg-green-700 text-green-200 cursor-default'}
+                      : !isDirty
+                        ? 'bg-green-500 text-white cursor-default'
+                        : 'bg-orange-500 text-white hover:bg-orange-600'}
                   `}
                 >
-                  {isSaving ? 'Saving...' : isDirty ? 'Save Draft' : 'Saved'}
+                  {isSaving ? 'Saving...' : !isDirty ? 'Saved' : 'Save Route'}
                 </button>
 
                 {!token && (
-                  <p className="text-sm text-yellow-400">
+                  <p className="text-sm text-yellow-500">
                     Log in to save your route
                   </p>
                 )}
 
                 {saveError && (
-                  <p className="text-sm text-red-400">{saveError}</p>
+                  <p className="text-sm text-red-500">{saveError}</p>
                 )}
               </div>
             </div>
@@ -500,6 +501,24 @@ function CreateRouteContent() {
                     onClose={() => setSelectedWaypointId(null)}
                   />
                 </div>
+              </div>
+
+              {/* Save Route button */}
+              <div className="mt-6 flex justify-start">
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving || !isDirty}
+                  className={`
+                    min-w-[250px] px-8 py-3 rounded-lg font-semibold text-lg transition-colors
+                    ${isSaving
+                      ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
+                      : !isDirty
+                        ? 'bg-green-500 text-white cursor-default'
+                        : 'bg-orange-500 text-white hover:bg-orange-600'}
+                  `}
+                >
+                  {isSaving ? 'Saving...' : !isDirty ? 'Saved' : 'Save Route'}
+                </button>
               </div>
             </div>
 

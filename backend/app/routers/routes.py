@@ -428,3 +428,236 @@ async def reorder_waypoints(
     # Return updated waypoints
     waypoints = await service.get_waypoints_for_route(route_id, account.id)
     return [waypoint_to_response(wp) for wp in waypoints] if waypoints else []
+
+
+# ============================================================================
+# Forecast Preview Endpoint
+# ============================================================================
+
+class WaypointForForecast(BaseModel):
+    """Waypoint data for multi-waypoint forecasts."""
+    lat: float
+    lng: float
+    elevation: int
+    name: str
+    sms_code: str
+    type: str  # camp, peak, poi
+
+
+class ForecastPreviewRequest(BaseModel):
+    """Request for forecast preview."""
+    lat: float
+    lng: float
+    elevation: int
+    name: str
+    sms_code: str
+    command: str  # CAST12, CAST24, CAMPS7, PEAKS7
+    waypoints: Optional[List[WaypointForForecast]] = None  # For CAMPS7/PEAKS7
+
+
+class ForecastPreviewResponse(BaseModel):
+    """Formatted forecast preview."""
+    sms_content: str
+    source: str  # 'live' or 'sample'
+
+
+@router.post("/forecast-preview", response_model=ForecastPreviewResponse)
+async def get_forecast_preview(
+    request: ForecastPreviewRequest,
+    account: Account = Depends(get_current_account)
+):
+    """
+    Get a formatted forecast preview for a waypoint.
+
+    Returns the exact SMS content the user would receive.
+    """
+    from app.services.bom import get_bom_service
+    from app.services.formatter import ForecastFormatter, LightCalculator
+    from datetime import date
+
+    bom = get_bom_service()
+    formatter = ForecastFormatter()
+
+    try:
+        # Fetch real weather data
+        if request.command == "CAST24":
+            forecast = await bom.get_hourly_forecast(
+                lat=request.lat,
+                lon=request.lng,
+                hours=24
+            )
+        else:
+            forecast = await bom.get_hourly_forecast(
+                lat=request.lat,
+                lon=request.lng,
+                hours=12
+            )
+
+        if not forecast or not forecast.periods:
+            raise ValueError("No forecast data available")
+
+        # Get light hours
+        light_hours = LightCalculator.get_light_hours(
+            request.lat, request.lng, date.today()
+        )
+
+        # Format based on command type
+        if request.command == "CAST12":
+            lines = [
+                f"CAST12 {request.sms_code} {request.elevation}m",
+                f"{request.lat:.4f}, {request.lng:.4f}",
+                light_hours,
+                "12 hour detailed forecast",
+                ""
+            ]
+
+            # Add hourly forecasts (first 12 periods)
+            for period in forecast.periods[:12]:
+                formatted = formatter.format_period(
+                    period=period,
+                    day_number=period.datetime.day,
+                    is_continuation=True,
+                    target_elevation=request.elevation,
+                    is_hourly=True,
+                    base_elevation=forecast.base_elevation
+                )
+                hour = period.datetime.strftime("%Hh")
+                line = f"{hour} {formatted.temp_range}° Rn{formatted.rain_pct} {formatted.rain_range}mm W{formatted.wind_avg}-{formatted.wind_max} Cld{formatted.cloud_pct} CB{formatted.cloud_base} FL{formatted.freeze_level}"
+                if formatted.danger:
+                    line += f" {formatted.danger}"
+                lines.append(line)
+                lines.append("")
+
+            lines.append("Rn=Rain W=Wind Cld=Cloud")
+            lines.append("CB=CloudBase FL=Freeze(x100m)")
+
+            return ForecastPreviewResponse(
+                sms_content="\n".join(lines),
+                source="live"
+            )
+
+        elif request.command == "CAST24":
+            lines = [
+                f"CAST24 {request.sms_code} {request.elevation}m",
+                f"{request.lat:.4f}, {request.lng:.4f}",
+                light_hours,
+                "24 hour detailed forecast",
+                ""
+            ]
+
+            # Add hourly forecasts (first 24 periods)
+            for period in forecast.periods[:24]:
+                formatted = formatter.format_period(
+                    period=period,
+                    day_number=period.datetime.day,
+                    is_continuation=True,
+                    target_elevation=request.elevation,
+                    is_hourly=True,
+                    base_elevation=forecast.base_elevation
+                )
+                hour = period.datetime.strftime("%Hh")
+                line = f"{hour} {formatted.temp_range}° Rn{formatted.rain_pct} {formatted.rain_range}mm W{formatted.wind_avg}-{formatted.wind_max} Cld{formatted.cloud_pct} CB{formatted.cloud_base} FL{formatted.freeze_level}"
+                if formatted.danger:
+                    line += f" {formatted.danger}"
+                lines.append(line)
+                lines.append("")
+
+            lines.append("Rn=Rain W=Wind Cld=Cloud")
+            lines.append("CB=CloudBase FL=Freeze(x100m)")
+
+            return ForecastPreviewResponse(
+                sms_content="\n".join(lines),
+                source="live"
+            )
+
+        elif request.command in ("CAMPS7", "PEAKS7"):
+            # Filter waypoints by type
+            target_type = "camp" if request.command == "CAMPS7" else "peak"
+            waypoints = [w for w in (request.waypoints or []) if w.type == target_type]
+
+            if not waypoints:
+                return ForecastPreviewResponse(
+                    sms_content=f"{request.command}\n7-Day Forecast for All {target_type.title()}s\n\nNo {target_type}s defined",
+                    source="sample"
+                )
+
+            # Build response for each waypoint
+            waypoint_sections = []
+            day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+            for wp in waypoints:
+                # Fetch 7-day forecast for this waypoint
+                wp_forecast = await bom.get_daily_forecast(
+                    lat=wp.lat,
+                    lon=wp.lng,
+                    days=7
+                )
+
+                section_lines = [
+                    f"{wp.sms_code}: {wp.name}",
+                    f"{wp.lat:.4f}, {wp.lng:.4f}",
+                    ""
+                ]
+
+                # Process daily forecast periods
+                if wp_forecast and wp_forecast.periods:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.info(f"Waypoint {wp.name}: {len(wp_forecast.periods)} daily periods")
+
+                    for period in wp_forecast.periods[:7]:  # Limit to 7 days
+                        day_name = day_names[period.datetime.weekday()]
+
+                        temp_min = period.temp_min
+                        temp_max = period.temp_max
+                        rain_pct = period.rain_chance
+                        rain_min = period.rain_min
+                        rain_max = period.rain_max
+                        wind_avg = period.wind_avg
+                        wind_max = period.wind_max
+                        cloud_pct = period.cloud_cover
+                        cloud_base = int(period.cloud_base / 100)  # Convert to x100m
+                        freeze_level = int(period.freezing_level / 100)  # Convert to x100m
+
+                        # Adjust temps for waypoint elevation
+                        elev_diff = wp.elevation - wp_forecast.base_elevation
+                        lapse_adjustment = (elev_diff / 100) * 0.65
+                        temp_min = int(temp_min - lapse_adjustment)
+                        temp_max = int(temp_max - lapse_adjustment)
+
+                        section_lines.append(
+                            f"{day_name} {temp_min}-{temp_max}° Rn{rain_pct}% {int(rain_min)}-{int(rain_max)}mm W{wind_avg}-{wind_max} Cld{cloud_pct}% CB{cloud_base} FL{freeze_level}"
+                        )
+                        section_lines.append("")  # Blank line between days
+
+                waypoint_sections.append("\n".join(section_lines))
+
+            # Combine all waypoint sections
+            separator = "\n\n─────────────────\n\n"
+            all_sections = separator.join(waypoint_sections)
+
+            content = f"""{request.command}
+7-Day Forecast for All {target_type.title()}s
+
+{all_sections}
+
+Rn=Rain W=Wind"""
+
+            return ForecastPreviewResponse(
+                sms_content=content,
+                source="live"
+            )
+
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported command: {request.command}")
+
+    except Exception as e:
+        # Fall back to sample data if live fetch fails
+        import logging
+        logging.warning(f"Forecast preview failed, using sample: {e}")
+
+        # Return sample data indicator
+        raise HTTPException(
+            status_code=503,
+            detail="Weather service temporarily unavailable. Sample data shown in preview."
+        )

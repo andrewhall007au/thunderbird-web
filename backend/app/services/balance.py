@@ -317,12 +317,15 @@ class BalanceService:
         # If balance is 200 cents ($2), and $10 = X segments, then $2 = X * 0.2
         segments_remaining = int((balance_cents / 1000) * segments_per_10)
 
-        # Send warning SMS
+        # Send warning SMS with one-tap top-up options
         from app.services.sms import get_sms_service
         sms_service = get_sms_service()
         message = (
-            f"Low balance: ${balance_cents/100:.2f} (~{segments_remaining} texts). "
-            f"Top up: BUY $10 or thunderbird.app/topup"
+            f"Low balance: ${balance_cents/100:.2f}\n"
+            f"~{segments_remaining} forecasts remaining\n\n"
+            f"Reply to top up:\n"
+            f"YES$10 | YES$25 | YES$50\n\n"
+            f"Card on file will be charged."
         )
 
         try:

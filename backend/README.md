@@ -119,7 +119,7 @@ tests/
 | GET | `/api/route/{route_id}/cells` | BOM cells for route |
 | GET | `/api/forecast/{route_id}/{cell_id}` | Cell forecast |
 
-## SMS Commands (v3.0)
+## SMS Commands (v3.3)
 
 | Command | Action |
 |---------|--------|
@@ -132,12 +132,21 @@ tests/
 | CAST7 {code} | 7-day forecast for location |
 | CAST7 CAMPS | 7-day all camps (grouped) |
 | CAST7 PEAKS | 7-day all peaks (grouped) |
+| **CAST -41.89,146.08** | **12hr forecast for any GPS point** |
+| **CAST24 -41.89,146.08** | **24hr forecast for any GPS point** |
 | CHECKIN {code} | Check in at camp |
 | SAFE +61... Name | Add SafeCheck contact |
 | SAFELIST | List contacts |
 | SAFEDEL +61... | Remove contact |
 | ALERTS ON/OFF | Toggle BOM alerts |
 | ROUTE | Show route info |
+
+### GPS Coordinate Formats
+
+GPS coordinates can be specified in multiple formats:
+- Comma-separated: `CAST -41.8921,146.0820`
+- Space-separated: `CAST -41.8921 146.0820`
+- Cardinal directions: `CAST 41.8921S,146.0820E`
 
 ## Scheduled Jobs
 
@@ -161,14 +170,68 @@ pytest tests/ -v --cov=app --cov-report=term-missing
 # Current: 280 passed, 6 skipped, 1 xfailed
 ```
 
-## BOM Grid System
+## Weather Providers
 
-BOM cells are calculated from coordinates:
+### Provider Resolution by Region
+
+| Provider | Grid Resolution | Coverage |
+|----------|----------------|----------|
+| BOM ACCESS-C | ~4km | Australian cities/populated areas |
+| BOM ACCESS-G | ~12km | All of Australia |
+| Open-Meteo AROME | 1.5-2.5km | France |
+| Open-Meteo ICON-EU | 7km | Europe (incl. Switzerland, Italy) |
+| Open-Meteo GFS | ~25km | Global fallback |
+| NWS | ~2.5km | United States |
+| Environment Canada | ~10km | Canada |
+| Met Office | ~1.5km | United Kingdom |
+
+### International Routing
+
+The weather router (`app/services/weather/router.py`) maps countries to providers:
+
+| Country | Primary Provider | Fallback |
+|---------|-----------------|----------|
+| AU | BOM | Open-Meteo |
+| US | NWS | Open-Meteo |
+| CA | Environment Canada | Open-Meteo |
+| GB | Met Office | Open-Meteo |
+| FR | Open-Meteo (Meteo-France model) | - |
+| CH, IT | Open-Meteo (ICON-EU model) | - |
+| NZ, ZA | Open-Meteo (best_match) | - |
+| Other | Open-Meteo (best_match) | - |
+
+## Elevation Adjustment
+
+All forecasts apply lapse rate adjustment to account for elevation differences between the weather grid cell and the actual waypoint.
+
+### How It Works
+
+1. **Get grid elevation** via Open-Meteo Elevation API - returns DEM terrain elevation
+2. **Weather APIs** provide temps at 2m height above the grid cell's average terrain elevation
+3. **Lapse rate adjustment** applied in formatter:
+   ```python
+   elevation_diff = waypoint_elevation - grid_elevation
+   temp_adjustment = elevation_diff × 0.65°C per 100m
+   ```
+
+### Example
+
+For a camp at 1200m where grid cell average is 900m:
+- `elevation_diff = 1200 - 900 = 300m`
+- `temp_adjustment = 300 × 0.0065 = 1.95°C cooler`
+
+### GPS Points
+
+For GPS coordinate requests, the grid elevation IS the target elevation, so no additional adjustment is needed - the forecast is already for that exact point's elevation.
+
+## Weather Zone System
+
+Weather zones are Thunderbird's internal grouping system (~2.2km × 2.5km cells) to reduce API calls by grouping nearby waypoints. BOM uses geohash for actual API lookups.
 
 ```python
 row = int((-39.12 - lat) / 0.02)
 col = int((lon - 142.75) / 0.03)
-# Example: Lake Oberon (-43.1486, 146.2722) -> Cell 201-117
+# Example: Lake Oberon (-43.1486, 146.2722) -> Zone 201-117
 ```
 
 ## Environment Variables

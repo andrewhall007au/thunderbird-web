@@ -3361,15 +3361,54 @@ User's Phone
 
 ### 12.2 Elevation Adjustment
 
+All weather forecasts are adjusted for elevation differences between the weather grid cell and the actual waypoint using the atmospheric lapse rate.
+
+#### 12.2.1 Lapse Rate Formula
+
 ```python
 def adjust_for_elevation(base_temp, base_elev, target_elev, lapse_rate=0.65):
     """
     Adjust temperature for elevation difference.
-    
+
+    Args:
+        base_temp: Temperature at grid cell elevation (°C)
+        base_elev: Grid cell average elevation (m) - from DEM
+        target_elev: Waypoint elevation (m)
+        lapse_rate: Temperature change per 100m (default 0.65°C)
+
     Returns: Adjusted temperature in °C
     """
     return base_temp - ((target_elev - base_elev) / 100 * lapse_rate)
 ```
+
+**Standard atmospheric lapse rate:** 6.5°C per 1000m (0.65°C per 100m)
+
+#### 12.2.2 Grid Elevation Sources
+
+| Provider | Elevation Source | Notes |
+|----------|-----------------|-------|
+| All providers | Open-Meteo Elevation API | Uses SRTM DEM at ~90m resolution |
+
+The grid elevation is fetched via `get_grid_elevation(lat, lon)` which queries the Open-Meteo Elevation API. This returns the terrain elevation at that coordinate, which represents the baseline for weather data.
+
+#### 12.2.3 Adjustment Examples
+
+**Example 1: Camp above grid average**
+- Grid cell elevation: 900m
+- Camp elevation: 1200m
+- `temp_adjustment = (1200 - 900) × 0.0065 = 1.95°C cooler`
+
+**Example 2: Camp below grid average**
+- Grid cell elevation: 800m
+- Camp elevation: 500m
+- `temp_adjustment = (500 - 800) × 0.0065 = 1.95°C warmer`
+
+#### 12.2.4 GPS Coordinate Requests
+
+For GPS coordinate requests (e.g., `CAST -41.89,146.08`):
+- The grid elevation IS the target elevation (same point)
+- `elevation_diff = 0`, no adjustment needed
+- Forecast is already at the correct elevation for that GPS point
 
 ### 12.3 Database Schema
 
@@ -5296,13 +5335,43 @@ class WeatherZoneConfig:
 - Geohash is used for actual BOM API lookup
 - Zone ID is for caching and display grouping
 
-### F.2 Weather API Fallback Chain
+### F.2 Weather API Routing & Fallback
 
-The backend uses a dual-API approach with automatic fallback:
+The backend routes weather requests to country-specific providers with Open-Meteo as universal fallback.
+
+#### F.2.1 Provider Resolution by Region
+
+| Provider | Grid Resolution | Coverage |
+|----------|----------------|----------|
+| BOM ACCESS-C | ~4km | Australian cities/populated areas |
+| BOM ACCESS-G | ~12km | All of Australia |
+| NWS | ~2.5km | United States |
+| Environment Canada | ~10km | Canada |
+| Met Office | ~1.5km | United Kingdom |
+| Open-Meteo AROME | 1.5-2.5km | France |
+| Open-Meteo ICON-EU | 7km | Europe (Switzerland, Italy, etc.) |
+| Open-Meteo GFS | ~25km | Global fallback |
+
+#### F.2.2 Country-to-Provider Routing
+
+| Country | Primary Provider | Fallback | Notes |
+|---------|-----------------|----------|-------|
+| AU | BOM | Open-Meteo | Best resolution for Australia |
+| US | NWS | Open-Meteo | Free, no API key needed |
+| CA | Environment Canada | Open-Meteo | Official Canadian data |
+| GB | Met Office | Open-Meteo | Requires API key |
+| FR | Open-Meteo (Meteo-France) | - | AROME 1.5-2.5km model |
+| CH | Open-Meteo (ICON-EU) | - | No MeteoSwiss endpoint |
+| IT | Open-Meteo (ICON-EU) | - | Covers Dolomites/Alps |
+| NZ | Open-Meteo (best_match) | - | Auto-selects optimal model |
+| ZA | Open-Meteo (best_match) | - | Auto-selects optimal model |
+| Other | Open-Meteo (best_match) | - | Global coverage |
+
+#### F.2.3 Australia Weather Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     WEATHER DATA FLOW                           │
+│                  AUSTRALIA WEATHER DATA FLOW                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  Waypoint (lat, lon)                                           │
@@ -5313,7 +5382,7 @@ The backend uses a dual-API approach with automatic fallback:
 │                 │                                               │
 │                 ▼                                               │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │              PRIMARY: BOM API                            │   │
+│  │              PRIMARY: BOM API (~4km resolution)          │   │
 │  │  api.weather.bom.gov.au/v1/locations/{geohash}/         │   │
 │  │  forecasts/3-hourly                                      │   │
 │  │                                                          │   │
@@ -5323,7 +5392,7 @@ The backend uses a dual-API approach with automatic fallback:
 │             │ if fails (403, timeout, etc.)                    │
 │             ▼                                                   │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │            FALLBACK: Open-Meteo API                      │   │
+│  │         FALLBACK: Open-Meteo API (~25km resolution)      │   │
 │  │  api.open-meteo.com/v1/forecast                          │   │
 │  │                                                          │   │
 │  │  Provides: temp, precipitation, wind_speed, wind_gusts,  │   │
@@ -5339,6 +5408,53 @@ The backend uses a dual-API approach with automatic fallback:
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+#### F.2.4 International Weather Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                INTERNATIONAL WEATHER DATA FLOW                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  GPS Coordinates (lat, lon)                                     │
+│       │                                                         │
+│       └──► Country detection (from coordinates)                │
+│                 │                                               │
+│                 ▼                                               │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │         WeatherRouter.get_forecast(lat, lon, country)    │   │
+│  │                                                          │   │
+│  │  US ──► NWSProvider (~2.5km)                            │   │
+│  │  CA ──► EnvironmentCanadaProvider (~10km)               │   │
+│  │  GB ──► MetOfficeProvider (~1.5km)                      │   │
+│  │  FR ──► OpenMeteoProvider (AROME 1.5-2.5km)             │   │
+│  │  CH/IT ──► OpenMeteoProvider (ICON-EU 7km)              │   │
+│  │  Other ──► OpenMeteoProvider (best_match ~25km)         │   │
+│  │                                                          │   │
+│  └──────────┬──────────────────────────────────────────────┘   │
+│             │ if primary fails                                  │
+│             ▼                                                   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │         OpenMeteoProvider (best_match) - universal       │   │
+│  │         Marks response with is_fallback=True             │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### F.2.5 Elevation Handling by Provider
+
+All providers return temperature at 2m height above the grid cell's average terrain elevation. The system applies lapse rate adjustment when the target waypoint differs from grid elevation.
+
+| Provider | Elevation Source | Notes |
+|----------|-----------------|-------|
+| BOM | Grid cell average | Uses DEM via Open-Meteo Elevation API |
+| Open-Meteo | Grid cell average | Already elevation-adjusted in API response |
+| NWS | Grid cell average | Already elevation-adjusted |
+| Environment Canada | Grid cell average | Already elevation-adjusted |
+| Met Office | Grid cell average | Already elevation-adjusted |
+
+For GPS coordinate requests, the grid elevation equals the target elevation, so no additional adjustment is applied.
 
 ### F.3 Data Field Sources
 
@@ -5727,33 +5843,48 @@ Active Users: 23
 API Status: All green ✓
 ```
 
-### H.3 Future: GPS Coordinate Input
+### H.3 GPS Coordinate Input
 
-> **Status:** Planned for v4.0 - not current scope
+> **Status:** ✅ IMPLEMENTED in v3.3
 
-**Concept:** Allow forecast for any coordinate:
+**Commands:**
 ```
-USER: CAST -43.1486,146.2722
-BOT:  [Forecast for GPS point]
+CAST -41.8921,146.0820      # 12hr forecast for GPS point
+CAST24 -41.8921,146.0820    # 24hr forecast for GPS point
+CAST -41.8921 146.0820      # Space-separated format
+CAST 41.8921S,146.0820E     # Cardinal direction format
 ```
 
-**Requirements to implement:**
-1. Reverse geocode to find nearest BOM cell
-2. Verify land mass (not ocean)
-3. Calculate elevation from DEM
-4. Apply appropriate lapse rates
-5. Determine danger thresholds for elevation
+**Implementation details:**
+
+1. **Coordinate parsing** (`commands.py:_parse_gps_coordinates`)
+   - Supports comma-separated: `-41.8921,146.0820`
+   - Supports space-separated: `-41.8921 146.0820`
+   - Supports cardinal directions: `41.8921S,146.0820E`
+   - Validates ranges: lat ±90°, lon ±180°
+
+2. **Elevation lookup** (`bom.py:get_grid_elevation`)
+   - Uses Open-Meteo Elevation API (SRTM DEM ~90m resolution)
+   - Cached by rounded coordinates for performance
+
+3. **Weather routing** (`webhook.py:generate_cast_forecast_gps`)
+   - Australia: BOM API with Open-Meteo fallback
+   - International: Routes to country-specific provider via WeatherRouter
+
+4. **Elevation adjustment**
+   - For GPS points, grid elevation = target elevation
+   - No additional lapse rate adjustment needed
+   - Forecast is already at correct elevation for that point
 
 **Use cases:**
+- Off-track hiking (any point, not just predefined waypoints)
 - Boating (coastal forecasts)
 - 4WD touring
-- Off-track hiking
-- International trails (future)
+- International trails (global coverage via Open-Meteo)
 
-**Technical notes:**
-- Would need global elevation API (e.g., Open-Topo-Data)
-- Ocean detection via coastline polygon
-- BOM only covers Australia; international would need Open-Meteo only
+**Included in onboarding:**
+- GPS format shown in registration completion message
+- GPS example in HELP command response
 
 ---
 
