@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { 
-  Smartphone, Satellite, MessageSquare, MapPin, 
-  Bell, Shield, Zap, ArrowRight 
+import {
+  Smartphone, Satellite, MessageSquare, MapPin,
+  Bell, Shield, Zap, ArrowRight, Globe
 } from 'lucide-react'
 
 export const metadata = {
@@ -161,6 +161,117 @@ export default function HowItWorksPage() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Markets Covered */}
+        <div className="card p-4 sm:p-8 mb-16">
+          <h2 className="text-2xl font-bold mb-6 text-center">
+            Global Coverage
+          </h2>
+          <p className="text-gray-600 text-center mb-6">
+            High-resolution weather models from official national meteorological services
+          </p>
+
+          {/* Mobile: stacked cards */}
+          <div className="grid grid-cols-1 gap-3 md:hidden">
+            {[
+              { country: 'Australia', resolution: '3 × 3 km', frequency: 'Hourly', source: 'Bureau of Meteorology' },
+              { country: 'United States', resolution: '2.5 × 2.5 km', frequency: 'Hourly', source: 'National Weather Service' },
+              { country: 'Canada', resolution: '2.5 × 2.5 km', frequency: 'Hourly', source: 'Environment Canada' },
+              { country: 'United Kingdom', resolution: 'Point', frequency: 'Hourly', source: 'Met Office' },
+              { country: 'France', resolution: '1.5 × 1.5 km', frequency: '3-hourly', source: 'Météo-France' },
+              { country: 'Switzerland', resolution: '1 × 1 km', frequency: '3-hourly', source: 'MeteoSwiss' },
+              { country: 'Italy', resolution: '7 × 7 km', frequency: '3-hourly', source: 'DWD ICON-EU' },
+              { country: 'New Zealand', resolution: '4 × 4 km', frequency: '6-hourly', source: 'MetService' },
+              { country: 'South Africa', resolution: '11 × 11 km', frequency: '6-hourly', source: 'NOAA GFS' },
+            ].map((market) => (
+              <div key={market.country} className="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
+                <div>
+                  <div className="font-semibold text-gray-900">{market.country}</div>
+                  <div className="text-xs text-gray-500">{market.source}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono text-sm text-gray-700">{market.resolution}</div>
+                  <div className="text-xs text-gray-500">{market.frequency}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-gray-500 text-left border-b border-gray-200">
+                  <th className="py-3 pr-4">Country</th>
+                  <th className="py-3 pr-4">Resolution</th>
+                  <th className="py-3 pr-4">Update Frequency</th>
+                  <th className="py-3">Source</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-700">
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 pr-4">Australia</td>
+                  <td className="py-3 pr-4 font-mono">3 × 3 km</td>
+                  <td className="py-3 pr-4">Hourly</td>
+                  <td className="py-3">Bureau of Meteorology</td>
+                </tr>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-3 pr-4">United States</td>
+                  <td className="py-3 pr-4 font-mono">2.5 × 2.5 km</td>
+                  <td className="py-3 pr-4">Hourly</td>
+                  <td className="py-3">National Weather Service</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 pr-4">Canada</td>
+                  <td className="py-3 pr-4 font-mono">2.5 × 2.5 km</td>
+                  <td className="py-3 pr-4">Hourly</td>
+                  <td className="py-3">Environment Canada</td>
+                </tr>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-3 pr-4">United Kingdom</td>
+                  <td className="py-3 pr-4 font-mono">Point</td>
+                  <td className="py-3 pr-4">Hourly</td>
+                  <td className="py-3">Met Office</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 pr-4">France</td>
+                  <td className="py-3 pr-4 font-mono">1.5 × 1.5 km</td>
+                  <td className="py-3 pr-4">3-hourly</td>
+                  <td className="py-3">Météo-France</td>
+                </tr>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-3 pr-4">Switzerland</td>
+                  <td className="py-3 pr-4 font-mono">1 × 1 km</td>
+                  <td className="py-3 pr-4">3-hourly</td>
+                  <td className="py-3">MeteoSwiss</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 pr-4">Italy</td>
+                  <td className="py-3 pr-4 font-mono">7 × 7 km</td>
+                  <td className="py-3 pr-4">3-hourly</td>
+                  <td className="py-3">DWD ICON-EU</td>
+                </tr>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <td className="py-3 pr-4">New Zealand</td>
+                  <td className="py-3 pr-4 font-mono">4 × 4 km</td>
+                  <td className="py-3 pr-4">6-hourly</td>
+                  <td className="py-3">MetService</td>
+                </tr>
+                <tr>
+                  <td className="py-3 pr-4">South Africa</td>
+                  <td className="py-3 pr-4 font-mono">11 × 11 km</td>
+                  <td className="py-3 pr-4">6-hourly</td>
+                  <td className="py-3">NOAA GFS</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-gray-500 text-sm mt-4 text-center">
+            Resolution indicates the grid cell size of the underlying weather model.
+            Smaller = more accurate for mountain terrain.
+          </p>
         </div>
 
         {/* SMS Commands */}

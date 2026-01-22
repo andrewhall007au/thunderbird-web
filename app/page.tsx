@@ -311,6 +311,86 @@ const TYPE_COLORS = {
   poi: '#6366f1'
 };
 
+function GlobalCoverage() {
+  const markets = [
+    { country: 'Australia', resolution: '3×3' },
+    { country: 'USA', resolution: '2.5×2.5' },
+    { country: 'Canada', resolution: '2.5×2.5' },
+    { country: 'UK', resolution: 'Point', noKm: true },
+    { country: 'France', resolution: '1.5×1.5' },
+    { country: 'Switzerland', resolution: '1×1' },
+    { country: 'Italy', resolution: '7×7' },
+    { country: 'New Zealand', resolution: '4×4' },
+    { country: 'South Africa', resolution: '11×11' },
+  ];
+
+  return (
+    <section className="py-24 bg-white">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            High resolution global coverage
+          </h2>
+          <p className="text-zinc-500 max-w-xl mx-auto">
+            Official weather models from national meteorological services.
+          </p>
+        </div>
+
+        {/* Mobile: 3-column grid */}
+        <div className="grid grid-cols-3 gap-2 md:hidden">
+          {markets.map((market) => (
+            <div
+              key={market.country}
+              className="bg-zinc-50 rounded-lg p-3 text-center border border-zinc-100"
+            >
+              <div className="text-xs font-semibold text-zinc-900 truncate">{market.country}</div>
+              <div className="text-sm text-zinc-500 mt-1">{market.resolution}{!market.noKm && ' km'}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: horizontal table */}
+        <div className="hidden md:block">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-zinc-200">
+                {markets.map((market) => (
+                  <th key={market.country} className="py-3 px-2 text-center font-semibold text-zinc-900 whitespace-nowrap">
+                    {market.country}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {markets.map((market) => (
+                  <td key={market.country} className="py-3 px-2 text-center text-zinc-500 whitespace-nowrap">
+                    {market.resolution}{!market.noKm && ' km'}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p className="text-center text-xs text-zinc-400 mt-6">
+          Resolution = weather model grid size. Smaller = more accurate for mountain terrain.
+        </p>
+
+        <div className="text-center mt-10">
+          <Link
+            href="/checkout?path=buy"
+            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+          >
+            Buy Now
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function RouteExample() {
   const [selectedWaypointId, setSelectedWaypointId] = useState<string | null>(null);
   const selectedWaypoint = allOverlandWaypoints.find(w => w.id === selectedWaypointId);
@@ -592,6 +672,16 @@ function Pricing() {
             Check compatibility
           </Link>
         </p>
+
+        <div className="text-center mt-10">
+          <Link
+            href="/checkout?path=buy"
+            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+          >
+            Buy Now
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
     </section>
   )
@@ -722,6 +812,7 @@ function HomeContent() {
       <Hero />
       <HowItWorks />
       <WhySMS />
+      <GlobalCoverage />
       <RouteExample />
       <Features />
       <Pricing />
