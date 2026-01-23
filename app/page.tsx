@@ -11,6 +11,7 @@ import {
   Cloud, Snowflake, AlertTriangle, Navigation, Save, MessageSquare,
   Tent, BatteryCharging, ChevronRight, ExternalLink, Mail
 } from 'lucide-react'
+import { BetaButton } from './components/beta/BetaButton'
 
 const MapEditor = dynamic(() => import('./components/map/MapEditor'), {
   ssr: false,
@@ -303,29 +304,22 @@ function Hero() {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-center max-w-4xl mx-auto mb-4 md:mb-6 leading-tight">
             <span className="text-zinc-900">Introducing Thunderbird.</span>
             <br />
-            <span className="text-zinc-500">Hyper-detailed text based weather forecasts via Satellite SMS.</span>
+            <span className="text-zinc-500">Hyper-detailed weather forecasts delivered by satellite SMS.</span>
           </h1>
 
-          <ul className="text-lg text-zinc-500 max-w-2xl mx-auto mb-4 leading-relaxed space-y-2">
-            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>BYO phone (or Satellite SMS enabled watch)*</li>
-            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Detailed forecast enables decisions with confidence</li>
-            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Library of trails or customise with GPX files</li>
-            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>No subscriptions, pay as you go</li>
-            <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Leverages recent Satellite / Terrestrial network partnerships</li>
+          <ul className="text-lg text-zinc-600 max-w-2xl mx-auto mb-5 leading-relaxed space-y-3 text-left px-4">
+            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>Works with your existing phone — no extra hardware needed</li>
+            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>Hour-by-hour detail: temp, rain, wind, cloud base, freezing level</li>
+            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>25+ popular trails built in, or upload your own GPX</li>
+            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>One-time purchase with pay-as-you-go credits. No subscriptions.</li>
           </ul>
-          <p className="text-xs text-zinc-400 max-w-xl mx-auto mb-8 md:mb-10">
-            *Works on any satellite SMS enabled device: iPhone 14+, Apple Watch Ultra 3, Samsung Galaxy S25+ (with carrier support), and Garmin inReach devices
+          <p className="text-sm text-zinc-400 max-w-xl mx-auto mb-8 md:mb-10">
+            Compatible with iPhone 14+, Apple Watch Ultra, Samsung Galaxy S25+, and Garmin inReach.
           </p>
 
           {/* CTA after bullet points */}
           <div className="flex items-center justify-center mb-10">
-            <Link
-              href="/checkout?path=buy"
-              className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-            >
-              Buy Now
-              <ChevronRight className="w-4 h-4" />
-            </Link>
+            <BetaButton />
           </div>
 
           {/* SMS Weather Forecast Example Title */}
@@ -338,13 +332,7 @@ function Hero() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-3">
-            <Link
-              href="/checkout?path=buy"
-              className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-            >
-              Buy Now
-              <ChevronRight className="w-4 h-4" />
-            </Link>
+            <BetaButton />
           </div>
         </div>
       </div>
@@ -415,21 +403,15 @@ function HowItWorks() {
               <span className="text-zinc-500">Send:</span> <span className="text-zinc-900">CAST -41.89, 146.08</span>
             </div>
             <ul className="text-sm text-zinc-500 space-y-2">
-              <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Unplanned detours or route changes</li>
-              <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Checking conditions at your current position</li>
-              <li className="flex items-center justify-center gap-2"><span className="text-orange-500">•</span>Exploring new areas without pre-setup</li>
+              <li className="flex items-center justify-center gap-2"><span className="text-orange-500 font-bold">—</span>Unplanned detours or route changes</li>
+              <li className="flex items-center justify-center gap-2"><span className="text-orange-500 font-bold">—</span>Checking conditions at your current position</li>
+              <li className="flex items-center justify-center gap-2"><span className="text-orange-500 font-bold">—</span>Exploring new areas without pre-setup</li>
             </ul>
           </div>
         </div>
 
         <div className="text-center mt-12">
-          <Link
-            href="/checkout?path=buy"
-            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-          >
-            Buy Now
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <BetaButton />
         </div>
       </div>
     </section>
@@ -441,17 +423,17 @@ function WhySMS() {
     {
       icon: Satellite,
       title: "Works everywhere",
-      description: "Satellite SMS reaches you anywhere with sky visibility — no cell towers needed. Better than data: ~1KB vs ~3MB to get your forecast."
+      description: "Works anywhere with sky visibility — no cell towers, no data plan. A single forecast uses less than 1KB."
     },
     {
       icon: BatteryCharging,
       title: "Battery efficient",
-      description: "SMS uses minimal power compared to data. Your phone lasts longer on trail."
+      description: "SMS uses a fraction of the power of a data connection. Your phone stays alive longer on trail."
     },
     {
       icon: Shield,
       title: "Reliable delivery",
-      description: "SMS over satellite works on all providers, data only a few. SMS guaranteed to get through."
+      description: "SMS routes through every satellite provider. Data doesn't. Your forecast gets through."
     }
   ];
 
@@ -463,7 +445,7 @@ function WhySMS() {
             Why SMS?
           </h2>
           <p className="text-zinc-500 max-w-xl mx-auto">
-            Small payload, prioritized delivery, works with brief satellite visibility.
+            Designed for the backcountry — reliable, fast, and works with minimal sky visibility.
           </p>
         </div>
 
@@ -480,13 +462,7 @@ function WhySMS() {
         </div>
 
         <div className="text-center mt-12">
-          <Link
-            href="/checkout?path=buy"
-            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-          >
-            Buy Now
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <BetaButton />
         </div>
       </div>
     </section>
@@ -542,7 +518,7 @@ function CompatibleDevices() {
                 <div>Samsung Galaxy S25+</div>
                 <div>Google Pixel 9, 10</div>
                 <div>Pixel Watch 4</div>
-                <div className="text-zinc-500 text-[10px] mt-2">Requires carrier support*</div>
+                <div className="text-zinc-500 text-[10px] mt-2">Requires carrier support</div>
               </div>
             </div>
             <span className="text-zinc-400 text-xs mt-4">Android Satellite SMS</span>
@@ -565,7 +541,7 @@ function CompatibleDevices() {
                 <div className="flex justify-between"><span>Europe</span><span className="font-medium">Orange</span></div>
               </div>
             </div>
-            <span className="text-zinc-400 text-xs mt-4">Carrier Satellite SMS*</span>
+            <span className="text-zinc-400 text-xs mt-4">Carrier Satellite SMS</span>
           </div>
 
           {/* Garmin */}
@@ -587,20 +563,14 @@ function CompatibleDevices() {
         </div>
 
         <p className="text-center text-xs text-zinc-400 mb-8">
-          *Carrier satellite SMS requires compatible plan. Available on most modern smartphones with participating carriers.
+          Carrier satellite SMS requires a compatible plan. Works with most modern smartphones on participating carriers.
           <Link href="/compatibility" className="text-zinc-500 hover:text-zinc-700 ml-1 underline underline-offset-2">
             Check compatibility
           </Link>
         </p>
 
         <div className="text-center">
-          <Link
-            href="/checkout?path=buy"
-            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-          >
-            Buy Now
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <BetaButton />
         </div>
       </div>
     </section>
@@ -722,13 +692,7 @@ function GlobalCoverage() {
         </p>
 
         <div className="text-center mt-10">
-          <Link
-            href="/checkout?path=buy"
-            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-          >
-            Buy Now
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <BetaButton />
         </div>
       </div>
     </section>
@@ -841,13 +805,7 @@ function RouteExample() {
         </div>
 
         <div className="text-center">
-          <Link
-            href="/checkout?path=buy"
-            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-          >
-            Buy Now
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <BetaButton />
         </div>
       </div>
     </section>
@@ -856,14 +814,14 @@ function RouteExample() {
 
 function Features() {
   const features = [
-    { icon: Clock, title: 'Hour-by-hour', description: '2-hour intervals. Know exactly when conditions change.', code: '06h' },
-    { icon: Thermometer, title: 'Temperature', description: 'Min-max adjusted for elevation (6.5°C/1000m lapse).', code: '5-7°' },
-    { icon: Droplets, title: 'Precipitation', description: 'Rain/snow probability plus expected accumulation.', code: 'Rn25% 0-3mm' },
-    { icon: Wind, title: 'Wind', description: 'Sustained and gust speeds. Critical for ridgelines.', code: 'W18-30' },
-    { icon: Cloud, title: 'Cloud cover', description: 'Percentage of sky covered. Plan visibility.', code: 'Cld60%' },
-    { icon: Mountain, title: 'Cloud base', description: 'Height where clouds begin (×100m).', code: 'CB14' },
-    { icon: Snowflake, title: 'Freezing level', description: 'Altitude where temp hits 0°C (×100m).', code: 'FL18' },
-    { icon: AlertTriangle, title: 'Danger flag', description: 'Lightning risk, high wind, trails in cloud, ice conditions.', code: '⚠' },
+    { icon: Clock, title: 'Hour-by-hour', description: 'Hour-by-hour intervals so you know exactly when conditions change.', code: '06h' },
+    { icon: Thermometer, title: 'Temperature', description: 'Min-max range adjusted for your exact elevation.', code: '5-7°' },
+    { icon: Droplets, title: 'Precipitation', description: 'Rain and snow probability with expected accumulation.', code: 'Rn25% 0-3mm' },
+    { icon: Wind, title: 'Wind', description: 'Sustained and gust speeds — critical for exposed ridgelines.', code: 'W18-30' },
+    { icon: Cloud, title: 'Cloud cover', description: 'How much sky is covered. Plan your visibility windows.', code: 'Cld60%' },
+    { icon: Mountain, title: 'Cloud base', description: "The altitude where clouds begin. Know when you'll be in them.", code: 'CB14' },
+    { icon: Snowflake, title: 'Freezing level', description: 'The altitude where temperatures drop below freezing.', code: 'FL18' },
+    { icon: AlertTriangle, title: 'Danger flag', description: "Lightning, high wind, trails in cloud, and ice — flagged before you're exposed.", code: '⚠' },
   ]
 
   return (
@@ -892,13 +850,7 @@ function Features() {
         </div>
 
         <div className="text-center mt-12">
-          <Link
-            href="/checkout?path=buy"
-            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-          >
-            Buy Now
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <BetaButton />
         </div>
       </div>
     </section>
@@ -943,12 +895,7 @@ function Pricing() {
                 <span className="font-medium">USD $0.07–$0.87</span>
               </div>
             </div>
-            <Link
-              href="/checkout?path=buy"
-              className="btn-orange block w-full text-center mt-6"
-            >
-              Buy Now
-            </Link>
+            <BetaButton className="btn-orange block w-full text-center mt-6">Apply for Beta</BetaButton>
           </div>
 
           {/* Garmin */}
@@ -1018,13 +965,7 @@ function Pricing() {
         </p>
 
         <div className="text-center mt-10">
-          <Link
-            href="/checkout?path=buy"
-            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-          >
-            Buy Now
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <BetaButton />
         </div>
       </div>
     </section>
@@ -1057,12 +998,10 @@ function About() {
           </p>
 
           <p className="text-lg leading-relaxed">
-            Thunderbird is Andrew&apos;s response to being frustrated by not being able to get
-            detailed weather forecasts out on trail to make decisions on when to go and when
-            to stay. No more having to buy a specialist satellite device, no more guessing,
-            no more hoping for the best — just the detailed data you need to make on trail
-            decisions, delivered directly to your satellite enabled phone, watch or even
-            specialist satellite device (our forecasts are better).
+            Thunderbird exists because getting detailed weather on trail shouldn&apos;t require
+            a specialist device or a monthly subscription. It delivers the data you need to
+            decide when to go and when to stay — directly to the satellite-enabled phone or
+            watch you already carry.
           </p>
 
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
@@ -1083,13 +1022,7 @@ function About() {
           </div>
 
           <div className="text-center mt-10">
-            <Link
-              href="/checkout?path=buy"
-              className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-            >
-              Buy Now
-              <ChevronRight className="w-4 h-4" />
-            </Link>
+            <BetaButton />
           </div>
         </div>
       </div>
@@ -1158,13 +1091,7 @@ function FAQ() {
         </div>
 
         <div className="text-center mt-12">
-          <Link
-            href="/checkout?path=buy"
-            className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
-          >
-            Buy Now
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          <BetaButton />
         </div>
       </div>
 
@@ -1196,13 +1123,7 @@ function FinalCTA() {
         <p className="text-zinc-500 mb-8">
           $29.99 one-time. Includes $10 SMS credits. No subscription.
         </p>
-        <Link
-          href="/checkout?path=buy"
-          className="btn-orange inline-flex items-center gap-2 px-8 py-4"
-        >
-          Buy Now
-          <ChevronRight className="w-4 h-4" />
-        </Link>
+        <BetaButton className="btn-orange inline-flex items-center gap-2 px-8 py-4" />
       </div>
     </section>
   )

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import { BetaButton } from './beta/BetaButton';
 
 const navLinks = [
   { href: '#how-it-works', label: 'How It Works' },
@@ -71,13 +72,7 @@ export function MobileNav() {
 
           {/* CTA Button */}
           <div className="mt-6 px-4">
-            <Link
-              href="/checkout"
-              onClick={() => setIsOpen(false)}
-              className="btn-orange block w-full text-center py-3"
-            >
-              Buy Now
-            </Link>
+            <BetaButton className="btn-orange block w-full text-center py-3">Apply for Beta</BetaButton>
           </div>
         </nav>
       </div>

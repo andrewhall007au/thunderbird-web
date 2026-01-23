@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { 
+import {
   Mountain, MapPin, Calendar, AlertTriangle,
   Thermometer, Wind, Droplets
 } from 'lucide-react'
+import { BetaButton } from '../../components/beta/BetaButton'
 
 export const metadata = {
   title: 'Western Arthurs - Thunderbird',
@@ -176,9 +177,7 @@ export default function WesternArthursPage() {
 
         {/* CTA */}
         <div className="text-center">
-          <Link href="/checkout" className="btn-orange text-lg px-16 py-4">
-            Buy Now
-          </Link>
+          <BetaButton className="btn-orange text-lg px-16 py-4">Apply for Beta</BetaButton>
         </div>
       </div>
     </div>

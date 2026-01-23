@@ -113,6 +113,22 @@ async def handle_inbound_sms(
         success=True
     )
 
+    # Beta gate: ALL commands require phone linked to an approved account
+    from app.models.account import account_store
+    account = account_store.get_by_phone(from_phone)
+    if not account:
+        # Exception: allow STOP for compliance
+        if text_upper == "STOP":
+            pass  # Fall through to normal STOP processing below
+        else:
+            reject_msg = "This phone number is not linked to a Thunderbird account. Apply at thunderbird.bot"
+            log_twiml_response(from_phone, reject_msg, "BETA_GATE", "gate_reject")
+            twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Message>{html.escape(reject_msg)}</Message>
+</Response>"""
+            return Response(content=twiml, media_type="application/xml")
+
     # Check if user is in onboarding flow FIRST
     session = onboarding_manager.get_session(from_phone)
 

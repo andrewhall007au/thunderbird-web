@@ -12,6 +12,7 @@ import {
   Globe,
   Satellite
 } from 'lucide-react';
+import { BetaButton } from '../components/beta/BetaButton';
 
 function Hero() {
   return (
@@ -385,14 +386,12 @@ function CTASection() {
     <section className="py-16 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <Zap className="w-12 h-12 text-orange-500 mx-auto mb-6" />
-        <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+        <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
         <p className="text-gray-600 mb-8 max-w-xl mx-auto">
-          If your device supports satellite SMS, you&apos;re ready to receive weather forecasts anywhere on the trail.
+          Your phone already has satellite SMS built in. You&apos;re ready to receive forecasts anywhere on the trail.
         </p>
 
-        <Link href="/checkout?path=buy" className="btn-orange text-lg px-16 py-4">
-          Buy Now
-        </Link>
+        <BetaButton className="btn-orange text-lg px-16 py-4">Apply for Beta</BetaButton>
 
         <p className="text-gray-400 text-sm mt-8">
           Last updated: January 2026

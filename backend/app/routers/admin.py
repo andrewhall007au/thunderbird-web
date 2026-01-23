@@ -594,3 +594,56 @@ async def admin_process_payout(affiliate_id: int, request: Request):
         return RedirectResponse(f"/admin/payouts?msg={message}", status_code=302)
     else:
         return RedirectResponse(f"/admin/payouts?msg=Error: {message}", status_code=302)
+
+
+# ============================================================================
+# Beta Application Management Routes
+# ============================================================================
+
+@router.get("/beta", response_class=HTMLResponse)
+async def admin_beta(request: Request):
+    """Beta applications management page."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    from app.models.beta_application import beta_application_store
+    from app.services.admin import render_beta_admin
+
+    applications = beta_application_store.list_all()
+    message = request.query_params.get("msg", "")
+    return render_beta_admin(applications, message)
+
+
+@router.post("/beta/{application_id}/approve")
+async def admin_approve_beta(application_id: int, request: Request):
+    """Approve a beta application."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    from app.services.beta import approve_application
+
+    success, message = await approve_application(application_id)
+
+    if success:
+        return RedirectResponse(f"/admin/beta?msg={message}", status_code=302)
+    else:
+        return RedirectResponse(f"/admin/beta?msg=Error: {message}", status_code=302)
+
+
+@router.post("/beta/{application_id}/reject")
+async def admin_reject_beta(application_id: int, request: Request):
+    """Reject a beta application."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    form = await request.form()
+    notes = form.get("notes", "").strip() or None
+
+    from app.services.beta import reject_application
+
+    success, message = await reject_application(application_id, notes)
+
+    if success:
+        return RedirectResponse(f"/admin/beta?msg={message}", status_code=302)
+    else:
+        return RedirectResponse(f"/admin/beta?msg=Error: {message}", status_code=302)

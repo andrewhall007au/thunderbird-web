@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/app/lib/auth';
 import { User, LogIn } from 'lucide-react';
+import { BetaButton } from './beta/BetaButton';
 
 export function HeaderAuth() {
   const { isAuthenticated, isLoading, account } = useAuth();
@@ -25,9 +26,7 @@ export function HeaderAuth() {
             {account.email.split('@')[0]}
           </span>
         </Link>
-        <Link href="/checkout" className="btn-orange text-sm px-4 py-2">
-          Buy Now
-        </Link>
+        <BetaButton className="btn-orange text-sm px-4 py-2">Apply for Beta</BetaButton>
       </div>
     );
   }
@@ -41,9 +40,7 @@ export function HeaderAuth() {
         <LogIn className="w-4 h-4" />
         Sign In
       </Link>
-      <Link href="/checkout" className="btn-orange text-sm px-4 py-2">
-        Buy Now
-      </Link>
+      <BetaButton className="btn-orange text-sm px-4 py-2">Apply for Beta</BetaButton>
     </div>
   );
 }

@@ -248,7 +248,11 @@ ADMIN_PAGE = """
 <body>
     <div class="header">
         <h1>Thunderbird Admin</h1>
-        <a href="/admin/logout" class="logout">Logout</a>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <a href="/admin/beta" class="logout">Beta Applications</a>
+            <a href="/admin/affiliates" class="logout">Affiliates</a>
+            <a href="/admin/logout" class="logout">Logout</a>
+        </div>
     </div>
 
     {message}
@@ -1066,6 +1070,150 @@ def render_payout_admin(payouts: list, message: str = "") -> str:
     <div class="card">
         <h2>Pending Payout Requests</h2>
         {payouts_table}
+    </div>
+</body>
+</html>
+    """
+
+
+def render_beta_admin(applications: list, message: str = "") -> str:
+    """Render beta applications management page."""
+    # Message
+    if message:
+        if "error" in message.lower():
+            msg_html = f'<div class="error">{message}</div>'
+        else:
+            msg_html = f'<div class="success">{message}</div>'
+    else:
+        msg_html = ""
+
+    # Count stats
+    pending_count = sum(1 for a in applications if a.status == "pending")
+    approved_count = sum(1 for a in applications if a.status == "approved")
+    rejected_count = sum(1 for a in applications if a.status == "rejected")
+
+    # Build applications table
+    if applications:
+        rows = ""
+        for app in applications:
+            status_class = {
+                "pending": "status-pending",
+                "approved": "status-approved",
+                "rejected": "status-rejected",
+            }.get(app.status, "")
+
+            # Format date
+            created_display = app.created_at[:10] if app.created_at else "N/A"
+
+            # Action buttons based on status
+            if app.status == "pending":
+                actions = f"""
+                <form method="POST" action="/admin/beta/{app.id}/approve" style="margin:0; display:inline;">
+                    <button type="submit" class="btn-approve">Approve</button>
+                </form>
+                <form method="POST" action="/admin/beta/{app.id}/reject" style="margin:0; display:inline;">
+                    <button type="submit" class="btn-reject">Reject</button>
+                </form>
+                """
+            else:
+                actions = f'<span style="color: #666;">{app.status}</span>'
+
+            rows += f"""
+            <tr>
+                <td><strong>{app.name}</strong></td>
+                <td>{app.email}</td>
+                <td>{app.country}</td>
+                <td><span class="status {status_class}">{app.status}</span></td>
+                <td>{created_display}</td>
+                <td class="actions">{actions}</td>
+            </tr>
+            """
+
+        applications_table = f"""
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Country</th>
+                <th>Status</th>
+                <th>Applied</th>
+                <th>Actions</th>
+            </tr>
+            {rows}
+        </table>
+        """
+    else:
+        applications_table = '<div class="empty">No beta applications yet.</div>'
+
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Beta Applications - Thunderbird Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {{ box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+        body {{ background: #1a1a2e; color: #eee; margin: 0; padding: 20px; }}
+        .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333; }}
+        h1 {{ margin: 0; color: #e94560; }}
+        .nav {{ display: flex; gap: 12px; }}
+        .nav a {{ color: #888; text-decoration: none; padding: 8px 16px; border: 1px solid #444; border-radius: 6px; }}
+        .nav a:hover {{ border-color: #e94560; color: #e94560; }}
+        .card {{ background: #16213e; padding: 24px; border-radius: 12px; margin-bottom: 20px; }}
+        h2 {{ margin: 0 0 20px; color: #e94560; font-size: 18px; }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }}
+        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #333; }}
+        th {{ color: #aaa; font-weight: 500; font-size: 11px; text-transform: uppercase; }}
+        .status {{ padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }}
+        .status-pending {{ background: #f39c12; color: #000; }}
+        .status-approved {{ background: #27ae60; }}
+        .status-rejected {{ background: #666; }}
+        .success {{ background: #27ae60; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .error {{ background: #c0392b; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; }}
+        .empty {{ color: #666; text-align: center; padding: 40px; }}
+        .actions {{ display: flex; gap: 8px; }}
+        .btn-approve {{ background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }}
+        .btn-approve:hover {{ background: #2ecc71; }}
+        .btn-reject {{ background: #c0392b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }}
+        .btn-reject:hover {{ background: #e74c3c; }}
+        .stats-row {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }}
+        .stat {{ background: #0f0f23; padding: 16px; border-radius: 8px; text-align: center; }}
+        .stat-value {{ font-size: 24px; font-weight: 700; color: #e94560; }}
+        .stat-value.green {{ color: #27ae60; }}
+        .stat-value.orange {{ color: #f39c12; }}
+        .stat-label {{ font-size: 11px; color: #666; margin-top: 4px; text-transform: uppercase; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Beta Applications</h1>
+        <div class="nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/affiliates">Affiliates</a>
+            <a href="/admin/logout">Logout</a>
+        </div>
+    </div>
+
+    {msg_html}
+
+    <div class="stats-row">
+        <div class="stat">
+            <div class="stat-value orange">{pending_count}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value green">{approved_count}</div>
+            <div class="stat-label">Approved</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{rejected_count}</div>
+            <div class="stat-label">Rejected</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>All Applications</h2>
+        {applications_table}
     </div>
 </body>
 </html>

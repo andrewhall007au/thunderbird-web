@@ -3,6 +3,7 @@ import {
   Smartphone, Satellite, MessageSquare, MapPin,
   Bell, Shield, Zap, ArrowRight, Globe
 } from 'lucide-react'
+import { BetaButton } from '../components/beta/BetaButton'
 
 export const metadata = {
   title: 'How It Works - Thunderbird',
@@ -73,9 +74,9 @@ export default function HowItWorksPage() {
             <div>
               <h3 className="text-xl font-semibold mb-2">Get Alerts</h3>
               <p className="text-gray-600">
-                BOM weather warnings are monitored every 15 minutes. If a 
-                severe weather warning affects your area, you&apos;ll receive it 
-                immediately — not just at the scheduled push times.
+                Severe weather warnings are monitored every 15 minutes. If one
+                affects your area, you&apos;ll receive it immediately — not just
+                at the scheduled push times.
               </p>
             </div>
           </div>
@@ -91,9 +92,9 @@ export default function HowItWorksPage() {
             <div className="flex gap-4">
               <Shield className="w-6 h-6 text-orange-500 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold mb-1">BOM 3km Model</h3>
+                <h3 className="font-semibold mb-1">Official weather models</h3>
                 <p className="text-gray-500 text-sm">
-                  Official Bureau of Meteorology data, not aggregated third-party forecasts.
+                  Direct from national meteorological services — not aggregated third-party data.
                 </p>
               </div>
             </div>
@@ -111,9 +112,9 @@ export default function HowItWorksPage() {
             <div className="flex gap-4">
               <Zap className="w-6 h-6 text-orange-500 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold mb-1">Elevation-Specific</h3>
+                <h3 className="font-semibold mb-1">Elevation-adjusted</h3>
                 <p className="text-gray-500 text-sm">
-                  Separate forecasts for camps and peaks using lapse rate adjustments.
+                  Separate forecasts for camps and peaks, corrected for altitude.
                 </p>
               </div>
             </div>
@@ -121,9 +122,9 @@ export default function HowItWorksPage() {
             <div className="flex gap-4">
               <Bell className="w-6 h-6 text-orange-500 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold mb-1">Real-Time Warnings</h3>
+                <h3 className="font-semibold mb-1">Real-time warnings</h3>
                 <p className="text-gray-500 text-sm">
-                  BOM warnings delivered within 15 minutes, not hours.
+                  Severe weather warnings delivered within 15 minutes, not hours.
                 </p>
               </div>
             </div>
@@ -330,10 +331,7 @@ export default function HowItWorksPage() {
 
         {/* CTA */}
         <div className="text-center">
-          <Link href="/checkout" className="btn-orange text-lg px-16 py-4 inline-flex items-center gap-2">
-            Buy Now
-            <ArrowRight className="w-5 h-5" />
-          </Link>
+          <BetaButton className="btn-orange text-lg px-16 py-4 inline-flex items-center gap-2" />
         </div>
       </div>
     </div>

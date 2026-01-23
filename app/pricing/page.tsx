@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Check, Zap } from 'lucide-react'
+import { BetaButton } from '../components/beta/BetaButton'
 
 export const metadata = {
   title: 'Pricing - Thunderbird',
@@ -15,7 +16,7 @@ export default function PricingPage() {
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-gray-600">
-            One trip, one price. No subscriptions.
+            One-time purchase. Pay-as-you-go credits. No subscriptions.
           </p>
         </div>
 
@@ -53,16 +54,8 @@ export default function PricingPage() {
             ))}
           </ul>
 
-          <Link
-            href="/checkout"
-            className="btn-orange w-full text-center text-lg py-4 block"
-          >
-            Buy Now
-          </Link>
+          <BetaButton className="btn-orange w-full text-center text-lg py-4 block">Apply for Beta</BetaButton>
 
-          <p className="text-gray-400 text-sm mt-4 text-center">
-            Beta launching January 2026
-          </p>
         </div>
 
         {/* Cost Comparison */}
@@ -93,7 +86,7 @@ export default function PricingPage() {
                 </tr>
                 <tr className="bg-orange-50">
                   <td className="py-3 pr-4 font-semibold">Thunderbird</td>
-                  <td className="py-3 pr-4 text-orange-500">USD $0*</td>
+                  <td className="py-3 pr-4 text-orange-500">USD $0</td>
                   <td className="py-3 pr-4 text-orange-500">USD $0</td>
                   <td className="py-3 text-orange-500 font-bold">USD $29.99</td>
                 </tr>
@@ -101,7 +94,7 @@ export default function PricingPage() {
             </table>
           </div>
           <p className="text-gray-400 text-sm mt-4 text-center">
-            *Works with iPhone 14+ satellite SMS, or any device you already own
+            Works with iPhone 14+ satellite SMS, or any device you already own.
           </p>
         </div>
 

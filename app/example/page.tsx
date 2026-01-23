@@ -4,6 +4,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Tent, Mountain, MapPin, Info } from 'lucide-react';
+import { BetaButton } from '../components/beta/BetaButton';
 
 // Dynamic import for map
 const MapEditor = dynamic(() => import('../components/map/MapEditor'), {
@@ -309,9 +310,7 @@ CB=CloudBase FL=Freeze (×100m)`}
           <p className="text-gray-600 mb-4">
             Ready to create your own custom route?
           </p>
-          <Link href="/checkout" className="btn-orange text-lg px-16 py-4">
-            Buy Now
-          </Link>
+          <BetaButton className="btn-orange text-lg px-16 py-4">Apply for Beta</BetaButton>
         </div>
       </div>
     </div>
