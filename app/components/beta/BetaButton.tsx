@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronRight } from 'lucide-react';
 import { BetaApplyModal } from './BetaApplyModal';
 
@@ -11,6 +12,11 @@ interface BetaButtonProps {
 
 export function BetaButton({ className, children }: BetaButtonProps) {
   const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <>
@@ -26,7 +32,10 @@ export function BetaButton({ className, children }: BetaButtonProps) {
         )}
       </button>
 
-      {showModal && <BetaApplyModal onClose={() => setShowModal(false)} />}
+      {showModal && mounted && createPortal(
+        <BetaApplyModal onClose={() => setShowModal(false)} />,
+        document.body
+      )}
     </>
   );
 }

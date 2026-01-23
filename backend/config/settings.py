@@ -103,6 +103,10 @@ class Settings(BaseSettings):
     SENDGRID_FROM_EMAIL: str = "noreply@thunderbird.app"
     SENDGRID_WELCOME_TEMPLATE_ID: str = ""  # Dynamic template ID (optional)
 
+    # Resend configuration (transactional email)
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "Thunderbird <hello@thunderbird.bot>"
+
     @property
     def jwt_configured(self) -> bool:
         """Check if JWT is properly configured."""

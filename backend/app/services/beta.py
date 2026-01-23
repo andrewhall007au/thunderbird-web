@@ -13,7 +13,6 @@ from app.models.beta_application import beta_application_store, BetaApplication
 from app.models.account import account_store
 from app.services.auth import hash_password
 from app.services.balance import get_balance_service
-from app.services.email import get_email_service, EmailResult
 from config.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -119,28 +118,30 @@ async def reject_application(application_id: int, notes: str = None) -> Tuple[bo
     return True, f"Rejected: {application.email}"
 
 
-async def send_beta_welcome_email(email: str, password: str) -> EmailResult:
+async def send_beta_welcome_email(email: str, password: str) -> bool:
     """
-    Send welcome email to approved beta user with login details.
+    Send welcome email to approved beta user with login details via Resend.
 
     Args:
         email: User's email
         password: Generated password
 
     Returns:
-        EmailResult
+        True if sent successfully
     """
-    service = get_email_service()
-
-    if not service.is_configured():
-        logger.warning("SendGrid not configured, skipping beta welcome email")
-        return EmailResult(success=False, error="Email service not configured")
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured, skipping beta welcome email")
+        return False
 
     try:
-        from sendgrid.helpers.mail import Mail, Email, To, Content
+        import resend
+        resend.api_key = settings.RESEND_API_KEY
 
-        subject = "Welcome to Thunderbird Beta!"
-        body = f"""Welcome to Thunderbird Beta!
+        resend.Emails.send({
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": [email],
+            "subject": "Welcome to Thunderbird Beta!",
+            "text": f"""Welcome to Thunderbird Beta!
 
 Your account has been approved. Here are your login details:
 
@@ -164,54 +165,38 @@ Questions? Reply to this email.
 
 - The Thunderbird Team
 """
-
-        message = Mail(
-            from_email=Email(service.from_email, "Thunderbird"),
-            to_emails=To(email),
-            subject=subject,
-        )
-        message.content = [Content("text/plain", body)]
-
-        response = service.client.send(message)
-
-        if response.status_code in (200, 202):
-            logger.info(f"Beta welcome email sent to {email}")
-            return EmailResult(success=True, status_code=response.status_code)
-        else:
-            logger.error(f"Beta welcome email failed: {response.status_code}")
-            return EmailResult(
-                success=False,
-                status_code=response.status_code,
-                error=f"SendGrid returned {response.status_code}"
-            )
+        })
+        logger.info(f"Beta welcome email sent to {email}")
+        return True
 
     except Exception as e:
         logger.error(f"Beta welcome email error: {e}")
-        return EmailResult(success=False, error=str(e))
+        return False
 
 
-async def send_admin_notification(application: BetaApplication) -> EmailResult:
+async def send_admin_notification(application: BetaApplication) -> bool:
     """
-    Notify admin when a new beta application is received.
+    Notify admin when a new beta application is received via Resend.
 
     Args:
         application: The new application
 
     Returns:
-        EmailResult
+        True if sent successfully
     """
-    service = get_email_service()
-
-    if not service.is_configured():
-        logger.warning("SendGrid not configured, skipping admin notification")
-        return EmailResult(success=False, error="Email service not configured")
+    if not settings.RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured, skipping admin notification")
+        return False
 
     try:
-        from sendgrid.helpers.mail import Mail, Email, To, Content
+        import resend
+        resend.api_key = settings.RESEND_API_KEY
 
-        admin_email = "hello@thunderbird.bot"
-        subject = f"New Beta Application: {application.name} ({application.country})"
-        body = f"""New beta application received:
+        resend.Emails.send({
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": ["hello@thunderbird.bot"],
+            "subject": f"New Beta Application: {application.name} ({application.country})",
+            "text": f"""New beta application received:
 
 Name: {application.name}
 Email: {application.email}
@@ -222,26 +207,10 @@ Review at: {settings.BASE_URL}/admin/beta
 
 - Thunderbird Bot
 """
-
-        message = Mail(
-            from_email=Email(service.from_email, "Thunderbird"),
-            to_emails=To(admin_email),
-            subject=subject,
-        )
-        message.content = [Content("text/plain", body)]
-
-        response = service.client.send(message)
-
-        if response.status_code in (200, 202):
-            logger.info(f"Admin notification sent for application {application.id}")
-            return EmailResult(success=True, status_code=response.status_code)
-        else:
-            return EmailResult(
-                success=False,
-                status_code=response.status_code,
-                error=f"SendGrid returned {response.status_code}"
-            )
+        })
+        logger.info(f"Admin notification sent for application {application.id}")
+        return True
 
     except Exception as e:
         logger.error(f"Admin notification error: {e}")
-        return EmailResult(success=False, error=str(e))
+        return False

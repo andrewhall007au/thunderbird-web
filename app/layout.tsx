@@ -26,7 +26,7 @@ function Logo() {
 function PromoBanner() {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-orange-500 text-white text-center py-2 text-sm font-medium">
-      Launch Offer: <span className="line-through opacity-75">USD $49.99</span> <span className="font-bold">USD $29.99</span> <span className="opacity-75">— ends Feb 28th 2026</span>
+      Coming soon — <span className="font-bold">Apply for Beta Access</span>
     </div>
   )
 }

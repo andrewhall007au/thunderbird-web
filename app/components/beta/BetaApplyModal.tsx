@@ -95,7 +95,7 @@ export function BetaApplyModal({ onClose }: BetaApplyModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
       <div
         ref={modalRef}
         className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-md shadow-2xl"
