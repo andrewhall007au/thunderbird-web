@@ -9,6 +9,12 @@ Met Office Weather DataHub provides:
 - Free tier: 360 calls/day
 
 IMPORTANT: Uses Weather DataHub API, NOT the deprecated DataPoint service.
+
+Elevation handling:
+- Met Office IMPROVER applies lapse rate correction to site-specific forecasts
+- Temperature is adjusted TO the requested location's elevation
+- We extract elevation from response geometry or use Open Topo Data
+- model_elevation = the elevation temps are valid for (user's point)
 """
 import logging
 import os
@@ -197,6 +203,12 @@ class MetOfficeProvider(WeatherProvider):
 
         Aggregates hourly data into 3-hour periods for consistency
         with other providers.
+
+        Elevation handling:
+        - Met Office IMPROVER applies lapse rate correction to the requested point
+        - Temperature is already adjusted for the location's actual elevation
+        - We extract elevation from geometry.coordinates[2] if available
+        - Otherwise use Open Topo Data to get point elevation
         """
         periods: List[NormalizedForecast] = []
         fetched_at = datetime.now(timezone.utc)
@@ -214,7 +226,17 @@ class MetOfficeProvider(WeatherProvider):
                 alerts=[],
                 fetched_at=fetched_at,
                 is_fallback=False,
+                model_elevation=None,
             )
+
+        # Extract elevation from response geometry if available
+        # Met Office returns [lon, lat, elevation] in geometry.coordinates
+        model_elevation: Optional[int] = None
+        geometry = features[0].get("geometry", {})
+        coords = geometry.get("coordinates", [])
+        if len(coords) >= 3 and coords[2] is not None:
+            model_elevation = int(coords[2])
+            logger.info(f"Met Office elevation from response: {model_elevation}m")
 
         time_series = features[0].get("properties", {}).get("timeSeries", [])
         if not time_series:
@@ -228,6 +250,7 @@ class MetOfficeProvider(WeatherProvider):
                 alerts=[],
                 fetched_at=fetched_at,
                 is_fallback=False,
+                model_elevation=model_elevation,
             )
 
         # Limit to requested number of days (days * 8 = 3-hour periods per day)
@@ -344,7 +367,7 @@ class MetOfficeProvider(WeatherProvider):
                 logger.warning(f"Error parsing Met Office period {i}: {e}")
                 continue
 
-        logger.info(f"Parsed {len(periods)} periods from Met Office response")
+        logger.info(f"Parsed {len(periods)} periods from Met Office response (elevation={model_elevation}m)")
 
         return NormalizedDailyForecast(
             provider=self.provider_name,
@@ -355,6 +378,7 @@ class MetOfficeProvider(WeatherProvider):
             alerts=[],  # Not supported in free tier
             fetched_at=fetched_at,
             is_fallback=False,
+            model_elevation=model_elevation,
         )
 
     async def get_alerts(

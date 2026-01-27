@@ -8,6 +8,12 @@ Environment Canada provides:
 - Weather alerts and warnings
 - Daily and hourly forecasts
 
+Elevation handling:
+- HRDPS model uses 2.5km grid resolution
+- Temperature is at 2m above MODEL OROGRAPHY (grid cell average)
+- Same issue as BOM - we sample grid area for cell average elevation
+- model_elevation = cell average, used for lapse rate adjustment
+
 Note: The env-canada library depends on Environment Canada's data distribution
 platform (dd.weather.gc.ca) which has intermittent availability issues.
 The provider handles these gracefully and allows fallback to Open-Meteo.
@@ -144,7 +150,11 @@ class EnvironmentCanadaProvider(WeatherProvider):
             # Fetch weather data
             await weather.update()
 
-            return self._parse_ec_response(lat, lon, weather, days)
+            # Get model elevation for lapse rate adjustment
+            # HRDPS uses 2.5km grid, similar to BOM
+            model_elevation = await self._get_model_elevation(lat, lon)
+
+            return self._parse_ec_response(lat, lon, weather, days, model_elevation)
 
         except ImportError:
             logger.error("env-canada library not installed")
@@ -175,12 +185,35 @@ class EnvironmentCanadaProvider(WeatherProvider):
             logger.error(f"Environment Canada API error: {e}")
             raise
 
+    async def _get_model_elevation(self, lat: float, lon: float) -> Optional[int]:
+        """
+        Get model orography elevation for HRDPS grid cell.
+
+        HRDPS uses 2.5km grid cells. We sample a similar-sized area
+        to estimate the cell average elevation (same approach as BOM).
+
+        Args:
+            lat: Latitude
+            lon: Longitude
+
+        Returns:
+            Estimated model elevation in meters, or None if unavailable
+        """
+        try:
+            from app.services.elevation import get_cell_elevation_data
+            cell_data = await get_cell_elevation_data(lat, lon, f"EC-{lat:.2f}-{lon:.2f}")
+            return int(cell_data.average_elevation)
+        except Exception as e:
+            logger.warning(f"Failed to get model elevation for ({lat}, {lon}): {e}")
+            return None
+
     def _parse_ec_response(
         self,
         lat: float,
         lon: float,
         weather,  # ECWeather object
-        days: int
+        days: int,
+        model_elevation: Optional[int] = None
     ) -> NormalizedDailyForecast:
         """
         Parse Environment Canada weather data into normalized format.
@@ -190,6 +223,7 @@ class EnvironmentCanadaProvider(WeatherProvider):
             lon: Request longitude
             weather: ECWeather object with populated data
             days: Number of days to include
+            model_elevation: Grid cell average elevation for lapse rate adjustment
 
         Returns:
             NormalizedDailyForecast with normalized periods
@@ -263,7 +297,7 @@ class EnvironmentCanadaProvider(WeatherProvider):
                 logger.warning(f"Error parsing EC day {i}: {e}")
                 continue
 
-        logger.info(f"Parsed {len(periods)} periods from Environment Canada")
+        logger.info(f"Parsed {len(periods)} periods from Environment Canada (elevation={model_elevation}m)")
 
         return NormalizedDailyForecast(
             provider=self.provider_name,
@@ -274,6 +308,7 @@ class EnvironmentCanadaProvider(WeatherProvider):
             alerts=[],  # Alerts fetched separately via get_alerts()
             fetched_at=fetched_at,
             is_fallback=False,
+            model_elevation=model_elevation,
         )
 
     async def get_alerts(
