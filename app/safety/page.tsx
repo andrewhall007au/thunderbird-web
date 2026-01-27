@@ -104,7 +104,7 @@ export default function SafetyPage() {
             </ul>
             <p className="text-sm text-gray-500 mt-4">
               Know your local emergency number before you travel (911 in US/Canada,
-              112 in EU, 000 in Australia, 999 in UK, etc.)
+              112 in EU, 000 in Australia, 999 in UK, 110 in Japan, etc.)
             </p>
           </div>
         </div>

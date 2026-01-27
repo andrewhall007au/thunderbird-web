@@ -184,6 +184,7 @@ export default function HowItWorksPage() {
               { country: 'Switzerland', resolution: '1 × 1 km', frequency: '3-hourly', source: 'MeteoSwiss' },
               { country: 'Italy', resolution: '7 × 7 km', frequency: '3-hourly', source: 'DWD ICON-EU' },
               { country: 'New Zealand', resolution: '4 × 4 km', frequency: '6-hourly', source: 'MetService' },
+              { country: 'Japan', resolution: '5 × 5 km', frequency: '3-hourly', source: 'JMA MSM' },
               { country: 'South Africa', resolution: '11 × 11 km', frequency: '6-hourly', source: 'NOAA GFS' },
             ].map((market) => (
               <div key={market.country} className="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
@@ -258,6 +259,12 @@ export default function HowItWorksPage() {
                   <td className="py-3 pr-4 font-mono">4 × 4 km</td>
                   <td className="py-3 pr-4">6-hourly</td>
                   <td className="py-3">MetService</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 pr-4">Japan</td>
+                  <td className="py-3 pr-4 font-mono">5 × 5 km</td>
+                  <td className="py-3 pr-4">3-hourly</td>
+                  <td className="py-3">JMA MSM</td>
                 </tr>
                 <tr>
                   <td className="py-3 pr-4">South Africa</td>

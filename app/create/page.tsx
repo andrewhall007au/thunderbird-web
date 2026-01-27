@@ -8,6 +8,9 @@ import { parseGPX } from '@we-gold/gpxjs';
 import WaypointList from '../components/waypoint/WaypointList';
 import WaypointEditor from '../components/waypoint/WaypointEditor';
 import { Waypoint, WaypointType } from '../components/map/WaypointMarker';
+import TrailSelector from '../components/trails/TrailSelector';
+import ElevationProfile from '../components/elevation/ElevationProfile';
+import { TrailData } from '../data/popularTrails';
 import {
   createRoute,
   updateRoute,
@@ -325,6 +328,20 @@ function CreateRouteContent() {
     setIsDirty(true);
   };
 
+  const handleTrailSelect = (trail: TrailData) => {
+    const geojson: GeoJSON.Feature = {
+      type: 'Feature',
+      properties: { name: trail.name },
+      geometry: {
+        type: 'LineString',
+        coordinates: trail.coordinates
+      }
+    };
+    setTrackGeojson(geojson);
+    setRouteName(trail.name);
+    setIsDirty(true);
+  };
+
   const selectedWaypoint = waypoints.find(w => w.id === selectedWaypointId) || null;
 
   // Determine current step
@@ -374,25 +391,18 @@ function CreateRouteContent() {
 
         {/* STEP 1: Choose source */}
         {currentStep === 1 && !isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Browse Library Card */}
-            <a
-              href="/library"
-              className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-blue-500 transition-colors group"
-            >
+          <div className="space-y-6">
+            {/* Popular Trails Dropdown */}
+            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">🗺️</span>
-                <h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-400 transition-colors">
-                  Browse Route Library
-                </h2>
+                <span className="text-3xl">🥾</span>
+                <h2 className="text-xl font-semibold text-gray-900">Popular Trails</h2>
               </div>
-              <p className="text-gray-600">
-                Choose from popular trails and customize them for your trip
+              <p className="text-gray-600 mb-4">
+                Choose from 25 of the world&apos;s most iconic hiking trails
               </p>
-              <p className="mt-4 text-blue-400 text-sm font-medium">
-                Explore routes →
-              </p>
-            </a>
+              <TrailSelector onSelect={handleTrailSelect} disabled={isLoading} />
+            </div>
 
             {/* Upload GPX Card */}
             <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
@@ -483,6 +493,14 @@ function CreateRouteContent() {
                   <p className="mt-2 text-sm text-gray-600">
                     Click to add • Drag to move • Select to edit
                   </p>
+                  {trackGeojson && (
+                    <div className="mt-4">
+                      <ElevationProfile
+                        trackGeojson={trackGeojson}
+                        waypoints={waypoints.map(wp => ({ name: wp.name, lat: wp.lat, lng: wp.lng }))}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Sidebar */}

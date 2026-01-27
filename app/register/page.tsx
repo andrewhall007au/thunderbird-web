@@ -218,9 +218,6 @@ export default function RegisterPage() {
           )}
         </div>
 
-        <div className="mt-8 text-center text-gray-400 text-sm">
-          <p>Beta pricing: $24.99 AUD per trip</p>
-        </div>
       </div>
     </div>
   )

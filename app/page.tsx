@@ -635,6 +635,7 @@ function GlobalCoverage() {
     { country: 'Switzerland', resolution: '1.0km × 1.0km' },
     { country: 'Italy', resolution: '7.0km × 7.0km' },
     { country: 'New Zealand', resolution: '4.0km × 4.0km' },
+    { country: 'Japan', resolution: '5.0km × 5.0km' },
     { country: 'South Africa', resolution: '11.0km × 11.0km' },
   ];
 

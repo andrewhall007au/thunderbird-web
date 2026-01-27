@@ -5,6 +5,7 @@ import { Zap } from 'lucide-react'
 import { AuthProvider } from '@/app/lib/auth'
 import { HeaderAuth } from '@/app/components/HeaderAuth'
 import { MobileNav } from '@/app/components/MobileNav'
+import GeoBanner from '@/app/components/GeoBanner'
 
 export const metadata: Metadata = {
   title: 'Thunderbird - Alpine Weather Forecasts via Satellite SMS',
@@ -25,8 +26,8 @@ function Logo() {
 
 function PromoBanner() {
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-orange-500 text-white text-center py-2 text-sm font-medium">
-      Coming soon — <span className="font-bold">Apply for Beta Access</span>
+    <div className="fixed top-0 left-0 right-0 z-50">
+      <GeoBanner />
     </div>
   )
 }

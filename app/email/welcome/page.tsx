@@ -396,7 +396,7 @@ Best window: Thu AM - lower wind</div>
                     <td style="padding: 8px 16px; color: #18181b; text-align: center;">600</td>
                   </tr>
                   <tr style="border-bottom: 1px solid #e4e4e7;">
-                    <td style="padding: 8px 16px; color: #18181b;">Australia, UK, Europe</td>
+                    <td style="padding: 8px 16px; color: #18181b;">Australia, UK, Europe, Japan</td>
                     <td style="padding: 8px 16px; color: #18181b; text-align: center;">66</td>
                     <td style="padding: 8px 16px; color: #18181b; text-align: center;">182</td>
                     <td style="padding: 8px 16px; color: #18181b; text-align: center;">396</td>
@@ -425,7 +425,7 @@ Best window: Thu AM - lower wind</div>
                     <td style="padding: 8px 16px; color: #18181b; text-align: center;">$0.083</td>
                   </tr>
                   <tr style="border-bottom: 1px solid #e4e4e7;">
-                    <td style="padding: 8px 16px; color: #18181b;">Australia, UK, Europe</td>
+                    <td style="padding: 8px 16px; color: #18181b;">Australia, UK, Europe, Japan</td>
                     <td style="padding: 8px 16px; color: #18181b; text-align: center;">$0.152</td>
                     <td style="padding: 8px 16px; color: #18181b; text-align: center;">$0.137</td>
                     <td style="padding: 8px 16px; color: #18181b; text-align: center;">$0.126</td>
