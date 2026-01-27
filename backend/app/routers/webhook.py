@@ -304,7 +304,7 @@ async def process_command(phone: str, parsed) -> str:
         return await generate_cast_forecast(camp_code, hours=24, phone=phone)
 
     elif parsed.command_type == CommandType.CAST7:
-        # 7-day forecast - location, CAMPS, or PEAKS
+        # 7-day forecast - location, CAMPS, PEAKS, or GPS coordinates
         if not parsed.is_valid:
             return parsed.error_message or "CAST7 requires location.\n\nExample: CAST7 LAKEO, CAST7 CAMPS, or CAST7 PEAKS"
 
@@ -312,6 +312,11 @@ async def process_command(phone: str, parsed) -> str:
             return await generate_cast7_all_camps(phone)
         elif parsed.args.get("all_peaks"):
             return await generate_cast7_all_peaks(phone)
+        elif parsed.args.get("is_gps"):
+            # GPS coordinates
+            lat = parsed.args.get("gps_lat")
+            lon = parsed.args.get("gps_lon")
+            return await generate_cast7_forecast_gps(lat, lon, phone=phone)
         else:
             camp_code = parsed.args.get("location_code", "")
             return await generate_cast7_forecast(camp_code, phone=phone)
@@ -775,8 +780,20 @@ async def generate_cast_forecast(camp_code: str, hours: int = 12, phone: str = N
 
 
 async def generate_cast_forecast_gps(lat: float, lon: float, hours: int = 12, phone: str = None) -> str:
-    """Generate CAST forecast for GPS coordinates."""
+    """
+    Generate CAST forecast for GPS coordinates.
+
+    Uses country detection to route to appropriate weather provider:
+    - AU coordinates: BOM service (legacy, backwards compatible)
+    - US coordinates: NWS via WeatherRouter
+    - GB coordinates: Met Office via WeatherRouter
+    - Other supported: Country-specific via WeatherRouter
+    - Unsupported: Open-Meteo fallback via WeatherRouter
+    """
     from app.services.bom import get_bom_service
+    from app.services.geo import get_country_from_coordinates
+    from app.services.weather.router import get_weather_router
+    from app.services.weather.converter import normalized_to_cell_forecast
     from app.services.formatter import FormatCastLabeled
     from app.models.account import account_store
     from app.models.database import user_store
@@ -793,13 +810,32 @@ async def generate_cast_forecast_gps(lat: float, lon: float, hours: int = 12, ph
                 unit_system = account.unit_system
 
     try:
+        # Detect country from GPS coordinates
+        country_code = get_country_from_coordinates(lat, lon)
+        logger.info(f"GPS forecast: ({lat:.4f}, {lon:.4f}) -> country={country_code or 'unknown'}")
+
         bom_service = get_bom_service()
 
-        # Get elevation for the GPS point from grid data
+        # Get elevation for the GPS point
         elevation = await bom_service.get_grid_elevation(lat, lon)
 
-        # Get forecast
-        forecast = await bom_service.get_hourly_forecast(lat, lon, hours=hours)
+        if country_code == "AU":
+            # Australian coordinates: use BOM service (backwards compatible)
+            forecast = await bom_service.get_hourly_forecast(lat, lon, hours=hours)
+        else:
+            # International: use WeatherRouter
+            weather_router = get_weather_router()
+            normalized = await weather_router.get_forecast(
+                lat, lon,
+                country_code=country_code or "",
+                days=2  # Need 2 days for hourly data
+            )
+            # Convert to CellForecast for formatter compatibility
+            forecast = normalized_to_cell_forecast(
+                normalized, lat, lon, elevation,
+                cell_id="GPS",
+                geohash=""
+            )
 
         # Format GPS coordinates as the waypoint name
         gps_display = f"{lat:.4f},{lon:.4f}"
@@ -878,6 +914,89 @@ async def generate_cast7_forecast(location_code: str, phone: str = None) -> str:
     except Exception as e:
         logger.error(f"CAST7 forecast error for {location_code}: {e}")
         return f"Unable to get 7-day forecast for {location_code}. Please try again."
+
+
+async def generate_cast7_forecast_gps(lat: float, lon: float, phone: str = None) -> str:
+    """
+    Generate 7-day CAST7 forecast for GPS coordinates.
+
+    Uses country detection to route to appropriate weather provider:
+    - AU coordinates: BOM service (legacy, backwards compatible)
+    - US coordinates: NWS via WeatherRouter
+    - GB coordinates: Met Office via WeatherRouter
+    - Other supported: Country-specific via WeatherRouter
+    - Unsupported: Open-Meteo fallback via WeatherRouter
+    """
+    from app.services.bom import get_bom_service
+    from app.services.geo import get_country_from_coordinates
+    from app.services.weather.router import get_weather_router
+    from app.services.weather.converter import normalized_to_cell_forecast
+    from app.services.formatter import ForecastFormatter
+    from app.models.account import account_store
+    from app.models.database import user_store
+
+    # Get user's unit preference
+    unit_system = "metric"
+    if phone:
+        user = user_store.get_user(phone)
+        if user and user.unit_system:
+            unit_system = user.unit_system
+        else:
+            account = account_store.get_by_phone(phone)
+            if account and account.unit_system:
+                unit_system = account.unit_system
+
+    try:
+        # Detect country from GPS coordinates
+        country_code = get_country_from_coordinates(lat, lon)
+        logger.info(f"CAST7 GPS forecast: ({lat:.4f}, {lon:.4f}) -> country={country_code or 'unknown'}")
+
+        bom_service = get_bom_service()
+
+        # Get elevation for the GPS point
+        elevation = await bom_service.get_grid_elevation(lat, lon)
+
+        if country_code == "AU":
+            # Australian coordinates: use BOM service (backwards compatible)
+            forecast = await bom_service.get_daily_forecast(lat, lon, days=7)
+        else:
+            # International: use WeatherRouter
+            weather_router = get_weather_router()
+            normalized = await weather_router.get_forecast(
+                lat, lon,
+                country_code=country_code or "",
+                days=7
+            )
+            # Convert to CellForecast for formatter compatibility
+            forecast = normalized_to_cell_forecast(
+                normalized, lat, lon, elevation,
+                cell_id="GPS",
+                geohash=""
+            )
+
+        # Format GPS coordinates as the waypoint name
+        gps_display = f"{lat:.4f},{lon:.4f}"
+
+        # Format as CAST7 response
+        formatter = ForecastFormatter()
+        message = formatter.format_7day(
+            forecast=forecast,
+            waypoint_code="GPS",
+            waypoint_name=gps_display,
+            waypoint_elevation=elevation or 0
+        )
+
+        # Check for low balance and append warning if needed
+        if phone:
+            account = account_store.get_by_phone(phone)
+            if account and account.stripe_customer_id:
+                message += get_low_balance_warning(account.id)
+
+        return message
+
+    except Exception as e:
+        logger.error(f"CAST7 GPS forecast error for {lat},{lon}: {e}")
+        return f"Unable to get 7-day forecast for GPS {lat:.4f},{lon:.4f}. Please try again."
 
 
 async def generate_cast7_all_camps(phone: str) -> str:

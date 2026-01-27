@@ -572,9 +572,28 @@ class CommandParser:
             )
 
     def _parse_cast7(self, parts: List[str], message: str) -> ParsedCommand:
-        """Parse CAST7 command - 7-day forecast for location, CAMPS, or PEAKS."""
+        """Parse CAST7 command - 7-day forecast for location, CAMPS, PEAKS, or GPS coordinates."""
         if len(parts) >= 2:
             location = parts[1]
+
+            # Check for GPS coordinates first (could be in parts[1] alone or parts[1:] joined)
+            # Try single part first (e.g., "-41.8921,146.0820")
+            gps = self._parse_gps_coordinates(location)
+
+            # Try joining parts for space-separated GPS (e.g., "-41.8921 146.0820")
+            if not gps and len(parts) >= 3:
+                combined = f"{parts[1]} {parts[2]}"
+                gps = self._parse_gps_coordinates(combined)
+
+            if gps:
+                lat, lon = gps
+                return ParsedCommand(
+                    command_type=CommandType.CAST7,
+                    raw_input=message,
+                    args={"gps_lat": lat, "gps_lon": lon, "is_gps": True},
+                    is_valid=True
+                )
+
             if location == "CAMPS":
                 return ParsedCommand(
                     command_type=CommandType.CAST7,

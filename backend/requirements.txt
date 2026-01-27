@@ -22,6 +22,9 @@ httpx>=0.26.0
 geohash2>=1.1
 pygeohash>=1.2.0
 
+# Geo (for GPS country detection)
+geopip>=1.1
+
 # Twilio SMS
 twilio>=8.10.0
 
