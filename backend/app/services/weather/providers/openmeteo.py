@@ -44,23 +44,27 @@ class OpenMeteoModel(str, Enum):
     Each model targets specific regions with varying resolution:
     - BEST_MATCH: Auto-selects best model for coordinates (default)
     - METEOFRANCE: France AROME model (1.5-2.5km) - excellent for France/Alps
-    - ICON_EU: European DWD ICON model (7km) - covers all of Europe incl. Switzerland/Italy
+    - ICON_EU: European DWD ICON model (7km) - covers all of Europe
+    - ICON_CH: MeteoSwiss ICON-CH2 model (2km) - excellent for Swiss Alps
+    - ECMWF: European Centre model (9km global) - best global model
     - GFS: US NOAA GFS model (25km global) - fallback for global coverage
-
-    Note: Switzerland uses ICON_EU as Open-Meteo provides no separate MeteoSwiss endpoint.
-    The ICON model from DWD provides excellent Alpine coverage.
     """
     BEST_MATCH = "best_match"
     METEOFRANCE = "meteofrance"
     ICON_EU = "icon_eu"
+    ICON_CH = "icon_ch"  # MeteoSwiss 2km for Switzerland
+    ECMWF = "ecmwf"      # 9km global - best for NZ, ZA
     GFS = "gfs"
 
 
 # Model-specific API endpoints
+# Note: ICON_CH uses the standard forecast endpoint with models parameter
 MODEL_ENDPOINTS = {
     OpenMeteoModel.BEST_MATCH: "https://api.open-meteo.com/v1/forecast",
     OpenMeteoModel.METEOFRANCE: "https://api.open-meteo.com/v1/meteofrance",
     OpenMeteoModel.ICON_EU: "https://api.open-meteo.com/v1/dwd-icon",
+    OpenMeteoModel.ICON_CH: "https://api.open-meteo.com/v1/forecast",  # Uses models=meteoswiss_icon_ch2
+    OpenMeteoModel.ECMWF: "https://api.open-meteo.com/v1/ecmwf",
     OpenMeteoModel.GFS: "https://api.open-meteo.com/v1/gfs",
 }
 
@@ -69,6 +73,8 @@ MODEL_NAMES = {
     OpenMeteoModel.BEST_MATCH: "Open-Meteo",
     OpenMeteoModel.METEOFRANCE: "Open-Meteo (Meteo-France)",
     OpenMeteoModel.ICON_EU: "Open-Meteo (DWD ICON)",
+    OpenMeteoModel.ICON_CH: "Open-Meteo (MeteoSwiss)",
+    OpenMeteoModel.ECMWF: "Open-Meteo (ECMWF)",
     OpenMeteoModel.GFS: "Open-Meteo (GFS)",
 }
 
@@ -77,6 +83,8 @@ OPENMETEO_ENDPOINTS = {
     "best_match": "https://api.open-meteo.com/v1/forecast",
     "meteofrance": "https://api.open-meteo.com/v1/meteofrance",
     "icon_eu": "https://api.open-meteo.com/v1/dwd-icon",
+    "icon_ch": "https://api.open-meteo.com/v1/forecast",
+    "ecmwf": "https://api.open-meteo.com/v1/ecmwf",
     "gfs": "https://api.open-meteo.com/v1/gfs",
 }
 
@@ -84,10 +92,10 @@ OPENMETEO_ENDPOINTS = {
 # Maps ISO 3166-1 alpha-2 country codes to best available model
 COUNTRY_TO_MODEL = {
     "FR": OpenMeteoModel.METEOFRANCE,  # France - AROME 1.5-2.5km
-    "CH": OpenMeteoModel.ICON_EU,      # Switzerland - ICON covers Alps
-    "IT": OpenMeteoModel.ICON_EU,      # Italy - ICON covers Dolomites
-    "NZ": OpenMeteoModel.BEST_MATCH,   # New Zealand - auto-select
-    "ZA": OpenMeteoModel.BEST_MATCH,   # South Africa - auto-select
+    "CH": OpenMeteoModel.ICON_CH,      # Switzerland - MeteoSwiss ICON-CH2 2km
+    "IT": OpenMeteoModel.ICON_EU,      # Italy - ICON 7km (no better option)
+    "NZ": OpenMeteoModel.ECMWF,        # New Zealand - ECMWF 9km (best available)
+    "ZA": OpenMeteoModel.ECMWF,        # South Africa - ECMWF 9km (best available)
     # Other European countries could use ICON_EU
     # Other countries default to BEST_MATCH
 }
@@ -267,6 +275,10 @@ class OpenMeteoProvider(WeatherProvider):
             "timezone": "auto",
             "forecast_days": min(days, 16),
         }
+
+        # MeteoSwiss ICON-CH requires explicit model parameter
+        if self.model == OpenMeteoModel.ICON_CH:
+            params["models"] = "meteoswiss_icon_ch2"  # 2km, 5-day forecast
 
         logger.info(
             f"Fetching Open-Meteo forecast for ({lat}, {lon}), {days} days, "

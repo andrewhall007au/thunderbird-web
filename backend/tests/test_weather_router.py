@@ -72,11 +72,11 @@ class TestWeatherRouter:
         assert "Meteo-France" in provider.provider_name
 
     def test_provider_mapping_switzerland(self):
-        """Router maps CH to Open-Meteo ICON (not MeteoSwiss)."""
+        """Router maps CH to Open-Meteo MeteoSwiss ICON-CH (2km resolution)."""
         router = WeatherRouter()
         provider = router.get_provider("CH")
-        # Switzerland uses ICON_EU since MeteoSwiss endpoint doesn't exist
-        assert "ICON" in provider.provider_name or "DWD" in provider.provider_name
+        # Switzerland uses MeteoSwiss ICON-CH2 for best Alpine coverage
+        assert "MeteoSwiss" in provider.provider_name
 
     def test_provider_mapping_italy(self):
         """Router maps IT to Open-Meteo ICON."""
@@ -85,16 +85,16 @@ class TestWeatherRouter:
         assert "ICON" in provider.provider_name or "DWD" in provider.provider_name
 
     def test_provider_mapping_new_zealand(self):
-        """Router maps NZ to Open-Meteo."""
+        """Router maps NZ to Open-Meteo ECMWF (9km - best available)."""
         router = WeatherRouter()
         provider = router.get_provider("NZ")
-        assert "Open-Meteo" in provider.provider_name
+        assert "ECMWF" in provider.provider_name
 
     def test_provider_mapping_south_africa(self):
-        """Router maps ZA to Open-Meteo."""
+        """Router maps ZA to Open-Meteo ECMWF (9km - best available)."""
         router = WeatherRouter()
         provider = router.get_provider("ZA")
-        assert "Open-Meteo" in provider.provider_name
+        assert "ECMWF" in provider.provider_name
 
     def test_provider_mapping_unknown(self):
         """Router uses Open-Meteo fallback for unknown countries."""

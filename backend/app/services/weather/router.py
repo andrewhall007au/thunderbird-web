@@ -9,15 +9,15 @@ The router is the integration point that:
 - Tracks data source for display (is_fallback flag)
 - Caches successful responses (1-hour TTL)
 
-Provider mapping:
-- US: NWS (National Weather Service)
-- CA: Environment Canada
-- GB: Met Office
-- FR: Open-Meteo (Meteo-France model)
-- IT: Open-Meteo (ICON-EU model)
-- CH: Open-Meteo (ICON-EU model) - MeteoSwiss endpoint doesn't exist
-- NZ: Open-Meteo (best_match)
-- ZA: Open-Meteo (best_match)
+Provider mapping (resolution):
+- US: NWS (2.5km)
+- CA: Environment Canada (2.5km)
+- GB: Met Office IMPROVER (1.5km)
+- FR: Open-Meteo Meteo-France AROME (1.5km)
+- IT: Open-Meteo DWD ICON-EU (7km)
+- CH: Open-Meteo MeteoSwiss ICON-CH2 (2km) - excellent for Alps!
+- NZ: Open-Meteo ECMWF (9km) - best available for southern hemisphere
+- ZA: Open-Meteo ECMWF (9km) - best available for southern hemisphere
 """
 import logging
 from typing import Dict, List, Optional
@@ -80,12 +80,12 @@ class WeatherRouter:
             "CA": EnvironmentCanadaProvider(),
             "GB": MetOfficeProvider(),
             # European countries use Open-Meteo with regional models
-            "FR": OpenMeteoProvider(model=OpenMeteoModel.METEOFRANCE),
-            "IT": OpenMeteoProvider(model=OpenMeteoModel.ICON_EU),
-            "CH": OpenMeteoProvider(model=OpenMeteoModel.ICON_EU),  # No MeteoSwiss endpoint
-            # Southern hemisphere countries use best_match
-            "NZ": OpenMeteoProvider(model=OpenMeteoModel.BEST_MATCH),
-            "ZA": OpenMeteoProvider(model=OpenMeteoModel.BEST_MATCH),
+            "FR": OpenMeteoProvider(model=OpenMeteoModel.METEOFRANCE),  # 1.5km AROME
+            "IT": OpenMeteoProvider(model=OpenMeteoModel.ICON_EU),      # 7km ICON
+            "CH": OpenMeteoProvider(model=OpenMeteoModel.ICON_CH),      # 2km MeteoSwiss!
+            # Southern hemisphere countries use ECMWF (9km - best available)
+            "NZ": OpenMeteoProvider(model=OpenMeteoModel.ECMWF),        # 9km ECMWF
+            "ZA": OpenMeteoProvider(model=OpenMeteoModel.ECMWF),        # 9km ECMWF
         }
 
         # Universal fallback provider
