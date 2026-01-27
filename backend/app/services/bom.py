@@ -117,9 +117,12 @@ class BOMService:
     
     async def get_grid_elevation(self, lat: float, lon: float) -> int:
         """
-        Get the grid/DEM elevation at a lat/lon point using Open-Meteo Elevation API.
-        This represents the average terrain elevation that BOM forecasts are based on.
-        
+        Get the 90m DEM elevation at a specific lat/lon point.
+
+        NOTE: This is the POINT elevation, not the BOM model orography.
+        BOM temperatures are valid for the cell-average elevation, not this value.
+        Use get_cell_model_elevation() for the elevation BOM temps are based on.
+
         Returns elevation in meters (integer).
         """
         # Round to 3 decimal places for cache key (gives ~100m precision)
@@ -145,7 +148,35 @@ class BOMService:
         except Exception as e:
             logger.warning(f"Failed to get grid elevation: {e}, using default 500m")
             return 500  # Fallback default
-    
+
+    async def get_cell_model_elevation(self, lat: float, lon: float, cell_id: str = "") -> int:
+        """
+        Get the estimated model orography (cell average elevation) for a location.
+
+        BOM ACCESS model uses ~2.2km x 2.2km grid cells with averaged terrain.
+        Temperatures are valid at 2m above this model orography.
+
+        This method samples a 2.2km grid centered on the location using
+        Open Topo Data API and returns the average elevation.
+
+        Args:
+            lat: User's latitude
+            lon: User's longitude
+            cell_id: Unused (kept for API compatibility)
+
+        Returns:
+            Estimated model orography (cell average elevation) in meters
+        """
+        from app.services.elevation import get_cell_elevation_data
+
+        try:
+            cell_data = await get_cell_elevation_data(lat, lon, cell_id)
+            return int(cell_data.average_elevation)
+        except Exception as e:
+            logger.warning(f"Failed to get cell model elevation: {e}")
+            # Fallback to point elevation
+            return await self.get_grid_elevation(lat, lon)
+
     async def close(self):
         """Close HTTP client."""
         if self._client:
@@ -226,9 +257,9 @@ class BOMService:
         cell = BOMGridConfig.lat_lon_to_cell(lat, lon)
         cell_id = BOMGridConfig.cell_to_string(*cell)
         geohash = self._lat_lon_to_geohash(lat, lon)
-        grid_elevation = await self.get_grid_elevation(lat, lon)
 
         if self.use_mock:
+            grid_elevation = await self.get_grid_elevation(lat, lon)
             return self._generate_mock_forecast(cell_id, geohash, lat, lon, days, "daily", grid_elevation)
 
         client = await self.get_client()
@@ -241,12 +272,22 @@ class BOMService:
             data = response.json()
 
             logger.info(f"BOM API success for {geohash} (daily)")
-            return self._parse_bom_daily_response(cell_id, geohash, lat, lon, data, days, grid_elevation)
+
+            # Extract BOM's cell identifier from response metadata
+            # forecast_region is a string (e.g., "Hobart"), not an object
+            bom_cell_id = data.get("metadata", {}).get("forecast_region", cell_id)
+
+            # Get cell model elevation (average elevation across the BOM cell)
+            model_elevation = await self.get_cell_model_elevation(lat, lon, bom_cell_id)
+
+            return self._parse_bom_daily_response(bom_cell_id, geohash, lat, lon, data, days, model_elevation)
 
         except httpx.HTTPError as e:
             logger.warning(f"BOM daily API failed for {geohash}: {e}")
 
         # Fall back to Open-Meteo
+        # Note: Open-Meteo returns temps already downscaled to 90m DEM, so use point elevation
+        grid_elevation = await self.get_grid_elevation(lat, lon)
         logger.info(f"Falling back to Open-Meteo for daily forecast at {lat}, {lon}")
         return await self._fetch_openmeteo_forecast(
             cell_id, geohash, lat, lon, days, resolution="hourly", grid_elevation=grid_elevation
@@ -390,29 +431,37 @@ class BOMService:
         """
         client = await self.get_client()
         
-        # Get the actual grid elevation for this location
-        grid_elevation = await self.get_grid_elevation(lat, lon)
-        
         # Choose BOM endpoint based on resolution
         endpoint = "hourly" if resolution == "hourly" else "3-hourly"
-        
+
         # Try BOM first
         try:
             url = f"{self.BOM_API_BASE}/locations/{geohash}/forecasts/{endpoint}"
             response = await client.get(url)
             response.raise_for_status()
             data = response.json()
-            
+
             logger.info(f"BOM API success for {geohash} ({endpoint})")
+
+            # Extract BOM's cell identifier from response metadata
+            # forecast_region is a string (e.g., "Hobart"), not an object
+            bom_cell_id = data.get("metadata", {}).get("forecast_region", cell_id)
+
+            # Get cell model elevation (average elevation across the BOM cell)
+            # This is the elevation BOM temperatures are valid for
+            model_elevation = await self.get_cell_model_elevation(lat, lon, bom_cell_id)
+
             if resolution == "hourly":
-                return self._parse_bom_hourly_response(cell_id, geohash, lat, lon, data, days, grid_elevation)
+                return self._parse_bom_hourly_response(bom_cell_id, geohash, lat, lon, data, days, model_elevation)
             else:
-                return self._parse_bom_3hourly_response(cell_id, geohash, lat, lon, data, days, grid_elevation)
+                return self._parse_bom_3hourly_response(bom_cell_id, geohash, lat, lon, data, days, model_elevation)
             
         except httpx.HTTPError as e:
             logger.warning(f"BOM API failed for {geohash}: {e}")
-        
+
         # Fall back to Open-Meteo
+        # Note: Open-Meteo returns temps already downscaled to 90m DEM, so use point elevation
+        grid_elevation = await self.get_grid_elevation(lat, lon)
         try:
             logger.info(f"Falling back to Open-Meteo for {lat}, {lon}")
             return await self._fetch_openmeteo_forecast(cell_id, geohash, lat, lon, days, resolution, grid_elevation)

@@ -68,6 +68,7 @@ class _GridInfo:
     gridY: int
     forecast_url: str
     forecast_hourly_url: str
+    elevation: Optional[int] = None  # Grid cell elevation in meters
 
 
 class NWSProvider(WeatherProvider):
@@ -169,6 +170,20 @@ class NWSProvider(WeatherProvider):
             forecast_hourly_url=props.get("forecastHourly", ""),
         )
 
+        # Fetch grid cell elevation from gridpoints endpoint
+        try:
+            gridpoints_url = f"{BASE_URL}/gridpoints/{grid_info.office}/{grid_info.gridX},{grid_info.gridY}"
+            grid_response = await client.get(gridpoints_url)
+            grid_response.raise_for_status()
+            grid_data = grid_response.json()
+
+            elevation_data = grid_data.get("properties", {}).get("elevation", {})
+            if elevation_data and elevation_data.get("value") is not None:
+                grid_info.elevation = int(elevation_data["value"])
+                logger.info(f"NWS grid elevation for {cache_key}: {grid_info.elevation}m")
+        except httpx.HTTPError as e:
+            logger.warning(f"Failed to fetch NWS grid elevation: {e}")
+
         # Cache the result
         self._grid_cache[cache_key] = grid_info
         logger.debug(f"Cached grid info for {cache_key}: {grid_info.office}")
@@ -208,20 +223,27 @@ class NWSProvider(WeatherProvider):
             logger.error(f"NWS forecast API error: {e}")
             raise
 
-        # Parse the forecast
-        return self._parse_forecast_response(lat, lon, data)
+        # Parse the forecast with grid elevation
+        return self._parse_forecast_response(lat, lon, data, grid_info.elevation)
 
     def _parse_forecast_response(
         self,
         lat: float,
         lon: float,
-        data: dict
+        data: dict,
+        grid_elevation: Optional[int] = None
     ) -> NormalizedDailyForecast:
         """
         Parse NWS forecast response and normalize to standard format.
 
         NWS returns 14 periods (7 days x day/night periods).
         We combine day/night into single daily periods.
+
+        Args:
+            lat: Latitude
+            lon: Longitude
+            data: NWS API response
+            grid_elevation: Grid cell elevation in meters (from gridpoints API)
         """
         periods: List[NormalizedForecast] = []
         fetched_at = datetime.now(timezone.utc)
@@ -239,6 +261,7 @@ class NWSProvider(WeatherProvider):
                 alerts=[],
                 fetched_at=fetched_at,
                 is_fallback=False,
+                model_elevation=grid_elevation,
             )
 
         # Process periods - NWS gives day/night pairs
@@ -251,7 +274,7 @@ class NWSProvider(WeatherProvider):
                 logger.warning(f"Error parsing NWS period: {e}")
                 continue
 
-        logger.info(f"Parsed {len(periods)} periods from NWS forecast")
+        logger.info(f"Parsed {len(periods)} periods from NWS forecast (elevation={grid_elevation}m)")
 
         return NormalizedDailyForecast(
             provider=self.provider_name,
@@ -262,6 +285,7 @@ class NWSProvider(WeatherProvider):
             alerts=[],  # Alerts fetched separately
             fetched_at=fetched_at,
             is_fallback=False,
+            model_elevation=grid_elevation,
         )
 
     def _normalize_period(

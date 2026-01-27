@@ -281,19 +281,32 @@ class OpenMeteoProvider(WeatherProvider):
             logger.error(f"Open-Meteo API error: {e}")
             raise
 
-        return self._parse_response(lat, lon, data)
+        # Extract model elevation from response (90m DEM by default)
+        model_elevation = data.get("elevation")
+        if model_elevation is not None:
+            model_elevation = int(model_elevation)
+
+        return self._parse_response(lat, lon, data, model_elevation)
 
     def _parse_response(
         self,
         lat: float,
         lon: float,
-        data: dict
+        data: dict,
+        model_elevation: Optional[int] = None
     ) -> NormalizedDailyForecast:
         """
         Parse Open-Meteo API response and normalize to our format.
 
         Aggregates hourly data into 3-hour periods for consistency
         with the existing BOM provider pattern.
+
+        Args:
+            lat: Latitude
+            lon: Longitude
+            data: API response data
+            model_elevation: Elevation in meters that temperature data is valid for
+                           (from API's 90m DEM downscaling)
         """
         periods: List[NormalizedForecast] = []
         fetched_at = datetime.now(timezone.utc)
@@ -312,6 +325,7 @@ class OpenMeteoProvider(WeatherProvider):
                 alerts=[],
                 fetched_at=fetched_at,
                 is_fallback=False,
+                model_elevation=model_elevation,
             )
 
         # Aggregate hourly data into 3-hour periods
@@ -379,7 +393,7 @@ class OpenMeteoProvider(WeatherProvider):
                 logger.warning(f"Error parsing Open-Meteo period {i}: {e}")
                 continue
 
-        logger.info(f"Parsed {len(periods)} periods from Open-Meteo response")
+        logger.info(f"Parsed {len(periods)} periods from Open-Meteo response (elevation={model_elevation}m)")
 
         return NormalizedDailyForecast(
             provider=self.provider_name,
@@ -390,6 +404,7 @@ class OpenMeteoProvider(WeatherProvider):
             alerts=[],  # Open-Meteo doesn't support alerts
             fetched_at=fetched_at,
             is_fallback=False,
+            model_elevation=model_elevation,
         )
 
     def _get_values(

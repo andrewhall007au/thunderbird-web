@@ -39,6 +39,12 @@ class NormalizedForecast:
     - Snow: cm
     - Wind: km/h
     - Elevation: meters
+
+    Elevation handling:
+    - model_elevation: The elevation the weather data is valid for (grid cell or DEM)
+    - Providers return temperature at 2m above this elevation
+    - To get temperature at a different elevation, apply lapse rate:
+      adjusted_temp = temp - (target_elevation - model_elevation) * 0.0065
     """
     provider: str  # Provider name for display (e.g., "Open-Meteo", "NWS")
     lat: float
@@ -78,6 +84,13 @@ class NormalizedDailyForecast:
     Multi-day forecast with normalized periods.
 
     Contains all periods for requested duration plus any alerts.
+
+    Elevation handling:
+    - model_elevation: The elevation (in meters) that temperature data is valid for
+    - For Open-Meteo: This is the 90m DEM elevation (already downscaled)
+    - For NWS: This is the grid cell elevation
+    - For BOM: This is estimated from Open-Meteo DEM
+    - Use this as base_elevation when applying lapse rate adjustments
     """
     provider: str  # Provider name
     lat: float
@@ -89,6 +102,7 @@ class NormalizedDailyForecast:
 
     fetched_at: datetime
     is_fallback: bool = False  # True if fallback provider was used
+    model_elevation: Optional[int] = None  # Elevation (meters) that temps are valid for
 
 
 class WeatherProvider(ABC):
