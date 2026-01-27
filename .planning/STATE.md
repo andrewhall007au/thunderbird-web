@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
-**Last updated:** 2026-01-21
-**Current phase:** Phase 6 (International Weather) - Complete
+**Last updated:** 2026-01-28
+**Current phase:** Post-v1 Enhancement - Elevation Fix Complete
 
 ## Project Reference
 
@@ -9,87 +9,73 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 **Core value:** Hikers anywhere in the world can create a custom route and receive accurate, location-specific weather forecasts via SMS — even in areas with no cell coverage.
 
-**Current focus:** ALL PHASES COMPLETE. v1 roadmap finished with all 53 requirements implemented.
-
 ## Current Position
 
-Phase: 6 of 6 (International Weather)
-Plan: 7 of 7 in current phase
-Status: Phase complete - MILESTONE COMPLETE
-Last activity: 2026-01-21 - Completed 06-07-PLAN.md (Testing and Verification)
+Phase: Post-v1 (Elevation Fix Complete)
+Status: Ready for next task
+Last activity: 2026-01-28 - Elevation handling fixed and tested
 
-Progress: ████████████████████ 100%
+## Completed Work (2026-01-28)
 
-## Phase Status
+### Fixed: Elevation Handling for Temperature Adjustments
 
-| Phase | Name | Status | Progress |
-|-------|------|--------|----------|
-| 1 | Foundation | Complete | 4/4 plans |
-| 2 | Payments | Complete | 6/6 plans |
-| 3 | Route Creation | Complete | 7/7 plans |
-| 4 | User Flows | Complete | 5/5 plans |
-| 5 | Affiliates | Complete | 6/6 plans |
-| 6 | International Weather | Complete | 7/7 plans |
+**Problem solved:** BOM temperatures are valid at 2m above MODEL OROGRAPHY (cell average elevation), not the user's GPS point. This caused 1-3°C errors in mountainous terrain.
 
-## Recent Decisions
+**Solution implemented:**
+1. Created `app/services/elevation.py` with Open Topo Data API integration
+2. Samples 2.2km × 2.2km grid (49 points) to estimate BOM cell average elevation
+3. Updated all providers to report `model_elevation`:
+   - **BOM**: Calculates cell average via `get_cell_model_elevation()`
+   - **NWS**: Fetches grid elevation from gridpoints API
+   - **Open-Meteo**: Parses elevation from API response (90m DEM)
+4. Converter sets `base_elevation = model_elevation` for formatters
+5. Formatters apply lapse rate (6.5°C/1000m) from model → target elevation
 
-| Date | Decision | Context |
-|------|----------|---------|
-| 2026-01-21 | Open-Meteo countries have is_fallback=False | FR/IT/CH/NZ/ZA use Open-Meteo as primary, not fallback |
-| 2026-01-21 | Fallback only for native API providers | Only NWS/EC/MetOffice can trigger fallback to Open-Meteo |
-| 2026-01-21 | EC API graceful fallback | env-canada library broken due to EC API changes; raises RuntimeError for Open-Meteo fallback |
-| 2026-01-21 | Switzerland uses ICON_EU not MeteoSwiss | Open-Meteo has no /v1/meteoswiss endpoint; ICON_EU covers Alps well |
-| 2026-01-21 | NWS grid caching by coordinates | 4 decimal precision (~11m) avoids redundant /points calls |
-| 2026-01-21 | Weather DataHub API for Met Office | DataPoint deprecated; DataHub is current API |
-| 2026-01-21 | Open-Meteo as universal fallback | Free API, no key required, global coverage |
-| 2026-01-21 | 3-hour period aggregation | Matches existing BOM provider pattern |
-| 2026-01-21 | In-memory cache for weather | Simple dict-based cache sufficient for single-server MVP |
-| 2026-01-21 | Model selection via constructor | Allows regional optimization (meteofrance, meteoswiss, etc.) |
-| 2026-01-21 | Test fixture resets both model and service singletons | Required for test isolation when module-level imports cache store references |
-| 2026-01-21 | Cron script for commission availability | Daily job: pending -> available after 30-day hold period |
-| 2026-01-21 | $50 minimum payout threshold | Enforced in request_payout() - request fails if available < $50 |
-| 2026-01-21 | Payout method required before request | Affiliates must set PayPal or bank before requesting payout |
-| 2026-01-21 | Milestone tracking via last_milestone_cents | Prevents duplicate milestone notifications |
-| 2026-01-21 | Milestone emails on all commissions | Both initial and trailing commissions trigger milestone checks |
-| 2026-01-21 | Cookie-based attribution with 7-day expiry | tb_affiliate cookie set on landing, read at checkout for 7-day attribution window |
-| 2026-01-21 | Session-based click deduplication | tb_session cookie (24h) prevents duplicate click counting |
+**Test results:**
+- kunanyi summit: Point 1258m, Grid avg 1019m → 1.6°C adjustment
+- Hobart CBD: Point 21m, Grid avg 25m → negligible (flat terrain)
+- Ben Lomond: Point 1476m, Grid avg 1396m → 0.5°C adjustment
 
-## Blockers
+**Tests:** 130 GPS/weather tests passing
 
-None currently.
+### Previously Completed: GPS International Routing
+- GPS forecasts route through country-specific providers (NWS for US, Met Office for UK, etc.)
+- AU coordinates continue using BOM (backwards compatible)
+- CAST7 now supports GPS coordinates
+
+## What's Next?
+
+The elevation fix is complete. Potential next steps:
+
+1. **Production deployment** - Push elevation fix to production
+2. **More international providers** - Add more country-specific weather APIs
+3. **UI improvements** - Frontend enhancements
+4. **Performance optimization** - Cache elevation data more aggressively
+5. **Documentation** - Update user-facing docs about accuracy improvements
+
+## Key Files (Elevation System)
+
+```
+backend/app/services/elevation.py       # NEW - Open Topo Data integration
+backend/app/services/bom.py             # get_cell_model_elevation()
+backend/app/services/weather/base.py    # model_elevation field
+backend/app/services/weather/converter.py  # model_elevation → base_elevation
+backend/app/services/weather/providers/nws.py      # Grid elevation fetch
+backend/app/services/weather/providers/openmeteo.py # DEM elevation parse
+backend/app/services/formatter.py       # Lapse rate adjustment
+```
+
+## Session Continuity
+
+Last session: 2026-01-28
+Completed: Elevation investigation and fix
+Commit: feat: add accurate elevation handling for temperature adjustments
 
 ## Planning Documents
 
 - `.planning/PROJECT.md` — Project context and requirements
 - `.planning/REQUIREMENTS.md` — 53 v1 requirements with traceability
 - `.planning/ROADMAP.md` — 6 phases with dependencies
-- `.planning/research/` — Stack, features, architecture, pitfalls research
-- `.planning/codebase/` — Existing codebase documentation
-
-## Session Continuity
-
-Last session: 2026-01-21 09:23Z
-Stopped at: Completed 06-07-PLAN.md (Testing and Verification)
-Resume file: None
-
-## Session Handoff
-
-**What was done (06-07):**
-- Created 43 provider unit tests covering all 4 provider implementations
-- Created 29 router/cache integration tests
-- Verified and marked WTHR-01 through WTHR-11 as complete
-- Phase 6 complete - all 7 plans finished
-
-**Key files created this plan:**
-- `backend/tests/test_weather_providers.py` (provider unit tests)
-- `backend/tests/test_weather_router.py` (router integration tests)
-
-**Key files modified:**
-- `.planning/REQUIREMENTS.md` (WTHR requirements marked complete)
-
-**What's next:**
-- MILESTONE COMPLETE - All 6 phases finished
-- Use `/gsd:complete-milestone` to archive and celebrate
 
 ---
-*State initialized: 2026-01-19*
+*State updated: 2026-01-28*
