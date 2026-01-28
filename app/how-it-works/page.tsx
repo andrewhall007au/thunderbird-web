@@ -176,16 +176,16 @@ export default function HowItWorksPage() {
           {/* Mobile: stacked cards */}
           <div className="grid grid-cols-1 gap-3 md:hidden">
             {[
-              { country: 'Australia', resolution: '3 × 3 km', frequency: 'Hourly', source: 'Bureau of Meteorology' },
+              { country: 'Australia', resolution: '2.2 × 2.2 km', frequency: 'Hourly', source: 'Bureau of Meteorology' },
               { country: 'United States', resolution: '2.5 × 2.5 km', frequency: 'Hourly', source: 'National Weather Service' },
               { country: 'Canada', resolution: '2.5 × 2.5 km', frequency: 'Hourly', source: 'Environment Canada' },
-              { country: 'United Kingdom', resolution: 'Point', frequency: 'Hourly', source: 'Met Office' },
+              { country: 'United Kingdom', resolution: '1.5 × 1.5 km', frequency: 'Hourly', source: 'Met Office' },
               { country: 'France', resolution: '1.5 × 1.5 km', frequency: '3-hourly', source: 'Météo-France' },
-              { country: 'Switzerland', resolution: '1 × 1 km', frequency: '3-hourly', source: 'MeteoSwiss' },
+              { country: 'Switzerland', resolution: '2 × 2 km', frequency: '3-hourly', source: 'MeteoSwiss' },
               { country: 'Italy', resolution: '7 × 7 km', frequency: '3-hourly', source: 'DWD ICON-EU' },
-              { country: 'New Zealand', resolution: '4 × 4 km', frequency: '6-hourly', source: 'MetService' },
-              { country: 'Japan', resolution: '5 × 5 km', frequency: '3-hourly', source: 'JMA MSM' },
-              { country: 'South Africa', resolution: '11 × 11 km', frequency: '6-hourly', source: 'NOAA GFS' },
+              { country: 'Japan', resolution: '5 × 5 km', frequency: 'Hourly', source: 'JMA' },
+              { country: 'New Zealand', resolution: '9 × 9 km', frequency: '6-hourly', source: 'ECMWF' },
+              { country: 'South Africa', resolution: '9 × 9 km', frequency: '6-hourly', source: 'ECMWF' },
             ].map((market) => (
               <div key={market.country} className="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
                 <div>
@@ -214,7 +214,7 @@ export default function HowItWorksPage() {
               <tbody className="text-gray-700">
                 <tr className="border-b border-gray-200">
                   <td className="py-3 pr-4">Australia</td>
-                  <td className="py-3 pr-4 font-mono">3 × 3 km</td>
+                  <td className="py-3 pr-4 font-mono">2.2 × 2.2 km</td>
                   <td className="py-3 pr-4">Hourly</td>
                   <td className="py-3">Bureau of Meteorology</td>
                 </tr>
@@ -232,7 +232,7 @@ export default function HowItWorksPage() {
                 </tr>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   <td className="py-3 pr-4">United Kingdom</td>
-                  <td className="py-3 pr-4 font-mono">Point</td>
+                  <td className="py-3 pr-4 font-mono">1.5 × 1.5 km</td>
                   <td className="py-3 pr-4">Hourly</td>
                   <td className="py-3">Met Office</td>
                 </tr>
@@ -244,7 +244,7 @@ export default function HowItWorksPage() {
                 </tr>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   <td className="py-3 pr-4">Switzerland</td>
-                  <td className="py-3 pr-4 font-mono">1 × 1 km</td>
+                  <td className="py-3 pr-4 font-mono">2 × 2 km</td>
                   <td className="py-3 pr-4">3-hourly</td>
                   <td className="py-3">MeteoSwiss</td>
                 </tr>
@@ -255,22 +255,22 @@ export default function HowItWorksPage() {
                   <td className="py-3">DWD ICON-EU</td>
                 </tr>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <td className="py-3 pr-4">New Zealand</td>
-                  <td className="py-3 pr-4 font-mono">4 × 4 km</td>
-                  <td className="py-3 pr-4">6-hourly</td>
-                  <td className="py-3">MetService</td>
-                </tr>
-                <tr className="border-b border-gray-200">
                   <td className="py-3 pr-4">Japan</td>
                   <td className="py-3 pr-4 font-mono">5 × 5 km</td>
-                  <td className="py-3 pr-4">3-hourly</td>
-                  <td className="py-3">JMA MSM</td>
+                  <td className="py-3 pr-4">Hourly</td>
+                  <td className="py-3">JMA</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 pr-4">New Zealand</td>
+                  <td className="py-3 pr-4 font-mono">9 × 9 km</td>
+                  <td className="py-3 pr-4">6-hourly</td>
+                  <td className="py-3">ECMWF</td>
                 </tr>
                 <tr>
                   <td className="py-3 pr-4">South Africa</td>
-                  <td className="py-3 pr-4 font-mono">11 × 11 km</td>
+                  <td className="py-3 pr-4 font-mono">9 × 9 km</td>
                   <td className="py-3 pr-4">6-hourly</td>
-                  <td className="py-3">NOAA GFS</td>
+                  <td className="py-3">ECMWF</td>
                 </tr>
               </tbody>
             </table>

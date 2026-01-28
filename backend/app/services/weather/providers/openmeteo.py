@@ -32,6 +32,7 @@ from app.services.weather.base import (
     NormalizedForecast,
     NormalizedDailyForecast,
     WeatherAlert,
+    RecentPrecipitation,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,9 @@ class OpenMeteoModel(str, Enum):
     - METEOFRANCE: France AROME model (1.5-2.5km) - excellent for France/Alps
     - ICON_EU: European DWD ICON model (7km) - covers all of Europe
     - ICON_CH: MeteoSwiss ICON-CH2 model (2km) - excellent for Swiss Alps
+    - GEM: Canadian GEM model (2.5km HRDPS regional, 15km global)
+    - HRRR: US NOAA HRRR model (3km) - high resolution for CONUS
+    - JMA: Japan Meteorological Agency MSM model (5km) - excellent for Japan
     - ECMWF: European Centre model (9km global) - best global model
     - GFS: US NOAA GFS model (25km global) - fallback for global coverage
     """
@@ -53,17 +57,24 @@ class OpenMeteoModel(str, Enum):
     METEOFRANCE = "meteofrance"
     ICON_EU = "icon_eu"
     ICON_CH = "icon_ch"  # MeteoSwiss 2km for Switzerland
+    GEM = "gem"          # Canadian GEM 2.5km HRDPS regional
+    HRRR = "hrrr"        # US NOAA HRRR 3km - excellent for US!
+    JMA = "jma"          # Japan JMA MSM 5km - excellent for Japan!
     ECMWF = "ecmwf"      # 9km global - best for NZ, ZA
     GFS = "gfs"
 
 
 # Model-specific API endpoints
 # Note: ICON_CH uses the standard forecast endpoint with models parameter
+# HRRR uses the GFS endpoint with models=hrrr_conus parameter
 MODEL_ENDPOINTS = {
     OpenMeteoModel.BEST_MATCH: "https://api.open-meteo.com/v1/forecast",
     OpenMeteoModel.METEOFRANCE: "https://api.open-meteo.com/v1/meteofrance",
     OpenMeteoModel.ICON_EU: "https://api.open-meteo.com/v1/dwd-icon",
     OpenMeteoModel.ICON_CH: "https://api.open-meteo.com/v1/forecast",  # Uses models=meteoswiss_icon_ch2
+    OpenMeteoModel.GEM: "https://api.open-meteo.com/v1/gem",  # Canadian GEM HRDPS
+    OpenMeteoModel.HRRR: "https://api.open-meteo.com/v1/gfs",  # Uses models=hrrr_conus
+    OpenMeteoModel.JMA: "https://api.open-meteo.com/v1/jma",  # Japan MSM 5km
     OpenMeteoModel.ECMWF: "https://api.open-meteo.com/v1/ecmwf",
     OpenMeteoModel.GFS: "https://api.open-meteo.com/v1/gfs",
 }
@@ -74,6 +85,9 @@ MODEL_NAMES = {
     OpenMeteoModel.METEOFRANCE: "Open-Meteo (Meteo-France)",
     OpenMeteoModel.ICON_EU: "Open-Meteo (DWD ICON)",
     OpenMeteoModel.ICON_CH: "Open-Meteo (MeteoSwiss)",
+    OpenMeteoModel.GEM: "Open-Meteo (GEM)",
+    OpenMeteoModel.HRRR: "Open-Meteo (HRRR)",
+    OpenMeteoModel.JMA: "Open-Meteo (JMA)",
     OpenMeteoModel.ECMWF: "Open-Meteo (ECMWF)",
     OpenMeteoModel.GFS: "Open-Meteo (GFS)",
 }
@@ -84,6 +98,9 @@ OPENMETEO_ENDPOINTS = {
     "meteofrance": "https://api.open-meteo.com/v1/meteofrance",
     "icon_eu": "https://api.open-meteo.com/v1/dwd-icon",
     "icon_ch": "https://api.open-meteo.com/v1/forecast",
+    "gem": "https://api.open-meteo.com/v1/gem",
+    "hrrr": "https://api.open-meteo.com/v1/gfs",
+    "jma": "https://api.open-meteo.com/v1/jma",
     "ecmwf": "https://api.open-meteo.com/v1/ecmwf",
     "gfs": "https://api.open-meteo.com/v1/gfs",
 }
@@ -91,9 +108,12 @@ OPENMETEO_ENDPOINTS = {
 # Country-to-model mapping for optimal regional forecasts
 # Maps ISO 3166-1 alpha-2 country codes to best available model
 COUNTRY_TO_MODEL = {
+    "US": OpenMeteoModel.HRRR,         # USA - HRRR 3km (CONUS only)
+    "CA": OpenMeteoModel.GEM,          # Canada - GEM HRDPS 2.5km regional
     "FR": OpenMeteoModel.METEOFRANCE,  # France - AROME 1.5-2.5km
     "CH": OpenMeteoModel.ICON_CH,      # Switzerland - MeteoSwiss ICON-CH2 2km
     "IT": OpenMeteoModel.ICON_EU,      # Italy - ICON 7km (no better option)
+    "JP": OpenMeteoModel.JMA,          # Japan - JMA MSM 5km
     "NZ": OpenMeteoModel.ECMWF,        # New Zealand - ECMWF 9km (best available)
     "ZA": OpenMeteoModel.ECMWF,        # South Africa - ECMWF 9km (best available)
     # Other European countries could use ICON_EU
@@ -262,6 +282,7 @@ class OpenMeteoProvider(WeatherProvider):
             "longitude": lon,
             "hourly": ",".join([
                 "temperature_2m",
+                "dew_point_2m",  # For LCL cloud base calculation
                 "precipitation_probability",
                 "precipitation",
                 "rain",
@@ -271,14 +292,19 @@ class OpenMeteoProvider(WeatherProvider):
                 "wind_direction_10m",
                 "cloud_cover",
                 "freezing_level_height",
+                "cape",  # Convective Available Potential Energy (J/kg) for storm prediction
             ]),
             "timezone": "auto",
             "forecast_days": min(days, 16),
+            "past_days": 3,  # Get last 72 hours for trail condition assessment
         }
 
         # MeteoSwiss ICON-CH requires explicit model parameter
         if self.model == OpenMeteoModel.ICON_CH:
             params["models"] = "meteoswiss_icon_ch2"  # 2km, 5-day forecast
+        # HRRR requires explicit model parameter (uses GFS endpoint)
+        elif self.model == OpenMeteoModel.HRRR:
+            params["models"] = "hrrr_conus"  # 3km, US CONUS only
 
         logger.info(
             f"Fetching Open-Meteo forecast for ({lat}, {lon}), {days} days, "
@@ -313,6 +339,9 @@ class OpenMeteoProvider(WeatherProvider):
         Aggregates hourly data into 3-hour periods for consistency
         with the existing BOM provider pattern.
 
+        Also calculates recent precipitation from past_days data for
+        trail condition assessment.
+
         Args:
             lat: Latitude
             lon: Longitude
@@ -325,6 +354,9 @@ class OpenMeteoProvider(WeatherProvider):
 
         hourly = data.get("hourly", {})
         times = hourly.get("time", [])
+
+        # Calculate recent precipitation from past data
+        recent_precip = self._calculate_recent_precipitation(hourly, times, fetched_at)
 
         if not times:
             logger.warning("Empty response from Open-Meteo API")
@@ -355,6 +387,7 @@ class OpenMeteoProvider(WeatherProvider):
 
                 # Extract values, handling None gracefully
                 temps = self._get_values(hourly, "temperature_2m", agg_range)
+                dewpoints = self._get_values(hourly, "dew_point_2m", agg_range)
                 precip_probs = self._get_values(hourly, "precipitation_probability", agg_range)
                 precips = self._get_values(hourly, "precipitation", agg_range)
                 snowfalls = self._get_values(hourly, "snowfall", agg_range)
@@ -363,10 +396,12 @@ class OpenMeteoProvider(WeatherProvider):
                 wind_dirs = self._get_values(hourly, "wind_direction_10m", agg_range)
                 cloud_covers = self._get_values(hourly, "cloud_cover", agg_range)
                 freezing_levels = self._get_values(hourly, "freezing_level_height", agg_range)
+                cape_values = self._get_values(hourly, "cape", agg_range)
 
                 # Calculate aggregates
                 temp_min = min(temps) if temps else 10.0
                 temp_max = max(temps) if temps else 15.0
+                dewpoint = round(sum(dewpoints) / len(dewpoints), 1) if dewpoints else None
                 rain_chance = int(max(precip_probs)) if precip_probs else 0
                 rain_amount = sum(precips) if precips else 0.0
                 snow_amount = sum(snowfalls) if snowfalls else 0.0
@@ -375,6 +410,7 @@ class OpenMeteoProvider(WeatherProvider):
                 wind_direction = degrees_to_compass(wind_dirs[0] if wind_dirs else None)
                 cloud_cover = int(sum(cloud_covers) / len(cloud_covers)) if cloud_covers else 50
                 freezing_level = int(sum(freezing_levels) / len(freezing_levels)) if freezing_levels else None
+                cape = int(max(cape_values)) if cape_values else None  # Max CAPE in period (peak storm potential)
 
                 # Generate description
                 description = self._generate_description(
@@ -394,8 +430,10 @@ class OpenMeteoProvider(WeatherProvider):
                     wind_max=round(wind_max, 1),
                     wind_direction=wind_direction,
                     cloud_cover=cloud_cover,
+                    dewpoint=dewpoint,  # For LCL cloud base calculation
                     freezing_level=freezing_level,
                     snow_amount=round(snow_amount, 1),
+                    cape=cape,  # Storm potential indicator
                     description=description,
                     alerts=[],
                 )
@@ -417,6 +455,7 @@ class OpenMeteoProvider(WeatherProvider):
             fetched_at=fetched_at,
             is_fallback=False,
             model_elevation=model_elevation,
+            recent_precip=recent_precip,
         )
 
     def _get_values(
@@ -432,6 +471,79 @@ class OpenMeteoProvider(WeatherProvider):
             if i < len(values) and values[i] is not None:
                 result.append(float(values[i]))
         return result
+
+    def _calculate_recent_precipitation(
+        self,
+        hourly: dict,
+        times: List[str],
+        now: datetime
+    ) -> RecentPrecipitation:
+        """
+        Calculate recent precipitation totals from past hourly data.
+
+        Sums precipitation for the last 24, 48, and 72 hours to help
+        assess trail conditions (mud, stream levels, snow pack).
+
+        Args:
+            hourly: Hourly data from Open-Meteo response
+            times: List of ISO datetime strings
+            now: Current timestamp
+
+        Returns:
+            RecentPrecipitation with 24h/48h/72h totals
+        """
+        rain_values = hourly.get("precipitation", [])
+        snow_values = hourly.get("snowfall", [])
+
+        rain_24h = 0.0
+        rain_48h = 0.0
+        rain_72h = 0.0
+        snow_24h = 0.0
+        snow_48h = 0.0
+        snow_72h = 0.0
+
+        for i, time_str in enumerate(times):
+            try:
+                period_time = parse_iso_datetime(time_str)
+                # Make period_time timezone-aware if it isn't
+                if period_time.tzinfo is None:
+                    period_time = period_time.replace(tzinfo=timezone.utc)
+
+                hours_ago = (now - period_time).total_seconds() / 3600
+
+                # Only count past hours (negative hours_ago means future)
+                if hours_ago < 0:
+                    continue
+
+                rain = rain_values[i] if i < len(rain_values) and rain_values[i] is not None else 0.0
+                snow = snow_values[i] if i < len(snow_values) and snow_values[i] is not None else 0.0
+
+                if hours_ago <= 24:
+                    rain_24h += rain
+                    snow_24h += snow
+                if hours_ago <= 48:
+                    rain_48h += rain
+                    snow_48h += snow
+                if hours_ago <= 72:
+                    rain_72h += rain
+                    snow_72h += snow
+
+            except (ValueError, TypeError):
+                continue
+
+        logger.debug(
+            f"Recent precipitation: rain={rain_24h:.1f}/{rain_48h:.1f}/{rain_72h:.1f}mm, "
+            f"snow={snow_24h:.1f}/{snow_48h:.1f}/{snow_72h:.1f}cm"
+        )
+
+        return RecentPrecipitation(
+            rain_24h=round(rain_24h, 1),
+            rain_48h=round(rain_48h, 1),
+            rain_72h=round(rain_72h, 1),
+            snow_24h=round(snow_24h, 1),
+            snow_48h=round(snow_48h, 1),
+            snow_72h=round(snow_72h, 1),
+        )
 
     def _generate_description(
         self,

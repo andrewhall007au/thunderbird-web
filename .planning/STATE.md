@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
 **Last updated:** 2026-01-28
-**Current phase:** Post-v1 Enhancement - Elevation Fix Complete
+**Current phase:** Post-v1 Enhancement - Website & Provider Updates
 
 ## Project Reference
 
@@ -11,71 +11,118 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 ## Current Position
 
-Phase: Post-v1 (Elevation Fix Complete)
-Status: Ready for next task
-Last activity: 2026-01-28 - Elevation handling fixed and tested
+Phase: Post-v1 (Website Updates & Provider Expansion)
+Status: Japan enabled, website updated, provider research complete
+Last activity: 2026-01-28
 
 ## Completed Work (2026-01-28)
 
-### Fixed: Elevation Handling for Temperature Adjustments
+### 1. Website Features & Value Proposition Update
 
-**Problem solved:** BOM temperatures are valid at 2m above MODEL OROGRAPHY (cell average elevation), not the user's GPS point. This caused 1-3°C errors in mountainous terrain.
+**Updated homepage (`app/page.tsx`):**
+- Expanded features section from 8 to 12 metrics
+- Added: Snow, Wind direction, Light hours, Thunderstorm risk
+- Updated descriptions for clarity (e.g., "Rain" vs "Precipitation")
+- Added "What's in our weather forecast" value proposition section explaining:
+  - Multiple national weather APIs (BOM, NWS, Met Office, etc.)
+  - 49-point elevation sampling for temperature accuracy
+  - LCL cloud base calculations
+  - Intelligent danger rating algorithm
+- Updated hero bullet points to highlight 12 metrics and elevation adjustment
+- Updated FAQ answer for "What weather data is included?"
 
-**Solution implemented:**
-1. Created `app/services/elevation.py` with Open Topo Data API integration
-2. Samples 2.2km × 2.2km grid (49 points) to estimate BOM cell average elevation
-3. Updated all providers to report `model_elevation`:
-   - **BOM**: Calculates cell average via `get_cell_model_elevation()`
-   - **NWS**: Fetches grid elevation from gridpoints API
-   - **Open-Meteo**: Parses elevation from API response (90m DEM)
-4. Converter sets `base_elevation = model_elevation` for formatters
-5. Formatters apply lapse rate (6.5°C/1000m) from model → target elevation
+### 2. Fixed Website Resolutions (Accuracy Audit)
 
-**Test results:**
-- kunanyi summit: Point 1258m, Grid avg 1019m → 1.6°C adjustment
-- Hobart CBD: Point 21m, Grid avg 25m → negligible (flat terrain)
-- Ben Lomond: Point 1476m, Grid avg 1396m → 0.5°C adjustment
+Corrected resolution values to match actual backend implementation:
 
-**Tests:** 130 GPS/weather tests passing
+| Country | Was | Now (Correct) |
+|---------|-----|---------------|
+| Australia | 3.0km | 2.2km (BOM ACCESS) |
+| UK | Point | 1.5km (Met Office) |
+| Switzerland | 1.0km | 2.0km (MeteoSwiss) |
+| New Zealand | 4.0km | 9.0km (ECMWF) |
+| South Africa | 11.0km | 9.0km (ECMWF) |
 
-### Previously Completed: GPS International Routing
-- GPS forecasts route through country-specific providers (NWS for US, Met Office for UK, etc.)
-- AU coordinates continue using BOM (backwards compatible)
-- CAST7 now supports GPS coordinates
+Updated both `app/page.tsx` and `app/how-it-works/page.tsx`.
+
+### 3. Enabled Japan (JMA 5km)
+
+Added Japan as 10th supported country via Open-Meteo JMA API:
+- Resolution: 5km (JMA MSM model)
+- Cost: Free via Open-Meteo (non-commercial) or $29/mo commercial
+- Hourly updates, 4-day forecast
+
+**Files updated:**
+- `backend/app/services/weather/providers/openmeteo.py` - Added JMA enum, endpoint, model mapping
+- `backend/app/services/weather/router.py` - Added JP to providers dict
+- `app/page.tsx` - Added Japan to markets list
+- `app/how-it-works/page.tsx` - Added Japan to coverage table
+
+### 4. Provider Research Complete
+
+Researched higher-resolution options for all markets:
+
+| Country | Current | Best Available | Provider | Cost |
+|---------|---------|----------------|----------|------|
+| New Zealand | 9km ECMWF | **4km WRF** | MetService | $75/mo |
+| Japan | 5km JMA | **1km mesh** | JWA | $210/mo |
+| South Africa | 9km ECMWF | **4.4km UM** | AfriGIS/SAWS | TBD (60-day pilot available) |
 
 ## What's Next?
 
-The elevation fix is complete. Potential next steps:
+### Immediate (Ready to Execute)
+1. **Apply for AfriGIS SA pilot** - Free 60-day trial, 4.4km resolution
+2. **Evaluate MetService NZ** - $75/mo for 4km, massive hiking market
 
-1. **Production deployment** - Push elevation fix to production
-2. **More international providers** - Add more country-specific weather APIs
-3. **UI improvements** - Frontend enhancements
-4. **Performance optimization** - Cache elevation data more aggressively
-5. **Documentation** - Update user-facing docs about accuracy improvements
+### Future Consideration
+3. **JWA Japan 1km** - $210/mo, evaluate if market justifies cost
+4. **Welcome emails** - Pending todo from before
 
-## Key Files (Elevation System)
+## Provider Integration Notes
+
+### Elevation Handling for New Providers
+
+All new providers need elevation adjustment using our existing system:
+1. Check if API returns model orography elevation
+2. If not, use Open Topo Data 49-point sampling
+3. Apply 6.5°C/1000m lapse rate from model → user elevation
+
+**Existing elevation system works globally** - just need to wire up new providers.
+
+### Current Provider Coverage (10 Countries)
 
 ```
-backend/app/services/elevation.py       # NEW - Open Topo Data integration
-backend/app/services/bom.py             # get_cell_model_elevation()
-backend/app/services/weather/base.py    # model_elevation field
-backend/app/services/weather/converter.py  # model_elevation → base_elevation
-backend/app/services/weather/providers/nws.py      # Grid elevation fetch
-backend/app/services/weather/providers/openmeteo.py # DEM elevation parse
-backend/app/services/formatter.py       # Lapse rate adjustment
+AU: BOM (2.2km) - direct integration
+US: NWS (2.5km) + HRRR supplement
+CA: Environment Canada (2.5km) + GEM supplement
+GB: Met Office (1.5km)
+FR: Open-Meteo Météo-France (1.5km)
+CH: Open-Meteo MeteoSwiss (2km)
+IT: Open-Meteo ICON-EU (7km)
+JP: Open-Meteo JMA (5km) - NEW
+NZ: Open-Meteo ECMWF (9km) - upgrade available
+ZA: Open-Meteo ECMWF (9km) - upgrade available
 ```
 
-## Session Continuity
+## Key Files (Today's Changes)
 
-Last session: 2026-01-28
-Completed: Elevation investigation and fix
-Commit: feat: add accurate elevation handling for temperature adjustments
+```
+# Website
+app/page.tsx                    # Features, value prop, markets, FAQ
+app/how-it-works/page.tsx       # Coverage table with correct resolutions
+
+# Backend - Japan Support
+backend/app/services/weather/providers/openmeteo.py  # JMA enum + endpoint
+backend/app/services/weather/router.py               # JP provider mapping
+```
 
 ## Planning Documents
 
 - `.planning/PROJECT.md` — Project context and requirements
 - `.planning/REQUIREMENTS.md` — 53 v1 requirements with traceability
 - `.planning/ROADMAP.md` — 6 phases with dependencies
+- `.planning/todos/pending/weather-providers.md` — Provider upgrade research
+- `.planning/specs/START-command-flow.md` — Multi-trail selection via SMS (NEW)
 
 ---
 *State updated: 2026-01-28*

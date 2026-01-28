@@ -9,7 +9,8 @@ import {
   Zap, Satellite, CloudRain, Shield, Bell, Clock,
   MapPin, Thermometer, Wind, Droplets, Mountain, Smartphone,
   Cloud, Snowflake, AlertTriangle, Navigation, Save, MessageSquare,
-  Tent, BatteryCharging, ChevronRight, ExternalLink, Mail
+  Tent, BatteryCharging, ChevronRight, ExternalLink, Mail, Sun,
+  Compass, Database
 } from 'lucide-react'
 import { BetaButton } from './components/beta/BetaButton'
 
@@ -309,9 +310,9 @@ function Hero() {
 
           <ul className="text-lg text-zinc-600 max-w-2xl mx-auto mb-5 leading-relaxed space-y-3 text-left px-4">
             <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>Works with your existing phone — no extra hardware needed</li>
-            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>Hour-by-hour detail: temp, rain, wind, cloud base, freezing level</li>
+            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>12 metrics per hour: temp, rain, snow, wind, cloud base, freezing level, and more</li>
+            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>Elevation-adjusted forecasts from official national weather services</li>
             <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>25+ popular trails built in, or upload your own GPX</li>
-            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>One-time purchase with pay-as-you-go credits. No subscriptions.</li>
           </ul>
           <p className="text-sm text-zinc-400 max-w-xl mx-auto mb-8 md:mb-10">
             Compatible with iPhone 14+, Apple Watch Ultra, Samsung Galaxy S25+, and Garmin inReach.
@@ -627,16 +628,16 @@ const TYPE_COLORS = {
 
 function GlobalCoverage() {
   const markets = [
-    { country: 'Australia', resolution: '3.0km × 3.0km' },
+    { country: 'Australia', resolution: '2.2km × 2.2km' },
     { country: 'USA', resolution: '2.5km × 2.5km' },
     { country: 'Canada', resolution: '2.5km × 2.5km' },
-    { country: 'UK', resolution: 'Point' },
+    { country: 'UK', resolution: '1.5km × 1.5km' },
     { country: 'France', resolution: '1.5km × 1.5km' },
-    { country: 'Switzerland', resolution: '1.0km × 1.0km' },
+    { country: 'Switzerland', resolution: '2.0km × 2.0km' },
     { country: 'Italy', resolution: '7.0km × 7.0km' },
-    { country: 'New Zealand', resolution: '4.0km × 4.0km' },
     { country: 'Japan', resolution: '5.0km × 5.0km' },
-    { country: 'South Africa', resolution: '11.0km × 11.0km' },
+    { country: 'New Zealand', resolution: '9.0km × 9.0km' },
+    { country: 'South Africa', resolution: '9.0km × 9.0km' },
   ];
 
   return (
@@ -816,13 +817,17 @@ function RouteExample() {
 function Features() {
   const features = [
     { icon: Clock, title: 'Hour-by-hour', description: 'Hour-by-hour intervals so you know exactly when conditions change.', code: '06h' },
-    { icon: Thermometer, title: 'Temperature', description: 'Min-max range adjusted for your exact elevation.', code: '5-7°' },
-    { icon: Droplets, title: 'Precipitation', description: 'Rain and snow probability with expected accumulation.', code: 'Rn25% 0-3mm' },
-    { icon: Wind, title: 'Wind', description: 'Sustained and gust speeds — critical for exposed ridgelines.', code: 'W18-30' },
+    { icon: Thermometer, title: 'Temperature', description: 'Min-max range adjusted for your exact elevation using atmospheric lapse rates.', code: '5-7°' },
+    { icon: Droplets, title: 'Rain', description: 'Probability and expected accumulation in millimeters.', code: 'Rn25% 0-3mm' },
+    { icon: Snowflake, title: 'Snow', description: 'Accumulation in centimeters when temperatures drop.', code: 'Sn0-2cm' },
+    { icon: Wind, title: 'Wind speed', description: 'Sustained and gust speeds — critical for exposed ridgelines.', code: 'W18-30' },
+    { icon: Compass, title: 'Wind direction', description: 'Know which slopes are sheltered and which are exposed.', code: 'NW' },
     { icon: Cloud, title: 'Cloud cover', description: 'How much sky is covered. Plan your visibility windows.', code: 'Cld60%' },
     { icon: Mountain, title: 'Cloud base', description: "The altitude where clouds begin. Know when you'll be in them.", code: 'CB14' },
     { icon: Snowflake, title: 'Freezing level', description: 'The altitude where temperatures drop below freezing.', code: 'FL18' },
-    { icon: AlertTriangle, title: 'Danger flag', description: "Lightning, high wind, trails in cloud, and ice — flagged before you're exposed.", code: '⚠' },
+    { icon: Sun, title: 'Light hours', description: 'Sunrise to sunset times so you can plan your start and finish.', code: '06:00-20:51' },
+    { icon: Zap, title: 'Thunderstorm risk', description: 'CAPE-based storm probability — get off exposed ridges in time.', code: 'TS!' },
+    { icon: AlertTriangle, title: 'Danger rating', description: 'Ice, whiteout, extreme wind, and storm risk — flagged at a glance.', code: '!!!' },
   ]
 
   return (
@@ -848,6 +853,53 @@ function Features() {
               <p className="text-xs text-zinc-500 leading-relaxed">{feature.description}</p>
             </div>
           ))}
+        </div>
+
+        {/* Value Proposition - Complexity Statement */}
+        <div className="mt-16 bg-white rounded-2xl border border-zinc-200 p-8 md:p-10">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-3 bg-orange-50 rounded-xl shrink-0">
+              <Database className="w-6 h-6 text-orange-500" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 mb-2">
+                What&apos;s in our weather forecast
+              </h3>
+              <p className="text-zinc-600 leading-relaxed">
+                Each forecast is synthesized from multiple national meteorological services — not generic third-party data.
+                We query official APIs from the Bureau of Meteorology, National Weather Service, Met Office, Météo-France,
+                MeteoSwiss, and others depending on your location.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 text-sm">
+            <div className="space-y-2">
+              <div className="font-medium text-zinc-900">Elevation precision</div>
+              <p className="text-zinc-500">
+                We sample 49 elevation points across each weather grid cell to calculate the true model orography,
+                then apply atmospheric lapse rates (6.5°C per 1000m) to adjust temperatures for your exact position.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <div className="font-medium text-zinc-900">Cloud base calculation</div>
+              <p className="text-zinc-500">
+                Cloud base heights are derived using the Lifting Condensation Level formula from temperature and dewpoint data —
+                the same method pilots use for flight planning.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <div className="font-medium text-zinc-900">Intelligent danger rating</div>
+              <p className="text-zinc-500">
+                Our algorithm evaluates ice risk, whiteout conditions, wind exposure, precipitation intensity, and convective energy (CAPE)
+                to generate a single at-a-glance danger indicator.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-xs text-zinc-400 mt-6 pt-6 border-t border-zinc-100 text-center">
+            All of this computation happens in real-time, then gets compressed into an SMS that works on any device — even via satellite.
+          </p>
         </div>
 
         <div className="text-center mt-12">
@@ -1042,7 +1094,7 @@ const faqData = [
   },
   {
     question: "What weather data is included?",
-    answer: "Each forecast includes hour-by-hour temperature (elevation-adjusted), rain/snow probability, wind speed, cloud cover, cloud base height, freezing level, and danger indicators for hazardous conditions."
+    answer: "Each forecast includes 12 metrics per hour: temperature (elevation-adjusted), rain probability and accumulation, snow accumulation, wind speed and direction, cloud cover, cloud base height, freezing level, light hours (sunrise/sunset), thunderstorm risk indicators, and an overall danger rating for hazardous conditions."
   },
   {
     question: "Do I need a subscription?",
