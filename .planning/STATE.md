@@ -12,15 +12,40 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 7 of 7 (Multi-Trail SMS Selection)
-Plan: 1 of 3 - Foundation complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-01-28 - Completed 07-01-PLAN.md
+Last activity: 2026-01-28 - Completed 07-02-PLAN.md
 
-Progress: Foundation complete, ready for SMS command implementation
+Progress: ██░ (2/3 plans complete - 67%)
 
 ## Completed Work (2026-01-28)
 
-### Phase 7-01: Multi-Trail SMS Selection Foundation (LATEST)
+### Phase 7-02: Trail Selection Service (LATEST)
+
+**SMS trail selection state machine with main menu, pagination, and active trail setting:**
+
+- TrailSelectionService with start_selection() and process_input()
+- Main menu flow: users with trails see menu, new users jump to library
+- State handlers for MAIN_MENU, MY_TRAILS, LIBRARY with pagination (5 per page)
+- Trail selection sets active_trail_id via account_store
+- Message formatting with character limits and name truncation
+- Edge case handling: session expiry, empty library, no active trail
+- Comprehensive logging for state transitions
+
+**Files created:**
+- `backend/app/services/trail_selection.py` (394 lines)
+
+**Duration:** 2min 19s
+**Commits:** aea2ae3, d6083f3
+
+**Key decisions:**
+- Library trails set directly as active_trail_id (no auto-clone in v1)
+- Pagination wraps around with "0 for more"
+- Singleton service pattern with get_trail_selection_service()
+
+---
+
+### Phase 7-01: Multi-Trail SMS Selection Foundation
 
 **Database schema and models for multi-trail SMS selection:**
 
@@ -97,8 +122,7 @@ Researched higher-resolution options for all markets:
 ## What's Next?
 
 ### Immediate (Ready to Execute)
-1. **Phase 07-02: SMS START command** - Implement trail selection state machine
-2. **Phase 07-03: Integration** - Wire START command into existing SMS handler
+1. **Phase 07-03: Integration** - Wire START command into existing SMS handler, integrate with CAST commands
 
 ### Future Phases
 3. **Apply for AfriGIS SA pilot** - Free 60-day trial, 4.4km resolution
@@ -135,10 +159,13 @@ ZA: Open-Meteo ECMWF (9km) - upgrade available
 ## Key Files (Today's Changes)
 
 ```
+# Phase 07-02: Trail Selection Service (LATEST)
+backend/app/services/trail_selection.py                        # State machine service (NEW)
+
 # Phase 07-01: Multi-Trail SMS Selection Foundation
 backend/alembic/versions/8a0e5cff6950_add_active_trail_id.py  # Migration for active_trail_id
 backend/app/models/account.py                                  # Added active trail methods
-backend/app/models/trail_selection.py                          # Session store (NEW)
+backend/app/models/trail_selection.py                          # Session store
 
 # Website (Earlier Today)
 app/page.tsx                    # Features, value prop, markets, FAQ
