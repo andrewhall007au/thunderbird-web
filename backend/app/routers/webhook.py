@@ -1031,13 +1031,26 @@ async def generate_cast7_forecast_gps(lat: float, lon: float, phone: str = None)
 async def generate_cast7_all_camps(phone: str) -> str:
     """Generate 7-day grouped forecast for all camps on user's route."""
     from app.models.database import user_store
+    from app.models.account import account_store
     from app.services.formatter import FormatCAST7Grouped
     from app.services.bom import get_bom_service
     from datetime import datetime
     from collections import defaultdict
     from config.settings import TZ_HOBART
 
+    # Check for active trail first (Phase 7: multi-trail support)
+    account = account_store.get_by_phone(phone)
+    active_trail_id = None
+    if account:
+        active_trail_id = account_store.get_active_trail_id(account.id)
+
+    # Get user for backwards compatibility (SMS registration)
     user = user_store.get_user(phone)
+
+    # If account exists but no active trail and no legacy user.route_id
+    if account and not active_trail_id and not user:
+        return "No active trail. Send START to select one."
+
     if not user:
         return "You're not registered. Send START to begin."
 
@@ -1110,13 +1123,26 @@ async def generate_cast7_all_camps(phone: str) -> str:
 async def generate_cast7_all_peaks(phone: str) -> str:
     """Generate 7-day grouped forecast for all peaks on user's route."""
     from app.models.database import user_store
+    from app.models.account import account_store
     from app.services.formatter import FormatCAST7Grouped
     from app.services.bom import get_bom_service
     from datetime import datetime
     from collections import defaultdict
     from config.settings import TZ_HOBART
 
+    # Check for active trail first (Phase 7: multi-trail support)
+    account = account_store.get_by_phone(phone)
+    active_trail_id = None
+    if account:
+        active_trail_id = account_store.get_active_trail_id(account.id)
+
+    # Get user for backwards compatibility (SMS registration)
     user = user_store.get_user(phone)
+
+    # If account exists but no active trail and no legacy user.route_id
+    if account and not active_trail_id and not user:
+        return "No active trail. Send START to select one."
+
     if not user:
         return "You're not registered. Send START to begin."
 
