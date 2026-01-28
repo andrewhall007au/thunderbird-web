@@ -27,6 +27,7 @@ from app.services.commands import CommandParser, CommandType, ResponseGenerator
 from app.services.onboarding import onboarding_manager, OnboardingState
 from app.services.routes import get_route
 from app.services.affiliates import get_affiliate_service
+from app.services.trail_selection import get_trail_selection_service
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +130,21 @@ async def handle_inbound_sms(
 </Response>"""
             return Response(content=twiml, media_type="application/xml")
 
-    # Check if user is in onboarding flow FIRST
+    # Check if user is in trail selection flow FIRST
+    trail_selection_service = get_trail_selection_service()
+    if trail_selection_service.has_active_session(from_phone):
+        # Process input through trail selection
+        response_text, is_complete = trail_selection_service.process_input(
+            from_phone, body, account
+        )
+        log_twiml_response(from_phone, response_text, "TRAIL_SELECTION", "trail_selection")
+        twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Message>{html.escape(response_text)}</Message>
+</Response>"""
+        return Response(content=twiml, media_type="application/xml")
+
+    # Check if user is in onboarding flow NEXT
     session = onboarding_manager.get_session(from_phone)
 
     # CAST and other critical commands should ALWAYS work, even during onboarding
@@ -149,13 +164,27 @@ async def handle_inbound_sms(
 </Response>"""
         return Response(content=twiml, media_type="application/xml")
 
-    # Only handle onboarding if:
-    # 1. User sends START/REGISTER, OR
-    # 2. User has an active (non-complete) onboarding session
+    # START command routing - distinguish registered vs unregistered
     is_start_command = text_upper in ["START", "REGISTER"]
+
+    if is_start_command:
+        # Registered user -> trail selection
+        if account:
+            response_text = trail_selection_service.start_selection(from_phone, account)
+            log_twiml_response(from_phone, response_text, "START", "trail_selection")
+            twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Message>{html.escape(response_text)}</Message>
+</Response>"""
+            return Response(content=twiml, media_type="application/xml")
+        # else: fall through to onboarding for unregistered users
+
+    # Only handle onboarding if:
+    # 1. User sends START/REGISTER AND is NOT registered, OR
+    # 2. User has an active (non-complete) onboarding session
     is_active_onboarding = session and session.state != OnboardingState.COMPLETE
 
-    if is_start_command or is_active_onboarding:
+    if (is_start_command and not account) or is_active_onboarding:
         # Handle onboarding
         response_text, is_complete = onboarding_manager.process_input(from_phone, body)
 
