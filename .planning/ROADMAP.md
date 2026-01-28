@@ -530,18 +530,18 @@ Route creation (Phase 3) can soft-launch with admin-created routes only.
 
 ## Phase 7: Multi-Trail SMS Selection
 
-**Status:** Planned
+**Status:** Complete (2026-01-28)
 
 **Goal:** Users can select active trail via SMS START command, enabling multi-route management
 
 **Requirements covered:** START-01 through START-08
 
-**Plans:** 3 plans in 3 waves
+**Plans:** 3 plans in 3 waves (3/3 complete)
 
 Plans:
-- [ ] 07-01-PLAN.md - Database migration and models for active_trail_id and session state (Wave 1)
-- [ ] 07-02-PLAN.md - Trail selection state machine service with pagination (Wave 2)
-- [ ] 07-03-PLAN.md - Webhook integration and comprehensive tests (Wave 3)
+- [x] 07-01-PLAN.md - Database migration and models for active_trail_id and session state (Wave 1) (completed 2026-01-28)
+- [x] 07-02-PLAN.md - Trail selection state machine service with pagination (Wave 2) (completed 2026-01-28)
+- [x] 07-03-PLAN.md - Webhook integration and comprehensive tests (Wave 3) (completed 2026-01-28)
 
 ### Wave Structure
 
@@ -553,15 +553,15 @@ Plans:
 
 ### Deliverables
 
-- [ ] `active_trail_id` column on accounts table
-- [ ] Trail selection session state machine
-- [ ] START command handler with menu flow
-- [ ] "My Trails" listing with pagination
-- [ ] Trail Library listing with pagination
-- [ ] Numeric input handling during session
-- [ ] CAST commands check active trail
-- [ ] "No active trail" error handling
-- [ ] Session timeout (30 min)
+- [x] `active_trail_id` column on accounts table
+- [x] Trail selection session state machine
+- [x] START command handler with menu flow
+- [x] "My Trails" listing with pagination
+- [x] Trail Library listing with pagination
+- [x] Numeric input handling during session
+- [x] CAST commands check active trail
+- [x] "No active trail" error handling
+- [x] Session timeout (30 min)
 
 ### Key Files
 
@@ -605,4 +605,4 @@ ALTER TABLE accounts ADD COLUMN active_trail_id INTEGER REFERENCES custom_routes
 ---
 
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-28 - Phase 7 planned (3 plans in 3 waves)*
+*Last updated: 2026-01-28 - Phase 7 complete (Multi-Trail SMS Selection)*
