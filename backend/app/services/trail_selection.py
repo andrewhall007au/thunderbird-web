@@ -254,6 +254,27 @@ class TrailSelectionService:
         }
 
     # =========================================================================
+    # Public Helper Methods
+    # =========================================================================
+
+    def get_expired_message(self) -> str:
+        """Return message for expired session."""
+        return "Session expired. Send START to begin again."
+
+    def get_no_active_trail_message(self) -> str:
+        """Return message when user has no active trail set."""
+        return "No active trail. Send START to select one."
+
+    def has_active_session(self, phone: str) -> bool:
+        """Check if phone has an active (non-expired) selection session."""
+        session = self.session_store.get(phone)
+        if session:
+            logger.debug(f"Active session found for phone={phone}, state={session.state}")
+            return True
+        logger.debug(f"No active session for phone={phone}")
+        return False
+
+    # =========================================================================
     # Message Formatting (per spec character limits)
     # =========================================================================
 
