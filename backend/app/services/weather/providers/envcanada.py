@@ -258,11 +258,14 @@ class EnvironmentCanadaProvider(WeatherProvider):
                 # Estimate cloud cover from conditions text
                 cloud_cover = self._estimate_cloud_cover(text_summary or short_text)
 
-                # Estimate precipitation amount
-                rain_amount = self._estimate_precip_amount(precip_chance, text_summary)
+                # Estimate precipitation amount (liquid water equivalent)
+                precip_lwe = self._estimate_precip_amount(precip_chance, text_summary)
+                rain_amount = precip_lwe
                 snow_amount = 0.0
                 if 'snow' in text_summary.lower():
-                    snow_amount = rain_amount / 10  # Rough conversion
+                    # Snow-to-water ratio is ~10:1 (10cm snow = 1cm liquid)
+                    # So liquid equivalent × 10 = snow depth in cm
+                    snow_amount = precip_lwe * 10
                     rain_amount = 0.0
 
                 # Generate timestamp for this day

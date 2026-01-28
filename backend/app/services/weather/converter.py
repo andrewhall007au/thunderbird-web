@@ -136,19 +136,30 @@ def _convert_period(period: NormalizedForecast, base_elevation: int) -> Optional
         snow_min = 0.0
         snow_max = round(snow_amount, 1)
 
-        # Estimate cloud base from cloud cover
-        # Higher cloud cover typically means lower cloud base
+        # Calculate cloud base using Lifting Condensation Level (LCL) formula
+        # when dewpoint is available, otherwise fall back to crude estimation
         cloud_cover = period.cloud_cover or 0
-        if cloud_cover >= 80:
-            cloud_base = 600  # Low clouds
-        elif cloud_cover >= 60:
-            cloud_base = 900
-        elif cloud_cover >= 40:
-            cloud_base = 1200
-        elif cloud_cover >= 20:
-            cloud_base = 1500
+
+        if period.dewpoint is not None and period.temp_max is not None:
+            # LCL formula: Cloud Base (meters AGL) = (Temperature - Dewpoint) × 125
+            # This is the physical height where rising air reaches saturation
+            temp_dewpoint_spread = period.temp_max - period.dewpoint
+            cloud_base_agl = int(temp_dewpoint_spread * 125)
+            # Add base elevation to convert AGL to ASL
+            cloud_base = base_elevation + max(cloud_base_agl, 100)  # Minimum 100m AGL
         else:
-            cloud_base = 2000  # High/scattered or clear
+            # Fallback: crude estimation from cloud cover percentage
+            # This is less accurate but works when we don't have dewpoint
+            if cloud_cover >= 80:
+                cloud_base = base_elevation + 600  # Low clouds
+            elif cloud_cover >= 60:
+                cloud_base = base_elevation + 900
+            elif cloud_cover >= 40:
+                cloud_base = base_elevation + 1200
+            elif cloud_cover >= 20:
+                cloud_base = base_elevation + 1500
+            else:
+                cloud_base = base_elevation + 2000  # High/scattered or clear
 
         # Use provided freezing level or estimate from temperature
         if period.freezing_level is not None:
@@ -166,6 +177,9 @@ def _convert_period(period: NormalizedForecast, base_elevation: int) -> Optional
         wind_avg = int(period.wind_avg or 0)
         wind_max = int(period.wind_max or wind_avg + 10)
 
+        # CAPE for storm/lightning prediction
+        cape = period.cape if period.cape is not None else 0
+
         return ForecastPeriod(
             datetime=period.timestamp,
             period=period_name,
@@ -180,8 +194,9 @@ def _convert_period(period: NormalizedForecast, base_elevation: int) -> Optional
             wind_max=wind_max,
             cloud_cover=cloud_cover,
             cloud_base=cloud_base,
+            dewpoint=period.dewpoint,
             freezing_level=freezing_level,
-            cape=0  # CAPE not provided by most international providers
+            cape=cape
         )
 
     except Exception as e:

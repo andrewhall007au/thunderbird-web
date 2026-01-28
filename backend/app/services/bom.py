@@ -52,13 +52,27 @@ class ForecastPeriod:
     
     # Cloud/visibility
     cloud_cover: int  # percentage
-    cloud_base: int  # meters AGL
-    
+    cloud_base: int  # meters AGL (calculated from dewpoint via LCL formula)
+
     # Freezing level
     freezing_level: int  # meters ASL
-    
+
     # Thunderstorm
     cape: int  # J/kg
+
+    # Dewpoint for LCL cloud base calculation (optional, comes after required fields)
+    dewpoint: Optional[float] = None  # Celsius
+
+
+@dataclass
+class RecentPrecipitation:
+    """Recent precipitation totals for trail condition assessment."""
+    rain_24h: float = 0.0  # mm in last 24 hours
+    rain_48h: float = 0.0  # mm in last 48 hours
+    rain_72h: float = 0.0  # mm in last 72 hours
+    snow_24h: float = 0.0  # cm in last 24 hours
+    snow_48h: float = 0.0  # cm in last 48 hours
+    snow_72h: float = 0.0  # cm in last 72 hours
 
 
 @dataclass
@@ -69,14 +83,17 @@ class CellForecast:
     lat: float
     lon: float
     base_elevation: int
-    
+
     periods: List[ForecastPeriod]
-    
+
     fetched_at: datetime
     expires_at: datetime
     is_cached: bool = False
     cache_age_hours: float = 0.0
     source: str = "bom"  # 'bom' or 'mock'
+
+    # Recent precipitation for trail conditions
+    recent_precip: Optional[RecentPrecipitation] = None
 
 
 class BOMService:
@@ -246,6 +263,9 @@ class BOMService:
         """
         Get daily forecast for next N days (for CAST7, CAMPS7, PEAKS7 commands).
 
+        BOM daily endpoint provides temp/rain but NOT wind.
+        We supplement with Open-Meteo for actual wind data.
+
         Args:
             lat: Latitude
             lon: Longitude
@@ -280,7 +300,14 @@ class BOMService:
             # Get cell model elevation (average elevation across the BOM cell)
             model_elevation = await self.get_cell_model_elevation(lat, lon, bom_cell_id)
 
-            return self._parse_bom_daily_response(bom_cell_id, geohash, lat, lon, data, days, model_elevation)
+            # Fetch Open-Meteo supplements (BOM daily lacks wind, dewpoint, CAPE, and recent precip)
+            wind_by_date = await self._fetch_openmeteo_wind_supplement(lat, lon, days)
+            dewpoint_by_date, cape_by_date = await self._fetch_openmeteo_dewpoint_cape_supplement(lat, lon, days)
+            recent_precip = await self._fetch_openmeteo_recent_precip(lat, lon)
+
+            return self._parse_bom_daily_response(
+                bom_cell_id, geohash, lat, lon, data, days, model_elevation, wind_by_date, dewpoint_by_date, cape_by_date, recent_precip
+            )
 
         except httpx.HTTPError as e:
             logger.warning(f"BOM daily API failed for {geohash}: {e}")
@@ -301,10 +328,21 @@ class BOMService:
         lon: float,
         data: Dict[str, Any],
         days: int,
-        grid_elevation: int = 500
+        grid_elevation: int = 500,
+        wind_by_date: Optional[Dict[str, Dict[str, Any]]] = None,
+        dewpoint_by_date: Optional[Dict[str, float]] = None,
+        cape_by_date: Optional[Dict[str, int]] = None,
+        recent_precip: Optional[RecentPrecipitation] = None
     ) -> CellForecast:
         """
         Parse BOM daily API response.
+
+        Args:
+            wind_by_date: Optional wind data from Open-Meteo supplement.
+                          If provided, uses actual wind; otherwise estimates from icons.
+            dewpoint_by_date: Optional dewpoint for LCL cloud base calculation.
+            cape_by_date: Optional CAPE for storm/lightning prediction.
+            recent_precip: Optional recent precipitation for trail conditions.
 
         Response structure:
         {
@@ -350,14 +388,21 @@ class BOMService:
                 rain_min = rain_amount.get("min", 0) or 0
                 rain_max = rain_amount.get("max") or rain_amount.get("upper_range", 0) or 0
 
-                # Estimate wind from icon/conditions (BOM daily doesn't include wind)
-                icon = day_data.get("icon_descriptor", "")
-                if "storm" in icon or "wind" in icon:
-                    wind_avg, wind_max = 35, 55
-                elif "shower" in icon or "rain" in icon:
-                    wind_avg, wind_max = 25, 40
+                # Get wind from Open-Meteo supplement, or estimate from icon
+                date_key = date_str[:10]  # Extract YYYY-MM-DD
+                if wind_by_date and date_key in wind_by_date:
+                    wind_data = wind_by_date[date_key]
+                    wind_avg = wind_data.get("wind_avg", 20)
+                    wind_max = wind_data.get("wind_max", 30)
                 else:
-                    wind_avg, wind_max = 15, 25
+                    # Fallback: estimate from icon/conditions (BOM daily doesn't include wind)
+                    icon = day_data.get("icon_descriptor", "")
+                    if "storm" in icon or "wind" in icon:
+                        wind_avg, wind_max = 35, 55
+                    elif "shower" in icon or "rain" in icon:
+                        wind_avg, wind_max = 25, 40
+                    else:
+                        wind_avg, wind_max = 15, 25
 
                 # Estimate cloud cover from icon
                 if "sunny" in icon:
@@ -371,9 +416,23 @@ class BOMService:
                 else:
                     cloud_cover = 50
 
-                # Calculate freezing level and cloud base
+                # Calculate freezing level
                 freezing_level = self.calculate_freezing_level(temp_max, grid_elevation)
-                cloud_base = 800 if cloud_cover > 70 else 1500
+
+                # Calculate cloud base using LCL formula if dewpoint available
+                # LCL: Cloud Base (m AGL) = (Temperature - Dewpoint) × 125
+                dewpoint = None
+                if dewpoint_by_date and date_key in dewpoint_by_date:
+                    dewpoint = dewpoint_by_date[date_key]
+                    temp_dewpoint_spread = temp_max - dewpoint
+                    cloud_base_agl = max(int(temp_dewpoint_spread * 125), 100)
+                    cloud_base = grid_elevation + cloud_base_agl
+                else:
+                    # Crude fallback when dewpoint unavailable
+                    cloud_base = grid_elevation + (800 if cloud_cover > 70 else 1500)
+
+                # Get CAPE for storm/lightning prediction
+                cape = cape_by_date.get(date_key, 0) if cape_by_date else 0
 
                 period = ForecastPeriod(
                     datetime=local_time,
@@ -389,8 +448,9 @@ class BOMService:
                     wind_max=wind_max,
                     cloud_cover=cloud_cover,
                     cloud_base=cloud_base,
+                    dewpoint=dewpoint,
                     freezing_level=freezing_level,
-                    cape=0
+                    cape=cape
                 )
                 periods.append(period)
 
@@ -408,7 +468,8 @@ class BOMService:
             fetched_at=now,
             expires_at=now + timedelta(hours=settings.BOM_CACHE_TTL_HOURS),
             is_cached=False,
-            source="bom"
+            source="bom",
+            recent_precip=recent_precip,
         )
 
     async def _fetch_real_forecast(
@@ -452,7 +513,10 @@ class BOMService:
             model_elevation = await self.get_cell_model_elevation(lat, lon, bom_cell_id)
 
             if resolution == "hourly":
-                return self._parse_bom_hourly_response(bom_cell_id, geohash, lat, lon, data, days, model_elevation)
+                # Fetch hourly dewpoint, CAPE, and recent precip from Open-Meteo
+                dewpoint_by_hour, cape_by_hour = await self._fetch_openmeteo_hourly_dewpoint_cape(lat, lon, days)
+                recent_precip = await self._fetch_openmeteo_recent_precip(lat, lon)
+                return self._parse_bom_hourly_response(bom_cell_id, geohash, lat, lon, data, days, model_elevation, dewpoint_by_hour, cape_by_hour, recent_precip)
             else:
                 return self._parse_bom_3hourly_response(bom_cell_id, geohash, lat, lon, data, days, model_elevation)
             
@@ -475,7 +539,300 @@ class BOMService:
                 return self._generate_mock_forecast(cell_id, geohash, lat, lon, days, resolution, grid_elevation)
             
             raise BOMAPIError(f"All weather APIs failed: {e}")
-    
+
+    async def _fetch_openmeteo_wind_supplement(
+        self,
+        lat: float,
+        lon: float,
+        days: int
+    ) -> Dict[str, Dict[str, float]]:
+        """
+        Fetch wind data from Open-Meteo to supplement BOM daily forecasts.
+
+        BOM daily endpoint doesn't include wind data, so we fetch it from
+        Open-Meteo and aggregate hourly wind to daily max/avg.
+
+        Args:
+            lat: Latitude
+            lon: Longitude
+            days: Number of days
+
+        Returns:
+            Dict mapping date strings to wind data:
+            {
+                "2026-01-28": {"wind_avg": 25.0, "wind_max": 45.0, "wind_dir": "SW"},
+                ...
+            }
+        """
+        try:
+            client = await self.get_client()
+
+            params = {
+                "latitude": lat,
+                "longitude": lon,
+                "daily": ",".join([
+                    "wind_speed_10m_max",
+                    "wind_gusts_10m_max",
+                    "wind_direction_10m_dominant",
+                ]),
+                "timezone": "Australia/Hobart",
+                "forecast_days": min(days, 7)
+            }
+
+            response = await client.get(self.OPENMETEO_API_BASE, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            daily = data.get("daily", {})
+            dates = daily.get("time", [])
+            wind_speeds = daily.get("wind_speed_10m_max", [])
+            wind_gusts = daily.get("wind_gusts_10m_max", [])
+            wind_dirs = daily.get("wind_direction_10m_dominant", [])
+
+            wind_by_date: Dict[str, Dict[str, Any]] = {}
+            for i, date_str in enumerate(dates):
+                wind_speed = wind_speeds[i] if i < len(wind_speeds) else None
+                wind_gust = wind_gusts[i] if i < len(wind_gusts) else None
+                wind_dir = wind_dirs[i] if i < len(wind_dirs) else None
+
+                if wind_speed is not None:
+                    # Convert wind direction degrees to compass
+                    compass_dir = self._degrees_to_compass(wind_dir) if wind_dir else "N"
+
+                    wind_by_date[date_str] = {
+                        "wind_avg": round(wind_speed, 1),
+                        "wind_max": round(wind_gust, 1) if wind_gust else round(wind_speed * 1.4, 1),
+                        "wind_dir": compass_dir,
+                    }
+
+            logger.info(f"Fetched Open-Meteo wind supplement for {len(wind_by_date)} days")
+            return wind_by_date
+
+        except Exception as e:
+            logger.warning(f"Failed to fetch Open-Meteo wind supplement: {e}")
+            return {}
+
+    def _degrees_to_compass(self, degrees: float) -> str:
+        """Convert wind direction in degrees to compass direction."""
+        if degrees is None:
+            return "N"
+        directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+        index = round(degrees / 45) % 8
+        return directions[index]
+
+    async def _fetch_openmeteo_dewpoint_cape_supplement(
+        self,
+        lat: float,
+        lon: float,
+        days: int
+    ) -> Tuple[Dict[str, float], Dict[str, int]]:
+        """
+        Fetch dewpoint and CAPE data from Open-Meteo for cloud base and storm prediction.
+
+        BOM doesn't provide dewpoint or CAPE, so we fetch from Open-Meteo:
+        - Dewpoint: For LCL cloud base calculation
+        - CAPE: For thunderstorm/lightning prediction
+
+        Args:
+            lat: Latitude
+            lon: Longitude
+            days: Number of days
+
+        Returns:
+            Tuple of (dewpoint_by_date, cape_by_date):
+            - dewpoint_by_date: {"2026-01-28": 12.5, ...}
+            - cape_by_date: {"2026-01-28": 850, ...}
+        """
+        try:
+            client = await self.get_client()
+
+            params = {
+                "latitude": lat,
+                "longitude": lon,
+                "daily": "dew_point_2m_mean,cape_max",
+                "timezone": "Australia/Hobart",
+                "forecast_days": min(days, 7)
+            }
+
+            response = await client.get(self.OPENMETEO_API_BASE, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            daily = data.get("daily", {})
+            dates = daily.get("time", [])
+            dewpoints = daily.get("dew_point_2m_mean", [])
+            capes = daily.get("cape_max", [])
+
+            dewpoint_by_date: Dict[str, float] = {}
+            cape_by_date: Dict[str, int] = {}
+
+            for i, date_str in enumerate(dates):
+                dewpoint = dewpoints[i] if i < len(dewpoints) else None
+                cape = capes[i] if i < len(capes) else None
+
+                if dewpoint is not None:
+                    dewpoint_by_date[date_str] = round(dewpoint, 1)
+                if cape is not None:
+                    cape_by_date[date_str] = int(cape)
+
+            logger.info(f"Fetched Open-Meteo dewpoint/CAPE supplement for {len(dewpoint_by_date)} days")
+            return dewpoint_by_date, cape_by_date
+
+        except Exception as e:
+            logger.warning(f"Failed to fetch Open-Meteo dewpoint/CAPE supplement: {e}")
+            return {}, {}
+
+    async def _fetch_openmeteo_hourly_dewpoint_cape(
+        self,
+        lat: float,
+        lon: float,
+        days: int
+    ) -> Tuple[Dict[str, float], Dict[str, int]]:
+        """
+        Fetch hourly dewpoint and CAPE data from Open-Meteo.
+
+        Args:
+            lat: Latitude
+            lon: Longitude
+            days: Number of days
+
+        Returns:
+            Tuple of (dewpoint_by_hour, cape_by_hour):
+            - dewpoint_by_hour: {"2026-01-28T06:00": 12.5, ...}
+            - cape_by_hour: {"2026-01-28T06:00": 850, ...}
+        """
+        try:
+            client = await self.get_client()
+
+            params = {
+                "latitude": lat,
+                "longitude": lon,
+                "hourly": "dew_point_2m,cape",
+                "timezone": "Australia/Hobart",
+                "forecast_days": min(days, 7)
+            }
+
+            response = await client.get(self.OPENMETEO_API_BASE, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            hourly = data.get("hourly", {})
+            times = hourly.get("time", [])
+            dewpoints = hourly.get("dew_point_2m", [])
+            capes = hourly.get("cape", [])
+
+            dewpoint_by_hour: Dict[str, float] = {}
+            cape_by_hour: Dict[str, int] = {}
+
+            for i, time_str in enumerate(times):
+                dewpoint = dewpoints[i] if i < len(dewpoints) else None
+                cape = capes[i] if i < len(capes) else None
+
+                if dewpoint is not None:
+                    dewpoint_by_hour[time_str] = round(dewpoint, 1)
+                if cape is not None:
+                    cape_by_hour[time_str] = int(cape)
+
+            logger.info(f"Fetched Open-Meteo hourly dewpoint/CAPE for {len(dewpoint_by_hour)} hours")
+            return dewpoint_by_hour, cape_by_hour
+
+        except Exception as e:
+            logger.warning(f"Failed to fetch Open-Meteo hourly dewpoint/CAPE: {e}")
+            return {}, {}
+
+    async def _fetch_openmeteo_recent_precip(
+        self,
+        lat: float,
+        lon: float
+    ) -> RecentPrecipitation:
+        """
+        Fetch recent precipitation from Open-Meteo for trail condition assessment.
+
+        Uses past_days=3 to get the last 72 hours of precipitation data.
+
+        Args:
+            lat: Latitude
+            lon: Longitude
+
+        Returns:
+            RecentPrecipitation with 24h/48h/72h totals
+        """
+        try:
+            client = await self.get_client()
+
+            params = {
+                "latitude": lat,
+                "longitude": lon,
+                "hourly": "precipitation,snowfall",
+                "timezone": "Australia/Hobart",
+                "past_days": 3,
+                "forecast_days": 0,  # Only want past data
+            }
+
+            response = await client.get(self.OPENMETEO_API_BASE, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            hourly = data.get("hourly", {})
+            times = hourly.get("time", [])
+            rain_values = hourly.get("precipitation", [])
+            snow_values = hourly.get("snowfall", [])
+
+            now = datetime.now(TZ_HOBART)
+
+            rain_24h = 0.0
+            rain_48h = 0.0
+            rain_72h = 0.0
+            snow_24h = 0.0
+            snow_48h = 0.0
+            snow_72h = 0.0
+
+            for i, time_str in enumerate(times):
+                try:
+                    # Parse time (Open-Meteo returns local time based on timezone param)
+                    period_time = datetime.fromisoformat(time_str)
+                    if period_time.tzinfo is None:
+                        period_time = period_time.replace(tzinfo=TZ_HOBART)
+
+                    hours_ago = (now - period_time).total_seconds() / 3600
+
+                    if hours_ago < 0:
+                        continue
+
+                    rain = rain_values[i] if i < len(rain_values) and rain_values[i] is not None else 0.0
+                    snow = snow_values[i] if i < len(snow_values) and snow_values[i] is not None else 0.0
+
+                    if hours_ago <= 24:
+                        rain_24h += rain
+                        snow_24h += snow
+                    if hours_ago <= 48:
+                        rain_48h += rain
+                        snow_48h += snow
+                    if hours_ago <= 72:
+                        rain_72h += rain
+                        snow_72h += snow
+
+                except (ValueError, TypeError):
+                    continue
+
+            logger.info(
+                f"Recent precip: rain={rain_24h:.1f}/{rain_48h:.1f}/{rain_72h:.1f}mm, "
+                f"snow={snow_24h:.1f}/{snow_48h:.1f}/{snow_72h:.1f}cm"
+            )
+
+            return RecentPrecipitation(
+                rain_24h=round(rain_24h, 1),
+                rain_48h=round(rain_48h, 1),
+                rain_72h=round(rain_72h, 1),
+                snow_24h=round(snow_24h, 1),
+                snow_48h=round(snow_48h, 1),
+                snow_72h=round(snow_72h, 1),
+            )
+
+        except Exception as e:
+            logger.warning(f"Failed to fetch recent precipitation: {e}")
+            return RecentPrecipitation()
+
     async def _fetch_openmeteo_forecast(
         self,
         cell_id: str,
@@ -670,14 +1027,20 @@ class BOMService:
         lon: float,
         data: Dict[str, Any],
         days: int,
-        grid_elevation: int = 500
+        grid_elevation: int = 500,
+        dewpoint_by_hour: Optional[Dict[str, float]] = None,
+        cape_by_hour: Optional[Dict[str, int]] = None,
+        recent_precip: Optional[RecentPrecipitation] = None
     ) -> CellForecast:
         """
         Parse BOM hourly API response.
-        
+
         Args:
             grid_elevation: DEM elevation at this point (temps are for this elevation)
-        
+            dewpoint_by_hour: Optional hourly dewpoint data from Open-Meteo for LCL calculation
+            cape_by_hour: Optional hourly CAPE data for storm/lightning prediction
+            recent_precip: Optional recent precipitation for trail conditions
+
         Response structure similar to 3-hourly but with hourly intervals.
         """
         periods = []
@@ -725,8 +1088,24 @@ class BOMService:
                 
                 # Cloud - estimate from rain chance
                 cloud_cover = min(100, rain_chance + 30) if rain_chance > 0 else random.randint(20, 50)
-                cloud_base = 800 if cloud_cover > 80 else 1200
-                
+
+                # Calculate cloud base using LCL formula if dewpoint available
+                # LCL: Cloud Base (m AGL) = (Temperature - Dewpoint) × 125
+                # Open-Meteo time format: "2026-01-28T06:00" (local time)
+                hour_key = local_time.strftime("%Y-%m-%dT%H:00")
+                dewpoint = None
+                if dewpoint_by_hour and hour_key in dewpoint_by_hour:
+                    dewpoint = dewpoint_by_hour[hour_key]
+                    temp_dewpoint_spread = temp - dewpoint
+                    cloud_base_agl = max(int(temp_dewpoint_spread * 125), 100)
+                    cloud_base = grid_elevation + cloud_base_agl
+                else:
+                    # Crude fallback when dewpoint unavailable
+                    cloud_base = grid_elevation + (800 if cloud_cover > 80 else 1200)
+
+                # Get CAPE for storm/lightning prediction
+                cape = cape_by_hour.get(hour_key, 0) if cape_by_hour else 0
+
                 period = ForecastPeriod(
                     datetime=local_time,  # Store local time
                     period=period_name,
@@ -741,8 +1120,9 @@ class BOMService:
                     wind_max=wind_max,
                     cloud_cover=cloud_cover,
                     cloud_base=cloud_base,
+                    dewpoint=dewpoint,
                     freezing_level=freezing_level,
-                    cape=0
+                    cape=cape
                 )
                 periods.append(period)
                 
@@ -763,7 +1143,8 @@ class BOMService:
             fetched_at=now,
             expires_at=now + timedelta(hours=settings.BOM_CACHE_TTL_HOURS),
             is_cached=False,
-            source="bom"
+            source="bom",
+            recent_precip=recent_precip,
         )
 
     def _parse_bom_3hourly_response(

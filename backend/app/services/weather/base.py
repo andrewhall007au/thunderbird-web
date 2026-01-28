@@ -67,15 +67,39 @@ class NormalizedForecast:
     # Cloud
     cloud_cover: int  # 0-100%
 
+    # Dewpoint (for cloud base calculation via LCL formula)
+    dewpoint: Optional[float] = None  # Celsius
+
     # Alpine conditions
     freezing_level: Optional[int] = None  # meters ASL
     snow_amount: float = 0.0  # cm
+
+    # Convective/Storm indicators
+    cape: Optional[int] = None  # J/kg - Convective Available Potential Energy
 
     # Summary
     description: str = ""
 
     # Alerts (usually empty for period forecasts)
     alerts: List[WeatherAlert] = field(default_factory=list)
+
+
+@dataclass
+class RecentPrecipitation:
+    """
+    Recent precipitation totals for trail condition assessment.
+
+    Helps hikers understand current ground conditions:
+    - Stream crossing water levels
+    - Trail mud/wetness
+    - Recent snow accumulation
+    """
+    rain_24h: float = 0.0  # mm in last 24 hours
+    rain_48h: float = 0.0  # mm in last 48 hours
+    rain_72h: float = 0.0  # mm in last 72 hours
+    snow_24h: float = 0.0  # cm in last 24 hours
+    snow_48h: float = 0.0  # cm in last 48 hours
+    snow_72h: float = 0.0  # cm in last 72 hours
 
 
 @dataclass
@@ -103,6 +127,9 @@ class NormalizedDailyForecast:
     fetched_at: datetime
     is_fallback: bool = False  # True if fallback provider was used
     model_elevation: Optional[int] = None  # Elevation (meters) that temps are valid for
+
+    # Recent precipitation for trail conditions
+    recent_precip: Optional[RecentPrecipitation] = None
 
 
 class WeatherProvider(ABC):
