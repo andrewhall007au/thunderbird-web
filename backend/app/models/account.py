@@ -28,6 +28,7 @@ class Account:
         phone: Optional linked phone number (for connecting to SMS User)
         stripe_customer_id: Stripe customer ID for stored card payments
         unit_system: Preferred units - "metric" (Celsius, meters) or "imperial" (Fahrenheit, feet)
+        active_trail_id: Currently active trail for SMS commands (references custom_routes.id)
         created_at: Account creation timestamp
         updated_at: Last modification timestamp
     """
@@ -37,6 +38,7 @@ class Account:
     phone: Optional[str] = None
     stripe_customer_id: Optional[str] = None
     unit_system: str = "metric"  # "metric" or "imperial"
+    active_trail_id: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -90,6 +92,7 @@ class AccountStore:
                 email=email.lower(),
                 password_hash=password_hash,
                 phone=None,
+                active_trail_id=None,
                 created_at=datetime.fromisoformat(now),
                 updated_at=datetime.fromisoformat(now)
             )
@@ -119,6 +122,7 @@ class AccountStore:
                     phone=row["phone"],
                     stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
                     unit_system=row["unit_system"] if "unit_system" in row.keys() and row["unit_system"] else "metric",
+                    active_trail_id=row["active_trail_id"] if "active_trail_id" in row.keys() else None,
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )
@@ -141,6 +145,7 @@ class AccountStore:
                     phone=row["phone"],
                     stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
                     unit_system=row["unit_system"] if "unit_system" in row.keys() and row["unit_system"] else "metric",
+                    active_trail_id=row["active_trail_id"] if "active_trail_id" in row.keys() else None,
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )
@@ -194,6 +199,7 @@ class AccountStore:
                     phone=row["phone"],
                     stripe_customer_id=row["stripe_customer_id"] if "stripe_customer_id" in row.keys() else None,
                     unit_system=row["unit_system"] if "unit_system" in row.keys() and row["unit_system"] else "metric",
+                    active_trail_id=row["active_trail_id"] if "active_trail_id" in row.keys() else None,
                     created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
                     updated_at=datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
                 )
@@ -314,6 +320,44 @@ class AccountStore:
             )
             conn.commit()
             return cursor.rowcount > 0
+
+    def set_active_trail(self, account_id: int, trail_id: Optional[int]) -> bool:
+        """
+        Set the active trail for an account. Pass None to clear.
+
+        Args:
+            account_id: Account ID to update
+            trail_id: Trail ID to set as active, or None to clear
+
+        Returns:
+            True if updated, False if account not found
+        """
+        now = datetime.utcnow().isoformat()
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "UPDATE accounts SET active_trail_id = ?, updated_at = ? WHERE id = ?",
+                (trail_id, now, account_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def get_active_trail_id(self, account_id: int) -> Optional[int]:
+        """
+        Get the active trail ID for an account.
+
+        Args:
+            account_id: Account ID
+
+        Returns:
+            Active trail ID if set, None otherwise
+        """
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT active_trail_id FROM accounts WHERE id = ?",
+                (account_id,)
+            )
+            row = cursor.fetchone()
+            return row["active_trail_id"] if row else None
 
 
 # Singleton instance
