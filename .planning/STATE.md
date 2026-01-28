@@ -12,15 +12,43 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 7 of 7 (Multi-Trail SMS Selection)
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-01-28 - Completed 07-02-PLAN.md
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-28 - Completed 07-03-PLAN.md
 
-Progress: ██░ (2/3 plans complete - 67%)
+Progress: ███ (3/3 plans complete - 100%)
 
 ## Completed Work (2026-01-28)
 
-### Phase 7-02: Trail Selection Service (LATEST)
+### Phase 7-03: SMS Webhook Integration (LATEST)
+
+**Trail selection integrated into SMS webhook with START routing and CAST7 active trail checks:**
+
+- Registered users sending START enter trail selection flow
+- Unregistered users sending START enter onboarding flow (preserved)
+- Numeric input during active trail selection session routes correctly
+- CAST7 CAMPS and CAST7 PEAKS check for active trail
+- Returns "No active trail. Send START to select one." when needed
+- Maintains backward compatibility with user.route_id (SMS registration)
+- 20 passing tests covering all flows
+
+**Files modified:**
+- `backend/app/routers/webhook.py` (trail selection routing)
+
+**Files created:**
+- `backend/tests/test_trail_selection.py` (292 lines, 20 tests)
+
+**Duration:** 3min
+**Commits:** ffc7e50, 37abdea, 6d8c817
+
+**Key decisions:**
+- START command routing: registered -> trail selection, unregistered -> onboarding
+- CAST7 commands check active_trail_id with fallback to user.route_id
+- SMS webhook routing order: trail_selection -> onboarding -> commands
+
+---
+
+### Phase 7-02: Trail Selection Service
 
 **SMS trail selection state machine with main menu, pagination, and active trail setting:**
 
