@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
 **Last updated:** 2026-01-28
-**Current phase:** Post-v1 Enhancement - Website & Provider Updates
+**Current phase:** Phase 7 - Multi-Trail SMS Selection
 
 ## Project Reference
 
@@ -11,11 +11,37 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 ## Current Position
 
-Phase: Post-v1 (Website Updates & Provider Expansion)
-Status: Japan enabled, website updated, provider research complete
-Last activity: 2026-01-28
+Phase: 7 of 7 (Multi-Trail SMS Selection)
+Plan: 1 of 3 - Foundation complete
+Status: In progress
+Last activity: 2026-01-28 - Completed 07-01-PLAN.md
+
+Progress: Foundation complete, ready for SMS command implementation
 
 ## Completed Work (2026-01-28)
+
+### Phase 7-01: Multi-Trail SMS Selection Foundation (LATEST)
+
+**Database schema and models for multi-trail SMS selection:**
+
+- Added `active_trail_id` column to accounts table (migration 8a0e5cff6950)
+- Index on `active_trail_id` for efficient lookups
+- Extended Account model with `set_active_trail()` and `get_active_trail_id()` methods
+- Created TrailSelectionSession model with in-memory store
+- SelectionState enum: MAIN_MENU, MY_TRAILS, LIBRARY
+- 30-minute session expiry with automatic refresh on interaction
+
+**Files created:**
+- `backend/alembic/versions/8a0e5cff6950_add_active_trail_id.py`
+- `backend/app/models/trail_selection.py`
+
+**Files modified:**
+- `backend/app/models/account.py`
+
+**Duration:** 2min 42s
+**Commits:** 2212b6f, c10888e, 3df54ee
+
+---
 
 ### 1. Website Features & Value Proposition Update
 
@@ -71,12 +97,14 @@ Researched higher-resolution options for all markets:
 ## What's Next?
 
 ### Immediate (Ready to Execute)
-1. **Apply for AfriGIS SA pilot** - Free 60-day trial, 4.4km resolution
-2. **Evaluate MetService NZ** - $75/mo for 4km, massive hiking market
+1. **Phase 07-02: SMS START command** - Implement trail selection state machine
+2. **Phase 07-03: Integration** - Wire START command into existing SMS handler
 
-### Future Consideration
-3. **JWA Japan 1km** - $210/mo, evaluate if market justifies cost
-4. **Welcome emails** - Pending todo from before
+### Future Phases
+3. **Apply for AfriGIS SA pilot** - Free 60-day trial, 4.4km resolution
+4. **Evaluate MetService NZ** - $75/mo for 4km, massive hiking market
+5. **JWA Japan 1km** - $210/mo, evaluate if market justifies cost
+6. **Welcome emails** - Pending todo from before
 
 ## Provider Integration Notes
 
@@ -107,11 +135,16 @@ ZA: Open-Meteo ECMWF (9km) - upgrade available
 ## Key Files (Today's Changes)
 
 ```
-# Website
+# Phase 07-01: Multi-Trail SMS Selection Foundation
+backend/alembic/versions/8a0e5cff6950_add_active_trail_id.py  # Migration for active_trail_id
+backend/app/models/account.py                                  # Added active trail methods
+backend/app/models/trail_selection.py                          # Session store (NEW)
+
+# Website (Earlier Today)
 app/page.tsx                    # Features, value prop, markets, FAQ
 app/how-it-works/page.tsx       # Coverage table with correct resolutions
 
-# Backend - Japan Support
+# Backend - Japan Support (Earlier Today)
 backend/app/services/weather/providers/openmeteo.py  # JMA enum + endpoint
 backend/app/services/weather/router.py               # JP provider mapping
 ```
