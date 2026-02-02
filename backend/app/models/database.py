@@ -547,6 +547,56 @@ class SQLiteUserStore:
                 "outbound_segments": row["outbound_segments"] or 0
             }
 
+    def get_user_message_stats(self, phone: str) -> Dict:
+        """Get message stats for beta user activity display."""
+        with self._get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT
+                    COUNT(*) as total_messages,
+                    MAX(sent_at) as last_active
+                FROM message_log
+                WHERE user_phone = ? AND direction = 'inbound'
+            """, (phone,))
+            row = cursor.fetchone()
+            return {
+                "total_messages": row["total_messages"] or 0,
+                "last_active": row["last_active"] or "Never"
+            }
+
+    def get_user_messages(self, phone: str, limit: int = 100) -> List[Dict]:
+        """Get all messages for a user, most recent first."""
+        with self._get_connection() as conn:
+            cursor = conn.execute("""
+                SELECT
+                    id,
+                    direction,
+                    message_type,
+                    command_type,
+                    content,
+                    segments,
+                    cost_aud,
+                    sent_at,
+                    success
+                FROM message_log
+                WHERE user_phone = ?
+                ORDER BY sent_at DESC
+                LIMIT ?
+            """, (phone, limit))
+            return [
+                {
+                    "id": row["id"],
+                    "direction": row["direction"],
+                    "message_type": row["message_type"],
+                    "command_type": row["command_type"],
+                    "content": row["content"],
+                    "segments": row["segments"],
+                    "cost_aud": row["cost_aud"],
+                    "sent_at": row["sent_at"],
+                    "success": row["success"]
+                }
+                for row in cursor
+            ]
+
 
 # =============================================================================
 # Global instance

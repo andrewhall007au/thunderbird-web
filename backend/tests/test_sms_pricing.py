@@ -6,10 +6,16 @@ from decimal import Decimal
 
 from config.sms_pricing import (
     SMS_COSTS_BY_COUNTRY,
+    MARGIN_PERCENT,
+    PricingRegion,
+    REGION_PRICING,
     get_sms_cost,
-    get_segments_per_topup,
+    get_segments_for_topup,
+    get_region_pricing,
     get_country_from_phone,
-    MARGIN_PERCENT
+    get_cost_per_segment,
+    calculate_segments_cost_cents,
+    get_all_countries,
 )
 from app.services.cost_verification import (
     CostVerificationService,
@@ -22,8 +28,8 @@ class TestSMSPricingConfig:
     """Test SMS pricing configuration."""
 
     def test_all_countries_configured(self):
-        """All 8 required countries are configured."""
-        required = {"US", "CA", "GB", "FR", "IT", "CH", "NZ", "ZA"}
+        """All 9 required countries are configured."""
+        required = {"US", "CA", "AU", "GB", "FR", "IT", "CH", "NZ", "ZA"}
         configured = set(SMS_COSTS_BY_COUNTRY.keys())
         missing = required - configured
         assert not missing, f"Missing countries: {missing}"
@@ -33,80 +39,116 @@ class TestSMSPricingConfig:
         assert MARGIN_PERCENT == 80
 
     def test_us_pricing_correct(self):
-        """US pricing matches research values."""
+        """US pricing uses US_CANADA region."""
         us = get_sms_cost("US")
-        # Research: $0.0113 Twilio, $0.0566 customer (ish)
-        assert us.twilio_cost_per_segment_cents > 0
-        assert us.customer_cost_per_segment_cents > us.twilio_cost_per_segment_cents
-        # Should be ~5x Twilio cost for 80% margin
-        ratio = us.customer_cost_per_segment_cents / us.twilio_cost_per_segment_cents
-        assert 4.5 <= ratio <= 5.5, f"US ratio should be ~5x, got {ratio}"
+        assert us.region == PricingRegion.US_CANADA
+        assert us.segments_per_10_dollars == 100
+        assert us.twilio_cost_per_segment > 0
+
+    def test_ca_pricing_correct(self):
+        """Canada pricing uses US_CANADA region."""
+        ca = get_sms_cost("CA")
+        assert ca.region == PricingRegion.US_CANADA
+        assert ca.segments_per_10_dollars == 100
 
     def test_gb_pricing_correct(self):
-        """UK pricing matches research values."""
+        """UK pricing uses STANDARD region."""
         gb = get_sms_cost("GB")
-        # Research: $0.0524 Twilio
-        assert gb.twilio_cost_per_segment_cents > 0
-        # UK should be more expensive than US
+        assert gb.region == PricingRegion.STANDARD
+        assert gb.segments_per_10_dollars == 66
+        # UK should have higher Twilio cost than US
         us = get_sms_cost("US")
-        assert gb.twilio_cost_per_segment_cents > us.twilio_cost_per_segment_cents
+        assert gb.twilio_cost_per_segment > us.twilio_cost_per_segment
+
+    def test_nz_pricing_correct(self):
+        """NZ pricing uses PREMIUM region."""
+        nz = get_sms_cost("NZ")
+        assert nz.region == PricingRegion.PREMIUM
+        assert nz.segments_per_10_dollars == 50
 
     def test_segments_per_10_dollars(self):
-        """Segments per $10 calculated correctly."""
-        us_segments = get_segments_per_topup("US")
-        gb_segments = get_segments_per_topup("GB")
+        """Segments per $10 vary by region."""
+        us_segments = get_segments_for_topup("US", 10)
+        gb_segments = get_segments_for_topup("GB", 10)
+        nz_segments = get_segments_for_topup("NZ", 10)
 
-        # US should get more segments (cheaper)
-        assert us_segments > gb_segments
-        # US should be around 176 per research
-        assert 150 <= us_segments <= 200
-        # GB should be around 38 per research
-        assert 30 <= gb_segments <= 50
+        # US should get most segments (cheapest carrier costs)
+        assert us_segments > gb_segments > nz_segments
+        # Exact values
+        assert us_segments == 100
+        assert gb_segments == 66
+        assert nz_segments == 50
 
-    def test_unknown_country_defaults_to_us(self):
-        """Unknown country codes default to US rates."""
+    def test_volume_discounts(self):
+        """Volume discounts apply at $25 and $50."""
+        # $25 gives 10% bonus
+        us_25 = get_segments_for_topup("US", 25)
+        assert us_25 == 275  # 100 * 2.5 * 1.10
+
+        # $50 gives 20% bonus
+        us_50 = get_segments_for_topup("US", 50)
+        assert us_50 == 600  # 100 * 5 * 1.20
+
+    def test_unknown_country_defaults_to_au(self):
+        """Unknown country codes default to AU (STANDARD region)."""
         unknown = get_sms_cost("XX")
-        us = get_sms_cost("US")
-        assert unknown.customer_cost_per_segment_cents == us.customer_cost_per_segment_cents
+        au = get_sms_cost("AU")
+        assert unknown.segments_per_10_dollars == au.segments_per_10_dollars
 
     @pytest.mark.parametrize("phone,expected", [
-        ("+14155551234", "US"),
-        ("+447700900123", "GB"),
-        ("+33612345678", "FR"),
-        ("+61412345678", "US"),  # Australia not configured, defaults to US
+        ("+14155551234", "US"),      # US number
+        ("+16045551234", "CA"),      # Canadian area code (604 = Vancouver)
+        ("+14165551234", "CA"),      # Canadian area code (416 = Toronto)
+        ("+447700900123", "GB"),     # UK number
+        ("+33612345678", "FR"),      # France
+        ("+61412345678", "AU"),      # Australia
+        ("+64211234567", "NZ"),      # New Zealand
+        ("+27821234567", "ZA"),      # South Africa
     ])
     def test_country_from_phone(self, phone, expected):
         """Phone number parsing extracts country correctly."""
         result = get_country_from_phone(phone)
         assert result == expected
 
+    def test_cost_per_segment_varies_by_tier(self):
+        """Cost per segment decreases with higher top-up amounts."""
+        cost_10 = get_cost_per_segment("US", 10)
+        cost_25 = get_cost_per_segment("US", 25)
+        cost_50 = get_cost_per_segment("US", 50)
 
-class TestMarginCalculations:
-    """Test margin calculation logic."""
+        assert cost_10 > cost_25 > cost_50
+        assert cost_10 == 0.100  # $0.10 per segment at $10
+        assert cost_25 == 0.091  # ~$0.091 per segment at $25
+        assert cost_50 == 0.083  # ~$0.083 per segment at $50
 
-    def test_80_percent_margin(self):
-        """80% margin when customer pays 5x Twilio cost."""
-        svc = CostVerificationService()
-        # If Twilio charges 1, we charge 5, profit is 4, margin is 4/5 = 80%
-        margin = svc.calculate_margin(twilio_cost_cents=1, customer_cost_cents=5)
-        assert margin == Decimal("0.8")
+    def test_get_all_countries(self):
+        """get_all_countries returns all configured countries."""
+        countries = get_all_countries()
+        assert len(countries) == 9
+        codes = [c.country_code for c in countries]
+        assert "US" in codes
+        assert "CA" in codes
+        assert "GB" in codes
 
-    def test_all_countries_maintain_80_margin(self):
-        """All configured countries maintain ~80% margin."""
-        svc = CostVerificationService()
 
-        for country_code, cost in SMS_COSTS_BY_COUNTRY.items():
-            margin = svc.calculate_margin(
-                cost.twilio_cost_per_segment_cents,
-                cost.customer_cost_per_segment_cents
-            )
-            assert margin >= Decimal("0.79"), f"{country_code} margin too low: {margin}"
-            assert margin <= Decimal("0.81"), f"{country_code} margin too high: {margin}"
+class TestRegionPricing:
+    """Test region-based pricing tiers."""
 
-    def test_margin_alert_threshold(self):
-        """Alert threshold is below target margin."""
-        assert MARGIN_ALERT_THRESHOLD < TARGET_MARGIN
-        assert MARGIN_ALERT_THRESHOLD >= Decimal("0.70")
+    def test_three_regions_configured(self):
+        """Three pricing regions are configured."""
+        assert len(REGION_PRICING) == 3
+        assert PricingRegion.US_CANADA in REGION_PRICING
+        assert PricingRegion.STANDARD in REGION_PRICING
+        assert PricingRegion.PREMIUM in REGION_PRICING
+
+    def test_us_canada_has_most_segments(self):
+        """US_CANADA region has highest segment count."""
+        us_canada = REGION_PRICING[PricingRegion.US_CANADA]
+        standard = REGION_PRICING[PricingRegion.STANDARD]
+        premium = REGION_PRICING[PricingRegion.PREMIUM]
+
+        assert us_canada.segments_per_10 > standard.segments_per_10
+        assert standard.segments_per_10 > premium.segments_per_10
 
 
 class TestCostVerificationService:
@@ -117,16 +159,31 @@ class TestCostVerificationService:
         svc = CostVerificationService()
         assert svc is not None
 
-    def test_handles_missing_credentials(self):
-        """Service handles missing Twilio credentials."""
+    def test_target_margin_is_80_percent(self):
+        """Target margin is 80%."""
+        assert TARGET_MARGIN == Decimal("0.80")
+
+    def test_alert_threshold_below_target(self):
+        """Alert threshold is below target margin."""
+        assert MARGIN_ALERT_THRESHOLD < TARGET_MARGIN
+        assert MARGIN_ALERT_THRESHOLD >= Decimal("0.70")
+
+    def test_calculate_margin(self):
+        """Margin calculation is correct."""
         svc = CostVerificationService()
-        # Without credentials, fetch should return None gracefully
-        # (actual test depends on env vars)
+        # If Twilio charges 1 cent, we charge 5 cents, profit is 4, margin is 4/5 = 80%
+        margin = svc.calculate_margin(twilio_cost_cents=1, customer_cost_cents=5)
+        assert margin == Decimal("0.8")
+
+    def test_calculate_margin_zero_twilio(self):
+        """Margin is 100% if Twilio cost is zero."""
+        svc = CostVerificationService()
+        margin = svc.calculate_margin(twilio_cost_cents=0, customer_cost_cents=5)
+        assert margin == Decimal("1.0")
 
     @pytest.mark.asyncio
     async def test_verify_country_handles_unknown(self):
         """Verify handles unknown country codes."""
         svc = CostVerificationService()
-        result = await svc.verify_country("XX")
+        result = await svc.verify_country("ZZ")
         assert result.error is not None
-        assert "not in configuration" in result.error

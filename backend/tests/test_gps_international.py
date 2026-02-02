@@ -345,7 +345,8 @@ class TestWeatherConverter:
             target_elevation=100
         )
 
-        assert result.periods[0].cloud_base == 600  # Low clouds
+        # Cloud base = base_elevation (100) + 600 for high cloud cover
+        assert result.periods[0].cloud_base == 700  # Low clouds (100 + 600)
 
     def test_conversion_cloud_base_from_cover_low(self, sample_normalized_forecast):
         """Low cloud cover (<20) produces high cloud base."""
@@ -361,7 +362,8 @@ class TestWeatherConverter:
             target_elevation=100
         )
 
-        assert result.periods[1].cloud_base == 2000  # High/clear
+        # Cloud base = base_elevation (100) + 2000 for low cloud cover
+        assert result.periods[1].cloud_base == 2100  # High/clear (100 + 2000)
 
     def test_conversion_source_nws(self, sample_normalized_forecast):
         """NWS provider name converts to 'nws' source."""

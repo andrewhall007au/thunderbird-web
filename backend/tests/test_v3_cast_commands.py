@@ -136,26 +136,26 @@ class TestCAST7Command:
     def test_cast7_shows_7_days(self):
         """CAST7 should show 7 days of forecasts"""
         from app.services.formatter import FormatCAST7
-        
+
         mock_data = _create_mock_daily_data(days=7, camps=["LAKEO", "HIGHM"])
-        
+
         messages = FormatCAST7.format_multi(
             route_name="Western Arthurs (Full)",
             forecast_data=mock_data,
             date=datetime.now(TZ_HOBART)
         )
-        
+
         full_response = "\n".join(messages)
-        
-        # Check for day indicators (dates or day numbers)
+
+        # Check for day indicators (day abbreviations like Mon, Tue, Wed)
         today = datetime.now(TZ_HOBART).date()
         days_found = 0
         for i in range(7):
             day = today + timedelta(days=i)
-            day_str = day.strftime("%d")
+            day_str = day.strftime("%a")  # Mon, Tue, Wed, etc.
             if day_str in full_response:
                 days_found += 1
-        
+
         assert days_found >= 5, f"Expected 7 days, found indicators for {days_found}"
 
 
