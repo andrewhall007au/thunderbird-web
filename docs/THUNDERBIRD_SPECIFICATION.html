@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thunderbird System Specification v1.1</title>
+    <style>
+        :root {
+            --primary: #f97316;
+            --primary-dark: #ea580c;
+            --bg: #fafafa;
+            --card: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --code-bg: #f3f4f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: var(--text);
+            margin: 2.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            color: var(--text);
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin: 1rem 0 0.5rem;
+        }
+
+        p { margin-bottom: 1rem; }
+
+        .toc {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .toc h2 { margin-top: 0; border: none; }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 0.5rem 0;
+        }
+
+        .toc a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .toc .section-number {
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-right: 0.5rem;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background: var(--code-bg);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: var(--bg);
+        }
+
+        code {
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .endpoint {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .endpoint .method {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+
+        .endpoint .method.get { background: #10b981; color: white; }
+        .endpoint .method.post { background: #3b82f6; color: white; }
+        .endpoint .method.put { background: #f59e0b; color: white; }
+        .endpoint .method.delete { background: #ef4444; color: white; }
+
+        .endpoint .path {
+            font-family: monospace;
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-required { background: #fef3c7; color: #92400e; }
+        .badge-optional { background: #e0e7ff; color: #3730a3; }
+        .badge-deprecated { background: #fee2e2; color: #991b1b; }
+
+        .flowchart {
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .version-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin-left: 1rem;
+        }
+
+        .status-ok { color: var(--success); }
+        .status-warn { color: var(--warning); }
+        .status-error { color: var(--danger); }
+
+        @media print {
+            body { padding: 0; }
+            .toc { page-break-after: always; }
+            h2 { page-break-before: always; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Thunderbird System Specification <span class="version-badge">v1.1</span></h1>
+    <p class="subtitle">
+        Complete technical specification for the Thunderbird alpine weather forecast service.<br>
+        <strong>Generated:</strong> 2026-02-02 | <strong>Status:</strong> Production
+    </p>
+
+    <nav class="toc">
+        <h2>Table of Contents</h2>
+        <ul>
+            <li><span class="section-number">1.</span> <a href="#overview">System Overview</a></li>
+            <li><span class="section-number">2.</span> <a href="#architecture">Architecture</a></li>
+            <li><span class="section-number">3.</span> <a href="#data-models">Data Models</a></li>
+            <li><span class="section-number">4.</span> <a href="#api-endpoints">API Endpoints</a></li>
+            <li><span class="section-number">5.</span> <a href="#sms-commands">SMS Commands</a></li>
+            <li><span class="section-number">6.</span> <a href="#weather-integration">Weather Integration</a></li>
+            <li><span class="section-number">7.</span> <a href="#forecast-formatting">Forecast Formatting</a></li>
+            <li><span class="section-number">8.</span> <a href="#scheduled-jobs">Scheduled Jobs</a></li>
+            <li><span class="section-number">9.</span> <a href="#routes">Route Configuration</a></li>
+            <li><span class="section-number">10.</span> <a href="#frontend">Frontend Pages</a></li>
+            <li><span class="section-number">11.</span> <a href="#user-flows">User Flows</a></li>
+            <li><span class="section-number">12.</span> <a href="#configuration">Configuration</a></li>
+            <li><span class="section-number">13.</span> <a href="#testing">Testing Checklist</a></li>
+        </ul>
+    </nav>
+
+    <!-- Section 1: Overview -->
+    <section id="overview">
+        <h2>1. System Overview</h2>
+
+        <div class="card">
+            <h3>What is Thunderbird?</h3>
+            <p>Thunderbird is an SMS-based weather forecast service for multi-day hiking trails. It delivers elevation-specific weather forecasts directly to satellite communicators (Garmin inReach, Zoleo, etc.) when hikers are out of cell coverage.</p>
+
+            <h4>Key Features</h4>
+            <ul>
+                <li><strong>Pull-based forecasts:</strong> Users request forecasts via SMS commands</li>
+                <li><strong>Elevation-adjusted temperatures:</strong> Applies lapse rate correction for accurate mountain weather</li>
+                <li><strong>Multi-provider weather:</strong> BOM (Australia), Met Office (UK), NWS (US), Environment Canada</li>
+                <li><strong>SafeCheck system:</strong> Emergency contact alerts for overdue hikers</li>
+                <li><strong>Route library:</strong> Pre-configured trails with camps and peaks</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Technology Stack</h3>
+            <table>
+                <tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+                <tr><td>Backend API</td><td>FastAPI (Python 3.11)</td><td>REST API, webhook handling</td></tr>
+                <tr><td>Frontend</td><td>Next.js 14.1 (React 18)</td><td>Marketing site, user dashboard</td></tr>
+                <tr><td>Database</td><td>SQLite / PostgreSQL</td><td>User data, message logs</td></tr>
+                <tr><td>Cache</td><td>Redis</td><td>Weather data caching</td></tr>
+                <tr><td>SMS</td><td>Twilio</td><td>SMS send/receive</td></tr>
+                <tr><td>Email</td><td>Resend</td><td>Transactional emails</td></tr>
+                <tr><td>Scheduler</td><td>APScheduler</td><td>Automated forecast pushes</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Version History</h3>
+            <table>
+                <tr><th>Version</th><th>Date</th><th>Changes</th></tr>
+                <tr><td>v3.1.0</td><td>2026-02-02</td><td>Field test features, Resend email migration</td></tr>
+                <tr><td>v3.0.0</td><td>2026-01-15</td><td>Pull-based system, CHECKIN commands</td></tr>
+                <tr><td>v2.4.0</td><td>2025-12-20</td><td>International weather providers</td></tr>
+            </table>
+        </div>
+    </section>
+
+    <!-- Section 2: Architecture -->
+    <section id="architecture">
+        <h2>2. Architecture</h2>
+
+        <div class="card">
+            <h3>System Components</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│                         THUNDERBIRD SYSTEM                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐       │
+│   │   Twilio    │────▶│   Webhook   │────▶│  Commands   │       │
+│   │  (inbound)  │     │   Router    │     │   Parser    │       │
+│   └─────────────┘     └─────────────┘     └─────────────┘       │
+│                              │                    │               │
+│                              ▼                    ▼               │
+│   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐       │
+│   │   Weather   │◀────│  Formatter  │◀────│   User DB   │       │
+│   │   Router    │     │             │     │  (SQLite)   │       │
+│   └─────────────┘     └─────────────┘     └─────────────┘       │
+│          │                    │                                   │
+│          ▼                    ▼                                   │
+│   ┌─────────────┐     ┌─────────────┐                           │
+│   │  BOM / Met  │     │   Twilio    │                           │
+│   │  Office/NWS │     │ (outbound)  │                           │
+│   └─────────────┘     └─────────────┘                           │
+│                                                                   │
+├─────────────────────────────────────────────────────────────────┤
+│   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐       │
+│   │  Next.js    │────▶│   Nginx     │────▶│   FastAPI   │       │
+│   │  Frontend   │     │   Proxy     │     │   Backend   │       │
+│   │  (port 3000)│     │  (80/443)   │     │ (port 8000) │       │
+│   └─────────────┘     └─────────────┘     └─────────────┘       │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Directory Structure</h3>
+<pre><code>thunderbird-web/
+├── app/                      # Next.js frontend
+│   ├── components/           # React components
+│   ├── trails/               # Trail pages
+│   ├── account/              # User account pages
+│   └── api-reference/        # API documentation
+│
+├── backend/                  # FastAPI backend
+│   ├── app/
+│   │   ├── main.py          # Application entry + scheduler
+│   │   ├── routers/         # API route handlers
+│   │   │   ├── webhook.py   # Twilio SMS webhook (~61KB)
+│   │   │   ├── admin.py     # Admin dashboard
+│   │   │   ├── api.py       # Public API
+│   │   │   └── auth.py      # JWT authentication
+│   │   ├── models/          # Data models
+│   │   │   └── database.py  # SQLite user store
+│   │   └── services/        # Business logic
+│   │       ├── bom.py       # BOM weather client
+│   │       ├── commands.py  # SMS command parser
+│   │       ├── formatter.py # Message formatting
+│   │       ├── routes.py    # Route loader
+│   │       ├── sms.py       # Twilio wrapper
+│   │       └── weather/     # Weather providers
+│   │           ├── router.py
+│   │           ├── bom.py
+│   │           ├── metoffice.py
+│   │           └── openmeteo.py
+│   ├── config/
+│   │   ├── settings.py      # Pydantic settings
+│   │   └── routes/          # Route JSON files
+│   └── tests/               # pytest tests (280+)
+│
+├── .github/workflows/        # CI/CD
+└── docs/                     # Documentation</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Request Flow: SMS Command</h3>
+<pre><code>1. User sends SMS "CAST LAKEO" to Twilio number
+   │
+2. Twilio POSTs to /webhook/sms/inbound
+   │
+3. Webhook router extracts Body, From fields
+   │
+4. CommandParser.parse("CAST LAKEO")
+   │  → Returns ParsedCommand(type=CAST, location_code="LAKEO")
+   │
+5. Lookup user by phone number
+   │  → Get route_id, unit preferences
+   │
+6. Get waypoint from route config
+   │  → LAKEO: lat=-43.1486, lon=146.2722, elev=863m
+   │
+7. Weather router fetches forecast
+   │  → BOM API (Australia) → 12hr hourly data
+   │
+8. Formatter creates SMS message
+   │  → Apply elevation adjustment
+   │  → Calculate danger ratings
+   │  → Format to SMS-friendly text
+   │
+9. Twilio sends response SMS
+   │
+10. Log message to database</code></pre>
+        </div>
+    </section>
+
+    <!-- Section 3: Data Models -->
+    <section id="data-models">
+        <h2>3. Data Models</h2>
+
+        <div class="card">
+            <h3>User Model</h3>
+            <p>Core user registration and state.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>phone</code></td><td>string (PK)</td><td>E.164 format phone number</td></tr>
+                <tr><td><code>route_id</code></td><td>string</td><td>Selected trail route ID</td></tr>
+                <tr><td><code>start_date</code></td><td>date (optional)</td><td>Trip start date</td></tr>
+                <tr><td><code>end_date</code></td><td>date (optional)</td><td>Trip end date</td></tr>
+                <tr><td><code>trail_name</code></td><td>string</td><td>Display name of trail</td></tr>
+                <tr><td><code>direction</code></td><td>string</td><td>"standard" or "reverse"</td></tr>
+                <tr><td><code>current_position</code></td><td>string</td><td>Last CHECKIN location code</td></tr>
+                <tr><td><code>last_checkin_at</code></td><td>datetime</td><td>Time of last check-in</td></tr>
+                <tr><td><code>status</code></td><td>string</td><td>"registered", "active", "completed"</td></tr>
+                <tr><td><code>unit_system</code></td><td>string</td><td>"metric" or "imperial"</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>SafeCheck Contact</h3>
+            <p>Emergency contacts for overdue alerts.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>user_phone</code></td><td>string (FK)</td><td>Reference to user</td></tr>
+                <tr><td><code>contact_phone</code></td><td>string</td><td>Contact's phone number</td></tr>
+                <tr><td><code>contact_name</code></td><td>string</td><td>Contact's name</td></tr>
+            </table>
+            <p><strong>Constraint:</strong> Maximum 10 contacts per user.</p>
+        </div>
+
+        <div class="card">
+            <h3>Message Log</h3>
+            <p>SMS audit trail for analytics and debugging.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>id</code></td><td>integer (PK)</td><td>Auto-increment ID</td></tr>
+                <tr><td><code>user_phone</code></td><td>string</td><td>User's phone number</td></tr>
+                <tr><td><code>direction</code></td><td>string</td><td>"inbound" or "outbound"</td></tr>
+                <tr><td><code>message_type</code></td><td>string</td><td>Message category</td></tr>
+                <tr><td><code>command_type</code></td><td>string</td><td>Parsed command type</td></tr>
+                <tr><td><code>content</code></td><td>text</td><td>Message content</td></tr>
+                <tr><td><code>segments</code></td><td>integer</td><td>SMS segment count</td></tr>
+                <tr><td><code>cost_aud</code></td><td>float</td><td>Cost in AUD</td></tr>
+                <tr><td><code>sent_at</code></td><td>datetime</td><td>Timestamp</td></tr>
+                <tr><td><code>success</code></td><td>boolean</td><td>Delivery status</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Route Configuration</h3>
+            <p>Trail definitions stored as JSON in <code>config/routes/</code>.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>route_id</code></td><td>string</td><td>Unique identifier (e.g., "western_arthurs_ak")</td></tr>
+                <tr><td><code>name</code></td><td>string</td><td>Display name</td></tr>
+                <tr><td><code>short_name</code></td><td>string</td><td>Abbreviated name</td></tr>
+                <tr><td><code>region</code></td><td>string</td><td>Geographic region</td></tr>
+                <tr><td><code>distance_km</code></td><td>number</td><td>Total distance</td></tr>
+                <tr><td><code>typical_days</code></td><td>string</td><td>Expected duration</td></tr>
+                <tr><td><code>grade</code></td><td>number</td><td>Difficulty 1-5</td></tr>
+                <tr><td><code>is_loop</code></td><td>boolean</td><td>Whether trail is a loop</td></tr>
+                <tr><td><code>camps[]</code></td><td>array</td><td>Camp waypoints</td></tr>
+                <tr><td><code>peaks[]</code></td><td>array</td><td>Peak waypoints</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Waypoint Schema</h3>
+            <p>Individual camp or peak within a route.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>code</code></td><td>string</td><td>5-char uppercase code (e.g., "LAKEO")</td></tr>
+                <tr><td><code>name</code></td><td>string</td><td>Full name (e.g., "Lake Oberon")</td></tr>
+                <tr><td><code>lat</code></td><td>number</td><td>Latitude (-90 to 90)</td></tr>
+                <tr><td><code>lon</code></td><td>number</td><td>Longitude (-180 to 180)</td></tr>
+                <tr><td><code>elevation</code></td><td>number</td><td>Elevation in meters</td></tr>
+                <tr><td><code>bom_cell</code></td><td>string</td><td>Weather zone ID</td></tr>
+                <tr><td><code>verified</code></td><td>boolean</td><td>Coordinates verified</td></tr>
+                <tr><td><code>type</code></td><td>string</td><td>"camp", "side_trip", "on_route"</td></tr>
+            </table>
+        </div>
+    </section>
+
+    <!-- Placeholder for remaining sections - will be populated -->
+    <section id="api-endpoints">
+        <h2>4. API Endpoints</h2>
+        <p><em>Section content will be added from exploration agent results...</em></p>
+    </section>
+
+    <section id="sms-commands">
+        <h2>5. SMS Commands</h2>
+
+        <div class="card">
+            <h3>Command Reference</h3>
+            <table>
+                <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+                <tr><td><code>START</code></td><td>Begin registration</td><td>START</td></tr>
+                <tr><td><code>STOP</code></td><td>Cancel service</td><td>STOP</td></tr>
+                <tr><td><code>HELP</code></td><td>Show available commands</td><td>HELP</td></tr>
+                <tr><td><code>KEY</code></td><td>Show column legend</td><td>KEY</td></tr>
+                <tr><td><code>CAST {code}</code></td><td>12hr hourly forecast</td><td>CAST LAKEO</td></tr>
+                <tr><td><code>CAST24 {code}</code></td><td>24hr hourly forecast</td><td>CAST24 LAKEO</td></tr>
+                <tr><td><code>CAST7 {code}</code></td><td>7-day daily forecast</td><td>CAST7 LAKEO</td></tr>
+                <tr><td><code>CAST7 CAMPS</code></td><td>7-day all camps (grouped)</td><td>CAST7 CAMPS</td></tr>
+                <tr><td><code>CAST7 PEAKS</code></td><td>7-day all peaks (grouped)</td><td>CAST7 PEAKS</td></tr>
+                <tr><td><code>CAST {lat},{lon}</code></td><td>12hr for GPS point</td><td>CAST -41.89,146.08</td></tr>
+                <tr><td><code>CHECKIN {code}</code></td><td>Check in at location</td><td>CHECKIN LAKEO</td></tr>
+                <tr><td><code>SAFE +61... Name</code></td><td>Add emergency contact</td><td>SAFE +61400123456 John</td></tr>
+                <tr><td><code>SAFELIST</code></td><td>List emergency contacts</td><td>SAFELIST</td></tr>
+                <tr><td><code>SAFEDEL +61...</code></td><td>Remove contact</td><td>SAFEDEL +61400123456</td></tr>
+                <tr><td><code>ALERTS ON/OFF</code></td><td>Toggle BOM alerts</td><td>ALERTS ON</td></tr>
+                <tr><td><code>ROUTE</code></td><td>Show route info & codes</td><td>ROUTE</td></tr>
+                <tr><td><code>UNITS METRIC/IMPERIAL</code></td><td>Change unit system</td><td>UNITS IMPERIAL</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>GPS Coordinate Formats</h3>
+            <p>GPS coordinates can be specified in multiple formats:</p>
+            <ul>
+                <li><code>CAST -41.8921,146.0820</code> - Comma-separated</li>
+                <li><code>CAST -41.8921 146.0820</code> - Space-separated</li>
+                <li><code>CAST 41.8921S,146.0820E</code> - Cardinal directions</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Command Parsing Rules</h3>
+            <ol>
+                <li>Commands are case-insensitive</li>
+                <li>Leading/trailing whitespace is trimmed</li>
+                <li>Multiple spaces are collapsed to single space</li>
+                <li>Non-alphanumeric characters (except @, +, -, ., ,) are stripped</li>
+                <li>Camp/peak codes are validated against route configuration</li>
+            </ol>
+        </div>
+    </section>
+
+    <section id="weather-integration">
+        <h2>6. Weather Integration</h2>
+
+        <div class="card">
+            <h3>Weather Provider Routing</h3>
+            <table>
+                <tr><th>Country</th><th>Primary Provider</th><th>Resolution</th><th>Fallback</th></tr>
+                <tr><td>Australia</td><td>BOM ACCESS-C/G</td><td>4-12km</td><td>Open-Meteo</td></tr>
+                <tr><td>United States</td><td>NWS</td><td>~2.5km</td><td>Open-Meteo</td></tr>
+                <tr><td>Canada</td><td>Environment Canada</td><td>~10km</td><td>Open-Meteo</td></tr>
+                <tr><td>United Kingdom</td><td>Met Office</td><td>~1.5km</td><td>Open-Meteo</td></tr>
+                <tr><td>France</td><td>Open-Meteo (AROME)</td><td>1.5-2.5km</td><td>-</td></tr>
+                <tr><td>Europe</td><td>Open-Meteo (ICON-EU)</td><td>7km</td><td>-</td></tr>
+                <tr><td>Other</td><td>Open-Meteo (best_match)</td><td>~25km</td><td>-</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Elevation Adjustment</h3>
+            <p>All forecasts apply lapse rate adjustment:</p>
+<pre><code>elevation_diff = waypoint_elevation - grid_elevation
+temp_adjustment = elevation_diff × 0.65°C per 100m
+
+Example: Camp at 1200m, grid at 900m
+→ elevation_diff = 300m
+→ temp_adjustment = 300 × 0.0065 = 1.95°C cooler</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Caching Strategy</h3>
+            <ul>
+                <li><strong>Cache TTL:</strong> 6 hours</li>
+                <li><strong>Max age:</strong> 12 hours (stale-while-revalidate)</li>
+                <li><strong>Cache key:</strong> <code>{provider}:{lat}:{lon}:{forecast_type}</code></li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="forecast-formatting">
+        <h2>7. Forecast Formatting</h2>
+
+        <div class="card">
+            <h3>12-Hour Hourly Format (CAST)</h3>
+<pre><code>LAKEO Lake Oberon (863m)
+12hr from 06:00 Mon
+
+06h 5-7° Rn15% W12-20
+08h 7-10° Rn18% W14-22
+10h 10-14° Rn22% W16-26 !
+12h 12-16° Rn25% W18-30 !
+14h 11-15° Rn20% W15-25
+16h 8-12° Rn15% W12-18
+
+Rn=Rain W=Wind(km/h)
+Light 05:45-20:15 (14h30m)</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>7-Day Daily Format (CAST7)</h3>
+<pre><code>LAKEO Lake Oberon (863m)
+7-day from Mon 20 Jan
+
+Mon 5-14° Rn25% W18-30 CB12 FL18 !
+Tue 3-11° Rn40% W22-35 CB10 FL16 !!
+Wed 6-15° Rn10% W10-18 CB14 FL20
+Thu 8-17° Rn5% W8-15 CB16 FL22
+Fri 7-16° Rn15% W12-20 CB15 FL21
+Sat 4-12° Rn35% W20-32 CB11 FL17 !
+Sun 5-13° Rn20% W15-25 CB13 FL19
+
+CB=CloudBase(x100m) FL=Freeze(x100m)</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Danger Rating System</h3>
+            <table>
+                <tr><th>Symbol</th><th>Meaning</th><th>Criteria</th></tr>
+                <tr><td><code>!</code></td><td>Caution</td><td>1 hazard present</td></tr>
+                <tr><td><code>!!</code></td><td>Moderate danger</td><td>2 hazards present</td></tr>
+                <tr><td><code>!!!</code></td><td>Extreme danger</td><td>3+ hazards OR wind ≥70km/h</td></tr>
+                <tr><td><code>TS?</code></td><td>Thunder possible</td><td>CAPE ≥200 J/kg</td></tr>
+                <tr><td><code>TS!</code></td><td>Thunder likely</td><td>CAPE ≥400 J/kg</td></tr>
+            </table>
+
+            <h4>Hazard Definitions</h4>
+            <ul>
+                <li><strong>Ice:</strong> Peak elevation above freezing level</li>
+                <li><strong>Blind:</strong> Peak in cloud AND cloud cover ≥90%</li>
+                <li><strong>Wind:</strong> Gusts ≥50km/h (configurable per user)</li>
+                <li><strong>Precip:</strong> Rain ≥5mm AND Snow ≥2cm</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Unit Systems</h3>
+            <table>
+                <tr><th>Field</th><th>Metric</th><th>Imperial</th></tr>
+                <tr><td>Temperature</td><td>°C</td><td>°F</td></tr>
+                <tr><td>Wind</td><td>km/h</td><td>mph</td></tr>
+                <tr><td>Elevation</td><td>meters</td><td>feet</td></tr>
+                <tr><td>Precipitation</td><td>mm</td><td>inches</td></tr>
+                <tr><td>Snow</td><td>cm</td><td>inches</td></tr>
+            </table>
+        </div>
+    </section>
+
+    <section id="scheduled-jobs">
+        <h2>8. Scheduled Jobs</h2>
+
+        <div class="card">
+            <h3>APScheduler Jobs</h3>
+            <table>
+                <tr><th>Job</th><th>Schedule</th><th>Description</th></tr>
+                <tr><td>Morning Push</td><td>6:00 AM AEDT</td><td>Send hourly forecast for today to active users</td></tr>
+                <tr><td>Evening Push</td><td>6:00 PM AEDT</td><td>Send 7-day outlook to active users</td></tr>
+                <tr><td>Overdue Check</td><td>:30 past each hour</td><td>Alert SafeCheck contacts for overdue hikers</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Overdue Detection Logic</h3>
+<pre><code>1. Get all users with SafeCheck contacts configured
+2. For each user:
+   a. If no check-in in last 24 hours AND has active trip:
+      - Send alert to all SafeCheck contacts
+      - Log alert in database
+   b. If check-in within 24 hours:
+      - Skip (user is active)</code></pre>
+        </div>
+    </section>
+
+    <section id="routes">
+        <h2>9. Route Configuration</h2>
+
+        <div class="card">
+            <h3>Available Routes</h3>
+            <table>
+                <tr><th>Route ID</th><th>Name</th><th>Distance</th><th>Days</th><th>Camps</th><th>Peaks</th></tr>
+                <tr><td>western_arthurs_ak</td><td>Western Arthurs (Alpha-Kappa)</td><td>57km</td><td>6-8</td><td>8</td><td>10</td></tr>
+                <tr><td>western_arthurs_full</td><td>Western Arthurs (Full)</td><td>70km</td><td>8-10</td><td>12</td><td>14</td></tr>
+                <tr><td>eastern_arthurs</td><td>Eastern Arthurs</td><td>35km</td><td>4-5</td><td>5</td><td>6</td></tr>
+                <tr><td>combined_arthurs</td><td>Combined Arthurs</td><td>90km</td><td>10-14</td><td>15</td><td>18</td></tr>
+                <tr><td>overland_track</td><td>Overland Track</td><td>65km</td><td>5-6</td><td>8</td><td>4</td></tr>
+                <tr><td>federation_peak</td><td>Federation Peak</td><td>40km</td><td>4-5</td><td>4</td><td>2</td></tr>
+            </table>
+        </div>
+    </section>
+
+    <section id="frontend">
+        <h2>10. Frontend Pages</h2>
+
+        <div class="card">
+            <h3>Public Pages</h3>
+            <table>
+                <tr><th>Path</th><th>Purpose</th><th>Key Features</th></tr>
+                <tr><td><code>/</code></td><td>Landing page</td><td>Hero, features, pricing, FAQ</td></tr>
+                <tr><td><code>/how-it-works</code></td><td>Service explanation</td><td>Step-by-step guide</td></tr>
+                <tr><td><code>/pricing</code></td><td>Pricing info</td><td>Package details</td></tr>
+                <tr><td><code>/faq</code></td><td>FAQ</td><td>Common questions</td></tr>
+                <tr><td><code>/register</code></td><td>Beta signup</td><td>Waitlist form</td></tr>
+                <tr><td><code>/contact</code></td><td>Contact</td><td>Support info</td></tr>
+                <tr><td><code>/terms</code></td><td>Terms of service</td><td>Legal</td></tr>
+                <tr><td><code>/privacy</code></td><td>Privacy policy</td><td>Legal</td></tr>
+                <tr><td><code>/safety</code></td><td>Safety disclaimer</td><td>Legal</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Trail Pages</h3>
+            <table>
+                <tr><th>Path</th><th>Trail</th></tr>
+                <tr><td><code>/trails/western-arthurs</code></td><td>Western Arthurs Range</td></tr>
+                <tr><td><code>/trails/overland-track</code></td><td>Overland Track</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Authenticated Pages</h3>
+            <table>
+                <tr><th>Path</th><th>Purpose</th></tr>
+                <tr><td><code>/login</code></td><td>User login</td></tr>
+                <tr><td><code>/account</code></td><td>Account dashboard</td></tr>
+                <tr><td><code>/settings</code></td><td>User preferences</td></tr>
+                <tr><td><code>/create</code></td><td>Create custom route</td></tr>
+                <tr><td><code>/library</code></td><td>Route library</td></tr>
+            </table>
+        </div>
+    </section>
+
+    <section id="user-flows">
+        <h2>11. User Flows</h2>
+
+        <div class="card">
+            <h3>Registration Flow (SMS)</h3>
+<pre><code>User → "START"
+  │
+  ▼
+System → "Welcome to Thunderbird! Reply with your trail:
+          1. Western Arthurs
+          2. Overland Track
+          3. Eastern Arthurs"
+  │
+  ▼
+User → "1"
+  │
+  ▼
+System → "Great! Western Arthurs selected.
+          Text CAST {code} for forecast.
+          Text ROUTE to see location codes."
+  │
+  ▼
+User registered with route_id="western_arthurs_ak"</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Forecast Request Flow</h3>
+<pre><code>User → "CAST LAKEO"
+  │
+  ▼
+1. Parse command: CAST, location=LAKEO
+  │
+  ▼
+2. Validate: LAKEO exists in user's route
+  │
+  ▼
+3. Fetch weather: BOM API for lat/lon
+  │
+  ▼
+4. Format: Apply elevation adjustment, danger calc
+  │
+  ▼
+5. Send SMS with 12-hour forecast</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>SafeCheck Setup Flow</h3>
+<pre><code>User → "SAFE +61400123456 John Smith"
+  │
+  ▼
+1. Parse: phone=+61400123456, name="John Smith"
+  │
+  ▼
+2. Validate: phone format, max 10 contacts
+  │
+  ▼
+3. Store contact in database
+  │
+  ▼
+System → "Added John Smith (+61400123456) as SafeCheck contact.
+          They'll be alerted if you're overdue."</code></pre>
+        </div>
+    </section>
+
+    <section id="configuration">
+        <h2>12. Configuration</h2>
+
+        <div class="card">
+            <h3>Environment Variables</h3>
+            <table>
+                <tr><th>Variable</th><th>Required</th><th>Description</th></tr>
+                <tr><td><code>ENVIRONMENT</code></td><td>Yes</td><td>development / staging / production</td></tr>
+                <tr><td><code>DEBUG</code></td><td>No</td><td>Enable debug mode (default: false)</td></tr>
+                <tr><td><code>TWILIO_ACCOUNT_SID</code></td><td>Yes</td><td>Twilio account SID</td></tr>
+                <tr><td><code>TWILIO_AUTH_TOKEN</code></td><td>Yes</td><td>Twilio auth token</td></tr>
+                <tr><td><code>TWILIO_PHONE_NUMBER</code></td><td>Yes</td><td>Twilio phone number</td></tr>
+                <tr><td><code>ADMIN_PASSWORD</code></td><td>Yes</td><td>Admin dashboard password</td></tr>
+                <tr><td><code>JWT_SECRET</code></td><td>Yes*</td><td>JWT signing secret (required in production)</td></tr>
+                <tr><td><code>RESEND_API_KEY</code></td><td>No</td><td>Resend email API key</td></tr>
+                <tr><td><code>METOFFICE_API_KEY</code></td><td>No</td><td>Met Office API key (UK weather)</td></tr>
+                <tr><td><code>DATABASE_URL</code></td><td>No</td><td>PostgreSQL URL (default: SQLite)</td></tr>
+                <tr><td><code>REDIS_URL</code></td><td>No</td><td>Redis URL for caching</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Rate Limits</h3>
+            <table>
+                <tr><th>Limit</th><th>Value</th></tr>
+                <tr><td>SMS per phone per hour</td><td>10</td></tr>
+                <tr><td>API requests per IP per minute</td><td>60</td></tr>
+                <tr><td>Max concurrent users</td><td>500</td></tr>
+                <tr><td>Max SMS per day (global)</td><td>2000</td></tr>
+                <tr><td>Max BOM API calls per day</td><td>500</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>SMS Delivery Settings</h3>
+            <table>
+                <tr><th>Setting</th><th>Value</th></tr>
+                <tr><td>Inter-message delay</td><td>2.5 seconds</td></tr>
+                <tr><td>Batch gap</td><td>5.0 seconds</td></tr>
+                <tr><td>Retry delay</td><td>30 seconds</td></tr>
+                <tr><td>Max retries</td><td>3</td></tr>
+            </table>
+        </div>
+    </section>
+
+    <section id="testing">
+        <h2>13. Testing Checklist</h2>
+
+        <div class="card">
+            <h3>SMS Command Tests</h3>
+            <table>
+                <tr><th>Test Case</th><th>Input</th><th>Expected Result</th></tr>
+                <tr><td>Basic forecast</td><td>CAST LAKEO</td><td>12-hour forecast for Lake Oberon</td></tr>
+                <tr><td>24-hour forecast</td><td>CAST24 LAKEO</td><td>24-hour forecast for Lake Oberon</td></tr>
+                <tr><td>7-day forecast</td><td>CAST7 LAKEO</td><td>7-day forecast for Lake Oberon</td></tr>
+                <tr><td>GPS forecast</td><td>CAST -43.15,146.27</td><td>Forecast for coordinates</td></tr>
+                <tr><td>Invalid code</td><td>CAST XXXXX</td><td>Error: Unknown location</td></tr>
+                <tr><td>Check-in</td><td>CHECKIN LAKEO</td><td>Position updated confirmation</td></tr>
+                <tr><td>Show route</td><td>ROUTE</td><td>List of camp/peak codes</td></tr>
+                <tr><td>Add contact</td><td>SAFE +61400123456 John</td><td>Contact added confirmation</td></tr>
+                <tr><td>List contacts</td><td>SAFELIST</td><td>List of SafeCheck contacts</td></tr>
+                <tr><td>Help</td><td>HELP</td><td>Command list</td></tr>
+                <tr><td>Key/legend</td><td>KEY</td><td>Column abbreviation legend</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>API Endpoint Tests</h3>
+            <table>
+                <tr><th>Endpoint</th><th>Test Case</th><th>Expected</th></tr>
+                <tr><td>GET /health</td><td>Service health</td><td>200 OK, all services "ok"</td></tr>
+                <tr><td>POST /webhook/sms/inbound</td><td>Valid SMS</td><td>200 OK, TwiML response</td></tr>
+                <tr><td>GET /api/routes</td><td>List routes</td><td>Array of route objects</td></tr>
+                <tr><td>GET /api/routes/{id}</td><td>Route details</td><td>Route object with camps/peaks</td></tr>
+                <tr><td>GET /admin</td><td>Without auth</td><td>401 Unauthorized</td></tr>
+                <tr><td>POST /admin/login</td><td>Valid credentials</td><td>Session cookie set</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Integration Tests</h3>
+            <ul>
+                <li>[ ] User registration via SMS completes successfully</li>
+                <li>[ ] Forecast request fetches real weather data</li>
+                <li>[ ] Elevation adjustment applied correctly</li>
+                <li>[ ] Danger ratings calculated properly</li>
+                <li>[ ] SafeCheck contacts receive overdue alerts</li>
+                <li>[ ] Scheduled jobs run at correct times</li>
+                <li>[ ] Frontend pages load without errors</li>
+                <li>[ ] Admin dashboard displays user data</li>
+                <li>[ ] Message logging captures all SMS</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Edge Cases</h3>
+            <ul>
+                <li>[ ] Empty SMS body handled gracefully</li>
+                <li>[ ] Very long SMS content truncated properly</li>
+                <li>[ ] Invalid phone number rejected</li>
+                <li>[ ] GPS coordinates outside valid range rejected</li>
+                <li>[ ] User with no route tries forecast → error message</li>
+                <li>[ ] Weather API timeout → fallback or error</li>
+                <li>[ ] Database connection failure → graceful degradation</li>
+            </ul>
+        </div>
+    </section>
+
+    <footer style="margin-top: 4rem; padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-muted);">
+        <p>Thunderbird System Specification v1.1 | Generated 2026-02-02</p>
+        <p>For testing and QA purposes. Report deviations to development team.</p>
+    </footer>
+</body>
+</html>
