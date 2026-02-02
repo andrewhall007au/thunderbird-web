@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
-**Last updated:** 2026-01-28
-**Current phase:** Phase 7 Complete - Multi-Trail SMS Selection
+**Last updated:** 2026-02-02
+**Current phase:** Phase 7 Complete - Pre-Launch Finalization
 
 ## Project Reference
 
@@ -13,208 +13,131 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 Phase: 7 of 7 (Multi-Trail SMS Selection) - COMPLETE
 Status: All plans verified, phase goal achieved (14/14 must-haves)
-Last activity: 2026-01-28 - Phase verified and complete
+Last activity: 2026-02-02 - Admin dashboard overhaul, beta user activity tracking
 
 Progress: ███████████ 100% (3/3 plans, phase goal verified)
 
-## Completed Work (2026-01-28)
+---
 
-### Phase 7-03: SMS Webhook Integration (LATEST)
+## Latest Session: Admin & Beta Management (2026-02-02)
 
-**Trail selection integrated into SMS webhook with START routing and CAST7 active trail checks:**
+### Admin Dashboard Overhaul
 
-- Registered users sending START enter trail selection flow
-- Unregistered users sending START enter onboarding flow (preserved)
-- Numeric input during active trail selection session routes correctly
-- CAST7 CAMPS and CAST7 PEAKS check for active trail
-- Returns "No active trail. Send START to select one." when needed
-- Maintains backward compatibility with user.route_id (SMS registration)
-- 20 passing tests covering all flows
+**1. Alert Badges for Pending Actions**
+- Flashing red `!` badge on "Beta Applications" when pending approvals exist
+- Flashing red `!` badge on "Affiliates" when pending payouts exist
+- Fast pulse animation (0.4s) with red glow effect
+- Red border highlight on links with alerts
 
-**Files modified:**
-- `backend/app/routers/webhook.py` (trail selection routing)
+**2. Financials Section (Replaced Quick Actions)**
+Removed obsolete Quick Actions (push-based system) and added:
+- **Total Revenue**: Sum of completed Stripe orders
+- **Beta Credits Given**: Total credits issued to beta testers
+- **SMS Credit Liability (RRP)**: Outstanding balance users could spend
+- **SMS Credit Liability (Cost)**: Our actual cost (~55% of RRP)
 
-**Files created:**
-- `backend/tests/test_trail_selection.py` (292 lines, 20 tests)
+**3. Beta User Activity Tracking**
+New `/admin/beta/{account_id}/activity` page showing:
+- User info (email, phone, account ID)
+- Stats: commands sent, responses, GPS points polled, SMS cost
+- **GPS Coordinates Table**: Every GPS point polled with timestamp
+- **Full Message Log**: All inbound/outbound SMS with timestamps
 
-**Duration:** 3min
-**Commits:** ffc7e50, 37abdea, 6d8c817
+**Files Modified:**
+- `backend/app/services/admin.py` - Alert badges, financials, activity page renderer
+- `backend/app/routers/admin.py` - Activity page route
+- `backend/app/models/database.py` - `get_user_message_stats()`, `get_user_messages()`
 
-**Key decisions:**
-- START command routing: registered -> trail selection, unregistered -> onboarding
-- CAST7 commands check active_trail_id with fallback to user.route_id
-- SMS webhook routing order: trail_selection -> onboarding -> commands
+### Previous: Welcome Email & Proxy Setup
+
+**Welcome Email Revamp** (`app/email/welcome/page.tsx`):
+- Real phone numbers: US `+1 (866) 280-1940`, AU `+61 468 092 783`
+- Two forecast methods: GPS coordinates + Pre-loaded routes
+- Realistic SMS format with legend
+- Security: removed password, changed "Email" to "Username"
+
+**Admin/API Proxy** (`next.config.js`):
+- `/admin/*` and `/api/*` proxy to backend port 8000
+- Fixes 404 errors on admin links in emails
 
 ---
 
-### Phase 7-02: Trail Selection Service
+## Outstanding / Not Yet Built
 
-**SMS trail selection state machine with main menu, pagination, and active trail setting:**
+### 1. Balance Enforcement (Decision Made - Implement Later)
+**Decision:**
+- **Beta users:** Light warning only (current behavior ✓)
+- **Paid users:** Hard stop if zero balance (implement when launching paid)
+- **Future:** Pay-by-SMS option for paid users to top up via text
 
-- TrailSelectionService with start_selection() and process_input()
-- Main menu flow: users with trails see menu, new users jump to library
-- State handlers for MAIN_MENU, MY_TRAILS, LIBRARY with pagination (5 per page)
-- Trail selection sets active_trail_id via account_store
-- Message formatting with character limits and name truncation
-- Edge case handling: session expiry, empty library, no active trail
-- Comprehensive logging for state transitions
+Current implementation is correct for beta. Hard stop + SMS top-up to be built for paid launch.
+- File: `backend/app/routers/webhook.py` lines 117-131
 
-**Files created:**
-- `backend/app/services/trail_selection.py` (394 lines)
+### 2. Pending Beta Application
+**Application ID 2:**
+- Name: Andrew Hall
+- Email: andrew_hall_home@icloud.com
+- Status: pending
+- Action: Approve via `/admin/beta` to create account with $50 credits
 
-**Duration:** 2min 19s
-**Commits:** aea2ae3, d6083f3
+### 3. E2E SMS Testing Infrastructure
+Built but not yet executed:
+- Purchase Twilio test numbers: US ($1.15/mo) + CA ($1.30/mo)
+- Run: `python -m tests.e2e_sms.runner --all`
+- Optional: Field test for satellite SMS validation
+- Docs: `backend/tests/e2e_sms/README.md`, `docs/SATELLITE_FIELD_TEST_PROTOCOL.md`
 
-**Key decisions:**
-- Library trails set directly as active_trail_id (no auto-clone in v1)
-- Pagination wraps around with "0 for more"
-- Singleton service pattern with get_trail_selection_service()
-
----
-
-### Phase 7-01: Multi-Trail SMS Selection Foundation
-
-**Database schema and models for multi-trail SMS selection:**
-
-- Added `active_trail_id` column to accounts table (migration 8a0e5cff6950)
-- Index on `active_trail_id` for efficient lookups
-- Extended Account model with `set_active_trail()` and `get_active_trail_id()` methods
-- Created TrailSelectionSession model with in-memory store
-- SelectionState enum: MAIN_MENU, MY_TRAILS, LIBRARY
-- 30-minute session expiry with automatic refresh on interaction
-
-**Files created:**
-- `backend/alembic/versions/8a0e5cff6950_add_active_trail_id.py`
-- `backend/app/models/trail_selection.py`
-
-**Files modified:**
-- `backend/app/models/account.py`
-
-**Duration:** 2min 42s
-**Commits:** 2212b6f, c10888e, 3df54ee
+### 4. Backend Spec Alignment (Investigate)
+User noted backend may have "old onboarding system" that doesn't match current spec.
+**Action:** Review and update if needed.
 
 ---
 
-### 1. Website Features & Value Proposition Update
+## Current Beta Status
 
-**Updated homepage (`app/page.tsx`):**
-- Expanded features section from 8 to 12 metrics
-- Added: Snow, Wind direction, Light hours, Thunderstorm risk
-- Updated descriptions for clarity (e.g., "Rain" vs "Precipitation")
-- Added "What's in our weather forecast" value proposition section explaining:
-  - Multiple national weather APIs (BOM, NWS, Met Office, etc.)
-  - 49-point elevation sampling for temperature accuracy
-  - LCL cloud base calculations
-  - Intelligent danger rating algorithm
-- Updated hero bullet points to highlight 12 metrics and elevation adjustment
-- Updated FAQ answer for "What weather data is included?"
+| ID | Email | Status | Balance |
+|----|-------|--------|---------|
+| 2 | andrew_hall_home@icloud.com | pending | - |
+| 3 | hello@getseen.bot | approved | $50.00 |
 
-### 2. Fixed Website Resolutions (Accuracy Audit)
+**Total SMS Credit Liability:** $100.00 (RRP) / $55.00 (Cost)
 
-Corrected resolution values to match actual backend implementation:
-
-| Country | Was | Now (Correct) |
-|---------|-----|---------------|
-| Australia | 3.0km | 2.2km (BOM ACCESS) |
-| UK | Point | 1.5km (Met Office) |
-| Switzerland | 1.0km | 2.0km (MeteoSwiss) |
-| New Zealand | 4.0km | 9.0km (ECMWF) |
-| South Africa | 11.0km | 9.0km (ECMWF) |
-
-Updated both `app/page.tsx` and `app/how-it-works/page.tsx`.
-
-### 3. Enabled Japan (JMA 5km)
-
-Added Japan as 10th supported country via Open-Meteo JMA API:
-- Resolution: 5km (JMA MSM model)
-- Cost: Free via Open-Meteo (non-commercial) or $29/mo commercial
-- Hourly updates, 4-day forecast
-
-**Files updated:**
-- `backend/app/services/weather/providers/openmeteo.py` - Added JMA enum, endpoint, model mapping
-- `backend/app/services/weather/router.py` - Added JP to providers dict
-- `app/page.tsx` - Added Japan to markets list
-- `app/how-it-works/page.tsx` - Added Japan to coverage table
-
-### 4. Provider Research Complete
-
-Researched higher-resolution options for all markets:
-
-| Country | Current | Best Available | Provider | Cost |
-|---------|---------|----------------|----------|------|
-| New Zealand | 9km ECMWF | **4km WRF** | MetService | $75/mo |
-| Japan | 5km JMA | **1km mesh** | JWA | $210/mo |
-| South Africa | 9km ECMWF | **4.4km UM** | AfriGIS/SAWS | TBD (60-day pilot available) |
+---
 
 ## What's Next?
 
-### Phase 7 Complete!
-Multi-trail SMS selection is fully implemented and verified.
+### Immediate
+1. **Decide on balance enforcement** - Block zero-balance users?
+2. **Approve pending beta application** - ID 2 via admin interface
+3. **E2E SMS testing** - Purchase test numbers, run automated tests
 
-### Immediate Options
-1. **Manual testing** - Test the START flow end-to-end via SMS
-2. **Welcome emails** - Pending todo
+### Pre-Launch
+4. **Final walkthrough** - Test all user flows end-to-end
+5. **Field test** - Satellite SMS validation (optional but recommended)
 
 ### Future Enhancements
-3. **Apply for AfriGIS SA pilot** - Free 60-day trial, 4.4km resolution
-4. **Evaluate MetService NZ** - $75/mo for 4km, massive hiking market
-5. **JWA Japan 1km** - $210/mo, evaluate if market justifies cost
-6. **Waypoint counts in confirmation** - Currently placeholder zeros
-
-## Provider Integration Notes
-
-### Elevation Handling for New Providers
-
-All new providers need elevation adjustment using our existing system:
-1. Check if API returns model orography elevation
-2. If not, use Open Topo Data 49-point sampling
-3. Apply 6.5°C/1000m lapse rate from model → user elevation
-
-**Existing elevation system works globally** - just need to wire up new providers.
-
-### Current Provider Coverage (10 Countries)
-
-```
-AU: BOM (2.2km) - direct integration
-US: NWS (2.5km) + HRRR supplement
-CA: Environment Canada (2.5km) + GEM supplement
-GB: Met Office (1.5km)
-FR: Open-Meteo Météo-France (1.5km)
-CH: Open-Meteo MeteoSwiss (2km)
-IT: Open-Meteo ICON-EU (7km)
-JP: Open-Meteo JMA (5km) - NEW
-NZ: Open-Meteo ECMWF (9km) - upgrade available
-ZA: Open-Meteo ECMWF (9km) - upgrade available
-```
-
-## Key Files (Today's Changes)
-
-```
-# Phase 07-02: Trail Selection Service (LATEST)
-backend/app/services/trail_selection.py                        # State machine service (NEW)
-
-# Phase 07-01: Multi-Trail SMS Selection Foundation
-backend/alembic/versions/8a0e5cff6950_add_active_trail_id.py  # Migration for active_trail_id
-backend/app/models/account.py                                  # Added active trail methods
-backend/app/models/trail_selection.py                          # Session store
-
-# Website (Earlier Today)
-app/page.tsx                    # Features, value prop, markets, FAQ
-app/how-it-works/page.tsx       # Coverage table with correct resolutions
-
-# Backend - Japan Support (Earlier Today)
-backend/app/services/weather/providers/openmeteo.py  # JMA enum + endpoint
-backend/app/services/weather/router.py               # JP provider mapping
-```
-
-## Planning Documents
-
-- `.planning/PROJECT.md` — Project context and requirements
-- `.planning/REQUIREMENTS.md` — 53 v1 requirements with traceability
-- `.planning/ROADMAP.md` — 7 phases (all complete)
-- `.planning/phases/07-multi-trail-sms-selection/07-VERIFICATION.md` — Phase 7 verification
-- `.planning/todos/pending/weather-providers.md` — Provider upgrade research
-- `.planning/specs/START-command-flow.md` — Multi-trail selection via SMS (NEW)
+6. Apply for AfriGIS SA pilot (60-day trial, 4.4km resolution)
+7. Evaluate MetService NZ ($75/mo for 4km)
+8. JWA Japan 1km ($210/mo)
 
 ---
-*State updated: 2026-01-28*
+
+## Key Files (This Session)
+
+```
+# Admin Dashboard Overhaul
+backend/app/services/admin.py          # Alert badges, financials, activity renderer
+backend/app/routers/admin.py           # Activity page route
+backend/app/models/database.py         # User message stats/history
+
+# UX Improvements
+app/account/page.tsx                   # "New Route" button now btn-orange (prominent)
+
+# Welcome Email & Proxy (Previous)
+app/email/welcome/page.tsx             # Complete email revamp
+next.config.js                         # Admin/API proxy rewrites
+backend/.env                           # Admin password updated
+```
+
+---
+*State updated: 2026-02-02*
