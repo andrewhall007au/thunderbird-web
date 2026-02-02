@@ -64,6 +64,39 @@ class BetaApplicationStore:
 
     def __init__(self, db_path: str = None):
         self.db_path = db_path or DB_PATH
+        self._init_db()
+
+    def _init_db(self):
+        """Initialize database and create tables if needed."""
+        import logging
+        logger = logging.getLogger(__name__)
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='beta_applications'"
+            )
+            if not cursor.fetchone():
+                logger.warning("beta_applications table not found. Creating for backwards compatibility.")
+                self._create_tables_legacy(conn)
+            conn.commit()
+
+    def _create_tables_legacy(self, conn):
+        """Legacy table creation for backwards compatibility and tests."""
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS beta_applications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                country TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                account_id INTEGER,
+                admin_notes TEXT,
+                created_at TEXT NOT NULL,
+                reviewed_at TEXT
+            )
+        """)
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_beta_applications_email ON beta_applications(email)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_beta_applications_status ON beta_applications(status)")
 
     @contextmanager
     def _get_connection(self):

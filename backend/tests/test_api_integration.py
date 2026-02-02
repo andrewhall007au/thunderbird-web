@@ -4,21 +4,45 @@ FastAPI TestClient Integration Tests
 These tests use the TestClient to make real HTTP requests
 against the FastAPI application, testing full request/response cycles.
 
+NOTE: These are integration tests that require database setup.
+Run with: pytest tests/test_api_integration.py -v -m integration
+Skip with: pytest tests/ -v --ignore=tests/test_api_integration.py
+
 Run with: pytest tests/test_api_integration.py -v
 """
 
 import pytest
 import json
 import os
+import tempfile
+import atexit
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
+# Mark entire module as integration tests
+pytestmark = pytest.mark.integration
+
 # Set test environment before importing app
+# Use a temp file instead of :memory: since SQLite :memory: creates
+# a new database for each connection
+_test_db_file = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+_test_db_path = _test_db_file.name
+_test_db_file.close()
+
 os.environ["TESTING"] = "true"
-os.environ["THUNDERBIRD_DB_PATH"] = ":memory:"
+os.environ["DEBUG"] = "true"
+os.environ["THUNDERBIRD_DB_PATH"] = _test_db_path
 os.environ["JWT_SECRET"] = "test-secret-key-for-integration-tests"
 os.environ["STRIPE_SECRET_KEY"] = "sk_test_fake"
-os.environ["STRIPE_WEBHOOK_SECRET"] = "whsec_test_fake"
+os.environ["STRIPE_WEBHOOK_SECRET"] = ""  # Empty to skip validation
+
+# Clean up temp file at exit
+def _cleanup_test_db():
+    try:
+        os.unlink(_test_db_path)
+    except Exception:
+        pass
+atexit.register(_cleanup_test_db)
 
 from app.main import app
 
@@ -370,7 +394,7 @@ class TestStripeWebhook:
         # Should reject without valid signature
         assert response.status_code in [400, 401, 403]
 
-    @patch("app.routers.webhook.stripe.Webhook.construct_event")
+    @patch("stripe.Webhook.construct_event")
     def test_webhook_handles_checkout_completed(self, mock_construct, client):
         """POST /webhook/stripe should handle checkout.session.completed."""
         # Mock Stripe webhook verification
@@ -402,7 +426,7 @@ class TestStripeWebhook:
         # Actual processing depends on database state
         assert response.status_code in [200, 400, 500]
 
-    @patch("app.routers.webhook.stripe.Webhook.construct_event")
+    @patch("stripe.Webhook.construct_event")
     def test_webhook_handles_payment_succeeded(self, mock_construct, client):
         """POST /webhook/stripe should handle payment_intent.succeeded."""
         mock_construct.return_value = {

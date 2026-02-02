@@ -52,6 +52,51 @@ class AccountStore:
 
     def __init__(self, db_path: str = None):
         self.db_path = db_path or DB_PATH
+        self._init_db()
+
+    def _init_db(self):
+        """
+        Initialize database and create tables if needed.
+
+        Note: Schema is managed by Alembic migrations in production.
+        This method provides backwards compatibility and test support.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+
+        with self._get_connection() as conn:
+            # Check if accounts table exists
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='accounts'"
+            )
+            if not cursor.fetchone():
+                logger.warning(
+                    "accounts table not found. Creating for backwards compatibility. "
+                    "Run 'alembic upgrade head' to initialize schema properly."
+                )
+                self._create_tables_legacy(conn)
+            conn.commit()
+
+    def _create_tables_legacy(self, conn):
+        """
+        Legacy table creation for backwards compatibility and tests.
+        New installations should use `alembic upgrade head` instead.
+        """
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS accounts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                phone TEXT,
+                stripe_customer_id TEXT,
+                unit_system TEXT DEFAULT 'metric',
+                active_trail_id INTEGER,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_accounts_email ON accounts(email)")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_accounts_active_trail_id ON accounts(active_trail_id)")
 
     @contextmanager
     def _get_connection(self):

@@ -124,6 +124,76 @@ class CustomRouteStore:
 
     def __init__(self, db_path: str = None):
         self.db_path = db_path or DB_PATH
+        self._init_db()
+
+    def _init_db(self):
+        """Initialize database and create tables if needed."""
+        import logging
+        logger = logging.getLogger(__name__)
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='custom_routes'"
+            )
+            if not cursor.fetchone():
+                logger.warning("Custom route tables not found. Creating for backwards compatibility.")
+                self._create_tables_legacy(conn)
+            conn.commit()
+
+    def _create_tables_legacy(self, conn):
+        """Legacy table creation for backwards compatibility and tests."""
+        # Custom routes table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS custom_routes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                gpx_data TEXT,
+                status TEXT NOT NULL DEFAULT 'draft',
+                is_library_clone INTEGER NOT NULL DEFAULT 0,
+                source_library_id INTEGER,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_custom_routes_account_id ON custom_routes(account_id)")
+
+        # Custom waypoints table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS custom_waypoints (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                route_id INTEGER NOT NULL,
+                type TEXT NOT NULL DEFAULT 'poi',
+                name TEXT NOT NULL,
+                sms_code TEXT NOT NULL,
+                lat REAL NOT NULL,
+                lng REAL NOT NULL,
+                elevation REAL NOT NULL DEFAULT 0,
+                order_index INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_custom_waypoints_route_id ON custom_waypoints(route_id)")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_custom_waypoints_sms_code ON custom_waypoints(sms_code)")
+
+        # Route library table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS route_library (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                description TEXT,
+                gpx_data TEXT,
+                country TEXT,
+                region TEXT,
+                difficulty_grade INTEGER,
+                distance_km REAL,
+                typical_days TEXT,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL,
+                updated_at TEXT
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_route_library_is_active ON route_library(is_active)")
 
     @contextmanager
     def _get_connection(self):

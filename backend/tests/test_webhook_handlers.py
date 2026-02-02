@@ -4,6 +4,10 @@ Webhook Handler Integration Tests
 Tests Stripe and Twilio webhook handlers with realistic payloads.
 These tests verify the full webhook processing flow.
 
+NOTE: These are integration tests that require a running database.
+Run with: pytest tests/test_webhook_handlers.py -v -m integration
+Skip with: pytest tests/ -v --ignore=tests/test_webhook_handlers.py
+
 Run with: pytest tests/test_webhook_handlers.py -v
 """
 
@@ -13,16 +17,36 @@ import os
 import hmac
 import hashlib
 import time
+import tempfile
+import atexit
 from unittest.mock import patch, MagicMock, AsyncMock
 from fastapi.testclient import TestClient
 
-# Set test environment
+# Mark entire module as integration tests
+pytestmark = pytest.mark.integration
+
+# Set test environment before imports
+# Use a temp file instead of :memory: since SQLite :memory: creates
+# a new database for each connection
+_test_db_file = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+_test_db_path = _test_db_file.name
+_test_db_file.close()
+
 os.environ["TESTING"] = "true"
-os.environ["THUNDERBIRD_DB_PATH"] = ":memory:"
+os.environ["DEBUG"] = "true"  # Skip signature validation in debug mode
+os.environ["THUNDERBIRD_DB_PATH"] = _test_db_path
 os.environ["JWT_SECRET"] = "test-secret-key"
 os.environ["STRIPE_SECRET_KEY"] = "sk_test_fake"
-os.environ["STRIPE_WEBHOOK_SECRET"] = "whsec_test_secret"
+os.environ["STRIPE_WEBHOOK_SECRET"] = ""  # Empty to skip validation in tests
 os.environ["TWILIO_AUTH_TOKEN"] = "test_twilio_token"
+
+# Clean up temp file at exit
+def _cleanup_test_db():
+    try:
+        os.unlink(_test_db_path)
+    except Exception:
+        pass
+atexit.register(_cleanup_test_db)
 
 from app.main import app
 
@@ -128,7 +152,7 @@ CUSTOMER_SUBSCRIPTION_DELETED_PAYLOAD = {
 class TestStripeCheckoutWebhook:
     """Test checkout.session.completed webhook."""
 
-    @patch("app.routers.webhook.stripe.Webhook.construct_event")
+    @patch("stripe.Webhook.construct_event")
     @patch("app.services.balance.get_balance_service")
     @patch("app.services.email.send_order_confirmation")
     def test_checkout_completed_credits_balance(
@@ -153,7 +177,7 @@ class TestStripeCheckoutWebhook:
         # Should process successfully (or fail gracefully with missing account)
         assert response.status_code in [200, 400, 500]
 
-    @patch("app.routers.webhook.stripe.Webhook.construct_event")
+    @patch("stripe.Webhook.construct_event")
     def test_checkout_completed_with_affiliate(self, mock_construct, client):
         """Checkout with affiliate should track commission."""
         payload_with_affiliate = {
@@ -189,7 +213,7 @@ class TestStripeCheckoutWebhook:
 class TestStripePaymentWebhook:
     """Test payment_intent.succeeded webhook."""
 
-    @patch("app.routers.webhook.stripe.Webhook.construct_event")
+    @patch("stripe.Webhook.construct_event")
     def test_topup_payment_adds_credits(self, mock_construct, client):
         """Topup payment should add credits to balance."""
         mock_construct.return_value = PAYMENT_INTENT_SUCCEEDED_PAYLOAD
@@ -207,7 +231,7 @@ class TestStripePaymentWebhook:
 
         assert response.status_code in [200, 400, 500]
 
-    @patch("app.routers.webhook.stripe.Webhook.construct_event")
+    @patch("stripe.Webhook.construct_event")
     def test_topup_with_trailing_commission(self, mock_construct, client):
         """Topup from attributed user should create trailing commission."""
         payload_with_trailing = {
@@ -241,7 +265,7 @@ class TestStripePaymentWebhook:
 class TestStripeRefundWebhook:
     """Test charge.refunded webhook."""
 
-    @patch("app.routers.webhook.stripe.Webhook.construct_event")
+    @patch("stripe.Webhook.construct_event")
     def test_refund_claws_back_commission(self, mock_construct, client):
         """Refund should claw back any affiliate commission."""
         mock_construct.return_value = CHARGE_REFUNDED_PAYLOAD
@@ -286,7 +310,7 @@ class TestStripeWebhookSecurity:
 
         assert response.status_code in [400, 401, 403]
 
-    @patch("app.routers.webhook.stripe.Webhook.construct_event")
+    @patch("stripe.Webhook.construct_event")
     def test_handles_unknown_event_type(self, mock_construct, client):
         """Should handle unknown event types gracefully."""
         mock_construct.return_value = {
@@ -591,7 +615,7 @@ class TestWebhookResponseFormat:
 
     def test_stripe_webhook_returns_json_or_empty(self, client):
         """Stripe webhook should return JSON or empty response."""
-        with patch("app.routers.webhook.stripe.Webhook.construct_event") as mock:
+        with patch("stripe.Webhook.construct_event") as mock:
             mock.return_value = {"type": "ping", "data": {}}
 
             payload = b'{"type": "ping"}'

@@ -132,6 +132,89 @@ class AffiliateStore:
 
     def __init__(self, db_path: str = None):
         self.db_path = db_path or DB_PATH
+        self._init_db()
+
+    def _init_db(self):
+        """Initialize database and create tables if needed."""
+        import logging
+        logger = logging.getLogger(__name__)
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='affiliates'"
+            )
+            if not cursor.fetchone():
+                logger.warning("Affiliate tables not found. Creating for backwards compatibility.")
+                self._create_tables_legacy(conn)
+            conn.commit()
+
+    def _create_tables_legacy(self, conn):
+        """Legacy table creation for backwards compatibility and tests."""
+        # Affiliates table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS affiliates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                discount_percent INTEGER NOT NULL DEFAULT 0,
+                commission_percent INTEGER NOT NULL DEFAULT 20,
+                trailing_months INTEGER,
+                payout_method TEXT,
+                payout_details TEXT,
+                active INTEGER NOT NULL DEFAULT 1,
+                last_milestone_cents INTEGER,
+                created_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_affiliates_code ON affiliates(code)")
+
+        # Commissions table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS commissions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                affiliate_id INTEGER NOT NULL,
+                account_id INTEGER NOT NULL,
+                order_id INTEGER NOT NULL,
+                amount_cents INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                sub_id TEXT,
+                created_at TEXT NOT NULL,
+                available_at TEXT,
+                paid_at TEXT
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_commissions_affiliate_id ON commissions(affiliate_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_commissions_status ON commissions(status)")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_commissions_account_id ON commissions(account_id)")
+
+        # Affiliate attributions table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS affiliate_attributions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                affiliate_id INTEGER NOT NULL,
+                account_id INTEGER NOT NULL UNIQUE,
+                order_id INTEGER NOT NULL,
+                sub_id TEXT,
+                trailing_expires_at TEXT,
+                created_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_affiliate_attributions_account_id ON affiliate_attributions(account_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_affiliate_attributions_affiliate_id ON affiliate_attributions(affiliate_id)")
+
+        # Affiliate clicks table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS affiliate_clicks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                affiliate_id INTEGER NOT NULL,
+                sub_id TEXT,
+                session_id TEXT,
+                created_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_affiliate_clicks_affiliate_id ON affiliate_clicks(affiliate_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_affiliate_clicks_created_at ON affiliate_clicks(created_at)")
 
     @contextmanager
     def _get_connection(self):

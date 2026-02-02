@@ -144,6 +144,84 @@ class OrderStore:
 
     def __init__(self, db_path: str = None):
         self.db_path = db_path or DB_PATH
+        self._init_db()
+
+    def _init_db(self):
+        """Initialize database and create tables if needed."""
+        import logging
+        logger = logging.getLogger(__name__)
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='orders'"
+            )
+            if not cursor.fetchone():
+                logger.warning("Payment tables not found. Creating for backwards compatibility.")
+                self._create_tables_legacy(conn)
+            conn.commit()
+
+    def _create_tables_legacy(self, conn):
+        """Legacy table creation for backwards compatibility and tests."""
+        # Orders table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id INTEGER NOT NULL,
+                order_type TEXT NOT NULL,
+                amount_cents INTEGER NOT NULL,
+                stripe_session_id TEXT,
+                stripe_payment_intent_id TEXT,
+                discount_code_id INTEGER,
+                status TEXT NOT NULL DEFAULT 'pending',
+                created_at TEXT NOT NULL,
+                completed_at TEXT
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_orders_account_id ON orders(account_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_orders_stripe_session_id ON orders(stripe_session_id)")
+
+        # Account balances table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS account_balances (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id INTEGER NOT NULL UNIQUE,
+                balance_cents INTEGER NOT NULL DEFAULT 0,
+                updated_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_account_balances_account_id ON account_balances(account_id)")
+
+        # Transactions table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id INTEGER NOT NULL,
+                order_id INTEGER,
+                transaction_type TEXT NOT NULL,
+                amount_cents INTEGER NOT NULL,
+                balance_after_cents INTEGER NOT NULL,
+                description TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_transactions_account_id ON transactions(account_id)")
+
+        # Discount codes table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS discount_codes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT NOT NULL UNIQUE,
+                discount_type TEXT NOT NULL,
+                discount_value INTEGER NOT NULL,
+                max_uses INTEGER,
+                current_uses INTEGER NOT NULL DEFAULT 0,
+                active INTEGER NOT NULL DEFAULT 1,
+                stripe_coupon_id TEXT,
+                affiliate_id INTEGER,
+                created_at TEXT NOT NULL
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_discount_codes_code ON discount_codes(code)")
 
     @contextmanager
     def _get_connection(self):
