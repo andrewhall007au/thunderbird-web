@@ -1,5 +1,5 @@
 """
-Tests for email service.
+Tests for email service (Resend).
 """
 import pytest
 from unittest.mock import patch, MagicMock
@@ -14,16 +14,16 @@ class TestEmailService:
     def test_not_configured_without_api_key(self):
         """Service reports not configured without API key."""
         with patch('app.services.email.settings') as mock_settings:
-            mock_settings.SENDGRID_API_KEY = ""
-            mock_settings.SENDGRID_FROM_EMAIL = "test@test.com"
+            mock_settings.RESEND_API_KEY = ""
+            mock_settings.RESEND_FROM_EMAIL = "test@test.com"
             service = EmailService()
             assert not service.is_configured()
 
     def test_handles_missing_config_gracefully(self):
         """Send methods return error when not configured."""
         with patch('app.services.email.settings') as mock_settings:
-            mock_settings.SENDGRID_API_KEY = ""
-            mock_settings.SENDGRID_FROM_EMAIL = "test@test.com"
+            mock_settings.RESEND_API_KEY = ""
+            mock_settings.RESEND_FROM_EMAIL = "test@test.com"
             service = EmailService()
 
             result = asyncio.run(service.send_order_confirmation(
@@ -33,68 +33,46 @@ class TestEmailService:
             assert not result.success
             assert "not configured" in result.error.lower()
 
-    @patch('sendgrid.SendGridAPIClient')
-    def test_send_order_confirmation_success(self, mock_client_class):
+    @patch('resend.Emails')
+    def test_send_order_confirmation_success(self, mock_emails):
         """Successful email send returns success result."""
-        # Mock SendGrid client
-        mock_client = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 202
-        mock_client.send.return_value = mock_response
-        mock_client_class.return_value = mock_client
+        # Mock Resend response
+        mock_emails.send.return_value = {"id": "msg_123"}
 
         with patch('app.services.email.settings') as mock_settings:
-            mock_settings.SENDGRID_API_KEY = "test_key"
-            mock_settings.SENDGRID_FROM_EMAIL = "test@test.com"
-            mock_settings.SENDGRID_WELCOME_TEMPLATE_ID = ""
+            mock_settings.RESEND_API_KEY = "test_key"
+            mock_settings.RESEND_FROM_EMAIL = "test@test.com"
             mock_settings.BASE_URL = "https://test.com"
 
             service = EmailService()
+            # Manually set _resend to avoid import issues in test
+            mock_resend = MagicMock()
+            mock_resend.Emails = mock_emails
+            service._resend = mock_resend
+
             result = asyncio.run(service.send_order_confirmation(
                 "customer@test.com", "+1234567890", 2999, 100
             ))
 
             assert result.success
-            assert result.status_code == 202
-            mock_client.send.assert_called_once()
+            assert result.message_id == "msg_123"
+            mock_emails.send.assert_called_once()
 
-    @patch('sendgrid.SendGridAPIClient')
-    def test_send_order_confirmation_failure(self, mock_client_class):
-        """Failed email send returns error result."""
-        mock_client = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 400
-        mock_client.send.return_value = mock_response
-        mock_client_class.return_value = mock_client
-
-        with patch('app.services.email.settings') as mock_settings:
-            mock_settings.SENDGRID_API_KEY = "test_key"
-            mock_settings.SENDGRID_FROM_EMAIL = "test@test.com"
-            mock_settings.SENDGRID_WELCOME_TEMPLATE_ID = ""
-            mock_settings.BASE_URL = "https://test.com"
-
-            service = EmailService()
-            result = asyncio.run(service.send_order_confirmation(
-                "customer@test.com", "+1234567890", 2999, 100
-            ))
-
-            assert not result.success
-            assert result.status_code == 400
-
-    @patch('sendgrid.SendGridAPIClient')
-    def test_handles_exception_gracefully(self, mock_client_class):
+    @patch('resend.Emails')
+    def test_handles_exception_gracefully(self, mock_emails):
         """Exception during send returns error result."""
-        mock_client = MagicMock()
-        mock_client.send.side_effect = Exception("Network error")
-        mock_client_class.return_value = mock_client
+        mock_emails.send.side_effect = Exception("Network error")
 
         with patch('app.services.email.settings') as mock_settings:
-            mock_settings.SENDGRID_API_KEY = "test_key"
-            mock_settings.SENDGRID_FROM_EMAIL = "test@test.com"
-            mock_settings.SENDGRID_WELCOME_TEMPLATE_ID = ""
+            mock_settings.RESEND_API_KEY = "test_key"
+            mock_settings.RESEND_FROM_EMAIL = "test@test.com"
             mock_settings.BASE_URL = "https://test.com"
 
             service = EmailService()
+            mock_resend = MagicMock()
+            mock_resend.Emails = mock_emails
+            service._resend = mock_resend
+
             result = asyncio.run(service.send_order_confirmation(
                 "customer@test.com", "+1234567890", 2999, 100
             ))
@@ -109,8 +87,8 @@ class TestLowBalanceEmail:
     def test_low_balance_not_configured(self):
         """Low balance email handles missing config."""
         with patch('app.services.email.settings') as mock_settings:
-            mock_settings.SENDGRID_API_KEY = ""
-            mock_settings.SENDGRID_FROM_EMAIL = "test@test.com"
+            mock_settings.RESEND_API_KEY = ""
+            mock_settings.RESEND_FROM_EMAIL = "test@test.com"
             service = EmailService()
 
             result = asyncio.run(service.send_low_balance_warning(
@@ -118,6 +96,28 @@ class TestLowBalanceEmail:
             ))
 
             assert not result.success
+
+    @patch('resend.Emails')
+    def test_low_balance_success(self, mock_emails):
+        """Low balance email sends successfully."""
+        mock_emails.send.return_value = {"id": "msg_456"}
+
+        with patch('app.services.email.settings') as mock_settings:
+            mock_settings.RESEND_API_KEY = "test_key"
+            mock_settings.RESEND_FROM_EMAIL = "test@test.com"
+            mock_settings.BASE_URL = "https://test.com"
+
+            service = EmailService()
+            mock_resend = MagicMock()
+            mock_resend.Emails = mock_emails
+            service._resend = mock_resend
+
+            result = asyncio.run(service.send_low_balance_warning(
+                "test@test.com", 200, 5
+            ))
+
+            assert result.success
+            assert result.message_id == "msg_456"
 
 
 class TestEmailServiceSingleton:

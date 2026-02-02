@@ -98,12 +98,7 @@ class Settings(BaseSettings):
     # Base URL for redirect URLs (Stripe checkout)
     BASE_URL: str = "http://localhost:3000"
 
-    # SendGrid configuration (PAY-05)
-    SENDGRID_API_KEY: str = ""
-    SENDGRID_FROM_EMAIL: str = "noreply@thunderbird.app"
-    SENDGRID_WELCOME_TEMPLATE_ID: str = ""  # Dynamic template ID (optional)
-
-    # Resend configuration (transactional email)
+    # Resend configuration (all transactional emails)
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "Thunderbird <hello@thunderbird.bot>"
 
@@ -121,9 +116,9 @@ class Settings(BaseSettings):
         return bool(self.STRIPE_SECRET_KEY)
 
     @property
-    def sendgrid_configured(self) -> bool:
-        """Check if SendGrid is properly configured."""
-        return bool(self.SENDGRID_API_KEY)
+    def resend_configured(self) -> bool:
+        """Check if Resend is properly configured."""
+        return bool(self.RESEND_API_KEY)
 
 
 # Global settings instance

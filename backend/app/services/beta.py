@@ -158,7 +158,8 @@ Next steps:
 3. Text any command to your Thunderbird number
 
 Quick commands:
-- CAST [location] - Get weather forecast
+- CAST24 [location] - Get 24-hour forecast
+- CAST7 [location] - Get 7-day forecast
 - HELP - See all commands
 
 Questions? Reply to this email.

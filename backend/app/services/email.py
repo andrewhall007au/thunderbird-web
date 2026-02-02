@@ -1,6 +1,6 @@
 """
-Email service using SendGrid.
-Handles PAY-05 (order confirmation with SMS number and quick start).
+Email service using Resend.
+Handles all transactional emails: order confirmation, password reset, etc.
 """
 import logging
 from typing import Optional
@@ -15,32 +15,37 @@ logger = logging.getLogger(__name__)
 class EmailResult:
     """Result of email send operation."""
     success: bool
-    status_code: Optional[int] = None
+    message_id: Optional[str] = None
     error: Optional[str] = None
 
 
 class EmailService:
     """
-    SendGrid email service.
+    Resend email service.
 
-    Handles transactional emails with dynamic templates.
+    Handles transactional emails.
     Fails gracefully - email errors don't break payment flow.
     """
 
     def __init__(self):
-        self.api_key = settings.SENDGRID_API_KEY
-        self.from_email = settings.SENDGRID_FROM_EMAIL
-        self.client = None
-        if self.api_key:
+        self.api_key = settings.RESEND_API_KEY
+        self.from_email = settings.RESEND_FROM_EMAIL
+        self._resend = None
+
+    def _get_resend(self):
+        """Lazy load resend module."""
+        if self._resend is None and self.api_key:
             try:
-                from sendgrid import SendGridAPIClient
-                self.client = SendGridAPIClient(self.api_key)
+                import resend
+                resend.api_key = self.api_key
+                self._resend = resend
             except ImportError:
-                logger.warning("sendgrid package not installed")
+                logger.warning("resend package not installed")
+        return self._resend
 
     def is_configured(self) -> bool:
-        """Check if SendGrid is properly configured."""
-        return bool(self.api_key and self.client)
+        """Check if Resend is properly configured."""
+        return bool(self.api_key and self._get_resend())
 
     async def send_order_confirmation(
         self,
@@ -64,33 +69,17 @@ class EmailService:
             EmailResult with success status
         """
         if not self.is_configured():
-            logger.warning("SendGrid not configured, skipping email")
+            logger.warning("Resend not configured, skipping order confirmation email")
             return EmailResult(success=False, error="Email service not configured")
 
         try:
-            from sendgrid.helpers.mail import Mail, Email, To, Content
+            resend = self._get_resend()
 
-            message = Mail(
-                from_email=Email(self.from_email, "Thunderbird"),
-                to_emails=To(to_email),
-            )
-
-            # Use dynamic template if configured
-            if settings.SENDGRID_WELCOME_TEMPLATE_ID:
-                message.template_id = settings.SENDGRID_WELCOME_TEMPLATE_ID
-                message.dynamic_template_data = {
-                    "sms_number": sms_number,
-                    "amount_paid": f"${amount_paid_cents / 100:.2f}",
-                    "segments": segments_received,
-                    "quick_start_url": f"{settings.BASE_URL}/quickstart",
-                    "account_url": f"{settings.BASE_URL}/account",
-                }
-            else:
-                # Fallback to plain text if no template
-                message.subject = "Welcome to Thunderbird - Your SMS Number"
-                message.content = [Content(
-                    "text/plain",
-                    f"""Welcome to Thunderbird!
+            response = resend.Emails.send({
+                "from": self.from_email,
+                "to": [to_email],
+                "subject": "Welcome to Thunderbird - Your SMS Number",
+                "text": f"""Welcome to Thunderbird!
 
 Your SMS number: {sms_number}
 
@@ -99,26 +88,21 @@ Estimated messages: ~{segments_received} texts
 
 Quick Start Guide: {settings.BASE_URL}/quickstart
 
+Quick commands:
+- CAST24 [location] - Get 24-hour forecast
+- CAST7 [location] - Get 7-day forecast
+- HELP - See all commands
+
 To check your balance or top up:
 {settings.BASE_URL}/account
 
 Happy hiking!
 The Thunderbird Team
 """
-                )]
+            })
 
-            response = self.client.send(message)
-
-            if response.status_code in (200, 202):
-                logger.info(f"Order confirmation sent to {to_email}")
-                return EmailResult(success=True, status_code=response.status_code)
-            else:
-                logger.error(f"Email send failed: {response.status_code}")
-                return EmailResult(
-                    success=False,
-                    status_code=response.status_code,
-                    error=f"SendGrid returned {response.status_code}"
-                )
+            logger.info(f"Order confirmation sent to {to_email}")
+            return EmailResult(success=True, message_id=response.get("id"))
 
         except Exception as e:
             logger.error(f"Email send error: {e}")
@@ -144,16 +128,13 @@ The Thunderbird Team
             return EmailResult(success=False, error="Email service not configured")
 
         try:
-            from sendgrid.helpers.mail import Mail, Email, To, Content
+            resend = self._get_resend()
 
-            message = Mail(
-                from_email=Email(self.from_email, "Thunderbird"),
-                to_emails=To(to_email),
-                subject="Low Balance Warning - Thunderbird",
-            )
-            message.content = [Content(
-                "text/plain",
-                f"""Your Thunderbird balance is low.
+            response = resend.Emails.send({
+                "from": self.from_email,
+                "to": [to_email],
+                "subject": "Low Balance Warning - Thunderbird",
+                "text": f"""Your Thunderbird balance is low.
 
 Current balance: ${balance_cents / 100:.2f}
 Estimated remaining: ~{segments_remaining} texts
@@ -165,13 +146,10 @@ Or text: BUY $10
 
 The Thunderbird Team
 """
-            )]
+            })
 
-            response = self.client.send(message)
-            return EmailResult(
-                success=response.status_code in (200, 202),
-                status_code=response.status_code
-            )
+            logger.info(f"Low balance warning sent to {to_email}")
+            return EmailResult(success=True, message_id=response.get("id"))
 
         except Exception as e:
             logger.error(f"Low balance email error: {e}")
@@ -220,16 +198,18 @@ async def send_password_reset_email(
     service = get_email_service()
 
     if not service.is_configured():
-        logger.warning("SendGrid not configured, skipping password reset email")
+        logger.warning("Resend not configured, skipping password reset email")
         return EmailResult(success=False, error="Email service not configured")
 
     try:
-        from sendgrid.helpers.mail import Mail, Email, To, Content
-
+        resend = service._get_resend()
         reset_url = f"{settings.BASE_URL}/reset-password?token={reset_token}"
 
-        subject = "Reset your Thunderbird password"
-        body = f"""Hi,
+        response = resend.Emails.send({
+            "from": service.from_email,
+            "to": [to_email],
+            "subject": "Reset your Thunderbird password",
+            "text": f"""Hi,
 
 You requested to reset your Thunderbird password.
 
@@ -242,26 +222,10 @@ If you didn't request this, you can safely ignore this email.
 
 - The Thunderbird Team
 """
+        })
 
-        message = Mail(
-            from_email=Email(service.from_email, "Thunderbird"),
-            to_emails=To(to_email),
-            subject=subject,
-        )
-        message.content = [Content("text/plain", body)]
-
-        response = service.client.send(message)
-
-        if response.status_code in (200, 202):
-            logger.info(f"Password reset email sent to {to_email}")
-            return EmailResult(success=True, status_code=response.status_code)
-        else:
-            logger.error(f"Password reset email failed: {response.status_code}")
-            return EmailResult(
-                success=False,
-                status_code=response.status_code,
-                error=f"SendGrid returned {response.status_code}"
-            )
+        logger.info(f"Password reset email sent to {to_email}")
+        return EmailResult(success=True, message_id=response.get("id"))
 
     except Exception as e:
         logger.error(f"Password reset email error: {e}")
@@ -289,15 +253,17 @@ async def send_affiliate_milestone_email(
     service = get_email_service()
 
     if not service.is_configured():
-        logger.warning("SendGrid not configured, skipping milestone email")
+        logger.warning("Resend not configured, skipping milestone email")
         return EmailResult(success=False, error="Email service not configured")
 
     try:
-        from sendgrid.helpers.mail import Mail, Email, To, Content
+        resend = service._get_resend()
 
-        subject = f"Congratulations! You've earned {milestone_amount} with Thunderbird"
-
-        body = f"""Hi {affiliate_name},
+        response = resend.Emails.send({
+            "from": service.from_email,
+            "to": [to_email],
+            "subject": f"Congratulations! You've earned {milestone_amount} with Thunderbird",
+            "text": f"""Hi {affiliate_name},
 
 Congratulations! You've just crossed {milestone_amount} in total earnings as a Thunderbird affiliate.
 
@@ -312,26 +278,10 @@ The Thunderbird Team
 View your dashboard: {settings.BASE_URL}/affiliate/dashboard
 Request payout: {settings.BASE_URL}/affiliate/payout
 """
+        })
 
-        message = Mail(
-            from_email=Email(service.from_email, "Thunderbird"),
-            to_emails=To(to_email),
-            subject=subject,
-        )
-        message.content = [Content("text/plain", body)]
-
-        response = service.client.send(message)
-
-        if response.status_code in (200, 202):
-            logger.info(f"Milestone email sent to {to_email}: {milestone_amount}")
-            return EmailResult(success=True, status_code=response.status_code)
-        else:
-            logger.error(f"Milestone email failed: {response.status_code}")
-            return EmailResult(
-                success=False,
-                status_code=response.status_code,
-                error=f"SendGrid returned {response.status_code}"
-            )
+        logger.info(f"Milestone email sent to {to_email}: {milestone_amount}")
+        return EmailResult(success=True, message_id=response.get("id"))
 
     except Exception as e:
         logger.error(f"Milestone email error: {e}")
