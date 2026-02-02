@@ -2,7 +2,34 @@
 
 import { useState } from 'react';
 import { PhoneSimulator } from '@/app/components/simulator/PhoneSimulator';
-import { sampleSMSContent, sampleWatchContent } from '@/app/components/simulator/PhoneSimulator.test';
+
+// Sample content for testing (inline to avoid importing from test files)
+const sampleSMSContent = `LAKEO Lake Oberon (863m)
+24hr from 06:00 Mon
+
+06h 5-7o Rn15% W12-20 Cld40% CB18 FL22
+
+08h 7-10o Rn18% W14-22 Cld45% CB17 FL21
+
+10h 10-14o Rn22% W16-26 Cld52% CB15 FL19
+
+12h 12-16o Rn25% W18-30 Cld60% CB14 FL18 !
+
+Rn=Rain W=Wind Cld=Cloud
+CB=CloudBase(x100m)
+FL=Freeze(x100m)`;
+
+const sampleWatchContent = `LAKEO 863m
+Mon 20 Jan
+
+06h 5-7o Rn15%
+W12-20 CB18 FL22
+
+08h 7-10o Rn18%
+W14-22 CB17 FL21
+
+Rn=Rain W=Wind
+CB=Cloud FL=Freeze`;
 
 /**
  * Visual Test Page for PhoneSimulator Component
