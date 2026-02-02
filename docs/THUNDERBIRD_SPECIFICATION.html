@@ -489,12 +489,440 @@
                 <tr><td><code>type</code></td><td>string</td><td>"camp", "side_trip", "on_route"</td></tr>
             </table>
         </div>
+
+        <div class="card">
+            <h3>Account Model (Web Login)</h3>
+            <p>Web application user account.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>id</code></td><td>integer (PK)</td><td>Auto-increment ID</td></tr>
+                <tr><td><code>email</code></td><td>string (unique)</td><td>Email address (lowercase)</td></tr>
+                <tr><td><code>password_hash</code></td><td>string</td><td>Argon2 hashed password</td></tr>
+                <tr><td><code>phone</code></td><td>string</td><td>Links to User.phone for SMS</td></tr>
+                <tr><td><code>stripe_customer_id</code></td><td>string</td><td>For stored card payments</td></tr>
+                <tr><td><code>unit_system</code></td><td>string</td><td>"metric" or "imperial"</td></tr>
+                <tr><td><code>active_trail_id</code></td><td>integer</td><td>Currently selected route</td></tr>
+                <tr><td><code>created_at</code></td><td>datetime</td><td>Account creation time</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Order Model</h3>
+            <p>Payment/purchase records.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>id</code></td><td>integer (PK)</td><td>Order ID</td></tr>
+                <tr><td><code>account_id</code></td><td>integer (FK)</td><td>Reference to account</td></tr>
+                <tr><td><code>payment_intent_id</code></td><td>string</td><td>Stripe payment intent ID</td></tr>
+                <tr><td><code>amount_cents</code></td><td>integer</td><td>Amount in cents</td></tr>
+                <tr><td><code>discount_code</code></td><td>string</td><td>Applied discount code</td></tr>
+                <tr><td><code>order_type</code></td><td>string</td><td>"initial_access" or "topup"</td></tr>
+                <tr><td><code>status</code></td><td>string</td><td>"pending", "completed", "refunded"</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Affiliate Model</h3>
+            <p>Affiliate partner records.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>id</code></td><td>integer (PK)</td><td>Affiliate ID</td></tr>
+                <tr><td><code>code</code></td><td>string (unique)</td><td>Affiliate code (e.g., "PARTNER")</td></tr>
+                <tr><td><code>name</code></td><td>string</td><td>Partner name</td></tr>
+                <tr><td><code>email</code></td><td>string</td><td>Contact email</td></tr>
+                <tr><td><code>discount_percent</code></td><td>integer</td><td>Customer discount (e.g., 10%)</td></tr>
+                <tr><td><code>commission_percent</code></td><td>integer</td><td>Affiliate commission (e.g., 20%)</td></tr>
+                <tr><td><code>trailing_months</code></td><td>integer</td><td>Commission window (null = forever)</td></tr>
+                <tr><td><code>payout_method</code></td><td>string</td><td>"paypal" or "bank_transfer"</td></tr>
+                <tr><td><code>active</code></td><td>boolean</td><td>Whether affiliate is active</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Commission Model</h3>
+            <p>Affiliate commission records.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>id</code></td><td>integer (PK)</td><td>Commission ID</td></tr>
+                <tr><td><code>affiliate_id</code></td><td>integer (FK)</td><td>Reference to affiliate</td></tr>
+                <tr><td><code>account_id</code></td><td>integer (FK)</td><td>Customer who purchased</td></tr>
+                <tr><td><code>order_id</code></td><td>integer (FK)</td><td>Related order</td></tr>
+                <tr><td><code>amount_cents</code></td><td>integer</td><td>Commission amount</td></tr>
+                <tr><td><code>commission_type</code></td><td>string</td><td>"initial" or "topup"</td></tr>
+                <tr><td><code>status</code></td><td>string</td><td>"pending", "available", "paid"</td></tr>
+                <tr><td><code>available_at</code></td><td>datetime</td><td>7 days after creation</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Custom Route Model</h3>
+            <p>User-created custom routes.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>id</code></td><td>integer (PK)</td><td>Route ID</td></tr>
+                <tr><td><code>account_id</code></td><td>integer (FK)</td><td>Owner account</td></tr>
+                <tr><td><code>name</code></td><td>string</td><td>Route name</td></tr>
+                <tr><td><code>status</code></td><td>string</td><td>"draft", "active", "archived"</td></tr>
+                <tr><td><code>gpx_data</code></td><td>JSON</td><td>Parsed GeoJSON track data</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Custom Waypoint Model</h3>
+            <p>Waypoints for custom routes.</p>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr><td><code>id</code></td><td>integer (PK)</td><td>Waypoint ID</td></tr>
+                <tr><td><code>route_id</code></td><td>integer (FK)</td><td>Parent route</td></tr>
+                <tr><td><code>name</code></td><td>string</td><td>Waypoint name</td></tr>
+                <tr><td><code>type</code></td><td>string</td><td>"camp", "peak", "poi"</td></tr>
+                <tr><td><code>sms_code</code></td><td>string</td><td>Auto-generated 5-char code</td></tr>
+                <tr><td><code>lat</code></td><td>float</td><td>Latitude</td></tr>
+                <tr><td><code>lng</code></td><td>float</td><td>Longitude</td></tr>
+                <tr><td><code>elevation</code></td><td>float</td><td>Elevation in meters</td></tr>
+                <tr><td><code>order_index</code></td><td>integer</td><td>Position in route</td></tr>
+            </table>
+        </div>
     </section>
 
     <!-- Placeholder for remaining sections - will be populated -->
     <section id="api-endpoints">
         <h2>4. API Endpoints</h2>
-        <p><em>Section content will be added from exploration agent results...</em></p>
+
+        <div class="card">
+            <h3>Health & Status</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/health</span>
+                <p>Health check endpoint</p>
+                <pre><code>Response: {
+  "status": "ok",
+  "version": "3.1.0",
+  "database": "ok",
+  "twilio": "ok" | "disabled",
+  "scheduler": "ok" | "disabled"
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Authentication Endpoints</h3>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/auth/token</span>
+                <p>User login (OAuth2 form-encoded)</p>
+                <pre><code>Request: application/x-www-form-urlencoded
+  username=user@example.com&password=secret
+
+Response: {
+  "access_token": "eyJ...",
+  "token_type": "bearer"
+}</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/auth/register</span>
+                <p>Create new user account</p>
+                <pre><code>Request: { "email": "user@example.com", "password": "min8chars" }
+Response: Auto-login with token</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/auth/me</span>
+                <p>Get current account details (requires Bearer token)</p>
+                <pre><code>Response: {
+  "id": 123,
+  "email": "user@example.com",
+  "phone": "+61400123456",
+  "unit_system": "metric",
+  "created_at": "2026-01-15T10:30:00Z"
+}</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/auth/forgot-password</span>
+                <p>Request password reset email</p>
+                <pre><code>Request: { "email": "user@example.com" }
+Response: { "message": "Check your email" }</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/auth/reset-password</span>
+                <p>Reset password with token</p>
+                <pre><code>Request: { "token": "...", "new_password": "min8chars" }
+Response: { "message": "Password updated" }</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/auth/phone</span>
+                <p>Link phone number to account</p>
+                <pre><code>Request: { "phone": "+61400123456" }
+Response: Updated account object</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method put">PUT</span>
+                <span class="path">/auth/settings</span>
+                <p>Update account settings</p>
+                <pre><code>Request: { "unit_system": "imperial" }
+Response: Updated account object</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Route Endpoints</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/routes</span>
+                <p>List all routes for current user</p>
+                <pre><code>Response: [
+  { "id": 1, "name": "My Route", "status": "active", "waypoint_count": 5 },
+  ...
+]</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/routes</span>
+                <p>Create new route</p>
+                <pre><code>Request: {
+  "name": "My Custom Route",
+  "gpx_data": { /* GeoJSON */ }
+}
+Response: Created route object</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/routes/{id}</span>
+                <p>Get route with waypoints</p>
+                <pre><code>Response: {
+  "id": 1,
+  "name": "My Route",
+  "status": "active",
+  "gpx_data": { /* GeoJSON */ },
+  "waypoints": [
+    { "id": 1, "name": "Lake Oberon", "sms_code": "LAKEO", "lat": -43.15, "lng": 146.27, "elevation": 863, "type": "camp" },
+    ...
+  ]
+}</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method put">PATCH</span>
+                <span class="path">/api/routes/{id}</span>
+                <p>Update route</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method delete">DELETE</span>
+                <span class="path">/api/routes/{id}</span>
+                <p>Delete route</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Waypoint Endpoints</h3>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/routes/{route_id}/waypoints</span>
+                <p>Add waypoint to route</p>
+                <pre><code>Request: {
+  "name": "Mount Sirius",
+  "type": "peak",
+  "lat": -43.12,
+  "lng": 146.30,
+  "elevation": 1182
+}
+Response: Waypoint with auto-generated sms_code</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method put">PATCH</span>
+                <span class="path">/api/routes/{route_id}/waypoints/{wp_id}</span>
+                <p>Update waypoint</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method delete">DELETE</span>
+                <span class="path">/api/routes/{route_id}/waypoints/{wp_id}</span>
+                <p>Delete waypoint</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/routes/{route_id}/reorder</span>
+                <p>Reorder waypoints</p>
+                <pre><code>Request: { "waypoint_ids": [3, 1, 2, 4] }</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Forecast Endpoints</h3>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/routes/forecast-preview</span>
+                <p>Get SMS forecast preview for waypoint</p>
+                <pre><code>Request: {
+  "lat": -43.15,
+  "lng": 146.27,
+  "elevation": 863,
+  "name": "Lake Oberon",
+  "sms_code": "LAKEO"
+}
+Response: {
+  "sms_content": "LAKEO Lake Oberon (863m)\n12hr from 06:00 Mon\n...",
+  "source": "live" | "sample"
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Payment Endpoints</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/payments/balance</span>
+                <p>Get SMS credit balance</p>
+                <pre><code>Response: { "balance_cents": 2500, "currency": "AUD" }</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/payments/top-up</span>
+                <p>Create Stripe checkout session</p>
+                <pre><code>Request: { "amount_cents": 1000 }
+Response: { "checkout_url": "https://checkout.stripe.com/..." }</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Beta Application</h3>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/beta/apply</span>
+                <p>Submit beta application</p>
+                <pre><code>Request: {
+  "name": "John Doe",
+  "email": "john@example.com",
+  "country": "AU"
+}
+Response: { "success": true, "message": "Application received" }</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Library Endpoints</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/library</span>
+                <p>List public library routes</p>
+                <pre><code>Query: ?country=AU (optional filter)
+Response: Array of library routes</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/library/{id}</span>
+                <p>Get library route details</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/library/{id}/clone</span>
+                <p>Clone library route to user account</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Affiliate Endpoints</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/affiliates/stats/{code}</span>
+                <p>Get affiliate statistics</p>
+                <pre><code>Query: ?period=today|7d|30d|all
+Response: {
+  "code": "PARTNER",
+  "total_clicks": 100,
+  "unique_clicks": 80,
+  "total_conversions": 5,
+  "conversion_rate": 0.0625,
+  "total_commission_cents": 5000
+}</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/affiliates/conversions/{code}</span>
+                <p>Get recent conversions</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/affiliates/payout/request/{code}</span>
+                <p>Request affiliate payout</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Webhook Endpoints</h3>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/webhook/sms/inbound</span>
+                <p>Twilio inbound SMS webhook</p>
+                <pre><code>Request: Twilio webhook POST (From, To, Body)
+Response: TwiML response</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/webhook/stripe</span>
+                <p>Stripe payment webhook</p>
+                <pre><code>Handles: checkout.session.completed
+- Updates order status
+- Adds credits to balance
+- Creates affiliate commissions</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Admin Endpoints</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/admin</span>
+                <p>Admin dashboard (requires session auth)</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/admin/login</span>
+                <p>Admin login</p>
+                <pre><code>Request: { "password": "..." }
+Response: Sets session cookie</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/admin/users</span>
+                <p>List all users</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/admin/messages</span>
+                <p>View message logs</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/admin/send-sms</span>
+                <p>Send test SMS</p>
+            </div>
+        </div>
     </section>
 
     <section id="sms-commands">
@@ -543,6 +971,55 @@
                 <li>Non-alphanumeric characters (except @, +, -, ., ,) are stripped</li>
                 <li>Camp/peak codes are validated against route configuration</li>
             </ol>
+            <h4>Parsing Order</h4>
+            <ol>
+                <li>Check for LIVETEST commands (@LIVETEST, @NEXT, @KILL)</li>
+                <li>Check for simple commands (START, STOP, HELP, etc.)</li>
+                <li>Check for ALERTS variations (ALERTS ON/OFF)</li>
+                <li>Check for CAST variations (CAST, CAST12, CAST24, CAST7)</li>
+                <li>Check for location codes (camp/peak codes)</li>
+                <li>Check for YES$X top-up (YES10, YES25, YES50)</li>
+                <li>Return UNKNOWN if no match</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h3>Onboarding States</h3>
+            <p>New user registration via SMS follows a multi-step flow:</p>
+            <table>
+                <tr><th>State</th><th>Question</th><th>Valid Input</th></tr>
+                <tr><td>AWAITING_NAME</td><td>"What's your trail name?"</td><td>Any text</td></tr>
+                <tr><td>AWAITING_TRAIL</td><td>"Which route?" (6 options)</td><td>1-6 or SKIP</td></tr>
+                <tr><td>AWAITING_UNITS</td><td>"Metric or Imperial?"</td><td>1, 2, METRIC, IMPERIAL, SKIP</td></tr>
+                <tr><td>COMPLETE</td><td>Registration finished</td><td>-</td></tr>
+            </table>
+            <p><strong>Session Timeout:</strong> 30 minutes of inactivity</p>
+            <p><strong>Bypass Commands:</strong> CAST, SAFE, STATUS, HELP bypass onboarding</p>
+        </div>
+
+        <div class="card">
+            <h3>Route Options (Onboarding)</h3>
+            <table>
+                <tr><th>Input</th><th>Route</th></tr>
+                <tr><td>1</td><td>Overland Track</td></tr>
+                <tr><td>2</td><td>Western Arthurs (A-K)</td></tr>
+                <tr><td>3</td><td>Western Arthurs (Full)</td></tr>
+                <tr><td>4</td><td>Federation Peak</td></tr>
+                <tr><td>5</td><td>Eastern Arthurs</td></tr>
+                <tr><td>6</td><td>Combined W+E Arthurs</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Error Messages</h3>
+            <table>
+                <tr><th>Condition</th><th>Response</th></tr>
+                <tr><td>Unknown command</td><td>"Unknown command. Reply HELP for available commands."</td></tr>
+                <tr><td>Invalid location code</td><td>"Unknown location: XXX. Reply ROUTE for valid codes."</td></tr>
+                <tr><td>Unregistered user</td><td>"Not linked to account. Apply at thunderbird.bot"</td></tr>
+                <tr><td>Max contacts reached</td><td>"Maximum 10 SafeCheck contacts allowed."</td></tr>
+                <tr><td>Invalid phone format</td><td>"Invalid phone number format. Use +61412345678"</td></tr>
+            </table>
         </div>
     </section>
 
@@ -730,7 +1207,61 @@ CB=CloudBase(x100m) FL=Freeze(x100m)</code></pre>
                 <tr><td><code>/account</code></td><td>Account dashboard</td></tr>
                 <tr><td><code>/settings</code></td><td>User preferences</td></tr>
                 <tr><td><code>/create</code></td><td>Create custom route</td></tr>
+                <tr><td><code>/create/preview</code></td><td>SMS forecast preview</td></tr>
                 <tr><td><code>/library</code></td><td>Route library</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Location</th><th>Purpose</th></tr>
+                <tr><td><code>MapEditor</code></td><td>app/components/map/</td><td>Interactive map for route editing</td></tr>
+                <tr><td><code>WaypointMarker</code></td><td>app/components/map/</td><td>Draggable waypoint markers</td></tr>
+                <tr><td><code>WaypointEditor</code></td><td>app/components/waypoint/</td><td>Waypoint edit sidebar</td></tr>
+                <tr><td><code>PhoneSimulator</code></td><td>app/components/simulator/</td><td>iPhone/Watch SMS preview</td></tr>
+                <tr><td><code>GPXUpload</code></td><td>app/components/upload/</td><td>Drag-drop GPX file upload</td></tr>
+                <tr><td><code>BetaApplyModal</code></td><td>app/components/beta/</td><td>Beta application form</td></tr>
+                <tr><td><code>TrailSelector</code></td><td>app/components/trails/</td><td>Popular trails dropdown</td></tr>
+                <tr><td><code>ElevationProfile</code></td><td>app/components/elevation/</td><td>Route elevation chart</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Authentication Context</h3>
+            <p>Global auth state managed by <code>AuthContext</code> in <code>app/lib/auth.tsx</code></p>
+            <pre><code>// Available via useAuth() hook
+{
+  account: Account | null,
+  balance: Balance | null,
+  isLoading: boolean,
+  isAuthenticated: boolean,
+  login: (email, password) => Promise,
+  register: (email, password) => Promise,
+  logout: () => void,
+  refreshAccount: () => Promise,
+  refreshBalance: () => Promise
+}</code></pre>
+            <p><strong>Token Storage:</strong> localStorage.getItem('token')</p>
+        </div>
+
+        <div class="card">
+            <h3>API Configuration</h3>
+            <p>Next.js rewrites proxy API requests to backend:</p>
+            <pre><code>// next.config.js
+rewrites: [
+  { source: '/admin/:path*', destination: 'http://localhost:8000/admin/:path*' },
+  { source: '/api/:path*', destination: 'http://localhost:8000/api/:path*' }
+]</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Waypoint Color System</h3>
+            <table>
+                <tr><th>Type</th><th>Color</th><th>Hex</th></tr>
+                <tr><td>Camp</td><td style="background:#22c55e;color:white;padding:0.25rem 0.5rem;border-radius:4px;">Green</td><td>#22c55e</td></tr>
+                <tr><td>Peak</td><td style="background:#f97316;color:white;padding:0.25rem 0.5rem;border-radius:4px;">Orange</td><td>#f97316</td></tr>
+                <tr><td>POI</td><td style="background:#3b82f6;color:white;padding:0.25rem 0.5rem;border-radius:4px;">Blue</td><td>#3b82f6</td></tr>
             </table>
         </div>
     </section>
@@ -796,6 +1327,140 @@ User registered with route_id="western_arthurs_ak"</code></pre>
   ▼
 System → "Added John Smith (+61400123456) as SafeCheck contact.
           They'll be alerted if you're overdue."</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Web Login Flow</h3>
+<pre><code>1. User navigates to /login
+   │
+   ▼
+2. Enters email + password
+   │
+   ▼
+3. POST /auth/token (OAuth2 form-encoded)
+   │
+   ▼
+4. Backend returns access_token
+   │
+   ▼
+5. Token stored in localStorage
+   │
+   ▼
+6. AuthContext fetches account via GET /auth/me
+   │
+   ▼
+7. User redirected to /account</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Password Reset Flow</h3>
+<pre><code>1. User on /login, clicks "Forgot password?"
+   │
+   ▼
+2. Enters email → POST /auth/forgot-password
+   │
+   ▼
+3. System sends email with reset link + token
+   │
+   ▼
+4. User clicks link → /reset-password?token=xxx
+   │
+   ▼
+5. Enters new password (8+ chars)
+   │
+   ▼
+6. POST /auth/reset-password { token, new_password }
+   │
+   ▼
+7. Redirected to /login with success message</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Route Creation Flow (Web)</h3>
+<pre><code>1. User on /account, clicks "New Route"
+   │
+   ▼
+2. STEP 1: Select source
+   ├─ Popular trails dropdown OR
+   └─ GPX file upload (drag-drop)
+   │
+   ▼
+3. STEP 2: Map editing
+   ├─ Click map to add waypoints
+   ├─ Drag markers to reposition
+   ├─ Edit sidebar: name, type, elevation
+   └─ Auto SMS code generation (e.g., "LAKEO")
+   │
+   ▼
+4. Click "Save Route" → POST /api/routes
+   │
+   ▼
+5. STEP 3: SMS Preview
+   ├─ Click "Preview SMS Forecast"
+   └─ PhoneSimulator shows sample forecast
+   │
+   ▼
+6. Route status = "active"
+   │
+   ▼
+7. User sends SMS: "START" to activate
+8. Then texts: "CAST LAKEO" for forecast</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Payment/Top-Up Flow</h3>
+<pre><code>1. User on /account, clicks "Top Up"
+   │
+   ▼
+2. Selects amount ($5, $10, $20)
+   │
+   ▼
+3. POST /api/payments/top-up { amount_cents }
+   │
+   ▼
+4. Backend creates Stripe checkout session
+   │
+   ▼
+5. Redirected to Stripe checkout
+   │
+   ▼
+6. User completes payment
+   │
+   ▼
+7. Stripe webhook: checkout.session.completed
+   │
+   ├─ Update order status = "completed"
+   ├─ Add credits to balance
+   └─ Create affiliate commission (if applicable)
+   │
+   ▼
+8. User returns, balance refreshed</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>SafeCheck Alert Flow</h3>
+<pre><code>Scheduled Job runs hourly at :30
+   │
+   ▼
+1. Get users with SafeCheck contacts
+   │
+   ▼
+2. For each user:
+   ├─ Check: trip active? (start_date ≤ today ≤ end_date)
+   ├─ Check: last_checkin_at > 24 hours ago?
+   │
+   ▼
+3. If OVERDUE:
+   │
+   ▼
+4. Send alert to each SafeCheck contact:
+   "SafeCheck ALERT
+    From: {trail_name}
+    No check-in received.
+    Last known: {location} ({region})
+    Last contact: {last_checkin_at}
+    GPS: {lat}, {lon}
+    Map: https://maps.google.com/?q={lat},{lon}"</code></pre>
         </div>
     </section>
 
