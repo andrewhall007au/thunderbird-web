@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thunderbird Weather - Architecture Documentation</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --code-bg: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        nav h1 {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        nav .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav > ul > li {
+            margin-bottom: 16px;
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            display: block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        nav a:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        nav .section-title {
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 6px 12px;
+        }
+
+        nav ul ul {
+            margin-left: 12px;
+        }
+
+        nav ul ul a {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* Main Content */
+        main {
+            margin-left: 260px;
+            padding: 40px 60px;
+            max-width: 1200px;
+        }
+
+        section {
+            margin-bottom: 60px;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            margin: 32px 0 16px;
+            color: var(--text);
+        }
+
+        h4 {
+            font-size: 1rem;
+            margin: 24px 0 12px;
+            color: var(--secondary);
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card h4 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        /* Flow Diagrams */
+        .flow-diagram {
+            background: var(--code-bg);
+            color: #e2e8f0;
+            padding: 24px;
+            border-radius: 12px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .flow-diagram .arrow {
+            color: #60a5fa;
+        }
+
+        .flow-diagram .component {
+            color: #34d399;
+        }
+
+        .flow-diagram .data {
+            color: #fbbf24;
+        }
+
+        /* Code blocks */
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+        }
+
+        pre {
+            background: var(--code-bg);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.875rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover {
+            background: var(--bg);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-get { background: #dbeafe; color: #1d4ed8; }
+        .badge-post { background: #dcfce7; color: #166534; }
+        .badge-put { background: #fef3c7; color: #92400e; }
+        .badge-delete { background: #fee2e2; color: #991b1b; }
+        .badge-unit { background: #e0e7ff; color: #3730a3; }
+        .badge-integration { background: #fce7f3; color: #9d174d; }
+        .badge-e2e { background: #ccfbf1; color: #0f766e; }
+        .badge-field { background: #fef9c3; color: #854d0e; }
+
+        /* Testing Pyramid */
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .pyramid-level {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 4px 0;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .pyramid-level:hover {
+            transform: scale(1.02);
+        }
+
+        .pyramid-level.unit {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .pyramid-level.integration {
+            width: 75%;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        .pyramid-level.e2e {
+            width: 50%;
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+        }
+
+        .pyramid-level.field {
+            width: 30%;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .pyramid-stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .pyramid-stat {
+            text-align: center;
+        }
+
+        .pyramid-stat .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .pyramid-stat .label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        /* API Endpoint styling */
+        .endpoint {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .endpoint-header:hover {
+            background: var(--bg);
+        }
+
+        .endpoint-path {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            flex-grow: 1;
+        }
+
+        .endpoint-desc {
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        .endpoint-body {
+            padding: 0 16px 16px;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        .endpoint.open .endpoint-body {
+            display: block;
+        }
+
+        /* Transformations */
+        .transform-step {
+            display: flex;
+            align-items: flex-start;
+            margin: 16px 0;
+        }
+
+        .transform-step .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .transform-step .step-content {
+            margin-left: 16px;
+            flex-grow: 1;
+        }
+
+        .transform-step .step-content h5 {
+            margin: 0 0 4px;
+            font-size: 0.9rem;
+        }
+
+        .transform-step .step-content p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* Connector lines */
+        .connector {
+            width: 2px;
+            height: 20px;
+            background: var(--border);
+            margin-left: 15px;
+        }
+
+        /* Status indicators */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.green { background: var(--success); }
+        .status-dot.yellow { background: var(--warning); }
+        .status-dot.red { background: var(--danger); }
+
+        /* Mobile responsiveness */
+        @media (max-width: 900px) {
+            nav {
+                display: none;
+            }
+            main {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        /* Syntax highlighting for code */
+        .hl-keyword { color: #c678dd; }
+        .hl-string { color: #98c379; }
+        .hl-comment { color: #5c6370; }
+        .hl-function { color: #61afef; }
+        .hl-number { color: #d19a66; }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>Thunderbird</h1>
+        <p class="subtitle">Architecture Documentation</p>
+        <ul>
+            <li><span class="section-title">Overview</span>
+                <ul>
+                    <li><a href="#product-flow">Product Flow</a></li>
+                    <li><a href="#system-architecture">System Architecture</a></li>
+                </ul>
+            </li>
+            <li><span class="section-title">API Reference</span>
+                <ul>
+                    <li><a href="#api-auth">Authentication</a></li>
+                    <li><a href="#api-sms">SMS Webhook</a></li>
+                    <li><a href="#api-payments">Payments</a></li>
+                    <li><a href="#api-routes">Routes</a></li>
+                    <li><a href="#api-analytics">Analytics</a></li>
+                </ul>
+            </li>
+            <li><span class="section-title">Data Flows</span>
+                <ul>
+                    <li><a href="#sms-flow">SMS Command Flow</a></li>
+                    <li><a href="#weather-flow">Weather Transformation</a></li>
+                    <li><a href="#onboarding-flow">User Onboarding</a></li>
+                    <li><a href="#payment-flow">Payment Processing</a></li>
+                </ul>
+            </li>
+            <li><span class="section-title">Testing</span>
+                <ul>
+                    <li><a href="#testing-pyramid">Testing Pyramid</a></li>
+                    <li><a href="#unit-tests">Unit Tests</a></li>
+                    <li><a href="#integration-tests">Integration Tests</a></li>
+                    <li><a href="#e2e-sms-tests">E2E SMS Tests</a></li>
+                    <li><a href="#field-tests">Field Tests</a></li>
+                </ul>
+            </li>
+            <li><span class="section-title">Services</span>
+                <ul>
+                    <li><a href="#weather-providers">Weather Providers</a></li>
+                    <li><a href="#sms-service">SMS Service</a></li>
+                    <li><a href="#commands-service">Commands</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Product Flow Section -->
+        <section id="product-flow">
+            <h2>Product Flow</h2>
+            <p>Thunderbird provides SMS-based weather forecasts for hikers in remote areas, including satellite SMS support for iPhone users in areas with no cellular coverage.</p>
+
+            <div class="card">
+                <h4>User Journey Overview</h4>
+                <div class="flow-diagram">
+<span class="component">[User]</span> <span class="arrow">---SMS---></span> <span class="component">[Twilio]</span> <span class="arrow">---webhook---></span> <span class="component">[Thunderbird API]</span>
+   |                        |                              |
+   |                        |                              v
+   |                        |                    <span class="component">[Command Parser]</span>
+   |                        |                              |
+   |                        |                    +---------+---------+
+   |                        |                    |         |         |
+   |                        |                    v         v         v
+   |                        |               <span class="data">[CAST]</span>   <span class="data">[START]</span>  <span class="data">[HELP]</span>
+   |                        |                    |         |         |
+   |                        |                    v         |         |
+   |                        |            <span class="component">[Weather Router]</span>  |         |
+   |                        |                    |         |         |
+   |                        |         +----------+         |         |
+   |                        |         |          |         |         |
+   |                        |         v          v         v         v
+   |                        |      <span class="component">[BOM]</span>    <span class="component">[NWS]</span>  <span class="component">[Onboard]</span> <span class="component">[Response]</span>
+   |                        |         |          |         |         |
+   |                        |         +----+-----+         |         |
+   |                        |              |               |         |
+   |                        |              v               |         |
+   |                        |         <span class="component">[Formatter]</span>         |         |
+   |                        |              |               |         |
+   |                        |              +-------+-------+---------+
+   |                        |                      |
+   |                        |                      v
+   |                        |              <span class="component">[SMS Response]</span>
+   |                        |                      |
+   <span class="arrow"><---SMS Response---</span>      <span class="arrow"><------TwiML-------</span>
+                </div>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>1. Discovery & Registration</h4>
+                    <p>User texts <code>START</code> to Thunderbird number. The onboarding flow guides them through trail selection, dates, and preferences.</p>
+                </div>
+                <div class="card">
+                    <h4>2. Payment</h4>
+                    <p>User pays $29.99 via Stripe for initial access. Includes SMS balance for forecasts. Top-up via <code>BUY</code> command.</p>
+                </div>
+                <div class="card">
+                    <h4>3. Active Trip</h4>
+                    <p>User sends forecast commands (CAST, CAST7) and receives weather data. Check-ins update position for SafeCheck.</p>
+                </div>
+                <div class="card">
+                    <h4>4. SafeCheck</h4>
+                    <p>Emergency contacts notified on check-ins. Alerts sent if user overdue (24h without check-in).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Architecture -->
+        <section id="system-architecture">
+            <h2>System Architecture</h2>
+
+            <div class="card">
+                <h4>Technology Stack</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Layer</th>
+                            <th>Technology</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>API Framework</td>
+                            <td>FastAPI</td>
+                            <td>REST API with async support</td>
+                        </tr>
+                        <tr>
+                            <td>SMS Gateway</td>
+                            <td>Twilio</td>
+                            <td>Inbound/outbound SMS handling</td>
+                        </tr>
+                        <tr>
+                            <td>Payments</td>
+                            <td>Stripe</td>
+                            <td>Checkout sessions & stored cards</td>
+                        </tr>
+                        <tr>
+                            <td>Database</td>
+                            <td>SQLite</td>
+                            <td>User data, transactions, logs</td>
+                        </tr>
+                        <tr>
+                            <td>Weather (AU)</td>
+                            <td>BOM API</td>
+                            <td>Bureau of Meteorology</td>
+                        </tr>
+                        <tr>
+                            <td>Weather (US)</td>
+                            <td>NWS API</td>
+                            <td>National Weather Service</td>
+                        </tr>
+                        <tr>
+                            <td>Weather (CA)</td>
+                            <td>Environment Canada</td>
+                            <td>Canadian forecasts</td>
+                        </tr>
+                        <tr>
+                            <td>Weather (EU)</td>
+                            <td>Open-Meteo</td>
+                            <td>European forecasts</td>
+                        </tr>
+                        <tr>
+                            <td>Weather (UK)</td>
+                            <td>Met Office</td>
+                            <td>UK forecasts</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- API Authentication -->
+        <section id="api-auth">
+            <h2>Authentication API</h2>
+            <p>JWT-based authentication for web users. Phone-based identification for SMS users.</p>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/auth/register</span>
+                    <span class="endpoint-desc">Create new account</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Request Body</h5>
+                    <pre><code>{
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "name": "John Doe"
+}</code></pre>
+                    <h5>Response</h5>
+                    <pre><code>{
+  "id": 1,
+  "email": "user@example.com",
+  "created_at": "2026-02-02T10:00:00Z"
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/auth/token</span>
+                    <span class="endpoint-desc">Login and get JWT token</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Request Body (form data)</h5>
+                    <pre><code>username=user@example.com&password=SecurePassword123!</code></pre>
+                    <h5>Response</h5>
+                    <pre><code>{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer"
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-get">GET</span>
+                    <span class="endpoint-path">/auth/me</span>
+                    <span class="endpoint-desc">Get current user info (requires auth)</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Headers</h5>
+                    <pre><code>Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</code></pre>
+                    <h5>Response</h5>
+                    <pre><code>{
+  "id": 1,
+  "email": "user@example.com",
+  "phone": "+61400000001",
+  "unit_system": "metric",
+  "stripe_customer_id": "cus_xxx"
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- SMS Webhook API -->
+        <section id="api-sms">
+            <h2>SMS Webhook API</h2>
+            <p>Twilio webhook endpoints for inbound SMS processing.</p>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/webhook/sms/inbound</span>
+                    <span class="endpoint-desc">Receive inbound SMS from Twilio</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Request Body (Twilio format)</h5>
+                    <pre><code>From=%2B61400000001&To=%2B61400000002&Body=CAST%20LAKEO</code></pre>
+                    <h5>Response (TwiML)</h5>
+                    <pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Response&gt;
+  &lt;Message&gt;LAKEO 12hr Forecast...&lt;/Message&gt;
+&lt;/Response&gt;</code></pre>
+                    <h5>Supported Commands</h5>
+                    <table>
+                        <thead>
+                            <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>CAST [loc]</code></td><td>12-hour hourly forecast</td><td>CAST LAKEO</td></tr>
+                            <tr><td><code>CAST24 [loc]</code></td><td>24-hour hourly forecast</td><td>CAST24 HIGHM</td></tr>
+                            <tr><td><code>CAST7</code></td><td>7-day camp summary</td><td>CAST7</td></tr>
+                            <tr><td><code>CAST7 PEAKS</code></td><td>7-day peak summary</td><td>CAST7 PEAKS</td></tr>
+                            <tr><td><code>CAST -42.88,146.05</code></td><td>GPS coordinate forecast</td><td>CAST -42.88,146.05</td></tr>
+                            <tr><td><code>CHECKIN [loc]</code></td><td>Check in at location</td><td>CHECKIN LAKEO</td></tr>
+                            <tr><td><code>ROUTE</code></td><td>List all locations</td><td>ROUTE</td></tr>
+                            <tr><td><code>ALERTS ON/OFF</code></td><td>Toggle weather alerts</td><td>ALERTS ON</td></tr>
+                            <tr><td><code>SAFE [phone] [name]</code></td><td>Add SafeCheck contact</td><td>SAFE +61411222333 Mum</td></tr>
+                            <tr><td><code>STATUS</code></td><td>Show account status</td><td>STATUS</td></tr>
+                            <tr><td><code>HELP</code></td><td>Show commands</td><td>HELP</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Payments API -->
+        <section id="api-payments">
+            <h2>Payments API</h2>
+            <p>Stripe integration for initial purchases and SMS top-ups.</p>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/api/payments/checkout</span>
+                    <span class="endpoint-desc">Create Stripe checkout session (requires auth)</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Request Body</h5>
+                    <pre><code>{
+  "success_url": "https://thunderbird.app/success",
+  "cancel_url": "https://thunderbird.app/cancel"
+}</code></pre>
+                    <h5>Response</h5>
+                    <pre><code>{
+  "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_...",
+  "session_id": "cs_test_..."
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/api/payments/buy-now</span>
+                    <span class="endpoint-desc">Create account and checkout in one step</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Request Body</h5>
+                    <pre><code>{
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "name": "John Doe",
+  "success_url": "https://thunderbird.app/success",
+  "cancel_url": "https://thunderbird.app/cancel"
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-get">GET</span>
+                    <span class="endpoint-path">/api/payments/balance</span>
+                    <span class="endpoint-desc">Get account balance (requires auth)</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Response</h5>
+                    <pre><code>{
+  "balance_cents": 1500,
+  "segments_remaining": 45
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/webhook/stripe</span>
+                    <span class="endpoint-desc">Stripe payment webhook</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Events Handled</h5>
+                    <ul>
+                        <li><code>checkout.session.completed</code> - Activate access after payment</li>
+                        <li><code>payment_intent.succeeded</code> - Credit balance on top-up</li>
+                        <li><code>charge.refunded</code> - Handle refund adjustments</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Routes API -->
+        <section id="api-routes">
+            <h2>Routes API</h2>
+            <p>Trail and route management endpoints.</p>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-get">GET</span>
+                    <span class="endpoint-path">/api/library</span>
+                    <span class="endpoint-desc">List available routes in library</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Response</h5>
+                    <pre><code>[
+  {
+    "id": "overland_track",
+    "name": "Overland Track",
+    "country": "AU",
+    "region": "Tasmania",
+    "camps": 8,
+    "peaks": 2,
+    "distance_km": 65
+  },
+  ...
+]</code></pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/api/routes</span>
+                    <span class="endpoint-desc">Create custom route (requires auth)</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Request Body</h5>
+                    <pre><code>{
+  "name": "My Custom Trail"
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/api/routes/upload-gpx</span>
+                    <span class="endpoint-desc">Upload GPX file for route creation</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Request</h5>
+                    <p>Multipart form with GPX file</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics API -->
+        <section id="api-analytics">
+            <h2>Analytics API</h2>
+
+            <div class="endpoint">
+                <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="badge badge-post">POST</span>
+                    <span class="endpoint-path">/api/analytics</span>
+                    <span class="endpoint-desc">Track analytics event</span>
+                </div>
+                <div class="endpoint-body">
+                    <h5>Request Body</h5>
+                    <pre><code>{
+  "event": "page_view",
+  "properties": {"page": "/pricing"},
+  "entry_path": "organic"
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- SMS Flow -->
+        <section id="sms-flow">
+            <h2>SMS Command Flow</h2>
+            <p>How an SMS command is processed from receipt to response.</p>
+
+            <div class="card">
+                <h4>CAST LAKEO Command Lifecycle</h4>
+
+                <div class="transform-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h5>Webhook Receipt</h5>
+                        <p>Twilio POSTs to /webhook/sms/inbound with From, To, Body fields</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h5>Signature Validation</h5>
+                        <p>Verify Twilio signature using HMAC-SHA1 with auth token</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h5>Phone Normalization</h5>
+                        <p>Convert to E.164 format: +61400000001</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h5>User Lookup</h5>
+                        <p>Find user by phone, check beta access, load route data</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h5>Command Parsing</h5>
+                        <p>CommandParser extracts: type=CAST, location_code=LAKEO</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h5>Location Resolution</h5>
+                        <p>Find LAKEO camp on user's route: lat=-43.20, lon=146.18, elev=940m</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <h5>Weather Fetch</h5>
+                        <p>BOMService.get_hourly_forecast() with 1-hour cache</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">8</div>
+                    <div class="step-content">
+                        <h5>Formatting</h5>
+                        <p>ForecastFormatter creates pipe-separated SMS text with danger ratings</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">9</div>
+                    <div class="step-content">
+                        <h5>Cost Calculation</h5>
+                        <p>SMSCostCalculator: 2 segments x $0.055 = $0.11</p>
+                    </div>
+                </div>
+                <div class="connector"></div>
+
+                <div class="transform-step">
+                    <div class="step-number">10</div>
+                    <div class="step-content">
+                        <h5>TwiML Response</h5>
+                        <p>Return XML response for Twilio to deliver to user</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weather Transformation Flow -->
+        <section id="weather-flow">
+            <h2>Weather Data Transformation</h2>
+            <p>How raw weather API data becomes SMS forecast text.</p>
+
+            <div class="card">
+                <h4>Transformation Pipeline</h4>
+                <div class="flow-diagram">
+<span class="data">[Raw API Response]</span>
+       |
+       v
+<span class="component">Provider Parser</span> (BOM/NWS/OpenMeteo)
+       |
+       v
+<span class="data">[ForecastPeriod Objects]</span>
+  - time: datetime
+  - temp_min/max: int
+  - rain_chance: 0-100
+  - rain_amount: (min, max)
+  - snow_amount: (min, max)
+  - wind_avg/max: km/h
+  - wind_direction: N/NE/E/SE/S/SW/W/NW
+  - cloud_cover: 0-100%
+  - cloud_base_height: meters AGL
+  - freezing_level: meters ASL
+  - cape: J/kg (thunderstorm energy)
+       |
+       v
+<span class="component">Elevation Adjustment</span>
+  - Lapse rate: 0.0065C/m
+  - adjusted_temp = temp - (target_elev - model_elev) * 0.0065
+       |
+       v
+<span class="component">Danger Calculator</span>
+  - Ice:   peak above freezing level      -> !
+  - Blind: peak in cloud (>80% coverage)  -> !
+  - Wind:  gusts >= 50km/h                -> !
+  - Precip: rain + snow together          -> !
+  - TS?:   CAPE 500-2000 J/kg            -> TS?
+  - TS!:   CAPE > 2000 J/kg              -> TS!
+       |
+       v
+<span class="data">[FormattedPeriod Objects]</span>
+       |
+       v
+<span class="component">SMS Formatter</span>
+       |
+       v
+<span class="data">[SMS Text Output]</span>
+
+LAKEO 12hr Tue 15 Jan
+Hr|Tmp|%Rn|Prec|Wa|Wm|%Cd|CB |FL  |D
+06| 5 | 20| 0-1|15|25| 40|1.2|1800|
+09| 8 | 30| 0-2|20|35| 50|1.0|1700|!
+12|12 | 60| 2-5|25|45| 75|0.8|1500|!!
+15|10 | 40| 1-3|30|50| 60|0.9|1600|!
+18| 7 | 25| 0-1|20|30| 45|1.1|1750|
+                </div>
+            </div>
+
+            <h3>Weather Provider Routing</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Country</th>
+                        <th>Primary Provider</th>
+                        <th>Fallback</th>
+                        <th>Model</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Australia</td>
+                        <td>BOM</td>
+                        <td>Open-Meteo</td>
+                        <td>ACCESS-C</td>
+                    </tr>
+                    <tr>
+                        <td>United States</td>
+                        <td>NWS</td>
+                        <td>Open-Meteo</td>
+                        <td>HRRR</td>
+                    </tr>
+                    <tr>
+                        <td>Canada</td>
+                        <td>Environment Canada</td>
+                        <td>Open-Meteo</td>
+                        <td>GEM</td>
+                    </tr>
+                    <tr>
+                        <td>United Kingdom</td>
+                        <td>Met Office</td>
+                        <td>Open-Meteo</td>
+                        <td>UKV</td>
+                    </tr>
+                    <tr>
+                        <td>France</td>
+                        <td>Open-Meteo</td>
+                        <td>-</td>
+                        <td>Meteo-France</td>
+                    </tr>
+                    <tr>
+                        <td>Switzerland</td>
+                        <td>Open-Meteo</td>
+                        <td>-</td>
+                        <td>ICON-EU</td>
+                    </tr>
+                    <tr>
+                        <td>New Zealand</td>
+                        <td>Open-Meteo</td>
+                        <td>-</td>
+                        <td>best_match</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Onboarding Flow -->
+        <section id="onboarding-flow">
+            <h2>User Onboarding Flow</h2>
+
+            <div class="card">
+                <h4>State Machine: Onboarding States</h4>
+                <div class="flow-diagram">
+User: START
+       |
+       v
+<span class="component">[AWAITING_NAME]</span> --> "What's your name?"
+       |
+User: "John"
+       |
+       v
+<span class="component">[AWAITING_TRAIL]</span> --> "Select your trail:
+                        1. Overland Track
+                        2. Western Arthurs A-K
+                        3. Western Arthurs Full
+                        4. Federation Peak
+                        5. Eastern Arthurs
+                        6. Combined W+E Arthurs"
+       |
+User: "3"
+       |
+       v
+<span class="component">[AWAITING_DATE]</span> --> "When does your trip start? (DDMMYY)"
+       |
+User: "150126"
+       |
+       v
+<span class="component">[AWAITING_DAYS]</span> --> "How many days is your trip?"
+       |
+User: "7"
+       |
+       v
+<span class="component">[AWAITING_DIRECTION]</span> --> "Direction?
+                            1. Standard (Scotts Peak -> Cracroft)
+                            2. Reverse (Cracroft -> Scotts Peak)"
+       |
+User: "1"
+       |
+       v
+<span class="component">[AWAITING_UNITS]</span> --> "Units?
+                         1. Metric (C, km/h, mm)
+                         2. Imperial (F, mph, in)"
+       |
+User: "1"
+       |
+       v
+<span class="component">[COMPLETE]</span> --> Save to database
+              --> Send Quick Start Guide (4 SMS)
+              --> User ready for commands
+                </div>
+            </div>
+        </section>
+
+        <!-- Payment Flow -->
+        <section id="payment-flow">
+            <h2>Payment Processing Flow</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>Initial Purchase Flow</h4>
+                    <div class="transform-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h5>Create Checkout</h5>
+                            <p>POST /api/payments/checkout or /buy-now</p>
+                        </div>
+                    </div>
+                    <div class="connector"></div>
+                    <div class="transform-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h5>Stripe Redirect</h5>
+                            <p>User redirected to Stripe hosted checkout</p>
+                        </div>
+                    </div>
+                    <div class="connector"></div>
+                    <div class="transform-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h5>Payment Complete</h5>
+                            <p>Stripe webhook: checkout.session.completed</p>
+                        </div>
+                    </div>
+                    <div class="connector"></div>
+                    <div class="transform-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h5>Activate Access</h5>
+                            <p>Set subscription_end_date, save Stripe customer ID</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4>SMS Top-up Flow</h4>
+                    <div class="transform-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h5>BUY Command</h5>
+                            <p>User sends "BUY $10" via SMS</p>
+                        </div>
+                    </div>
+                    <div class="connector"></div>
+                    <div class="transform-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h5>Charge Card</h5>
+                            <p>Use stored Stripe payment method</p>
+                        </div>
+                    </div>
+                    <div class="connector"></div>
+                    <div class="transform-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h5>Credit Balance</h5>
+                            <p>Add $10 to account (100 SMS segments)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>SMS Pricing</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Region</th>
+                        <th>Countries</th>
+                        <th>Segments per $10</th>
+                        <th>Cost per Segment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>US/Canada</td>
+                        <td>US, CA</td>
+                        <td>100</td>
+                        <td>$0.10</td>
+                    </tr>
+                    <tr>
+                        <td>Standard</td>
+                        <td>AU, NZ, UK</td>
+                        <td>66</td>
+                        <td>$0.15</td>
+                    </tr>
+                    <tr>
+                        <td>Premium</td>
+                        <td>FR, CH, IT, DE</td>
+                        <td>50</td>
+                        <td>$0.20</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Testing Pyramid -->
+        <section id="testing-pyramid">
+            <h2>Testing Pyramid</h2>
+            <p>Comprehensive testing strategy from fast unit tests to real-world field validation.</p>
+
+            <div class="pyramid">
+                <div class="pyramid-level field">Field Tests<br><small>Satellite SMS validation</small></div>
+                <div class="pyramid-level e2e">E2E SMS Tests<br><small>Twilio-to-Twilio automated</small></div>
+                <div class="pyramid-level integration">Integration Tests<br><small>API + Database</small></div>
+                <div class="pyramid-level unit">Unit Tests<br><small>Fast, isolated, comprehensive</small></div>
+            </div>
+
+            <div class="pyramid-stats">
+                <div class="pyramid-stat">
+                    <div class="number">567</div>
+                    <div class="label">Unit Tests</div>
+                </div>
+                <div class="pyramid-stat">
+                    <div class="number">62</div>
+                    <div class="label">Integration Tests</div>
+                </div>
+                <div class="pyramid-stat">
+                    <div class="number">24</div>
+                    <div class="label">E2E SMS Tests</div>
+                </div>
+                <div class="pyramid-stat">
+                    <div class="number">12</div>
+                    <div class="label">Field Test Cases</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Unit Tests -->
+        <section id="unit-tests">
+            <h2>Unit Tests</h2>
+            <p>Fast, isolated tests for individual components. Run in ~6 seconds.</p>
+
+            <div class="card">
+                <h4>Running Unit Tests</h4>
+                <pre><code># Run all unit tests (exclude integration)
+pytest tests/ -m "not integration" --ignore=tests/e2e_sms -v
+
+# Run specific test file
+pytest tests/test_commands.py -v
+
+# Run with coverage
+pytest tests/ -m "not integration" --cov=app --cov-report=html</code></pre>
+            </div>
+
+            <h3>Test Coverage by Domain</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th>Test File</th>
+                        <th>Tests</th>
+                        <th>Coverage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-unit">SMS</span></td>
+                        <td>test_sms_pricing.py</td>
+                        <td>18</td>
+                        <td><span class="status"><span class="status-dot green"></span> 95%</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-unit">Commands</span></td>
+                        <td>test_v3_cast_commands.py</td>
+                        <td>15</td>
+                        <td><span class="status"><span class="status-dot green"></span> 92%</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-unit">Weather</span></td>
+                        <td>test_weather_providers.py</td>
+                        <td>45</td>
+                        <td><span class="status"><span class="status-dot green"></span> 88%</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-unit">GPS</span></td>
+                        <td>test_gps_international.py</td>
+                        <td>42</td>
+                        <td><span class="status"><span class="status-dot green"></span> 94%</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-unit">Auth</span></td>
+                        <td>test_auth.py</td>
+                        <td>22</td>
+                        <td><span class="status"><span class="status-dot green"></span> 90%</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-unit">Payments</span></td>
+                        <td>test_payments.py</td>
+                        <td>18</td>
+                        <td><span class="status"><span class="status-dot green"></span> 85%</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-unit">Routes</span></td>
+                        <td>test_route_data_integrity.py</td>
+                        <td>28</td>
+                        <td><span class="status"><span class="status-dot green"></span> 100%</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-unit">Validation</span></td>
+                        <td>test_validation.py</td>
+                        <td>35</td>
+                        <td><span class="status"><span class="status-dot green"></span> 91%</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Key Unit Test Examples</h3>
+            <pre><code class="python"><span class="hl-keyword">class</span> <span class="hl-function">TestCAST12Command</span>:
+    <span class="hl-string">"""CAST and CAST12 return 12-hour hourly forecasts."""</span>
+
+    <span class="hl-keyword">def</span> <span class="hl-function">test_cast_parses_camp_code</span>(self):
+        <span class="hl-string">"""CAST LAKEO should parse camp code correctly"""</span>
+        parser = CommandParser()
+
+        <span class="hl-keyword">for</span> cmd <span class="hl-keyword">in</span> [<span class="hl-string">"CAST LAKEO"</span>, <span class="hl-string">"cast lakeo"</span>, <span class="hl-string">"CAST12 LAKEO"</span>]:
+            parsed = parser.parse(cmd)
+            <span class="hl-keyword">assert</span> parsed.command_type.name <span class="hl-keyword">in</span> [<span class="hl-string">"CAST"</span>, <span class="hl-string">"CAST12"</span>]
+            <span class="hl-keyword">assert</span> parsed.location_code.upper() == <span class="hl-string">"LAKEO"</span>
+
+<span class="hl-keyword">class</span> <span class="hl-function">TestWeatherConverter</span>:
+    <span class="hl-string">"""Test normalization of weather data across providers."""</span>
+
+    <span class="hl-keyword">def</span> <span class="hl-function">test_conversion_cloud_base_from_cover_high</span>(self):
+        <span class="hl-string">"""High cloud cover = low cloud base."""</span>
+        data = create_normalized_data(cloud_cover=<span class="hl-number">90</span>, base_elevation=<span class="hl-number">100</span>)
+        result = convert_to_cell_forecast(data)
+        <span class="hl-comment"># Cloud base = 100 (base) + 600 (high cover offset)</span>
+        <span class="hl-keyword">assert</span> result.periods[<span class="hl-number">0</span>].cloud_base == <span class="hl-number">700</span></code></pre>
+        </section>
+
+        <!-- Integration Tests -->
+        <section id="integration-tests">
+            <h2>Integration Tests</h2>
+            <p>Test full API request/response cycles with database. Require setup.</p>
+
+            <div class="card">
+                <h4>Running Integration Tests</h4>
+                <pre><code># Run integration tests only
+pytest tests/test_api_integration.py tests/test_webhook_handlers.py -v
+
+# Run all tests including integration
+pytest tests/ -v
+
+# Skip integration tests (default for CI)
+pytest tests/ -m "not integration" -v</code></pre>
+            </div>
+
+            <h3>Integration Test Coverage</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test File</th>
+                        <th>Tests</th>
+                        <th>Scope</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-integration">test_api_integration.py</span></td>
+                        <td>45</td>
+                        <td>Full API endpoints with TestClient</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-integration">test_webhook_handlers.py</span></td>
+                        <td>17</td>
+                        <td>Stripe & Twilio webhook processing</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Test Scenarios</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>Auth Flow</h4>
+                    <ul>
+                        <li>Register creates account</li>
+                        <li>Duplicate email rejected</li>
+                        <li>Login returns JWT token</li>
+                        <li>Wrong password rejected</li>
+                        <li>/me requires authentication</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Payments Flow</h4>
+                    <ul>
+                        <li>Checkout requires auth</li>
+                        <li>Balance returns amount</li>
+                        <li>Stripe webhook signature validation</li>
+                        <li>checkout.session.completed handling</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>SMS Webhook</h4>
+                    <ul>
+                        <li>Twilio format accepted</li>
+                        <li>HELP command returns text</li>
+                        <li>STATUS command returns info</li>
+                        <li>Invalid command handled</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Route API</h4>
+                    <ul>
+                        <li>Library returns routes</li>
+                        <li>Create route requires auth</li>
+                        <li>GPX upload parses track</li>
+                        <li>Clone route works</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- E2E SMS Tests -->
+        <section id="e2e-sms-tests">
+            <h2>E2E SMS Tests</h2>
+            <p>Automated Twilio-to-Twilio tests for validating real SMS delivery across regions.</p>
+
+            <div class="card">
+                <h4>Architecture</h4>
+                <div class="flow-diagram">
+<span class="component">[Test Runner]</span>
+       |
+       | 1. Send SMS via Twilio API
+       v
+<span class="component">[Test Phone Number]</span> (e.g., +1-415-XXX-XXXX)
+       |
+       | 2. SMS delivered to Thunderbird
+       v
+<span class="component">[Thunderbird Backend]</span>
+       |
+       | 3. Process command, generate response
+       v
+<span class="component">[Twilio Outbound]</span>
+       |
+       | 4. Response SMS to test number
+       v
+<span class="component">[Webhook Capture]</span> (/webhook/e2e-test/response)
+       |
+       | 5. Validate response content
+       v
+<span class="component">[Test Assertion]</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h4>Running E2E SMS Tests</h4>
+                <pre><code># Install requirements
+pip install -r tests/e2e_sms/requirements.txt
+
+# Configure test numbers (required)
+export E2E_TEST_PHONE_US="+14155551234"
+export E2E_TEST_PHONE_CA="+16045551234"
+export THUNDERBIRD_NUMBER="+61400000000"
+
+# Run all E2E tests
+python -m tests.e2e_sms.runner --all
+
+# Run specific region
+python -m tests.e2e_sms.runner --region us
+
+# Run specific test case
+python -m tests.e2e_sms.runner --test yosemite_cast</code></pre>
+            </div>
+
+            <h3>Test Cases by Region</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Region</th>
+                        <th>Test Case</th>
+                        <th>Command</th>
+                        <th>Validates</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-e2e">US</span></td>
+                        <td>yosemite_cast</td>
+                        <td>CAST 37.7456,-119.5936</td>
+                        <td>NWS provider routing</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-e2e">US</span></td>
+                        <td>rainier_cast7</td>
+                        <td>CAST7 46.8523,-121.7603</td>
+                        <td>7-day forecast format</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-e2e">CA</span></td>
+                        <td>banff_cast</td>
+                        <td>CAST 51.1784,-115.5708</td>
+                        <td>Environment Canada routing</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-e2e">CA</span></td>
+                        <td>whistler_cast24</td>
+                        <td>CAST24 50.1163,-122.9574</td>
+                        <td>24-hour format</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-e2e">AU</span></td>
+                        <td>overland_lakeo</td>
+                        <td>CAST LAKEO</td>
+                        <td>BOM provider, camp codes</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-e2e">AU</span></td>
+                        <td>arthurs_cast7</td>
+                        <td>CAST7</td>
+                        <td>Multi-camp forecast</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Response Validation</h3>
+            <pre><code class="python"><span class="hl-keyword">class</span> <span class="hl-function">ResponseValidator</span>:
+    <span class="hl-string">"""Validate SMS response content."""</span>
+
+    <span class="hl-keyword">def</span> <span class="hl-function">validate_cast_response</span>(self, response: str, location: str) -> bool:
+        <span class="hl-string">"""Check CAST response has required elements."""</span>
+        checks = [
+            location.upper() <span class="hl-keyword">in</span> response,           <span class="hl-comment"># Location name</span>
+            <span class="hl-string">"Hr|Tmp|"</span> <span class="hl-keyword">in</span> response,                   <span class="hl-comment"># Header row</span>
+            re.search(r<span class="hl-string">"\d{2}\|"</span>, response),        <span class="hl-comment"># Hour column</span>
+            <span class="hl-string">"|%Rn|"</span> <span class="hl-keyword">in</span> response,                     <span class="hl-comment"># Rain percentage</span>
+        ]
+        <span class="hl-keyword">return</span> all(checks)</code></pre>
+        </section>
+
+        <!-- Field Tests -->
+        <section id="field-tests">
+            <h2>Field Tests</h2>
+            <p>Real-world validation with physical devices and satellite SMS. Final validation before regional launch.</p>
+
+            <div class="card" style="border: 2px solid var(--success); background: linear-gradient(135deg, rgba(34,197,94,0.1), transparent);">
+                <h4 style="color: var(--success);">Automated Field Testing</h4>
+                <p>One SMS triggers a complete automated test sequence with remote monitoring.</p>
+
+                <div class="flow-diagram" style="font-size: 0.75rem;">
+<span class="component">[Field Tester]</span> sends: FIELDTEST 37.7,-122.4
+       |
+       v
+<span class="component">[Thunderbird]</span> creates test session
+       |
+       +---> Sends Test 1: HELP
+       |     Validates response
+       |     Records latency
+       |
+       +---> Sends Test 2: STATUS
+       |     ...
+       |
+       +---> Sends Test 8: Final check
+       |
+       v
+<span class="data">[Summary SMS to tester]</span>
+"8/8 PASSED - avg 2.3s latency"
+       |
+       v
+<span class="component">[Dashboard]</span> /field-test/dashboard
+Real-time monitoring for admins
+                </div>
+
+                <h5 style="margin-top: 20px;">How to Run (Super Simple!)</h5>
+                <pre><code># From satellite-only location, send ONE message:
+FIELDTEST
+
+# Or with your coordinates:
+FIELDTEST 37.7,-122.4
+
+# System runs 8 automated tests (~15-20 min)
+# Results logged to dashboard automatically</code></pre>
+
+                <h5 style="margin-top: 16px;">Monitoring Dashboard</h5>
+                <p><code>GET /field-test/dashboard</code> - Real-time test progress, pass rates, latency stats</p>
+            </div>
+
+            <div class="card">
+                <h4>Manual Field Test Protocol</h4>
+                <div class="card-grid">
+                    <div class="card">
+                        <h4>Pre-Requisites</h4>
+                        <ul>
+                            <li>iPhone 14+ with iOS 18.3+</li>
+                            <li>Satellite SMS enabled</li>
+                            <li>Location with NO cellular</li>
+                            <li>Clear sky view (satellite)</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>Equipment</h4>
+                        <ul>
+                            <li>Test device with Thunderbird contact</li>
+                            <li>Screen recording enabled</li>
+                            <li>GPS coordinates noted</li>
+                            <li>Backup communication method</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Test Locations</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Region</th>
+                        <th>Location</th>
+                        <th>Coordinates</th>
+                        <th>Satellite Coverage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-field">US</span></td>
+                        <td>Death Valley NP</td>
+                        <td>36.5054, -117.0794</td>
+                        <td><span class="status"><span class="status-dot green"></span> Excellent</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-field">US</span></td>
+                        <td>Yosemite Backcountry</td>
+                        <td>37.7456, -119.5936</td>
+                        <td><span class="status"><span class="status-dot green"></span> Good</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-field">CA</span></td>
+                        <td>Banff Backcountry</td>
+                        <td>51.1784, -115.5708</td>
+                        <td><span class="status"><span class="status-dot green"></span> Good</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-field">AU</span></td>
+                        <td>Western Arthurs</td>
+                        <td>-43.20, 146.18</td>
+                        <td><span class="status"><span class="status-dot yellow"></span> Limited</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Test Checklist</h3>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Command</th>
+                            <th>Expected Result</th>
+                            <th>Timeout</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Basic Connectivity</td>
+                            <td><code>HELP</code></td>
+                            <td>Command list returned</td>
+                            <td>5 min</td>
+                        </tr>
+                        <tr>
+                            <td>GPS Forecast</td>
+                            <td><code>CAST [current GPS]</code></td>
+                            <td>12-hour forecast</td>
+                            <td>5 min</td>
+                        </tr>
+                        <tr>
+                            <td>Extended Forecast</td>
+                            <td><code>CAST7 [current GPS]</code></td>
+                            <td>7-day summary (multi-SMS)</td>
+                            <td>10 min</td>
+                        </tr>
+                        <tr>
+                            <td>Check-in</td>
+                            <td><code>CHECKIN [GPS]</code></td>
+                            <td>Confirmation + SafeCheck notify</td>
+                            <td>5 min</td>
+                        </tr>
+                        <tr>
+                            <td>Status Check</td>
+                            <td><code>STATUS</code></td>
+                            <td>Account info returned</td>
+                            <td>5 min</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Field Test Report Template</h3>
+            <pre><code>## Field Test Report
+Date: YYYY-MM-DD
+Location: [Name] ([lat], [lon])
+Device: iPhone [model] iOS [version]
+Carrier: [carrier name]
+Connection: Satellite / Cellular
+
+### Test Results
+| Test | Sent | Received | Latency | Pass |
+|------|------|----------|---------|------|
+| HELP | 10:00 | 10:02 | 2m | Yes |
+| CAST GPS | 10:05 | 10:08 | 3m | Yes |
+| CAST7 | 10:15 | 10:22 | 7m | Yes |
+
+### Issues
+- [Any issues encountered]
+
+### Notes
+- [Satellite visibility conditions]
+- [Weather conditions]
+- [Response quality observations]</code></pre>
+        </section>
+
+        <!-- Weather Providers -->
+        <section id="weather-providers">
+            <h2>Weather Providers</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>BOM (Australia)</h4>
+                    <p><strong>Bureau of Meteorology</strong></p>
+                    <ul>
+                        <li>Primary for AU coordinates</li>
+                        <li>ACCESS-C model (1.5km resolution)</li>
+                        <li>Hourly data for 7 days</li>
+                        <li>Includes CAPE for thunderstorm detection</li>
+                    </ul>
+                    <p><code>app/services/bom.py</code></p>
+                </div>
+                <div class="card">
+                    <h4>NWS (United States)</h4>
+                    <p><strong>National Weather Service</strong></p>
+                    <ul>
+                        <li>Primary for US coordinates</li>
+                        <li>HRRR model (3km resolution)</li>
+                        <li>Includes weather alerts</li>
+                        <li>Free, no API key required</li>
+                    </ul>
+                    <p><code>app/services/weather/providers/nws.py</code></p>
+                </div>
+                <div class="card">
+                    <h4>Environment Canada</h4>
+                    <p><strong>Canadian forecasts</strong></p>
+                    <ul>
+                        <li>Primary for CA coordinates</li>
+                        <li>GEM model</li>
+                        <li>Includes weather alerts</li>
+                        <li>Bilingual support</li>
+                    </ul>
+                    <p><code>app/services/weather/providers/envcanada.py</code></p>
+                </div>
+                <div class="card">
+                    <h4>Open-Meteo (Global)</h4>
+                    <p><strong>Fallback &amp; European coverage</strong></p>
+                    <ul>
+                        <li>Multiple models: Meteo-France, ICON-EU, GFS</li>
+                        <li>Free tier available</li>
+                        <li>Global coverage</li>
+                        <li>No alerts support</li>
+                    </ul>
+                    <p><code>app/services/weather/providers/openmeteo.py</code></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SMS Service -->
+        <section id="sms-service">
+            <h2>SMS Service</h2>
+            <p>Twilio integration for sending and receiving SMS messages.</p>
+
+            <div class="card">
+                <h4>Key Components</h4>
+                <pre><code class="python"><span class="hl-comment"># app/services/sms.py</span>
+
+<span class="hl-keyword">class</span> <span class="hl-function">SMSService</span>:
+    <span class="hl-string">"""Twilio SMS client wrapper."""</span>
+
+    <span class="hl-keyword">def</span> <span class="hl-function">send_message</span>(self, to: str, body: str,
+                      command_type: str, message_type: str) -> bool:
+        <span class="hl-string">"""Send single SMS with cost tracking."""</span>
+
+    <span class="hl-keyword">def</span> <span class="hl-function">send_batch</span>(self, to: str, messages: List[str],
+                    delay: float = <span class="hl-number">0.5</span>) -> int:
+        <span class="hl-string">"""Send multiple SMS with inter-message delay."""</span>
+
+<span class="hl-keyword">class</span> <span class="hl-function">SMSCostCalculator</span>:
+    <span class="hl-string">"""Calculate SMS segments and costs."""</span>
+
+    <span class="hl-keyword">def</span> <span class="hl-function">count_segments</span>(self, text: str) -> int:
+        <span class="hl-string">"""Count SMS segments (GSM-7: 160 chars, Unicode: 70 chars)."""</span>
+
+    <span class="hl-keyword">def</span> <span class="hl-function">calculate_cost</span>(self, text: str, country: str) -> float:
+        <span class="hl-string">"""Calculate cost in AUD for sending SMS."""</span>
+
+<span class="hl-keyword">class</span> <span class="hl-function">PhoneUtils</span>:
+    <span class="hl-string">"""Phone number utilities."""</span>
+
+    @staticmethod
+    <span class="hl-keyword">def</span> <span class="hl-function">normalize</span>(phone: str) -> str:
+        <span class="hl-string">"""Convert to E.164 format: +61400000001"""</span>
+
+    @staticmethod
+    <span class="hl-keyword">def</span> <span class="hl-function">mask</span>(phone: str) -> str:
+        <span class="hl-string">"""Mask for logging: +614****0001"""</span></code></pre>
+            </div>
+        </section>
+
+        <!-- Commands Service -->
+        <section id="commands-service">
+            <h2>Commands Service</h2>
+            <p>Parse and execute SMS commands.</p>
+
+            <div class="card">
+                <h4>Command Types</h4>
+                <pre><code class="python"><span class="hl-keyword">class</span> <span class="hl-function">CommandType</span>(Enum):
+    <span class="hl-comment"># Forecast commands</span>
+    CAST = <span class="hl-string">"cast"</span>           <span class="hl-comment"># 12-hour hourly</span>
+    CAST12 = <span class="hl-string">"cast12"</span>       <span class="hl-comment"># Alias for CAST</span>
+    CAST24 = <span class="hl-string">"cast24"</span>       <span class="hl-comment"># 24-hour hourly</span>
+    CAST7 = <span class="hl-string">"cast7"</span>         <span class="hl-comment"># 7-day summary</span>
+
+    <span class="hl-comment"># User management</span>
+    START = <span class="hl-string">"start"</span>         <span class="hl-comment"># Begin onboarding</span>
+    STOP = <span class="hl-string">"stop"</span>           <span class="hl-comment"># Cancel service</span>
+    STATUS = <span class="hl-string">"status"</span>       <span class="hl-comment"># Account info</span>
+    UNITS = <span class="hl-string">"units"</span>         <span class="hl-comment"># Change unit system</span>
+
+    <span class="hl-comment"># Location</span>
+    CHECKIN = <span class="hl-string">"checkin"</span>     <span class="hl-comment"># Check in at camp</span>
+    ROUTE = <span class="hl-string">"route"</span>         <span class="hl-comment"># List locations</span>
+
+    <span class="hl-comment"># SafeCheck</span>
+    SAFE = <span class="hl-string">"safe"</span>           <span class="hl-comment"># Add contact</span>
+    SAFEDEL = <span class="hl-string">"safedel"</span>     <span class="hl-comment"># Remove contact</span>
+    SAFELIST = <span class="hl-string">"safelist"</span>   <span class="hl-comment"># List contacts</span>
+
+    <span class="hl-comment"># Alerts</span>
+    ALERTS_ON = <span class="hl-string">"alerts_on"</span>
+    ALERTS_OFF = <span class="hl-string">"alerts_off"</span>
+
+    <span class="hl-comment"># Payments</span>
+    BUY = <span class="hl-string">"buy"</span>             <span class="hl-comment"># Top-up balance</span>
+
+    <span class="hl-comment"># Help</span>
+    HELP = <span class="hl-string">"help"</span>           <span class="hl-comment"># Command list</span>
+    KEY = <span class="hl-string">"key"</span>             <span class="hl-comment"># Forecast legend</span></code></pre>
+            </div>
+        </section>
+
+        <footer style="margin-top: 60px; padding: 40px 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-light);">
+            <p>Thunderbird Weather Documentation</p>
+            <p style="font-size: 0.8rem;">Generated 2026-02-02 | Backend v3.5</p>
+        </footer>
+    </main>
+
+    <script>
+        // Make endpoints expandable
+        document.querySelectorAll('.endpoint-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.parentElement.classList.toggle('open');
+            });
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+
+        // Highlight current section in nav
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.style.fontWeight = link.getAttribute('href') === `#${current}` ? '600' : '400';
+                link.style.color = link.getAttribute('href') === `#${current}` ? 'var(--primary)' : '';
+            });
+        });
+    </script>
+</body>
+</html>
