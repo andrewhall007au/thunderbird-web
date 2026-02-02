@@ -243,15 +243,23 @@ ADMIN_PAGE = """
         .cmd-bar-fill {{ height: 8px; border-radius: 4px; background: #3498db; }}
         .cmd-name {{ width: 80px; font-size: 12px; color: #aaa; }}
         .cmd-pct {{ font-size: 12px; color: #888; width: 40px; text-align: right; }}
+        .nav-link {{ position: relative; color: #888; text-decoration: none; padding: 8px 16px; border: 1px solid #444; border-radius: 6px; }}
+        .nav-link:hover {{ border-color: #e94560; color: #e94560; }}
+        .nav-link.has-alert {{ border-color: #e74c3c; }}
+        .alert-badge {{ display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: #fff; border-radius: 50%; margin-left: 8px; font-weight: bold; font-size: 14px; color: #e74c3c; animation: pulse-alert 0.4s ease-in-out infinite; }}
+        @keyframes pulse-alert {{
+            0%, 100% {{ opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.9); }}
+            50% {{ opacity: 0.6; transform: scale(1.2); box-shadow: 0 0 8px 4px rgba(231, 76, 60, 0.5); }}
+        }}
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Thunderbird Admin</h1>
         <div style="display: flex; gap: 12px; align-items: center;">
-            <a href="/admin/beta" class="logout">Beta Applications</a>
-            <a href="/admin/affiliates" class="logout">Affiliates</a>
-            <a href="/admin/logout" class="logout">Logout</a>
+            <a href="/admin/beta" class="nav-link{beta_alert_class}">Beta Applications{beta_alert_badge}</a>
+            <a href="/admin/affiliates" class="nav-link{affiliate_alert_class}">Affiliates{affiliate_alert_badge}</a>
+            <a href="/admin/logout" class="nav-link">Logout</a>
         </div>
     </div>
 
@@ -329,32 +337,33 @@ ADMIN_PAGE = """
         </div>
 
         <div class="card">
-            <h2>Quick Actions</h2>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
-                <form method="POST" action="/admin/push-all" style="margin: 0;">
-                    <button type="submit" class="btn-secondary">Push All Now</button>
-                </form>
-                <form method="POST" action="/admin/test-sms" style="margin: 0; display: flex; gap: 8px;">
-                    <input type="tel" name="phone" placeholder="+61400123456" style="width: 150px; margin: 0;">
-                    <button type="submit" class="btn-secondary">Test SMS</button>
-                </form>
-            </div>
-            <h3>Manual Register</h3>
-            <form method="POST" action="/admin/register">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <input type="tel" name="phone" placeholder="Phone (+61...)" required style="margin: 0;">
-                    <input type="text" name="trail_name" placeholder="Name (optional)" style="margin: 0;">
-                    <select name="route_id" required style="margin: 0; grid-column: span 2;">
-                        <option value="overland_track">Overland Track</option>
-                        <option value="western_arthurs_ak">Western Arthurs (A-K)</option>
-                        <option value="western_arthurs_full">Western Arthurs (Full)</option>
-                        <option value="federation_peak">Federation Peak</option>
-                        <option value="eastern_arthurs">Eastern Arthurs</option>
-                        <option value="combined_arthurs">Combined W+E Arthurs</option>
-                    </select>
+            <h2>Financials</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="background: #0f0f23; padding: 16px; border-radius: 8px;">
+                    <div style="font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 8px;">Total Revenue</div>
+                    <div style="font-size: 28px; font-weight: 700; color: #27ae60;">${revenue_dollars:.2f}</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 4px;">{order_count} orders</div>
                 </div>
-                <button type="submit" style="margin-top: 12px;">Register</button>
-            </form>
+                <div style="background: #0f0f23; padding: 16px; border-radius: 8px;">
+                    <div style="font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 8px;">Beta Credits Given</div>
+                    <div style="font-size: 28px; font-weight: 700; color: #f39c12;">${beta_credits_dollars:.2f}</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 4px;">{beta_accounts} beta accounts</div>
+                </div>
+            </div>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #333;">
+                <div style="font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 12px;">SMS Credit Liability (Outstanding)</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <div style="font-size: 12px; color: #aaa;">At RRP (user value)</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #e94560;">${liability_rrp:.2f}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #aaa;">At Cost (our cost)</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #3498db;">${liability_cost:.2f}</div>
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: #555; margin-top: 8px;">Cost assumes ~55% of RRP (Twilio rates)</div>
+            </div>
         </div>
     </div>
 </body>
@@ -417,6 +426,7 @@ def render_grouping_stats() -> str:
 def render_admin(users, message: str = "") -> str:
     """Render admin dashboard with analytics."""
     from app.models.database import user_store as db_store
+    from app.models.beta_application import beta_application_store
 
     # Fetch analytics data
     today_stats = db_store.get_today_stats()
@@ -424,6 +434,24 @@ def render_admin(users, message: str = "") -> str:
     cmd_breakdown = db_store.get_command_breakdown(days=30)
     daily_trend = db_store.get_daily_trend(days=7)
     user_usage = db_store.get_all_users_usage()
+
+    # Check for pending actions (alerts)
+    pending_beta = len(beta_application_store.list_all(status_filter="pending"))
+
+    # Check for pending affiliate payouts
+    pending_payouts = 0
+    try:
+        from app.services.affiliates import get_affiliate_service
+        affiliate_service = get_affiliate_service()
+        pending_payouts = len(affiliate_service.get_pending_payouts())
+    except Exception:
+        pass  # Affiliates module may not be fully set up
+
+    # Build alert badges
+    beta_alert_class = " has-alert" if pending_beta > 0 else ""
+    beta_alert_badge = f'<span class="alert-badge">!</span>' if pending_beta > 0 else ""
+    affiliate_alert_class = " has-alert" if pending_payouts > 0 else ""
+    affiliate_alert_badge = f'<span class="alert-badge">!</span>' if pending_payouts > 0 else ""
 
     # Build users table with SMS usage
     if users:
@@ -530,6 +558,52 @@ def render_admin(users, message: str = "") -> str:
     # Active users (all registered users are considered active in pull-based system)
     active = len([u for u in users if (u.status.value if hasattr(u.status, 'value') else u.status) in ("registered", "active")])
 
+    # Calculate financials using direct DB queries
+    revenue_cents = 0
+    order_count = 0
+    beta_credits_cents = 0
+    beta_accounts = 0
+    liability_cents = 0
+
+    try:
+        import sqlite3
+        db_path = "thunderbird.db"
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+
+        # Get completed orders for revenue
+        cursor = conn.execute(
+            "SELECT COUNT(*) as cnt, COALESCE(SUM(amount_cents), 0) as total FROM orders WHERE status = 'completed'"
+        )
+        row = cursor.fetchone()
+        order_count = row["cnt"] or 0
+        revenue_cents = row["total"] or 0
+
+        # Get total outstanding balance (liability)
+        cursor = conn.execute(
+            "SELECT COALESCE(SUM(balance_cents), 0) as total FROM account_balances"
+        )
+        row = cursor.fetchone()
+        liability_cents = row["total"] or 0
+
+        # Count beta credits given (from transactions with "Beta" in description)
+        cursor = conn.execute(
+            "SELECT COUNT(DISTINCT account_id) as cnt, COALESCE(SUM(amount_cents), 0) as total FROM transactions WHERE description LIKE '%beta%' AND amount_cents > 0"
+        )
+        row = cursor.fetchone()
+        beta_accounts = row["cnt"] or 0
+        beta_credits_cents = row["total"] or 0
+
+        conn.close()
+    except Exception:
+        pass
+
+    # Convert to dollars
+    revenue_dollars = revenue_cents / 100
+    beta_credits_dollars = beta_credits_cents / 100
+    liability_rrp = liability_cents / 100  # At RRP (what users paid)
+    liability_cost = liability_rrp * 0.55  # At our cost (~55% of RRP based on Twilio rates)
+
     return ADMIN_PAGE.format(
         message=msg_html,
         today_segments=today_stats["total_segments"],
@@ -543,7 +617,17 @@ def render_admin(users, message: str = "") -> str:
         daily_trend=daily_html,
         error_rate=f"{error_rate:.1f}",
         failed_count=failed,
-        total_sent=total_sent
+        total_sent=total_sent,
+        beta_alert_class=beta_alert_class,
+        beta_alert_badge=beta_alert_badge,
+        affiliate_alert_class=affiliate_alert_class,
+        affiliate_alert_badge=affiliate_alert_badge,
+        revenue_dollars=revenue_dollars,
+        order_count=order_count,
+        beta_credits_dollars=beta_credits_dollars,
+        beta_accounts=beta_accounts,
+        liability_rrp=liability_rrp,
+        liability_cost=liability_cost
     )
 
 
@@ -1078,6 +1162,9 @@ def render_payout_admin(payouts: list, message: str = "") -> str:
 
 def render_beta_admin(applications: list, message: str = "") -> str:
     """Render beta applications management page."""
+    from app.models.account import account_store
+    from app.models.database import user_store as db_store
+
     # Message
     if message:
         if "error" in message.lower():
@@ -1092,6 +1179,15 @@ def render_beta_admin(applications: list, message: str = "") -> str:
     approved_count = sum(1 for a in applications if a.status == "approved")
     rejected_count = sum(1 for a in applications if a.status == "rejected")
 
+    # Get usage stats for approved users
+    usage_stats = {}
+    for app in applications:
+        if app.account_id:
+            account = account_store.get_by_id(app.account_id)
+            if account and account.phone:
+                stats = db_store.get_user_message_stats(account.phone)
+                usage_stats[app.account_id] = stats
+
     # Build applications table
     if applications:
         rows = ""
@@ -1105,6 +1201,13 @@ def render_beta_admin(applications: list, message: str = "") -> str:
             # Format date
             created_display = app.created_at[:10] if app.created_at else "N/A"
 
+            # Get usage for this user
+            stats = usage_stats.get(app.account_id, {})
+            msg_count = stats.get("total_messages", 0)
+            last_active = stats.get("last_active", "Never")
+            if last_active and last_active != "Never":
+                last_active = last_active[:10]  # Just the date
+
             # Action buttons based on status
             if app.status == "pending":
                 actions = f"""
@@ -1115,8 +1218,13 @@ def render_beta_admin(applications: list, message: str = "") -> str:
                     <button type="submit" class="btn-reject">Reject</button>
                 </form>
                 """
+                usage_html = "-"
+            elif app.status == "approved" and app.account_id:
+                actions = f'<a href="/admin/beta/{app.account_id}/activity" class="btn-activity">Activity</a>'
+                usage_html = f'{msg_count} msgs'
             else:
                 actions = f'<span style="color: #666;">{app.status}</span>'
+                usage_html = "-"
 
             rows += f"""
             <tr>
@@ -1124,7 +1232,8 @@ def render_beta_admin(applications: list, message: str = "") -> str:
                 <td>{app.email}</td>
                 <td>{app.country}</td>
                 <td><span class="status {status_class}">{app.status}</span></td>
-                <td>{created_display}</td>
+                <td>{usage_html}</td>
+                <td>{last_active}</td>
                 <td class="actions">{actions}</td>
             </tr>
             """
@@ -1136,7 +1245,8 @@ def render_beta_admin(applications: list, message: str = "") -> str:
                 <th>Email</th>
                 <th>Country</th>
                 <th>Status</th>
-                <th>Applied</th>
+                <th>Usage</th>
+                <th>Last Active</th>
                 <th>Actions</th>
             </tr>
             {rows}
@@ -1176,6 +1286,10 @@ def render_beta_admin(applications: list, message: str = "") -> str:
         .btn-approve:hover {{ background: #2ecc71; }}
         .btn-reject {{ background: #c0392b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }}
         .btn-reject:hover {{ background: #e74c3c; }}
+        .btn-activity {{ background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }}
+        .btn-activity:hover {{ background: #2980b9; }}
+        .btn-back {{ background: #333; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }}
+        .btn-back:hover {{ background: #444; }}
         .stats-row {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }}
         .stat {{ background: #0f0f23; padding: 16px; border-radius: 8px; text-align: center; }}
         .stat-value {{ font-size: 24px; font-weight: 700; color: #e94560; }}
@@ -1214,6 +1328,175 @@ def render_beta_admin(applications: list, message: str = "") -> str:
     <div class="card">
         <h2>All Applications</h2>
         {applications_table}
+    </div>
+</body>
+</html>
+    """
+
+
+def render_beta_activity(account, messages: list) -> str:
+    """Render beta user activity page showing all SMS messages and GPS points."""
+    import re
+
+    # Parse GPS coordinates from messages
+    gps_pattern = re.compile(r'CAST\d*\s+(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)', re.IGNORECASE)
+
+    # Count stats
+    inbound_count = sum(1 for m in messages if m["direction"] == "inbound")
+    outbound_count = sum(1 for m in messages if m["direction"] == "outbound")
+    total_cost = sum(m["cost_aud"] or 0 for m in messages if m["direction"] == "outbound")
+
+    # Extract unique GPS coordinates
+    gps_points = []
+    for m in messages:
+        if m["direction"] == "inbound" and m["content"]:
+            match = gps_pattern.search(m["content"])
+            if match:
+                gps_points.append({
+                    "lat": match.group(1),
+                    "lon": match.group(2),
+                    "timestamp": m["sent_at"],
+                    "command": m["content"][:50]
+                })
+
+    # Build GPS points table
+    if gps_points:
+        gps_rows = ""
+        for gps in gps_points:
+            timestamp = gps["timestamp"][:19] if gps["timestamp"] else "N/A"
+            gps_rows += f"""
+            <tr>
+                <td style="font-family: monospace;">{gps['lat']}, {gps['lon']}</td>
+                <td>{timestamp}</td>
+                <td style="font-size: 12px; color: #888;">{gps['command']}</td>
+            </tr>
+            """
+        gps_table = f"""
+        <table>
+            <tr>
+                <th>GPS Coordinates</th>
+                <th>Timestamp</th>
+                <th>Command</th>
+            </tr>
+            {gps_rows}
+        </table>
+        """
+    else:
+        gps_table = '<div class="empty">No GPS points polled yet</div>'
+
+    # Build full message log
+    if messages:
+        msg_rows = ""
+        for m in messages:
+            direction_class = "inbound" if m["direction"] == "inbound" else "outbound"
+            direction_icon = "→" if m["direction"] == "inbound" else "←"
+            timestamp = m["sent_at"][:19] if m["sent_at"] else "N/A"
+            content = (m["content"] or "")[:80]
+            if len(m["content"] or "") > 80:
+                content += "..."
+            cmd_type = m["command_type"] or "-"
+
+            msg_rows += f"""
+            <tr class="msg-{direction_class}">
+                <td>{direction_icon}</td>
+                <td style="font-size: 12px;">{timestamp}</td>
+                <td><code>{cmd_type}</code></td>
+                <td style="font-size: 12px; max-width: 400px; overflow: hidden; text-overflow: ellipsis;">{content}</td>
+            </tr>
+            """
+        messages_table = f"""
+        <table>
+            <tr>
+                <th></th>
+                <th>Time</th>
+                <th>Command</th>
+                <th>Content</th>
+            </tr>
+            {msg_rows}
+        </table>
+        """
+    else:
+        messages_table = '<div class="empty">No messages yet</div>'
+
+    phone_display = account.phone if account.phone else "No phone linked"
+
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Activity - Thunderbird Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {{ box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+        body {{ background: #1a1a2e; color: #eee; margin: 0; padding: 20px; }}
+        .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333; }}
+        h1 {{ margin: 0; color: #e94560; }}
+        .nav {{ display: flex; gap: 12px; }}
+        .nav a {{ color: #888; text-decoration: none; padding: 8px 16px; border: 1px solid #444; border-radius: 6px; }}
+        .nav a:hover {{ border-color: #e94560; color: #e94560; }}
+        .card {{ background: #16213e; padding: 24px; border-radius: 12px; margin-bottom: 20px; }}
+        h2 {{ margin: 0 0 20px; color: #e94560; font-size: 18px; }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }}
+        th, td {{ padding: 10px; text-align: left; border-bottom: 1px solid #333; }}
+        th {{ color: #aaa; font-weight: 500; font-size: 11px; text-transform: uppercase; }}
+        .empty {{ color: #666; text-align: center; padding: 40px; }}
+        .stats-row {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }}
+        .stat {{ background: #0f0f23; padding: 16px; border-radius: 8px; text-align: center; }}
+        .stat-value {{ font-size: 24px; font-weight: 700; color: #e94560; }}
+        .stat-value.green {{ color: #27ae60; }}
+        .stat-value.blue {{ color: #3498db; }}
+        .stat-label {{ font-size: 11px; color: #666; margin-top: 4px; text-transform: uppercase; }}
+        .user-info {{ background: #0f0f23; padding: 16px; border-radius: 8px; margin-bottom: 20px; }}
+        .user-info p {{ margin: 8px 0; }}
+        .user-info strong {{ color: #aaa; }}
+        code {{ background: #0f0f23; padding: 2px 6px; border-radius: 4px; font-size: 12px; }}
+        .msg-inbound td {{ color: #3498db; }}
+        .msg-outbound td {{ color: #27ae60; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>User Activity</h1>
+        <div class="nav">
+            <a href="/admin/beta">← Back to Beta</a>
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="user-info">
+        <p><strong>Email:</strong> {account.email}</p>
+        <p><strong>Phone:</strong> {phone_display}</p>
+        <p><strong>Account ID:</strong> {account.id}</p>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat">
+            <div class="stat-value blue">{inbound_count}</div>
+            <div class="stat-label">Commands Sent</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value green">{outbound_count}</div>
+            <div class="stat-label">Responses</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{len(gps_points)}</div>
+            <div class="stat-label">GPS Points</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value green">${total_cost:.2f}</div>
+            <div class="stat-label">SMS Cost</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>GPS Coordinates Polled</h2>
+        {gps_table}
+    </div>
+
+    <div class="card">
+        <h2>Full Message Log</h2>
+        {messages_table}
     </div>
 </body>
 </html>

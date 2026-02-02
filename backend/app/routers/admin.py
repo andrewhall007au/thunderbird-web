@@ -647,3 +647,24 @@ async def admin_reject_beta(application_id: int, request: Request):
         return RedirectResponse(f"/admin/beta?msg={message}", status_code=302)
     else:
         return RedirectResponse(f"/admin/beta?msg=Error: {message}", status_code=302)
+
+
+@router.get("/beta/{account_id}/activity", response_class=HTMLResponse)
+async def admin_beta_activity(account_id: int, request: Request):
+    """View beta user activity - all SMS messages and GPS points."""
+    if not require_admin(request):
+        return RedirectResponse("/admin/login", status_code=302)
+
+    from app.models.account import account_store
+    from app.models.database import user_store as db_store
+    from app.services.admin import render_beta_activity
+
+    account = account_store.get_by_id(account_id)
+    if not account:
+        return RedirectResponse("/admin/beta?msg=Error: Account not found", status_code=302)
+
+    if not account.phone:
+        return RedirectResponse("/admin/beta?msg=Error: Account has no phone linked", status_code=302)
+
+    messages = db_store.get_user_messages(account.phone, limit=200)
+    return render_beta_activity(account, messages)

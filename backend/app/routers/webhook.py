@@ -130,6 +130,18 @@ async def handle_inbound_sms(
 </Response>"""
             return Response(content=twiml, media_type="application/xml")
 
+    # Handle FIELDTEST command (automated field testing)
+    if text_upper.startswith("FIELDTEST"):
+        from app.routers.field_test import handle_fieldtest_sms
+        response_text = handle_fieldtest_sms(from_phone, body)
+        if response_text:
+            log_twiml_response(from_phone, response_text, "FIELDTEST", "field_test")
+            twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Message>{html.escape(response_text)}</Message>
+</Response>"""
+            return Response(content=twiml, media_type="application/xml")
+
     # Check if user is in trail selection flow FIRST
     trail_selection_service = get_trail_selection_service()
     if trail_selection_service.has_active_session(from_phone):

@@ -20,7 +20,7 @@ from app.services.routes import get_route
 from app.services.formatter import ForecastFormatter
 
 # Import routers
-from app.routers import webhook, admin, api, auth, payments, routes, library, analytics, affiliates, affiliate_landing, beta
+from app.routers import webhook, admin, api, auth, payments, routes, library, analytics, affiliates, affiliate_landing, beta, field_test
 
 # Try to import APScheduler (optional dependency)
 try:
@@ -345,6 +345,7 @@ app.include_router(analytics.router)
 app.include_router(affiliates.router)
 app.include_router(affiliate_landing.router)
 app.include_router(beta.router)
+app.include_router(field_test.router)
 
 # Root health check (kept at root for compatibility)
 @app.get("/health")

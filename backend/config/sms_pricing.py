@@ -29,6 +29,9 @@ from enum import Enum
 from typing import Dict
 import re
 
+# Target margin percentage (used by cost verification)
+MARGIN_PERCENT = 80
+
 
 class PricingRegion(Enum):
     """Pricing regions based on carrier costs."""
