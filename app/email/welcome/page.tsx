@@ -6,8 +6,8 @@ import { ArrowLeft, Mail, Smartphone, Monitor, Globe } from 'lucide-react';
 
 // Phone numbers by region
 const SMS_NUMBERS = {
-  us: '+1 (555) 867-5309',  // US/Canada
-  au: '+61 4XX XXX XXX',    // Australia/NZ/rest of world
+  us: '+1 (866) 280-1940',  // US/Canada
+  au: '+61 468 092 783',    // Australia/NZ/rest of world
 };
 
 // Countries that use the US number
@@ -134,35 +134,59 @@ export default function WelcomeEmailPreview() {
         <div class="section">
           <p class="section-title">Your Account</p>
           <div class="info-row">
-            <span class="info-label">Email</span>
+            <span class="info-label">Username</span>
             <span class="info-value">${sampleData.email}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Password</span>
-            <span class="info-value">${sampleData.password}</span>
           </div>
         </div>
 
         <!-- SMS Number -->
         <div class="section">
-          <p class="section-title">Text Forecasts To</p>
+          <p class="section-title">Text Forecast Commands To</p>
           <div style="background: #18181b; border-radius: 12px; padding: 20px; text-align: center;">
             <p style="font-family: 'SF Mono', Monaco, 'Courier New', monospace; font-size: 24px; font-weight: 600; color: #f97316; margin: 0; letter-spacing: 1px;">${smsNumber}</p>
-            <p style="font-size: 13px; color: #a1a1aa; margin: 8px 0 0;">Save this number to your contacts</p>
+            <p style="font-size: 14px; color: #ffffff; font-weight: 500; margin: 12px 0 0; background: rgba(249,115,22,0.8); padding: 8px 12px; border-radius: 6px; display: inline-block;">Save as "Thunderbird Weather" in your contacts</p>
           </div>
         </div>
 
         <div class="divider"></div>
 
-        <!-- Quick Start -->
+        <!-- Option A: GPS -->
         <div class="section">
-          <p class="section-title">Quick Start</p>
+          <p class="section-title">Option A: Any GPS Location</p>
+          <p style="font-size: 14px; color: #6b7280; margin: 0 0 16px;">No setup required — text <span class="highlight">CAST</span> + coordinates from anywhere.</p>
+
+          <div class="sms-preview"><span style="color: #22c55e;">You:</span> CAST -43.1234, 146.5678
+
+<span style="color: #f97316;">Thunderbird:</span>
+CAST -43.12,146.57 1240m
+Light 06:15-20:45 (14h30m)
+
+06h 4-8 Rn15% 0-1mm W12-18 Cld45% CB14 FL18
+09h 8-12 Rn20% 0-2mm W15-22 Cld38% CB16 FL20
+12h 10-14 Rn10% 0-1mm W18-25 Cld25% CB18 FL22
+15h 8-12 Rn25% 1-3mm W20-28 Cld55% CB15 FL20
+18h 5-9 Rn35% 2-5mm W15-22 Cld65% CB12 FL18
+
+<span style="color: #9ca3af; font-size: 11px;">Rn=Rain W=Wind Cld=Cloud CB=CloudBase(x100m) FL=Freeze(x100m)</span></div>
+        </div>
+
+        <div class="tip-box">
+          <p class="tip-title">Works offline via satellite</p>
+          <p class="tip-text">iPhone 14+ can send SMS with no cell coverage. Find your coordinates in the Compass app.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Option B: Pre-loaded Routes -->
+        <div class="section">
+          <p class="section-title">Option B: Pre-loaded Routes</p>
+          <p style="font-size: 14px; color: #6b7280; margin: 0 0 16px;">Set up named waypoints for quick access on the trail.</p>
 
           <div class="step">
             <div class="step-num">1</div>
             <div class="step-content">
               <p class="step-title">Create a route</p>
-              <p class="step-desc">Go to <a href="${sampleData.base_url}/create">thunderbird.bot/create</a> and either select from our library or upload your own GPX file.</p>
+              <p class="step-desc">Go to <a href="${sampleData.base_url}/create">thunderbird.bot/create</a> — select from our library or upload your own GPX file.</p>
             </div>
           </div>
 
@@ -170,7 +194,7 @@ export default function WelcomeEmailPreview() {
             <div class="step-num">2</div>
             <div class="step-content">
               <p class="step-title">Text START</p>
-              <p class="step-desc">Send <span class="highlight">START</span> to <strong style="color: #f97316;">${smsNumber}</strong> — we'll reply with your waypoint codes.</p>
+              <p class="step-desc">Send <span class="highlight">START</span> to <strong style="color: #f97316;">${smsNumber}</strong> — we'll show your trails. Reply with the number to select one.</p>
             </div>
           </div>
 
@@ -178,62 +202,77 @@ export default function WelcomeEmailPreview() {
             <div class="step-num">3</div>
             <div class="step-content">
               <p class="step-title">Get forecasts</p>
-              <p class="step-desc">Text any command to get elevation-specific weather for your exact location.</p>
+              <p class="step-desc">Text <span class="highlight">CAST7 CAMPS</span>, <span class="highlight">CAST7 PEAKS</span>, or <span class="highlight">CAST LAKEO</span> for a specific waypoint.</p>
             </div>
           </div>
         </div>
 
         <!-- Example -->
         <div class="section">
-          <p class="section-title">Example: 7-Day Peak Forecast</p>
-          <div class="command-box">
-            <p class="command">PEAKS</p>
-          </div>
-          <div class="sms-preview">WA PEAKS 7-DAY Thu 16 Jan
-═══════════════════════
-       Tmp  Rain Wind
-Peak   Lo-Hi  %   Avg/Gst
-───────────────────────
-HESPE  2-10  35% 30/48 W
-CAPEL  1-9   38% 32/50 W
-HAYES  1-9   40% 32/52 W
-PROCY  0-8   42% 34/54 W
-ORION  0-8   45% 35/55 SW
+          <p class="section-title">Example: Waypoint Forecast</p>
+          <div class="sms-preview"><span style="color: #22c55e;">You:</span> CAST LAKEO
 
-Best window: Thu AM</div>
-        </div>
+<span style="color: #f97316;">Thunderbird:</span>
+CAST LAKEO 1050m
+Light 06:15-20:45 (14h30m)
 
-        <div class="tip-box">
-          <p class="tip-title">Works offline</p>
-          <p class="tip-text">iPhone 14+ can send SMS via satellite with no cell coverage. Your coordinates are in the Compass app.</p>
+06h 4-8 Rn15% 0-1mm W12-18 Cld45% CB14 FL18
+09h 8-12 Rn20% 0-2mm W15-22 Cld38% CB16 FL20
+12h 10-14 Rn10% 0-1mm W18-25 Cld25% CB18 FL22
+15h 8-12 Rn25% 1-3mm W20-28 Cld55% CB15 FL20
+18h 5-9 Rn35% 2-5mm W15-22 Cld65% CB12 FL18</div>
         </div>
 
         <div class="divider"></div>
 
         <!-- Commands Reference -->
         <div class="section">
-          <p class="section-title">All Commands</p>
+          <p class="section-title">GPS Commands</p>
           <div class="commands-grid">
             <div class="cmd-row">
-              <span class="cmd-code">CAST12 LAKEO</span>
+              <span class="cmd-code">CAST -43.1, 146.2</span>
+              <span class="cmd-desc">12-hour forecast for coordinates</span>
+            </div>
+            <div class="cmd-row">
+              <span class="cmd-code">CAST7 -43.1, 146.2</span>
+              <span class="cmd-desc">7-day forecast for coordinates</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <p class="section-title">Route Commands</p>
+          <div class="commands-grid">
+            <div class="cmd-row">
+              <span class="cmd-code">START</span>
+              <span class="cmd-desc">Select your active trail</span>
+            </div>
+            <div class="cmd-row">
+              <span class="cmd-code">ROUTE</span>
+              <span class="cmd-desc">List waypoint codes</span>
+            </div>
+            <div class="cmd-row">
+              <span class="cmd-code">CAST7 CAMPS</span>
+              <span class="cmd-desc">7-day forecast for all camps</span>
+            </div>
+            <div class="cmd-row">
+              <span class="cmd-code">CAST7 PEAKS</span>
+              <span class="cmd-desc">7-day forecast for all peaks</span>
+            </div>
+            <div class="cmd-row">
+              <span class="cmd-code">CAST LAKEO</span>
               <span class="cmd-desc">12-hour forecast for waypoint</span>
             </div>
             <div class="cmd-row">
               <span class="cmd-code">CAST7 LAKEO</span>
               <span class="cmd-desc">7-day forecast for waypoint</span>
             </div>
-            <div class="cmd-row">
-              <span class="cmd-code">CAMPS</span>
-              <span class="cmd-desc">7-day forecast for all camps</span>
-            </div>
-            <div class="cmd-row">
-              <span class="cmd-code">PEAKS</span>
-              <span class="cmd-desc">7-day forecast for all peaks</span>
-            </div>
-            <div class="cmd-row">
-              <span class="cmd-code">CAST12 -43.1, 146.2</span>
-              <span class="cmd-desc">Forecast any GPS coordinates</span>
-            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <p class="section-title">Account</p>
+          <div class="commands-grid">
             <div class="cmd-row">
               <span class="cmd-code">BAL</span>
               <span class="cmd-desc">Check your credit balance</span>

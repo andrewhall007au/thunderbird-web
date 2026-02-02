@@ -7,8 +7,8 @@ import { Zap, Check, MessageSquare, ArrowRight } from 'lucide-react';
 import { getRoute, RouteDetailResponse } from '../../lib/api';
 import { trackPurchaseCompleted } from '../../lib/analytics';
 
-// SMS number for receiving forecasts (configured in system)
-const SMS_NUMBER = '+1 (XXX) XXX-XXXX'; // TODO: Pull from config
+// SMS number for receiving forecasts
+const SMS_NUMBER = '+1 (866) 280-1940';
 
 function SuccessContent() {
   const searchParams = useSearchParams();

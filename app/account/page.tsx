@@ -121,10 +121,10 @@ function RoutesCard() {
         </h2>
         <Link
           href="/create"
-          className="text-sm text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1"
+          className="btn-orange px-4 py-2 text-sm flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          New
+          New Route
         </Link>
       </div>
 
@@ -173,7 +173,7 @@ function RoutesCard() {
                 </Link>
                 {route.status === 'active' && (
                   <div className="mt-2 text-sm text-zinc-600">
-                    Activate by sending "<span className="font-bold text-zinc-800">START {trackCode}</span>" to +1 (555) 123-4567
+                    Activate by sending "<span className="font-bold text-zinc-800">START {trackCode}</span>" to +1 (866) 280-1940
                   </div>
                 )}
               </div>

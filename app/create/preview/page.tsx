@@ -415,7 +415,7 @@ function PreviewContent() {
                   .slice(0, 5);
                 return (
                   <p className="text-sm text-gray-700 mb-4 bg-orange-50 p-3 rounded-lg border border-orange-200">
-                    We will send you your Camps, Peaks and Points of Interest codes once you activate by sending "<strong>START {trackCode}</strong>" to +1 (555) 123-4567
+                    We will send you your Camps, Peaks and Points of Interest codes once you activate by sending "<strong>START {trackCode}</strong>" to +1 (866) 280-1940
                   </p>
                 );
               })()}
