@@ -4,15 +4,33 @@ Alpine weather forecasts via satellite SMS - website for thunderbird.bot
 
 ## Quick Start (Local)
 
-```bash
-# Install dependencies
-npm install
+### Full Stack (Frontend + Backend)
 
-# Run development server
+```bash
+# Start both servers with one command
+./dev.sh
+```
+
+This starts:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+
+### Frontend Only
+
+```bash
+npm install
 npm run dev
 ```
 
 Open http://localhost:3000
+
+### Backend Only
+
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --reload --port 8000
+```
 
 ## Deploy to Vercel
 
