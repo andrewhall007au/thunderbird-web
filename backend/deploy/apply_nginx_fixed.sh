@@ -34,8 +34,14 @@ if nginx -t; then
     echo "✓ Nginx config is valid"
 else
     echo "✗ Nginx config has errors - restoring backups"
-    cp /etc/nginx/sites-available/thunderbird.backup.* /etc/nginx/sites-available/thunderbird | head -1
-    cp /etc/nginx/nginx.conf.backup.* /etc/nginx/nginx.conf | head -1
+    latest_backup=$(ls -t /etc/nginx/sites-available/thunderbird.backup.* 2>/dev/null | head -1)
+    latest_nginx_backup=$(ls -t /etc/nginx/nginx.conf.backup.* 2>/dev/null | head -1)
+    if [ -n "$latest_backup" ]; then
+        cp "$latest_backup" /etc/nginx/sites-available/thunderbird
+    fi
+    if [ -n "$latest_nginx_backup" ]; then
+        cp "$latest_nginx_backup" /etc/nginx/nginx.conf
+    fi
     exit 1
 fi
 
