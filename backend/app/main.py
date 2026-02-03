@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from config.settings import settings, TZ_HOBART, TZ_UTC
+from app.middleware.rate_limit import rate_limit_middleware
 from app.services.sms import get_sms_service, PhoneUtils
 from app.services.bom import get_bom_service
 from app.services.routes import get_route
@@ -323,6 +324,9 @@ app = FastAPI(
     version=settings.APP_VERSION,
     lifespan=lifespan
 )
+
+# Rate limiting middleware (applied first)
+app.middleware("http")(rate_limit_middleware)
 
 # CORS middleware
 app.add_middleware(
