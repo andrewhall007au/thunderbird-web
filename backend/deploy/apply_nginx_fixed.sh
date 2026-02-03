@@ -17,8 +17,7 @@ if ! grep -q "zone=api_limit" /etc/nginx/nginx.conf; then
     sed -i '/http {/a\
     # Rate limiting zones\
     limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;\
-    limit_req_zone $binary_remote_addr zone=auth_limit:10m rate=1r/m;\
-    limit_req_zone $binary_remote_addr zone=beta_limit:10m rate=5r/h;\
+    limit_req_zone $binary_remote_addr zone=auth_limit:10m rate=5r/m;\
 ' /etc/nginx/nginx.conf
     echo "✓ Added rate limit zones to nginx.conf"
 else
