@@ -2,6 +2,10 @@
 
 Alpine weather forecasts via satellite SMS - website for thunderbird.bot
 
+**Current Version:** 3.0.1 (Hotfix: AU→BOM Provider Mapping)
+
+> ⚡ **Latest Update (2026-02-03):** Fixed critical AU→BOM provider mapping. Australian users now receive native 2.2km BOM forecasts instead of 9km Open-Meteo fallback. See [CHANGELOG.md](CHANGELOG.md) for details.
+
 ## Quick Start (Local)
 
 ### Full Stack (Frontend + Backend)
