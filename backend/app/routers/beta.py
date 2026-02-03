@@ -8,6 +8,7 @@ import sqlite3
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr, Field
+from html import escape
 
 from app.models.beta_application import beta_application_store, SUPPORTED_COUNTRIES, normalize_country
 from app.services.beta import send_admin_notification
@@ -40,6 +41,9 @@ async def apply_for_beta(request: BetaApplyRequest):
     Validates country, checks for duplicate email, stores application,
     and sends admin notification.
     """
+    # Sanitize inputs to prevent XSS
+    sanitized_name = escape(request.name.strip())
+
     # Normalize country (accepts both codes and full names)
     normalized_country = normalize_country(request.country)
 
@@ -70,7 +74,7 @@ async def apply_for_beta(request: BetaApplyRequest):
     # Create application
     try:
         application = beta_application_store.create(
-            name=request.name,
+            name=sanitized_name,
             email=request.email,
             country=normalized_country,
         )
