@@ -9,7 +9,7 @@ import sqlite3
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr, Field
 
-from app.models.beta_application import beta_application_store, SUPPORTED_COUNTRIES
+from app.models.beta_application import beta_application_store, SUPPORTED_COUNTRIES, normalize_country
 from app.services.beta import send_admin_notification
 
 logger = logging.getLogger(__name__)
@@ -36,11 +36,15 @@ async def apply_for_beta(request: BetaApplyRequest):
     Submit a beta access application.
 
     Public endpoint - no authentication required.
+    Accepts both country codes (AU, US, etc.) and full names (Australia, United States).
     Validates country, checks for duplicate email, stores application,
     and sends admin notification.
     """
+    # Normalize country (accepts both codes and full names)
+    normalized_country = normalize_country(request.country)
+
     # Validate country
-    if request.country not in SUPPORTED_COUNTRIES:
+    if normalized_country not in SUPPORTED_COUNTRIES:
         raise HTTPException(
             status_code=400,
             detail=f"Country not supported. Supported: {', '.join(SUPPORTED_COUNTRIES)}"
@@ -68,7 +72,7 @@ async def apply_for_beta(request: BetaApplyRequest):
         application = beta_application_store.create(
             name=request.name,
             email=request.email,
-            country=request.country,
+            country=normalized_country,
         )
     except sqlite3.IntegrityError:
         # Race condition - email already exists

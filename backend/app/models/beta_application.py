@@ -14,7 +14,7 @@ from contextlib import contextmanager
 
 DB_PATH = os.environ.get("THUNDERBIRD_DB_PATH", "thunderbird.db")
 
-# Supported countries for beta
+# Supported countries for beta (full names)
 SUPPORTED_COUNTRIES = [
     "Australia",
     "New Zealand",
@@ -26,6 +26,55 @@ SUPPORTED_COUNTRIES = [
     "Japan",
     "South Korea",
 ]
+
+# Country code to full name mapping
+COUNTRY_CODE_MAP = {
+    "AU": "Australia",
+    "NZ": "New Zealand",
+    "US": "United States",
+    "UK": "United Kingdom",
+    "GB": "United Kingdom",  # Alternative code
+    "CA": "Canada",
+    "DE": "Germany",
+    "FR": "France",
+    "JP": "Japan",
+    "KR": "South Korea",
+}
+
+
+def normalize_country(country: str) -> str:
+    """
+    Normalize country input to full country name.
+
+    Accepts:
+    - Full country names: "Australia", "New Zealand", etc.
+    - ISO country codes: "AU", "NZ", "US", etc.
+
+    Returns:
+        Full country name if valid, original input if not found
+
+    Examples:
+        >>> normalize_country("AU")
+        "Australia"
+        >>> normalize_country("Australia")
+        "Australia"
+        >>> normalize_country("au")
+        "Australia"
+    """
+    country_clean = country.strip()
+
+    # Check if it's already a full name (case-insensitive)
+    for supported in SUPPORTED_COUNTRIES:
+        if country_clean.lower() == supported.lower():
+            return supported
+
+    # Check if it's a country code (case-insensitive)
+    country_upper = country_clean.upper()
+    if country_upper in COUNTRY_CODE_MAP:
+        return COUNTRY_CODE_MAP[country_upper]
+
+    # Return original if not found (will fail validation later)
+    return country_clean
 
 
 @dataclass
