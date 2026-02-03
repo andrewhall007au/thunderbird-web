@@ -11,6 +11,7 @@ The router is the integration point that:
 - Caches successful responses (1-hour TTL)
 
 Provider mapping (resolution):
+- AU: BOM ACCESS-C (2.2km) - native Australian weather service
 - US: NWS (2.5km) + Open-Meteo HRRR (3km) for precip amounts
 - CA: Environment Canada (2.5km) + Open-Meteo GEM (2.5km) for precip amounts
 - GB: Met Office IMPROVER (1.5km)
@@ -50,6 +51,7 @@ from app.services.weather.providers.nws import NWSProvider
 from app.services.weather.providers.envcanada import EnvironmentCanadaProvider
 from app.services.weather.providers.metoffice import MetOfficeProvider
 from app.services.weather.providers.openmeteo import OpenMeteoProvider, OpenMeteoModel
+from app.services.weather.providers.bom import BOMProvider
 from app.services.weather.base import NormalizedForecast
 
 logger = logging.getLogger(__name__)
@@ -73,10 +75,11 @@ class WeatherRouter:
     handles fallback to Open-Meteo when the primary provider fails.
 
     Provider selection:
+    - AU: BOM (Australian Bureau of Meteorology, 2.2km, free)
     - US: NWS (high quality, free, no key needed)
     - CA: Environment Canada (official, may have availability issues)
     - GB: Met Office (requires API key)
-    - FR, IT, CH: Open-Meteo with regional models
+    - FR, IT, CH, JP: Open-Meteo with regional models
     - NZ, ZA: Open-Meteo with best_match
     - Unknown: Open-Meteo fallback
 
@@ -95,6 +98,7 @@ class WeatherRouter:
         """
         # Primary providers by country
         self.providers: Dict[str, WeatherProvider] = {
+            "AU": BOMProvider(),                                        # 2.2km BOM ACCESS-C
             "US": NWSProvider(),
             "CA": EnvironmentCanadaProvider(),
             "GB": MetOfficeProvider(),

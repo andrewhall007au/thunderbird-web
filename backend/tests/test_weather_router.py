@@ -47,6 +47,12 @@ def reset_singletons():
 class TestWeatherRouter:
     """Tests for weather router (WTHR-09, WTHR-11)."""
 
+    def test_provider_mapping_australia(self):
+        """Router maps AU to BOM per spec."""
+        router = WeatherRouter()
+        provider = router.get_provider("AU")
+        assert provider.provider_name == "BOM"
+
     def test_provider_mapping_us(self):
         """Router maps US to NWS."""
         router = WeatherRouter()

@@ -8,6 +8,11 @@ import json
 import re
 from pathlib import Path
 
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from app.services.weather.router import WeatherRouter
+
 SPEC_PATH = Path(__file__).parent.parent.parent / "docs" / "THUNDERBIRD_SPEC_v3.1.md"
 ROUTES_DIR = Path(__file__).parent.parent / "config" / "routes"
 
@@ -177,10 +182,111 @@ class TestSpecAlignment:
         for route_file in ROUTES_DIR.glob("*.json"):
             with open(route_file) as f:
                 route = json.load(f)
-            
+
             for peak in route.get('peaks', []):
                 assert 'bom_cell' in peak and peak['bom_cell'], \
                     f"{route_file.name}: Peak {peak.get('name', 'unknown')} missing bom_cell"
+
+
+class TestWeatherProviderSpecAlignment:
+    """
+    Verify weather provider mappings match specification requirements.
+
+    This test validates that the WeatherRouter's provider mappings align
+    with the documented spec (WEATHER_API_SPEC.md, THUNDERBIRD_SPEC_v3.2.md).
+
+    It prevents specification drift by ensuring all documented country
+    mappings are actually implemented in the router.
+    """
+
+    def test_router_provider_mappings_match_spec(self):
+        """
+        Router provider mappings must match spec requirements.
+
+        Spec sources:
+        - docs/WEATHER_API_SPEC.md (Section: Provider Mapping)
+        - docs/THUNDERBIRD_SPEC_v3.2.md (Section 15.2)
+        - backend/README.md (Provider Mapping table)
+
+        This test prevents the issue caught by OpenClaw where AU→BOM
+        mapping was documented but not implemented.
+        """
+        router = WeatherRouter()
+
+        # Expected mappings from spec
+        # These are the PRIMARY provider names (not fallback)
+        expected_mappings = {
+            "AU": "BOM",                      # Bureau of Meteorology (2.2km)
+            "US": "NWS",                      # National Weather Service (2.5km)
+            "CA": "Environment Canada",       # Environment Canada (2.5km)
+            "GB": "Met Office",               # Met Office IMPROVER (1.5km)
+            "FR": "Meteo-France",             # Open-Meteo Meteo-France AROME (1.5km)
+            "IT": "ICON",                     # Open-Meteo DWD ICON-EU (7km)
+            "CH": "MeteoSwiss",               # Open-Meteo MeteoSwiss ICON-CH2 (2km)
+            "JP": "JMA",                      # Open-Meteo JMA MSM (5km)
+            "NZ": "ECMWF",                    # Open-Meteo ECMWF (9km)
+            "ZA": "ECMWF",                    # Open-Meteo ECMWF (9km)
+        }
+
+        for country, expected_provider in expected_mappings.items():
+            actual_provider = router.get_provider(country)
+            provider_name = actual_provider.provider_name
+
+            assert expected_provider in provider_name, (
+                f"Spec deviation detected!\n"
+                f"Country: {country}\n"
+                f"Spec requires: {expected_provider}\n"
+                f"Router provides: {provider_name}\n"
+                f"\n"
+                f"This indicates the router mapping doesn't match the documented spec.\n"
+                f"Update router.py or the spec to align them."
+            )
+
+    def test_all_documented_countries_have_providers(self):
+        """
+        All countries documented in spec must have provider mappings.
+
+        This ensures we don't document support for countries that
+        actually fall back to the generic provider.
+        """
+        router = WeatherRouter()
+
+        # Countries explicitly documented as supported
+        documented_countries = [
+            "AU", "US", "CA", "GB", "FR", "IT", "CH", "JP", "NZ", "ZA"
+        ]
+
+        for country in documented_countries:
+            provider = router.get_provider(country)
+
+            # Should NOT be the generic fallback for documented countries
+            # Fallback provider name contains "Open-Meteo" and "best_match"
+            assert country in router.providers, (
+                f"Country {country} is documented in spec but not in router.providers!\n"
+                f"Got fallback provider: {provider.provider_name}\n"
+                f"Expected explicit country mapping."
+            )
+
+    def test_router_fallback_for_undocumented_countries(self):
+        """
+        Undocumented countries should use fallback provider.
+
+        This verifies the fallback mechanism works for countries
+        without explicit provider mappings.
+        """
+        router = WeatherRouter()
+
+        # Test with a country code not in the spec
+        undocumented_countries = ["XX", "YY", "ZZ"]
+
+        for country in undocumented_countries:
+            provider = router.get_provider(country)
+
+            # Should use fallback (Open-Meteo with best_match)
+            assert "Open-Meteo" in provider.provider_name, (
+                f"Undocumented country {country} should use Open-Meteo fallback, "
+                f"got {provider.provider_name}"
+            )
 
 
 if __name__ == "__main__":
