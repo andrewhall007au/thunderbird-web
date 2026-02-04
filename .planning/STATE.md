@@ -12,11 +12,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 9 of 9 (Monitoring & Alerting) - IN PROGRESS
-Plan: 2 of 6 completed (09-02-PLAN.md)
-Status: Alert manager with SMS/email channels, deduplication, escalation, and acknowledgment complete
-Last activity: 2026-02-04 - Completed 09-02-PLAN.md (Alert Manager)
+Plan: 3 of 6 completed (09-03-PLAN.md)
+Status: Synthetic test runner with Playwright E2E tests, login checks, and SMS webhook monitoring operational
+Last activity: 2026-02-04 - Completed 09-03-PLAN.md (Synthetic Test Runner)
 
-Progress: ███░░░░░░░░░ 25% (Phase 9 Plan 2 complete: Monitoring service with alerting operational)
+Progress: ████░░░░░░░░ 33% (Phase 9 Plan 3 complete: Monitoring service with alerting and synthetic tests operational)
 
 ---
 
@@ -74,6 +74,30 @@ Progress: ███░░░░░░░░░ 25% (Phase 9 Plan 2 complete: Mon
 6. **Global alert manager instance** - Single instance maintains deduplication and rate limiting state
 
 **Next:** Plan 3 (Synthetic tests) will add browser-based Playwright tests for critical user flows.
+
+### Plan 3: Synthetic Test Runner (COMPLETE)
+
+**Summary:** Playwright E2E tests as synthetic monitors with login and SMS webhook checks running on schedule against production.
+
+**Commits:**
+- `14ccfed` - Playwright monitoring config and synthetic test runner with login/SMS webhook checks
+- `792fc35` - Scheduler integration (completed as part of alert manager plan 09-02)
+
+**Key Accomplishments:**
+- Playwright synthetic test runner executes existing E2E tests against production via subprocess
+- HTTP-based login synthetic check tests authentication endpoint every 10 minutes
+- HTTP-based SMS webhook synthetic check tests inbound SMS pipeline daily
+- Browser synthetic tests (beta signup, checkout, create-first) run every 5-15 minutes when Playwright available
+- All synthetic checks integrated with alert manager for failure detection and escalation
+
+**Key Decisions:**
+1. **Separate Playwright config for monitoring** - Production URL, 120s timeouts, JSON reporter, no retries
+2. **Parse Playwright JSON output from /tmp file** - More robust than stdout for large test results
+3. **Conditional Playwright browser tests** - Only run if npx available, HTTP checks always run
+4. **HTTP-based synthetic checks for login/webhook** - Direct API testing faster than browser automation
+5. **SMS webhook runs daily, login every 10 minutes** - Daily check for core SMS pipeline, frequent auth checks
+
+**Next:** Plan 4 (Dashboard) will visualize synthetic test results alongside other health metrics.
 
 ### Plan 6: Error Log Aggregation (COMPLETE)
 
