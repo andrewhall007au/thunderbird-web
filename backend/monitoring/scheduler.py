@@ -468,7 +468,7 @@ def create_scheduler() -> AsyncIOScheduler:
     # Daily report - every day at 8:00 AM UTC
     scheduler.add_job(
         run_daily_report_job,
-        trigger=CronTrigger(hour=8, minute=0, timezone="UTC"),
+        trigger=CronTrigger(hour=0, minute=0, timezone="UTC"),  # 8 AM Perth (AWST = UTC+8)
         id="daily_report",
         name="Daily Health Report"
     )
@@ -476,7 +476,7 @@ def create_scheduler() -> AsyncIOScheduler:
     # Weekly report - every Monday at 8:00 AM UTC
     scheduler.add_job(
         run_weekly_report_job,
-        trigger=CronTrigger(day_of_week='mon', hour=8, minute=0, timezone="UTC"),
+        trigger=CronTrigger(day_of_week='mon', hour=0, minute=0, timezone="UTC"),  # 8 AM Perth Monday
         id="weekly_report",
         name="Weekly Health Report"
     )
@@ -484,7 +484,7 @@ def create_scheduler() -> AsyncIOScheduler:
     # Monthly report - first of month at 8:00 AM UTC
     scheduler.add_job(
         run_monthly_report_job,
-        trigger=CronTrigger(day=1, hour=8, minute=0, timezone="UTC"),
+        trigger=CronTrigger(day=1, hour=0, minute=0, timezone="UTC"),  # 8 AM Perth on 1st
         id="monthly_report",
         name="Monthly Health Report"
     )
