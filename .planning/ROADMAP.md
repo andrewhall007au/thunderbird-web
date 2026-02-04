@@ -669,5 +669,202 @@ ALTER TABLE accounts ADD COLUMN active_trail_id INTEGER REFERENCES custom_routes
 
 ---
 
+## Phase 9: Monitoring & Alerting
+
+**Status:** Planning (2026-02-04)
+
+**Goal:** Comprehensive monitoring system with proactive alerting to catch production issues before users encounter them
+
+**Requirements covered:** MON-01 through MON-10 (Production monitoring and alerting)
+
+**Type:** Operations & reliability enhancement
+
+### Problem Statement
+
+The BetaApplyModal production bug (2026-02-04) revealed a critical gap: no automated monitoring to catch production-only issues. Users discovered bugs before we did. We need proactive monitoring that:
+- Tests critical user flows continuously
+- Alerts immediately when issues detected
+- Provides visibility into system health
+- Catches issues like the beta signup bug instantly
+
+### Phase Approach
+
+**Immediate Protection (Quick Win):**
+- Quick monitoring script running smoke tests every 5 minutes
+- SMS alerts on failure via Twilio
+- Minimal setup, maximum protection
+
+**Comprehensive System (This Phase):**
+- Synthetic user flow testing (E2E tests running periodically)
+- Performance monitoring and trending
+- Multi-channel alerting (SMS, email, Slack)
+- Status dashboard showing real-time health
+- Historical data and analytics
+- Smart alerting (severity levels, escalation, deduplication)
+
+### Requirements
+
+**MON-01:** Health check monitoring
+- Backend /health endpoint
+- Frontend loading and rendering
+- API endpoint availability
+- Database connectivity
+- External service status (Stripe, Twilio, weather APIs)
+
+**MON-02:** Synthetic user flow testing
+- Beta signup flow (every 5 min)
+- Checkout/payment flow (every 15 min)
+- Login/authentication (every 10 min)
+- Weather API requests (every 10 min)
+- SMS webhook handling (daily test)
+
+**MON-03:** Performance monitoring
+- API response times
+- Page load times
+- Database query performance
+- External API latency
+- Alert on degradation (>2x baseline)
+
+**MON-04:** SMS alerting
+- Critical: Immediate SMS (site down, critical flows broken)
+- Warning: SMS if not resolved in 15 min
+- Info: Log only
+- Configurable phone numbers
+- Alert deduplication (don't spam)
+
+**MON-05:** Status dashboard
+- Real-time system health
+- Historical uptime metrics
+- Current incidents
+- Response time graphs
+- Test pass/fail history
+
+**MON-06:** Alert management
+- Severity levels (critical, warning, info)
+- Escalation policies
+- Alert acknowledgment
+- Auto-resolution detection
+- Incident timeline
+
+**MON-07:** Log aggregation
+- Centralized error logging
+- Search and filter capabilities
+- Error rate tracking
+- Pattern detection
+
+**MON-08:** Reporting
+- Daily health summary
+- Weekly uptime report
+- Monthly performance trends
+- Incident post-mortems
+
+**MON-09:** Integration
+- Twilio for SMS alerts
+- Email for non-urgent alerts
+- Slack webhook (optional)
+- PagerDuty integration (future)
+
+**MON-10:** Self-monitoring
+- Monitor the monitor (meta-monitoring)
+- Alert if monitoring stops running
+- Health checks for monitoring service
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  Monitoring Service                     │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │           Scheduler (cron-based)                 │  │
+│  │  - Health checks: every 1 min                    │  │
+│  │  - Synthetic tests: every 5-15 min               │  │
+│  │  - Performance checks: every 5 min               │  │
+│  └──────────────────────────────────────────────────┘  │
+│                          │                              │
+│                          v                              │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │              Test Runners                        │  │
+│  │  - Smoke tests (quick_monitor.py)                │  │
+│  │  - E2E tests (Playwright)                        │  │
+│  │  - API tests (requests)                          │  │
+│  └──────────────────────────────────────────────────┘  │
+│                          │                              │
+│                          v                              │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │            Alert Manager                         │  │
+│  │  - Severity routing                              │  │
+│  │  - Deduplication                                 │  │
+│  │  - Escalation                                    │  │
+│  └──────────────────────────────────────────────────┘  │
+│                          │                              │
+│           ┌──────────────┼──────────────┐              │
+│           v              v               v               │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐        │
+│  │    SMS     │  │   Email    │  │   Slack    │        │
+│  │  (Twilio)  │  │  (Resend)  │  │ (Webhook)  │        │
+│  └────────────┘  └────────────┘  └────────────┘        │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │         Data Store (metrics, incidents)          │  │
+│  │  - Time series DB or SQLite                      │  │
+│  │  - Historical metrics                            │  │
+│  │  - Incident logs                                 │  │
+│  └──────────────────────────────────────────────────┘  │
+│                          │                              │
+│                          v                              │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │         Status Dashboard (web UI)                │  │
+│  │  - Real-time status                              │  │
+│  │  - Metrics graphs                                │  │
+│  │  - Incident history                              │  │
+│  └──────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Deliverables
+
+**Immediate (Quick Win - Available Now):**
+- [ ] Quick monitoring script (`backend/scripts/quick_monitor.py`)
+- [ ] Cron job setup on production server
+- [ ] SMS alerts via Twilio
+
+**Phase 9 (Comprehensive System):**
+- [ ] Monitoring service with scheduler
+- [ ] Synthetic test runner (runs E2E tests)
+- [ ] Alert manager with severity routing
+- [ ] Status dashboard (web UI)
+- [ ] Metrics storage and trending
+- [ ] Integration with Twilio, Resend, Slack
+- [ ] Historical reporting
+- [ ] Self-monitoring capabilities
+
+### Success Criteria
+
+- Critical issues (like beta signup bug) detected within 5 minutes
+- SMS alerts arrive within 30 seconds of detection
+- Zero false positives for critical alerts
+- Dashboard shows real-time system health
+- 99.9% monitoring uptime (monitor the monitor)
+- All critical user flows tested every 15 minutes
+- Historical data retained for 90 days
+
+### Dependencies
+
+- Phase 8 (security infrastructure)
+- Existing E2E tests (e2e/*.spec.ts)
+- Production smoke tests (smoke_test_production.py)
+- Twilio account (existing)
+
+### Risks
+
+- Alert fatigue (too many false positives)
+  - Mitigation: Start with critical alerts only, tune thresholds
+- Monitoring overhead (performance impact)
+  - Mitigation: Run tests from external server, not production
+- Cost (Twilio SMS charges)
+  - Mitigation: Smart alerting, deduplication, use email for warnings
+
+---
+
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-02-04 - Phase 8 complete (Security Hardening)*
+*Last updated: 2026-02-04 - Phase 9 added (Monitoring & Alerting)*
