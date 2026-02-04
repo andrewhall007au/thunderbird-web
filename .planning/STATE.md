@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
 **Last updated:** 2026-02-04
-**Current phase:** Phase 9 Starting - Monitoring & Alerting
+**Current phase:** Phase 9 In Progress - Monitoring & Alerting
 
 ## Project Reference
 
@@ -11,11 +11,42 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 
 ## Current Position
 
-Phase: 9 of 9 (Monitoring & Alerting) - STARTING
-Status: Quick monitoring script created, comprehensive system planning
-Last activity: 2026-02-04 - Phase 9 added, quick monitor ready
+Phase: 9 of 9 (Monitoring & Alerting) - IN PROGRESS
+Plan: 1 of 4 completed (09-01-PLAN.md)
+Status: Monitoring service foundation built
+Last activity: 2026-02-04 - Completed 09-01-PLAN.md (Monitoring Service Foundation)
 
-Progress: █░░░░░░░░░░ 10% (Quick monitor created, GSD planning starting)
+Progress: ██░░░░░░░░░ 18% (Phase 9 Plan 1 complete: Monitoring service with health checks, metrics DB, scheduler)
+
+---
+
+## Phase 9 In Progress: Monitoring & Alerting (2026-02-04)
+
+### Plan 1: Monitoring Service Foundation (COMPLETE)
+
+**Summary:** Standalone monitoring service with SQLite metrics DB, health checks for all critical systems including DB query performance and external API latency, APScheduler running checks every 1-10 minutes.
+
+**Commits:**
+- `ba51b02` - Monitoring config, metrics storage, CheckResult types
+- `af32b33` - Health checks, database/API monitoring, scheduler
+
+**Key Accomplishments:**
+- SQLite metrics database with WAL mode for concurrent access
+- Health checks: backend, frontend, beta signup, API response time, weather API
+- Database query performance tracking (separate from connectivity)
+- External API latency monitoring (Stripe, Twilio, Open-Meteo)
+- APScheduler with interval-based jobs (1min health, 5min DB, 10min external APIs)
+- FastAPI monitoring app on port 8001 with metrics API
+- Incident tracking with acknowledgment capability
+
+**Key Decisions:**
+1. **SQLite with WAL mode for metrics** - Simpler than PostgreSQL, adequate for monitoring data
+2. **Separate monitoring service on port 8001** - Isolation from main app, survives main app crashes
+3. **Database query performance separate from connectivity** - Detects slow queries (>500ms threshold)
+4. **External API latency tracking** - Monitors Stripe, Twilio, Open-Meteo availability and speed
+5. **Pydantic config with extra='ignore'** - Coexists with main app .env without validation errors
+
+**Next:** Plan 2 (Alerting) will add SMS/email alerts based on consecutive failures and incident tracking.
 
 ---
 
@@ -165,19 +196,14 @@ User noted backend may have "old onboarding system" that doesn't match current s
 ## Key Files (This Session)
 
 ```
-# Admin Dashboard Overhaul
-backend/app/services/admin.py          # Alert badges, financials, activity renderer
-backend/app/routers/admin.py           # Activity page route
-backend/app/models/database.py         # User message stats/history
-
-# UX Improvements
-app/account/page.tsx                   # "New Route" button now btn-orange (prominent)
-
-# Welcome Email & Proxy (Previous)
-app/email/welcome/page.tsx             # Complete email revamp
-next.config.js                         # Admin/API proxy rewrites
-backend/.env                           # Admin password updated
+# Monitoring Service Foundation (09-01)
+backend/monitoring/__init__.py         # Package initialization
+backend/monitoring/config.py           # MonitoringSettings with Pydantic
+backend/monitoring/storage.py          # SQLite metrics database with WAL mode
+backend/monitoring/checks.py           # Health check implementations
+backend/monitoring/scheduler.py        # APScheduler configuration
+backend/monitoring/main.py             # FastAPI monitoring app on port 8001
 ```
 
 ---
-*State updated: 2026-02-02*
+*State updated: 2026-02-04*
