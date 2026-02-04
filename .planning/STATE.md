@@ -12,11 +12,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 9 of 9 (Monitoring & Alerting) - IN PROGRESS
-Plan: 6 of 6 completed (09-06-PLAN.md)
-Status: Centralized error log aggregation with search, rate tracking, and pattern detection complete
-Last activity: 2026-02-04 - Completed 09-06-PLAN.md (Error Log Aggregation)
+Plan: 2 of 6 completed (09-02-PLAN.md)
+Status: Alert manager with SMS/email channels, deduplication, escalation, and acknowledgment complete
+Last activity: 2026-02-04 - Completed 09-02-PLAN.md (Alert Manager)
 
-Progress: ████████████ 100% (Phase 9 Complete: Monitoring service with health checks, alerting, synthetic tests, status dashboard, and error log aggregation operational)
+Progress: ███░░░░░░░░░ 25% (Phase 9 Plan 2 complete: Monitoring service with alerting operational)
 
 ---
 
@@ -47,6 +47,33 @@ Progress: ████████████ 100% (Phase 9 Complete: Monitorin
 5. **Pydantic config with extra='ignore'** - Coexists with main app .env without validation errors
 
 **Next:** Plan 2 (Alerting) will add SMS/email alerts based on consecutive failures and incident tracking.
+
+### Plan 2: Alert Manager (COMPLETE)
+
+**Summary:** Alert manager with SMS/email channels, deduplication, escalation, acknowledgment, and scheduler wiring - transforms check failures into actionable notifications.
+
+**Commits:**
+- `9e65f93` - SMS and email alert channels (Twilio, Resend)
+- `792fc35` - Alert manager with deduplication, escalation, scheduler integration
+
+**Key Accomplishments:**
+- TwilioSMSChannel and ResendEmailChannel for alert delivery
+- AlertManager with deduplication (15-min window), consecutive failure requirement (2 failures)
+- Severity-based routing: critical → SMS+email, warning → email with 15-min escalation
+- Incident acknowledgment to stop escalation spam
+- SMS rate limiting (10/hour) prevents cost explosion
+- Recovery notifications when checks pass (SMS for critical, email for all)
+- Scheduler integration: all check jobs use unified evaluate_and_alert pipeline
+
+**Key Decisions:**
+1. **Require 2 consecutive failures before alerting** - Reduces false positives from transient issues
+2. **15-minute deduplication window** - Prevents alert spam for persistent issues
+3. **Critical vs warning severity with escalation** - User-facing flows (beta, checkout) critical, supporting services warnings
+4. **Incident acknowledgment stops escalation** - Responders can acknowledge to prevent SMS escalation
+5. **SMS rate limit of 10/hour** - Cost protection during major outages
+6. **Global alert manager instance** - Single instance maintains deduplication and rate limiting state
+
+**Next:** Plan 3 (Synthetic tests) will add browser-based Playwright tests for critical user flows.
 
 ### Plan 6: Error Log Aggregation (COMPLETE)
 
@@ -246,20 +273,11 @@ User noted backend may have "old onboarding system" that doesn't match current s
 ## Key Files (This Session)
 
 ```
-# Monitoring Service Foundation (09-01)
-backend/monitoring/__init__.py         # Package initialization
-backend/monitoring/config.py           # MonitoringSettings with Pydantic
-backend/monitoring/storage.py          # SQLite metrics database with WAL mode
-backend/monitoring/checks.py           # Health check implementations
-backend/monitoring/scheduler.py        # APScheduler configuration
-backend/monitoring/main.py             # FastAPI monitoring app on port 8001
-
-# Error Log Aggregation (09-06)
-backend/monitoring/logs/__init__.py    # Logs package initialization
-backend/monitoring/logs/storage.py     # Error logs and patterns SQLite storage
-backend/monitoring/logs/collector.py   # MonitoringLogHandler, log file scraping, journalctl
-backend/monitoring/logs/analyzer.py    # Pattern detection, rate tracking, message normalization
-backend/monitoring/api.py              # API endpoints including log endpoints
+# Alert Manager (09-02)
+backend/monitoring/alerts/__init__.py     # Alerts package initialization
+backend/monitoring/alerts/channels.py     # TwilioSMSChannel and ResendEmailChannel
+backend/monitoring/alerts/manager.py      # AlertManager with deduplication, escalation, acknowledgment
+backend/monitoring/scheduler.py           # Updated with alert manager integration
 ```
 
 ---
