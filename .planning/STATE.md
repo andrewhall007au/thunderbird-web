@@ -12,11 +12,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 9 of 9 (Monitoring & Alerting) - IN PROGRESS
-Plan: 3 of 6 completed (09-03-PLAN.md)
-Status: Synthetic test runner with Playwright E2E tests, login checks, and SMS webhook monitoring operational
-Last activity: 2026-02-04 - Completed 09-03-PLAN.md (Synthetic Test Runner)
+Plan: 5 of 6 completed (09-05-PLAN.md)
+Status: Complete monitoring system with self-monitoring, automated reports, and production deployment ready
+Last activity: 2026-02-04 - Completed 09-05-PLAN.md (Self-Monitoring & Production Deployment)
 
-Progress: ████░░░░░░░░ 33% (Phase 9 Plan 3 complete: Monitoring service with alerting and synthetic tests operational)
+Progress: ████████████ 83% (Phase 9 Plan 5 complete: Monitoring operational with self-checks, daily/weekly/monthly reports, production-ready)
 
 ---
 
@@ -98,6 +98,36 @@ Progress: ████░░░░░░░░ 33% (Phase 9 Plan 3 complete: Mon
 5. **SMS webhook runs daily, login every 10 minutes** - Daily check for core SMS pipeline, frequent auth checks
 
 **Next:** Plan 4 (Dashboard) will visualize synthetic test results alongside other health metrics.
+
+### Plan 5: Self-Monitoring & Production Deployment (COMPLETE)
+
+**Summary:** Self-monitoring heartbeat with daily/weekly/monthly reports, systemd service with auto-restart, and one-script production deployment.
+
+**Commits:**
+- `bad59b5` - Self-monitoring, reporting, requirements (heartbeat, daily/weekly/monthly reports)
+- `bb80719` - Production deployment config (systemd service, setup script)
+
+**Key Accomplishments:**
+- Self-monitoring heartbeat runs every 5 minutes, alerts if no checks for 10+ minutes
+- Daily health reports sent at 8 AM UTC with previous day's stats and incidents
+- Weekly reports sent every Monday at 8 AM UTC with trends and worst performer
+- Monthly reports sent on 1st of month at 8 AM UTC with SLA compliance (99.9% target)
+- Systemd service file with auto-restart on crash (10s delay)
+- Automated deployment script handles full setup from scratch
+- Metrics and logs cleanup runs nightly at 3 AM UTC (90-day retention)
+- Scheduler expanded to 18 jobs total
+
+**Key Decisions:**
+1. **Self-monitoring every 5 minutes with 10-minute staleness threshold** - Balance between detection speed and false positives
+2. **Reports at 8 AM UTC for consistency** - Daily, weekly (Monday), monthly (1st) - predictable schedule
+3. **Monthly reports include 99.9% SLA compliance tracking** - Accountability and performance visibility
+4. **Meta-monitoring alerts bypass deduplication** - Self-monitoring failures need immediate escalation
+5. **Systemd auto-restart with 10-second delay** - Resilience without thrashing on persistent failures
+6. **Cleanup at 3 AM UTC with 90-day retention** - Off-peak hours, adequate history
+7. **HTML email reports with status badges and trend arrows** - Professional, easy to scan
+8. **Setup script creates environment template** - Guides production config without exposing secrets
+
+**Next:** Phase 9 complete. All monitoring infrastructure operational and production-ready.
 
 ### Plan 6: Error Log Aggregation (COMPLETE)
 
