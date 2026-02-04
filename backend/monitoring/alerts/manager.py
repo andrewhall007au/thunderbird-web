@@ -73,7 +73,7 @@ class AlertManager:
 
         logger.info("AlertManager initialized")
 
-    async def evaluate_and_alert(self, result: CheckResult):
+    def evaluate_and_alert(self, result: CheckResult):
         """
         Evaluate check result and send alerts if needed.
 
@@ -96,14 +96,14 @@ class AlertManager:
 
         # Handle pass (check for recovery)
         if result.status == 'pass':
-            await self._handle_recovery(result.check_name)
+            self._handle_recovery(result.check_name)
             return
 
         # Handle fail
         if result.status == 'fail':
-            await self._handle_failure(result)
+            self._handle_failure(result)
 
-    async def _handle_recovery(self, check_name: str):
+    def _handle_recovery(self, check_name: str):
         """Handle check recovery - send recovery notification if there was an active incident."""
         # Check for active incidents
         active_incidents = get_active_incidents()
@@ -132,13 +132,13 @@ class AlertManager:
         incident_id = incident['id']
 
         # Send recovery notification
-        await self._send_recovery(check_name, downtime_minutes, severity == 'critical')
+        self._send_recovery(check_name, downtime_minutes, severity == 'critical')
 
         # Clear SMS tracking for this incident
         if incident_id in self._sms_sent_for_incident:
             del self._sms_sent_for_incident[incident_id]
 
-    async def _handle_failure(self, result: CheckResult):
+    def _handle_failure(self, result: CheckResult):
         """Handle check failure - evaluate consecutive failures and send alerts."""
         check_name = result.check_name
 
@@ -192,9 +192,9 @@ class AlertManager:
 
         # Send alerts based on severity
         if severity == 'critical':
-            await self._send_critical_alert(check_name, result, incident)
+            self._send_critical_alert(check_name, result, incident)
         elif severity == 'warning':
-            await self._send_warning_alert(check_name, result, incident)
+            self._send_warning_alert(check_name, result, incident)
         else:
             # Info level - just log
             logger.info(f"{check_name}: Info-level failure (no alert)")
@@ -297,7 +297,7 @@ class AlertManager:
         else:
             return 'info'
 
-    async def _send_critical_alert(self, check_name: str, result: CheckResult, incident: dict):
+    def _send_critical_alert(self, check_name: str, result: CheckResult, incident: dict):
         """
         Send critical alert (SMS + email immediately).
 
@@ -346,7 +346,7 @@ class AlertManager:
         )
         logger.info(f"Critical email alert sent for {check_name}")
 
-    async def _send_warning_alert(self, check_name: str, result: CheckResult, incident: dict):
+    def _send_warning_alert(self, check_name: str, result: CheckResult, incident: dict):
         """
         Send warning alert (email immediately, escalate to SMS after 15 minutes if unacknowledged).
 
@@ -397,7 +397,7 @@ class AlertManager:
         )
         logger.info(f"Warning email alert sent for {check_name}")
 
-    async def _send_recovery(self, check_name: str, downtime_minutes: int, send_sms: bool):
+    def _send_recovery(self, check_name: str, downtime_minutes: int, send_sms: bool):
         """
         Send recovery notification.
 
