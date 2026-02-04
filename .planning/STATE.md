@@ -12,11 +12,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 9 of 9 (Monitoring & Alerting) - IN PROGRESS
-Plan: 4 of 4 completed (09-04-PLAN.md)
-Status: Status dashboard with incident acknowledgment and timeline complete
-Last activity: 2026-02-04 - Completed 09-04-PLAN.md (Status Dashboard)
+Plan: 6 of 6 completed (09-06-PLAN.md)
+Status: Centralized error log aggregation with search, rate tracking, and pattern detection complete
+Last activity: 2026-02-04 - Completed 09-06-PLAN.md (Error Log Aggregation)
 
-Progress: ████████████ 100% (Phase 9 Complete: Monitoring service, alerting, synthetic tests, and status dashboard operational)
+Progress: ████████████ 100% (Phase 9 Complete: Monitoring service with health checks, alerting, synthetic tests, status dashboard, and error log aggregation operational)
 
 ---
 
@@ -47,6 +47,31 @@ Progress: ████████████ 100% (Phase 9 Complete: Monitorin
 5. **Pydantic config with extra='ignore'** - Coexists with main app .env without validation errors
 
 **Next:** Plan 2 (Alerting) will add SMS/email alerts based on consecutive failures and incident tracking.
+
+### Plan 6: Error Log Aggregation (COMPLETE)
+
+**Summary:** Centralized error log storage with search, rate tracking, pattern detection, and API endpoints for dashboard integration.
+
+**Commits:**
+- `efa3de0` - Log storage, collector, and analyzer (MonitoringLogHandler, systemd journalctl, pattern detection)
+- `4538745` - API endpoints and scheduler jobs (log collection every 2min, error rate check every 5min)
+
+**Key Accomplishments:**
+- SQLite storage for error logs with full-text search and filtering by level/source/time
+- Error pattern detection with message normalization (UUIDs, numbers, strings replaced with placeholders)
+- Error rate tracking with threshold-based alerting (<1 errors/min = pass, 1-5 = degraded, >5 = fail)
+- Log collection via Python logging handler and systemd journalctl
+- API endpoints: GET /logs, /logs/rate, /logs/patterns, PATCH /logs/patterns/{id}
+- Scheduler jobs: log collection (2min), error rate check (5min), pattern detection (30min)
+
+**Key Decisions:**
+1. **Store logs in same SQLite database as metrics** - Simplicity, shared connection pool
+2. **Normalize error messages with regex substitution** - Group similar errors by replacing variable data
+3. **Support systemd journalctl and log file scraping** - Flexibility for dev/prod environments
+4. **Error rate thresholds: <1/1-5/>5 errors per minute** - Based on expected normal error rates
+5. **Pattern status lifecycle: new -> known/resolved/ignored** - Manual triage to reduce alert fatigue
+
+**Next:** Phase 9 complete. Monitoring & alerting infrastructure operational.
 
 ### Plan 4: Status Dashboard (COMPLETE)
 
@@ -228,6 +253,13 @@ backend/monitoring/storage.py          # SQLite metrics database with WAL mode
 backend/monitoring/checks.py           # Health check implementations
 backend/monitoring/scheduler.py        # APScheduler configuration
 backend/monitoring/main.py             # FastAPI monitoring app on port 8001
+
+# Error Log Aggregation (09-06)
+backend/monitoring/logs/__init__.py    # Logs package initialization
+backend/monitoring/logs/storage.py     # Error logs and patterns SQLite storage
+backend/monitoring/logs/collector.py   # MonitoringLogHandler, log file scraping, journalctl
+backend/monitoring/logs/analyzer.py    # Pattern detection, rate tracking, message normalization
+backend/monitoring/api.py              # API endpoints including log endpoints
 ```
 
 ---
