@@ -20,6 +20,7 @@ from .storage import (
     get_incident_timeline,
     acknowledge_incident,
 )
+from .logs.storage import init_log_tables
 from .scheduler import create_scheduler
 from .api import router as monitoring_api_router
 
@@ -44,6 +45,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize database
     init_db()
+    init_log_tables()
     logger.info("Database initialized")
 
     # Create and start scheduler

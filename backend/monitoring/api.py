@@ -18,6 +18,13 @@ from .storage import (
     get_incident_timeline,
     acknowledge_incident,
 )
+from .logs.storage import (
+    search_logs,
+    get_error_rate,
+    get_error_count_by_interval,
+    update_pattern_status,
+)
+from .logs.analyzer import detect_error_patterns, get_pattern_summary
 
 logger = logging.getLogger(__name__)
 
@@ -406,4 +413,187 @@ async def get_daily_summary(date: Optional[str] = None):
         }
     except Exception as e:
         logger.error(f"Error generating daily summary: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Log Aggregation Endpoints
+# ============================================================================
+
+@router.get("/logs")
+async def get_logs(
+    query: Optional[str] = None,
+    level: Optional[str] = None,
+    source: Optional[str] = None,
+    hours: int = Query(24, ge=1, le=720),
+    limit: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0)
+):
+    """
+    Search and filter error logs.
+
+    Args:
+        query: Substring search on message and traceback
+        level: Filter by level (ERROR, WARNING, CRITICAL)
+        source: Filter by source module (exact match or prefix with *)
+        hours: Number of hours to look back (default: 24, max: 720 = 30 days)
+        limit: Max results to return (default: 100, max: 1000)
+        offset: Offset for pagination
+
+    Returns:
+        JSON with total count and logs array
+    """
+    try:
+        # Calculate start time
+        start_ms = int((datetime.utcnow() - timedelta(hours=hours)).timestamp() * 1000)
+
+        result = search_logs(
+            query=query,
+            level=level,
+            source=source,
+            start_ms=start_ms,
+            limit=limit,
+            offset=offset
+        )
+
+        # Format logs with ISO timestamps
+        formatted_logs = []
+        for log in result['logs']:
+            formatted_log = {
+                'id': log['id'],
+                'timestamp': datetime.fromtimestamp(log['timestamp_ms'] / 1000).isoformat() + 'Z',
+                'level': log['level'],
+                'source': log['source'],
+                'message': log['message'],
+                'traceback': log.get('traceback'),
+                'request_path': log.get('request_path'),
+                'request_method': log.get('request_method'),
+                'metadata': log.get('metadata')
+            }
+            formatted_logs.append(formatted_log)
+
+        return {
+            'total': result['total'],
+            'limit': result['limit'],
+            'offset': result['offset'],
+            'logs': formatted_logs
+        }
+    except Exception as e:
+        logger.error(f"Error fetching logs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/logs/rate")
+async def get_logs_rate(hours: int = Query(1, ge=1, le=24)):
+    """
+    Error rate over time.
+
+    Args:
+        hours: Number of hours to calculate rate over (default: 1, max: 24)
+
+    Returns:
+        JSON with error rate statistics and time-series trend
+    """
+    try:
+        rate_data = get_error_rate(hours=hours)
+
+        # Get trend data (15-minute intervals)
+        trend = get_error_count_by_interval(hours=hours, interval_minutes=15)
+
+        return {
+            'period_hours': hours,
+            'total_errors': rate_data['total_errors'],
+            'errors_per_minute': rate_data['errors_per_minute'],
+            'by_level': rate_data['by_level'],
+            'by_source': rate_data['by_source'],
+            'trend': trend
+        }
+    except Exception as e:
+        logger.error(f"Error fetching error rate: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/logs/patterns")
+async def get_log_patterns(hours: int = Query(24, ge=1, le=720)):
+    """
+    Error patterns with occurrence counts.
+
+    Args:
+        hours: Number of hours to analyze (default: 24, max: 720 = 30 days)
+
+    Returns:
+        JSON with pattern statistics and top patterns
+    """
+    try:
+        # Detect patterns from recent logs
+        patterns = detect_error_patterns(hours=hours)
+
+        # Get pattern summary
+        summary = get_pattern_summary()
+
+        # Format patterns with ISO timestamps
+        formatted_patterns = []
+        for pattern in patterns:
+            formatted_pattern = {
+                'id': pattern['id'],
+                'sample_message': pattern['sample_message'],
+                'source': pattern['source'],
+                'occurrence_count': pattern['occurrence_count'],
+                'first_seen': datetime.fromtimestamp(pattern['first_seen_ms'] / 1000).isoformat() + 'Z',
+                'last_seen': datetime.fromtimestamp(pattern['last_seen_ms'] / 1000).isoformat() + 'Z',
+                'severity': pattern.get('severity', 'unknown'),
+                'status': pattern['status']
+            }
+            formatted_patterns.append(formatted_pattern)
+
+        return {
+            'patterns': formatted_patterns,
+            'new_patterns_24h': summary['new_patterns_24h'],
+            'trending_patterns': summary['trending_patterns'],
+            'total_patterns': summary['total_patterns']
+        }
+    except Exception as e:
+        logger.error(f"Error fetching error patterns: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class UpdatePatternStatusRequest(BaseModel):
+    """Request body for updating pattern status."""
+    status: str  # 'known', 'resolved', 'ignored'
+
+
+@router.patch("/logs/patterns/{pattern_id}")
+async def update_pattern_status_endpoint(
+    pattern_id: str,
+    body: UpdatePatternStatusRequest
+):
+    """
+    Update error pattern status.
+
+    Args:
+        pattern_id: Pattern UUID
+        body: Request body with status field
+
+    Returns:
+        JSON with id and new status
+    """
+    try:
+        # Validate status value
+        valid_statuses = ['new', 'known', 'resolved', 'ignored']
+        if body.status not in valid_statuses:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
+            )
+
+        update_pattern_status(pattern_id, body.status)
+
+        return {
+            'id': pattern_id,
+            'status': body.status
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating pattern {pattern_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
