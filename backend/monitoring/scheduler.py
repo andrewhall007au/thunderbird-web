@@ -38,6 +38,10 @@ from .checks_synthetic import (
     check_sms_webhook_synthetic,
 )
 
+# Import self-monitoring and reporting
+from .self_monitor import send_heartbeat
+from .reporting import send_daily_report, send_weekly_report, send_monthly_report
+
 logger = logging.getLogger(__name__)
 
 # Check if Playwright is available for browser-based synthetic tests
@@ -45,6 +49,9 @@ PLAYWRIGHT_AVAILABLE = shutil.which('npx') is not None
 
 # Global alert manager instance
 alert_manager = None
+
+# Global scheduler instance for self-monitoring
+_scheduler = None
 
 
 def get_or_create_alert_manager():
@@ -124,6 +131,11 @@ def run_cleanup_job():
     try:
         deleted = cleanup_old_metrics(settings.METRICS_RETENTION_DAYS)
         logger.info(f"Cleanup: deleted {deleted} old metrics")
+
+        # Also cleanup old logs
+        from .logs.storage import cleanup_old_logs
+        deleted_logs = cleanup_old_logs(settings.METRICS_RETENTION_DAYS)
+        logger.info(f"Cleanup: deleted {deleted_logs} old log entries")
     except Exception as e:
         logger.error(f"Cleanup job failed: {e}")
 
@@ -247,6 +259,45 @@ def run_synthetic_sms_webhook_job():
         logger.error(f"Synthetic SMS webhook test failed: {e}")
 
 
+def run_heartbeat_job():
+    """Run self-monitoring heartbeat."""
+    try:
+        # Get alert channels for direct alerting (bypass dedup for meta-monitoring)
+        alert_mgr = get_or_create_alert_manager()
+        alert_channels = {
+            'sms': alert_mgr.sms_channel if hasattr(alert_mgr, 'sms_channel') else None,
+            'email': alert_mgr.email_channel if hasattr(alert_mgr, 'email_channel') else None,
+        }
+
+        send_heartbeat(settings, storage_module, _scheduler, alert_channels)
+    except Exception as e:
+        logger.error(f"Heartbeat job failed: {e}")
+
+
+def run_daily_report_job():
+    """Send daily health report."""
+    try:
+        send_daily_report(settings, storage_module)
+    except Exception as e:
+        logger.error(f"Daily report job failed: {e}")
+
+
+def run_weekly_report_job():
+    """Send weekly health report."""
+    try:
+        send_weekly_report(settings, storage_module)
+    except Exception as e:
+        logger.error(f"Weekly report job failed: {e}")
+
+
+def run_monthly_report_job():
+    """Send monthly health report."""
+    try:
+        send_monthly_report(settings, storage_module)
+    except Exception as e:
+        logger.error(f"Monthly report job failed: {e}")
+
+
 def job_error_listener(event):
     """Log job errors."""
     logger.error(f"Job {event.job_id} failed: {event.exception}")
@@ -259,6 +310,8 @@ def create_scheduler() -> AsyncIOScheduler:
     Returns:
         Configured AsyncIOScheduler (not started)
     """
+    global _scheduler
+
     scheduler = AsyncIOScheduler(
         timezone="UTC",
         job_defaults={
@@ -267,6 +320,9 @@ def create_scheduler() -> AsyncIOScheduler:
             "misfire_grace_time": 300
         }
     )
+
+    # Store global reference for self-monitoring
+    _scheduler = scheduler
 
     # Add job error listener
     scheduler.add_listener(job_error_listener, EVENT_JOB_ERROR)
@@ -395,6 +451,42 @@ def create_scheduler() -> AsyncIOScheduler:
         id="synthetic_sms_webhook",
         name="Synthetic: SMS Webhook",
         next_run_time=datetime.now()  # Run immediately on first start
+    )
+
+    # === Self-Monitoring Jobs ===
+
+    # Self-monitoring heartbeat - every 5 minutes
+    scheduler.add_job(
+        run_heartbeat_job,
+        trigger=IntervalTrigger(minutes=5),
+        id="self_heartbeat",
+        name="Self-Monitoring Heartbeat"
+    )
+
+    # === Reporting Jobs ===
+
+    # Daily report - every day at 8:00 AM UTC
+    scheduler.add_job(
+        run_daily_report_job,
+        trigger=CronTrigger(hour=8, minute=0, timezone="UTC"),
+        id="daily_report",
+        name="Daily Health Report"
+    )
+
+    # Weekly report - every Monday at 8:00 AM UTC
+    scheduler.add_job(
+        run_weekly_report_job,
+        trigger=CronTrigger(day_of_week='mon', hour=8, minute=0, timezone="UTC"),
+        id="weekly_report",
+        name="Weekly Health Report"
+    )
+
+    # Monthly report - first of month at 8:00 AM UTC
+    scheduler.add_job(
+        run_monthly_report_job,
+        trigger=CronTrigger(day=1, hour=8, minute=0, timezone="UTC"),
+        id="monthly_report",
+        name="Monthly Health Report"
     )
 
     logger.info(f"Scheduler configured with {len(scheduler.get_jobs())} jobs")
