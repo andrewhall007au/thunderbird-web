@@ -1,0 +1,21 @@
+[Unit]
+Description=Thunderbird Monitoring Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/overland-weather/backend
+Environment=PYTHONPATH=/root/overland-weather/backend
+ExecStart=/root/overland-weather/venv/bin/python -m monitoring.main
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/thunderbird-monitoring.log
+StandardError=append:/var/log/thunderbird-monitoring.log
+
+# Environment variables (override via /etc/default/thunderbird-monitoring)
+EnvironmentFile=-/etc/default/thunderbird-monitoring
+
+[Install]
+WantedBy=multi-user.target
