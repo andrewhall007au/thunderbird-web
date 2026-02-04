@@ -5,6 +5,7 @@ Schedules health checks at configured intervals.
 
 import logging
 import shutil
+import asyncio
 from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -21,7 +22,9 @@ from .checks import (
     check_database_query_performance,
     check_external_api_latency,
 )
-from .storage import cleanup_old_metrics, store_metric
+from .storage import cleanup_old_metrics
+from . import storage as storage_module
+from .alerts.manager import create_alert_manager
 from .logs.collector import collect_from_systemd_journal, collect_recent_errors
 from .logs.analyzer import check_error_rate, detect_error_patterns
 from .logs.storage import cleanup_old_logs
@@ -40,6 +43,17 @@ logger = logging.getLogger(__name__)
 # Check if Playwright is available for browser-based synthetic tests
 PLAYWRIGHT_AVAILABLE = shutil.which('npx') is not None
 
+# Global alert manager instance
+alert_manager = None
+
+
+def get_or_create_alert_manager():
+    """Get or create the global alert manager instance."""
+    global alert_manager
+    if alert_manager is None:
+        alert_manager = create_alert_manager(settings, storage_module)
+    return alert_manager
+
 
 def run_health_check_job():
     """Run basic health checks (backend, frontend, API response time)."""
@@ -49,16 +63,13 @@ def run_health_check_job():
         check_api_response_time,
     ]
 
+    alert_mgr = get_or_create_alert_manager()
+
     for check_func in checks:
         try:
             result = check_func()
-            store_metric(
-                check_name=result.check_name,
-                status=result.status,
-                duration_ms=result.duration_ms,
-                error_message=result.error_message,
-                metadata=result.metadata
-            )
+            # Alert manager handles both storing metric and evaluating for alerts
+            asyncio.create_task(alert_mgr.evaluate_and_alert(result))
             logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
         except Exception as e:
             logger.error(f"Check {check_func.__name__} failed: {e}")
@@ -66,15 +77,10 @@ def run_health_check_job():
 
 def run_beta_signup_check():
     """Run beta signup flow check."""
+    alert_mgr = get_or_create_alert_manager()
     try:
         result = check_beta_signup_endpoint()
-        store_metric(
-            check_name=result.check_name,
-            status=result.status,
-            duration_ms=result.duration_ms,
-            error_message=result.error_message,
-            metadata=result.metadata
-        )
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
         logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
     except Exception as e:
         logger.error(f"Beta signup check failed: {e}")
@@ -82,15 +88,10 @@ def run_beta_signup_check():
 
 def run_weather_api_check():
     """Run weather API check."""
+    alert_mgr = get_or_create_alert_manager()
     try:
         result = check_weather_api()
-        store_metric(
-            check_name=result.check_name,
-            status=result.status,
-            duration_ms=result.duration_ms,
-            error_message=result.error_message,
-            metadata=result.metadata
-        )
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
         logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
     except Exception as e:
         logger.error(f"Weather API check failed: {e}")
@@ -98,15 +99,10 @@ def run_weather_api_check():
 
 def run_db_query_performance_check():
     """Run database query performance check."""
+    alert_mgr = get_or_create_alert_manager()
     try:
         result = check_database_query_performance()
-        store_metric(
-            check_name=result.check_name,
-            status=result.status,
-            duration_ms=result.duration_ms,
-            error_message=result.error_message,
-            metadata=result.metadata
-        )
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
         logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
     except Exception as e:
         logger.error(f"DB query performance check failed: {e}")
@@ -114,15 +110,10 @@ def run_db_query_performance_check():
 
 def run_external_api_latency_check():
     """Run external API latency check."""
+    alert_mgr = get_or_create_alert_manager()
     try:
         result = check_external_api_latency()
-        store_metric(
-            check_name=result.check_name,
-            status=result.status,
-            duration_ms=result.duration_ms,
-            error_message=result.error_message,
-            metadata=result.metadata
-        )
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
         logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
     except Exception as e:
         logger.error(f"External API latency check failed: {e}")
@@ -164,17 +155,12 @@ def run_log_collection_job():
 
 def run_error_rate_check_job():
     """Check error rate and feed through alerting pipeline."""
+    alert_mgr = get_or_create_alert_manager()
     try:
         result = check_error_rate()
 
-        # Store metric
-        store_metric(
-            check_name=result.check_name,
-            status=result.status,
-            duration_ms=result.duration_ms,
-            error_message=result.error_message,
-            metadata=result.metadata
-        )
+        # Alert manager handles storing metric and evaluating for alerts
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
 
         logger.info(f"{result.check_name}: {result.status} ({result.metadata.get('errors_per_minute', 0):.2f} errors/min)")
 
@@ -188,7 +174,7 @@ def run_pattern_detection_job():
         patterns = detect_error_patterns(hours=0.5)  # Last 30 minutes
 
         # Count new patterns (first seen in last 30 min)
-        from datetime import datetime, timedelta
+        from datetime import timedelta
         cutoff_ms = int((datetime.utcnow() - timedelta(minutes=30)).timestamp() * 1000)
         new_patterns = [p for p in patterns if p['first_seen_ms'] > cutoff_ms]
 
@@ -199,6 +185,66 @@ def run_pattern_detection_job():
 
     except Exception as e:
         logger.error(f"Pattern detection job failed: {e}")
+
+
+def run_synthetic_beta_signup_job():
+    """Run beta signup synthetic test (Playwright browser test)."""
+    alert_mgr = get_or_create_alert_manager()
+    try:
+        logger.info("Starting synthetic beta signup test")
+        result = check_beta_signup_synthetic()
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
+        logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
+    except Exception as e:
+        logger.error(f"Synthetic beta signup test failed: {e}")
+
+
+def run_synthetic_checkout_job():
+    """Run checkout flow synthetic test (Playwright browser test)."""
+    alert_mgr = get_or_create_alert_manager()
+    try:
+        logger.info("Starting synthetic checkout test")
+        result = check_buy_now_synthetic()
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
+        logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
+    except Exception as e:
+        logger.error(f"Synthetic checkout test failed: {e}")
+
+
+def run_synthetic_create_first_job():
+    """Run create-first route flow synthetic test (Playwright browser test)."""
+    alert_mgr = get_or_create_alert_manager()
+    try:
+        logger.info("Starting synthetic create-first test")
+        result = check_create_first_synthetic()
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
+        logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
+    except Exception as e:
+        logger.error(f"Synthetic create-first test failed: {e}")
+
+
+def run_synthetic_login_job():
+    """Run login synthetic test (HTTP-based check)."""
+    alert_mgr = get_or_create_alert_manager()
+    try:
+        logger.info("Starting synthetic login test")
+        result = check_login_synthetic()
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
+        logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
+    except Exception as e:
+        logger.error(f"Synthetic login test failed: {e}")
+
+
+def run_synthetic_sms_webhook_job():
+    """Run SMS webhook synthetic test (HTTP-based check)."""
+    alert_mgr = get_or_create_alert_manager()
+    try:
+        logger.info("Starting synthetic SMS webhook test")
+        result = check_sms_webhook_synthetic()
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
+        logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
+    except Exception as e:
+        logger.error(f"Synthetic SMS webhook test failed: {e}")
 
 
 def job_error_listener(event):
@@ -297,6 +343,58 @@ def create_scheduler() -> AsyncIOScheduler:
         trigger=IntervalTrigger(minutes=30),
         id="pattern_detection",
         name="Pattern Detection"
+    )
+
+    # === Synthetic Monitoring Jobs ===
+
+    # Playwright browser-based synthetic tests (only if npx is available)
+    if PLAYWRIGHT_AVAILABLE:
+        # Beta signup synthetic - every 5 minutes (CRITICAL)
+        scheduler.add_job(
+            run_synthetic_beta_signup_job,
+            trigger=IntervalTrigger(minutes=intervals.get("beta_signup_flow", 5)),
+            id="synthetic_beta_signup",
+            name="Synthetic: Beta Signup"
+        )
+
+        # Checkout flow synthetic - every 15 minutes (CRITICAL)
+        scheduler.add_job(
+            run_synthetic_checkout_job,
+            trigger=IntervalTrigger(minutes=intervals.get("checkout_flow", 15)),
+            id="synthetic_checkout",
+            name="Synthetic: Checkout"
+        )
+
+        # Create-first route flow synthetic - every 15 minutes (WARNING)
+        scheduler.add_job(
+            run_synthetic_create_first_job,
+            trigger=IntervalTrigger(minutes=15),
+            id="synthetic_create_first",
+            name="Synthetic: Create First"
+        )
+
+        logger.info("Playwright browser synthetic tests enabled")
+    else:
+        logger.warning("npx not found - Playwright browser synthetic tests disabled")
+
+    # HTTP-based synthetic tests (always enabled - no Playwright dependency)
+
+    # Login synthetic - every 10 minutes (WARNING)
+    scheduler.add_job(
+        run_synthetic_login_job,
+        trigger=IntervalTrigger(minutes=intervals.get("login_flow", 10)),
+        id="synthetic_login",
+        name="Synthetic: Login"
+    )
+
+    # SMS webhook synthetic - daily at 6 AM UTC (CRITICAL)
+    # Run immediately on first startup, then daily
+    scheduler.add_job(
+        run_synthetic_sms_webhook_job,
+        trigger=IntervalTrigger(days=1),
+        id="synthetic_sms_webhook",
+        name="Synthetic: SMS Webhook",
+        next_run_time=datetime.now()  # Run immediately on first start
     )
 
     logger.info(f"Scheduler configured with {len(scheduler.get_jobs())} jobs")
