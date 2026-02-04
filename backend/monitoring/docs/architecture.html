@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thunderbird Monitoring System Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #f97316;
+            margin-top: 0;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #f97316;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        .diagram {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .legend-item {
+            padding: 10px;
+            border-left: 4px solid;
+            background: #f9f9f9;
+        }
+        .legend-item.critical { border-color: #dc2626; }
+        .legend-item.warning { border-color: #f59e0b; }
+        .legend-item.info { border-color: #3b82f6; }
+        .legend-item.success { border-color: #10b981; }
+        .legend-item h3 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+        }
+        .legend-item p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 6px;
+        }
+        .stat-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Thunderbird Monitoring System</h1>
+        <p>Comprehensive monitoring with health checks, synthetic tests, alerting, and reporting.</p>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Checks</h3>
+                <div class="value">18</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h3>Check Intervals</h3>
+                <div class="value">1-15m</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <h3>Alert Channels</h3>
+                <div class="value">2</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <h3>Port</h3>
+                <div class="value">8001</div>
+            </div>
+        </div>
+
+        <h2>System Architecture</h2>
+        <div class="diagram">
+            <div class="mermaid">
+graph TB
+    subgraph Production["🌐 Production System (thunderbird.bot)"]
+        Backend["Backend API<br/>(Port 8000)"]
+        Frontend["Next.js Frontend<br/>(Port 3000)"]
+        Database["SQLite Database<br/>(production.db)"]
+
+        Backend --> Database
+        Frontend --> Backend
+    end
+
+    subgraph MonitoringService["⚡ Monitoring Service (Port 8001)"]
+        Scheduler["APScheduler<br/>(18 Jobs)"]
+        HealthChecks["Health Checks<br/>(HTTP)"]
+        SyntheticTests["Synthetic Tests<br/>(Playwright)"]
+        LogCollector["Log Collector<br/>(Errors)"]
+        MetricsDB["Metrics DB<br/>(monitoring.db)"]
+
+        Scheduler --> HealthChecks
+        Scheduler --> SyntheticTests
+        Scheduler --> LogCollector
+        HealthChecks --> MetricsDB
+        SyntheticTests --> MetricsDB
+        LogCollector --> MetricsDB
+    end
+
+    subgraph Alerting["🔔 Alert System"]
+        AlertManager["Alert Manager<br/>(Deduplication)"]
+        TwilioSMS["Twilio SMS<br/>(Critical)"]
+        ResendEmail["Resend Email<br/>(Warning)"]
+
+        AlertManager --> TwilioSMS
+        AlertManager --> ResendEmail
+    end
+
+    subgraph Reporting["📊 Reporting"]
+        DailyReport["Daily Report<br/>(8 AM UTC)"]
+        WeeklyReport["Weekly Report<br/>(Monday)"]
+        MonthlyReport["Monthly Report<br/>(1st)"]
+    end
+
+    subgraph Dashboard["📈 Dashboard"]
+        StatusPage["Status Page<br/>(/monitoring)"]
+        API["Monitoring API<br/>(/api/monitoring/*)"]
+
+        StatusPage --> API
+    end
+
+    %% Connections
+    HealthChecks -.->|Checks| Production
+    SyntheticTests -.->|Tests| Production
+
+    MetricsDB --> AlertManager
+    AlertManager -.->|SMS/Email| You["👤 You<br/>(Admin)"]
+
+    MetricsDB --> DailyReport
+    MetricsDB --> WeeklyReport
+    MetricsDB --> MonthlyReport
+
+    DailyReport -.->|Email| You
+    WeeklyReport -.->|Email| You
+    MonthlyReport -.->|Email| You
+
+    API --> MetricsDB
+    StatusPage -.->|Browser| You
+
+    style Production fill:#e0e7ff
+    style MonitoringService fill:#fef3c7
+    style Alerting fill:#fecaca
+    style Reporting fill:#d1fae5
+    style Dashboard fill:#ddd6fe
+    style You fill:#f97316,color:#fff
+            </div>
+        </div>
+
+        <h2>What Gets Monitored</h2>
+        <div class="diagram">
+            <div class="mermaid">
+graph LR
+    subgraph HTTP["HTTP Health Checks (Every 1 minute)"]
+        BE[Backend Health]
+        FE[Frontend Loads]
+        API[API Response Time]
+    end
+
+    subgraph Endpoints["Endpoint Checks (Every 5-10 minutes)"]
+        Beta[Beta Signup]
+        Weather[Weather API]
+        DB[DB Query Performance]
+        ExtAPI[External API Latency]
+    end
+
+    subgraph Synthetic["Synthetic Tests (Every 5-15 minutes)"]
+        BetaFlow[Beta Signup Flow<br/>Playwright]
+        CheckoutFlow[Checkout Flow<br/>Playwright]
+        CreateFlow[Create Route Flow<br/>Playwright]
+        LoginFlow[Login Flow<br/>HTTP]
+        SMSWebhook[SMS Webhook<br/>HTTP Daily]
+    end
+
+    subgraph Logs["Error Monitoring (Every 2 minutes)"]
+        LogCollection[Log Collection]
+        ErrorRate[Error Rate Check]
+        PatternDetect[Pattern Detection]
+    end
+
+    subgraph Meta["Self-Monitoring (Every 5 minutes)"]
+        Heartbeat[Heartbeat Check]
+        SelfHealth[Self Health Check]
+    end
+
+    style HTTP fill:#93c5fd
+    style Endpoints fill:#fbbf24
+    style Synthetic fill:#c084fc
+    style Logs fill:#f87171
+    style Meta fill:#34d399
+            </div>
+        </div>
+
+        <h2>Alert Flow: How You Get Notified</h2>
+        <div class="diagram">
+            <div class="mermaid">
+graph TD
+    Check[Health Check Runs] --> Result{Check Result?}
+
+    Result -->|Pass| Recovery[Check for Recovery]
+    Recovery --> WasDown{Was it down?}
+    WasDown -->|Yes| RecoveryAlert[Send Recovery Notification]
+    WasDown -->|No| Done[Done]
+    RecoveryAlert --> Done
+
+    Result -->|Fail| ConsecCheck[Count Consecutive Failures]
+    ConsecCheck --> TwoFails{2+ Consecutive<br/>Failures?}
+
+    TwoFails -->|No| Store[Store Metric Only]
+    Store --> Done
+
+    TwoFails -->|Yes| Severity{Severity?}
+
+    Severity -->|Critical| Dedup1[Check Deduplication]
+    Dedup1 --> Recent1{Alerted<br/>< 15 min ago?}
+    Recent1 -->|Yes| Skip1[Skip Alert]
+    Recent1 -->|No| RateLimit{SMS Rate OK?<br/>< 10/hour}
+    RateLimit -->|Yes| CriticalAlert[📱 SMS + 📧 Email]
+    RateLimit -->|No| EmailOnly[📧 Email Only]
+    CriticalAlert --> CreateIncident[Create/Update Incident]
+    EmailOnly --> CreateIncident
+
+    Severity -->|Warning| Dedup2[Check Deduplication]
+    Dedup2 --> Recent2{Alerted<br/>< 15 min ago?}
+    Recent2 -->|Yes| Skip2[Skip Alert]
+    Recent2 -->|No| WarningEmail[📧 Email Alert]
+    WarningEmail --> CheckAge{Incident > 15 min<br/>AND Not Acknowledged?}
+    CheckAge -->|Yes| Escalate[📱 Escalate to SMS]
+    CheckAge -->|No| CreateIncident
+    Escalate --> CreateIncident
+
+    CreateIncident --> Done
+    Skip1 --> Done
+    Skip2 --> Done
+
+    style CriticalAlert fill:#dc2626,color:#fff
+    style Escalate fill:#f59e0b,color:#fff
+    style WarningEmail fill:#fbbf24
+    style RecoveryAlert fill:#10b981,color:#fff
+    style CreateIncident fill:#3b82f6,color:#fff
+            </div>
+        </div>
+
+        <h2>Alert Severity Levels</h2>
+        <div class="legend">
+            <div class="legend-item critical">
+                <h3>🔴 Critical (SMS + Email Immediate)</h3>
+                <p><strong>Checks:</strong> backend_health, beta_signup_flow, checkout_flow, sms_webhook</p>
+                <p><strong>Impact:</strong> Revenue or core functionality down</p>
+                <p><strong>Response:</strong> Immediate SMS + Email</p>
+            </div>
+            <div class="legend-item warning">
+                <h3>🟡 Warning (Email, SMS after 15 min)</h3>
+                <p><strong>Checks:</strong> login_flow, weather_api, db_query_performance, external_api_latency</p>
+                <p><strong>Impact:</strong> Degraded but not critical</p>
+                <p><strong>Response:</strong> Email immediately, SMS if >15 min unresolved</p>
+            </div>
+            <div class="legend-item success">
+                <h3>🟢 Recovery (Auto-notification)</h3>
+                <p><strong>Trigger:</strong> Failing check starts passing again</p>
+                <p><strong>Message:</strong> Includes downtime duration</p>
+                <p><strong>Channel:</strong> SMS for critical, Email for warning</p>
+            </div>
+            <div class="legend-item info">
+                <h3>🔵 Acknowledgment (Stop Escalation)</h3>
+                <p><strong>Action:</strong> Click "Acknowledge" in dashboard</p>
+                <p><strong>Effect:</strong> Stops warning→SMS escalation</p>
+                <p><strong>Use:</strong> When you're already investigating</p>
+            </div>
+        </div>
+
+        <h2>Check Schedule</h2>
+        <div class="diagram">
+            <div class="mermaid">
+gantt
+    title Monitoring Check Schedule
+    dateFormat mm:ss
+    axisFormat %M:%S
+
+    section HTTP Checks (1 min)
+    Backend Health : 00:00, 01:00
+    Frontend Loads : 00:00, 01:00
+    API Response : 00:00, 01:00
+
+    section DB & APIs (5 min)
+    DB Query Perf : 00:00, 05:00
+    Beta Signup : 00:00, 05:00
+
+    section External (10 min)
+    Weather API : 00:00, 10:00
+    External APIs : 00:00, 10:00
+    Login Flow : 00:00, 10:00
+
+    section Synthetic Tests
+    Beta Signup Flow : 00:00, 05:00
+    Checkout Flow : 00:00, 15:00
+    Create Route Flow : 00:00, 15:00
+
+    section Self-Monitor (5 min)
+    Heartbeat : 00:00, 05:00
+
+    section Logs (2 min)
+    Log Collection : 00:00, 02:00
+    Error Rate Check : 00:00, 05:00
+
+    section Pattern Detection (30 min)
+    Pattern Analysis : 00:00, 30:00
+            </div>
+        </div>
+
+        <h2>Reporting Schedule</h2>
+        <div class="legend">
+            <div class="legend-item info">
+                <h3>📧 Daily Report (8 AM UTC)</h3>
+                <p><strong>Content:</strong> Previous day's uptime, incidents, per-check stats</p>
+                <p><strong>Delivery:</strong> Email to configured addresses</p>
+            </div>
+            <div class="legend-item info">
+                <h3>📧 Weekly Report (Monday 8 AM UTC)</h3>
+                <p><strong>Content:</strong> Week's uptime, trends vs previous week, all incidents</p>
+                <p><strong>Delivery:</strong> Email with week-over-week comparison</p>
+            </div>
+            <div class="legend-item info">
+                <h3>📧 Monthly Report (1st @ 8 AM UTC)</h3>
+                <p><strong>Content:</strong> SLA compliance (99.9% target), incident post-mortems</p>
+                <p><strong>Delivery:</strong> Email with full month analysis</p>
+            </div>
+        </div>
+
+        <h2>How to Use</h2>
+        <div class="legend">
+            <div class="legend-item success">
+                <h3>📊 View Dashboard</h3>
+                <p><code>http://localhost:3000/monitoring</code> (dev)</p>
+                <p><code>https://thunderbird.bot/monitoring</code> (prod)</p>
+                <p>See real-time health, uptime charts, active incidents</p>
+            </div>
+            <div class="legend-item success">
+                <h3>✅ Acknowledge Incidents</h3>
+                <p>Click "Acknowledge" button on dashboard</p>
+                <p>Prevents warning→SMS escalation while you investigate</p>
+            </div>
+            <div class="legend-item success">
+                <h3>🔍 View Incident Timeline</h3>
+                <p>Click "View Timeline" to see full incident history</p>
+                <p>Shows: first failure, alerts sent, acknowledgment, resolution</p>
+            </div>
+            <div class="legend-item warning">
+                <h3>⚙️ Configure Alerts</h3>
+                <p><code>/etc/default/thunderbird-monitoring</code></p>
+                <p>Set your phone number and email for alerts</p>
+            </div>
+        </div>
+
+        <h2>API Endpoints</h2>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 13px;">
+            <div style="margin: 10px 0;"><strong>GET</strong> /health - Service health check</div>
+            <div style="margin: 10px 0;"><strong>GET</strong> /api/monitoring/status - Current check statuses</div>
+            <div style="margin: 10px 0;"><strong>GET</strong> /api/monitoring/uptime?hours=24 - Uptime statistics</div>
+            <div style="margin: 10px 0;"><strong>GET</strong> /api/monitoring/metrics/{check}?hours=1 - Time series data</div>
+            <div style="margin: 10px 0;"><strong>GET</strong> /api/monitoring/incidents - Active incidents</div>
+            <div style="margin: 10px 0;"><strong>POST</strong> /api/monitoring/incidents/{id}/acknowledge - Acknowledge incident</div>
+            <div style="margin: 10px 0;"><strong>GET</strong> /api/monitoring/incidents/{id}/timeline - Incident timeline</div>
+            <div style="margin: 10px 0;"><strong>GET</strong> /api/monitoring/logs?query=error - Search error logs</div>
+            <div style="margin: 10px 0;"><strong>GET</strong> /api/monitoring/logs/rate?hours=1 - Error rate stats</div>
+            <div style="margin: 10px 0;"><strong>GET</strong> /api/monitoring/logs/patterns - Error pattern detection</div>
+        </div>
+
+        <h2>Data Retention</h2>
+        <div class="legend">
+            <div class="legend-item info">
+                <h3>Metrics: 90 days</h3>
+                <p>Automatic cleanup runs daily at 3 AM UTC</p>
+            </div>
+            <div class="legend-item info">
+                <h3>Error Logs: 90 days</h3>
+                <p>Automatic cleanup with metrics retention</p>
+            </div>
+            <div class="legend-item info">
+                <h3>Incidents: Permanent</h3>
+                <p>Historical incidents kept for post-mortem analysis</p>
+            </div>
+        </div>
+
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; color: #999;">
+            <p>Thunderbird Monitoring System | Phase 9 Complete | 6 Plans, 18 Jobs, 2 Alert Channels</p>
+        </footer>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            gantt: {
+                useMaxWidth: true
+            }
+        });
+    </script>
+</body>
+</html>
