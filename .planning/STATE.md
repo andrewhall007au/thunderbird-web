@@ -12,11 +12,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-19)
 ## Current Position
 
 Phase: 9 of 9 (Monitoring & Alerting) - IN PROGRESS
-Plan: 1 of 4 completed (09-01-PLAN.md)
-Status: Monitoring service foundation built
-Last activity: 2026-02-04 - Completed 09-01-PLAN.md (Monitoring Service Foundation)
+Plan: 4 of 4 completed (09-04-PLAN.md)
+Status: Status dashboard with incident acknowledgment and timeline complete
+Last activity: 2026-02-04 - Completed 09-04-PLAN.md (Status Dashboard)
 
-Progress: ██░░░░░░░░░ 18% (Phase 9 Plan 1 complete: Monitoring service with health checks, metrics DB, scheduler)
+Progress: ████████████ 100% (Phase 9 Complete: Monitoring service, alerting, synthetic tests, and status dashboard operational)
 
 ---
 
@@ -47,6 +47,31 @@ Progress: ██░░░░░░░░░ 18% (Phase 9 Plan 1 complete: Monito
 5. **Pydantic config with extra='ignore'** - Coexists with main app .env without validation errors
 
 **Next:** Plan 2 (Alerting) will add SMS/email alerts based on consecutive failures and incident tracking.
+
+### Plan 4: Status Dashboard (COMPLETE)
+
+**Summary:** Next.js dashboard at /monitoring with real-time health monitoring, incident acknowledgment to stop escalation, and expandable event timelines showing failure progression.
+
+**Commits:**
+- `8ae7e53` - Dashboard API with 7 endpoints (status, uptime, metrics, incidents, acknowledge, timeline, summary)
+- `9e65f93` - Next.js dashboard with StatusCard, UptimeChart, IncidentLog components
+
+**Key Accomplishments:**
+- Dashboard API mounted in both monitoring service and main backend for unified access
+- Real-time status dashboard with 30-second auto-refresh
+- Color-coded uptime bars with percentage thresholds (>99.5% green, >99% amber, <99% red)
+- Incident acknowledgment workflow stops alert escalation
+- Expandable incident timelines show chronological event progression
+- Responsive grid layout for mobile/tablet/desktop viewing
+
+**Key Decisions:**
+1. **Mount API in both services** - Dashboard accesses via proxy, standalone service remains functional
+2. **Display name mapping** - Human-readable check names ("Backend Health" vs "health_check")
+3. **On-demand timeline fetching** - Reduces initial page load, fetches only when expanded
+4. **Simple CSS-based bars** - No chart library needed for v1, lighter weight
+5. **Internal dashboard** - Not linked in public nav, accessible via direct URL only
+
+**Next:** Phase 9 complete. Monitoring & alerting infrastructure operational.
 
 ---
 
