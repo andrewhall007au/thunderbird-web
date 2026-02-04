@@ -355,6 +355,15 @@ app.include_router(affiliate_landing.router)
 app.include_router(beta.router)
 app.include_router(field_test.router)
 
+# Include monitoring API router (if monitoring module is available)
+try:
+    from monitoring.api import router as monitoring_api_router
+    app.include_router(monitoring_api_router)
+    logger.info("Monitoring API router mounted")
+except ImportError:
+    logger.warning("Monitoring module not available - dashboard endpoints disabled")
+    pass
+
 # Root health check (kept at root for compatibility)
 @app.get("/health")
 async def root_health():

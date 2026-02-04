@@ -21,6 +21,7 @@ from .storage import (
     acknowledge_incident,
 )
 from .scheduler import create_scheduler
+from .api import router as monitoring_api_router
 
 # Configure logging
 logging.basicConfig(
@@ -67,6 +68,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Include monitoring API router
+app.include_router(monitoring_api_router)
 
 
 @app.get("/")
