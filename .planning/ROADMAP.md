@@ -681,22 +681,23 @@ ALTER TABLE accounts ADD COLUMN active_trail_id INTEGER REFERENCES custom_routes
 
 **Type:** Operations & reliability enhancement
 
-**Plans:** 5 plans in 3 waves
+**Plans:** 6 plans in 3 waves
 
 Plans:
-- [ ] 09-01-PLAN.md - Monitoring data layer, health checks, and APScheduler runner (Wave 1)
-- [ ] 09-02-PLAN.md - Alert manager with SMS/email channels and deduplication (Wave 2)
-- [ ] 09-03-PLAN.md - Synthetic Playwright test runner for production monitoring (Wave 2)
-- [ ] 09-04-PLAN.md - Status dashboard API and Next.js monitoring page (Wave 2)
-- [ ] 09-05-PLAN.md - Self-monitoring, reporting, and production deployment (Wave 3)
+- [ ] 09-01-PLAN.md - Monitoring data layer, health checks (incl. DB query perf + external API latency), and APScheduler runner (Wave 1)
+- [ ] 09-02-PLAN.md - Alert manager with SMS/email channels, deduplication, and incident acknowledgment (Wave 2)
+- [ ] 09-03-PLAN.md - Synthetic test runner with login flow and SMS webhook checks (Wave 2)
+- [ ] 09-04-PLAN.md - Status dashboard with incident acknowledgment and timeline (Wave 2)
+- [ ] 09-05-PLAN.md - Self-monitoring, daily/weekly/monthly reporting, and production deployment (Wave 3)
+- [ ] 09-06-PLAN.md - Centralized error log aggregation with search, rate tracking, and pattern detection (Wave 2)
 
 ### Wave Structure
 
 | Wave | Plans | Description |
 |------|-------|-------------|
-| 1 | 09-01 | Foundation: SQLite metrics DB, health checks, APScheduler |
-| 2 | 09-02, 09-03, 09-04 | Parallel: Alert manager, synthetic tests, status dashboard |
-| 3 | 09-05 | Integration: self-monitoring, daily reports, systemd deployment |
+| 1 | 09-01 | Foundation: SQLite metrics DB, health checks (incl. DB query perf, external API latency), APScheduler |
+| 2 | 09-02, 09-03, 09-04, 09-06 | Parallel: Alert manager (w/ acknowledgment), synthetic tests (w/ login + SMS webhook), status dashboard (w/ timeline), log aggregation |
+| 3 | 09-05 | Integration: self-monitoring, daily/weekly/monthly reports, systemd deployment |
 
 ### Problem Statement
 
@@ -711,14 +712,17 @@ The BetaApplyModal production bug (2026-02-04) revealed a critical gap: no autom
 - `backend/monitoring/` (new package - monitoring service)
 - `backend/monitoring/main.py` (FastAPI monitoring app, port 8001)
 - `backend/monitoring/storage.py` (SQLite metrics DB)
-- `backend/monitoring/checks.py` (HTTP health checks)
-- `backend/monitoring/checks_synthetic.py` (Playwright test runner)
-- `backend/monitoring/alerts/manager.py` (deduplication, severity routing)
+- `backend/monitoring/checks.py` (HTTP health checks incl. DB query perf + external API latency)
+- `backend/monitoring/checks_synthetic.py` (Playwright test runner + login + SMS webhook)
+- `backend/monitoring/alerts/manager.py` (deduplication, severity routing, acknowledgment)
 - `backend/monitoring/alerts/channels.py` (Twilio SMS, Resend email)
+- `backend/monitoring/logs/collector.py` (error log collection)
+- `backend/monitoring/logs/storage.py` (error log SQLite storage with search)
+- `backend/monitoring/logs/analyzer.py` (error pattern detection)
 - `backend/monitoring/scheduler.py` (APScheduler periodic checks)
 - `backend/monitoring/self_monitor.py` (heartbeat, meta-monitoring)
-- `backend/monitoring/reporting.py` (daily summary reports)
-- `app/monitoring/page.tsx` (status dashboard)
+- `backend/monitoring/reporting.py` (daily/weekly/monthly reports)
+- `app/monitoring/page.tsx` (status dashboard with incident acknowledgment + timeline)
 - `e2e/monitoring.config.ts` (Playwright config for production)
 
 ### Success Criteria
@@ -727,10 +731,21 @@ The BetaApplyModal production bug (2026-02-04) revealed a critical gap: no autom
 - SMS alerts arrive within 30 seconds of detection
 - Zero false positives for critical alerts (2 consecutive failures required)
 - Dashboard shows real-time system health at /monitoring
+- Incidents can be acknowledged to stop escalation
+- Incident timeline shows event progression
 - 99.9% monitoring uptime (monitor the monitor)
 - All critical user flows tested every 5-15 minutes
+- Login flow tested every 10 minutes
+- SMS webhook tested daily
+- Database query performance tracked every 5 minutes
+- External API latency tracked every 10 minutes
+- Centralized error logs searchable by severity, source, time, and message
+- Error rate tracked with alerting on spikes
+- Error patterns detected and grouped
 - Historical data retained for 90 days
 - Daily health report emailed at 8 AM
+- Weekly health report emailed every Monday
+- Monthly health report with SLA compliance on 1st of month
 
 ### Dependencies
 
@@ -751,4 +766,4 @@ The BetaApplyModal production bug (2026-02-04) revealed a critical gap: no autom
 ---
 
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-02-04 - Phase 9 planned (5 plans in 3 waves)*
+*Last updated: 2026-02-04 - Phase 9 revised (6 plans in 3 waves, added log aggregation, login/SMS webhook checks, incident acknowledgment/timeline, weekly/monthly reports)*
