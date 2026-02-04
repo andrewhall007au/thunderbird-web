@@ -500,8 +500,10 @@ Plans:
 | 4 | User Flows | FLOW-01 to FLOW-06, CONT-01 to CONT-03 (9) | Phases 2, 3 |
 | 5 | Affiliates | AFFL-01 to AFFL-07 (7) | Phase 2 |
 | 6 | International Weather | WTHR-01 to WTHR-11 (11) | Phase 1 |
+| 7 | Multi-Trail SMS | START-01 to START-08 (8) | Phases 3, 4 |
+| 8 | Security Hardening | SEC-01 to SEC-07 (7) | Phase 7 |
 
-**Total v1 requirements:** 53
+**Total v1 requirements:** 71 (includes post-launch security hardening)
 
 ---
 
@@ -604,5 +606,68 @@ ALTER TABLE accounts ADD COLUMN active_trail_id INTEGER REFERENCES custom_routes
 
 ---
 
+## Phase 8: Security Hardening
+
+**Status:** Complete (2026-02-03)
+
+**Goal:** Harden production security with CORS whitelisting, XSS protection, rate limiting, and security headers
+
+**Requirements covered:** SEC-01 through SEC-07 (Security hardening post-launch)
+
+**Type:** Post-launch enhancement
+
+### Deliverables
+
+- [x] CORS whitelist (restrict to thunderbird.bot domains only)
+- [x] XSS protection (sanitize user inputs)
+- [x] Rate limiting middleware
+- [x] Nginx security headers (HSTS, CSP, X-Frame-Options, etc.)
+- [x] Rate limits on auth endpoints (1 req/min)
+- [x] Rate limits on beta applications (5 req/hour)
+- [x] Rate limits on API endpoints (10 req/sec)
+- [x] Deployment scripts for security configuration
+- [x] Production deployment completed
+
+### Key Files
+
+- `backend/app/main.py` (CORS whitelist)
+- `backend/app/routers/beta.py` (XSS sanitization)
+- `backend/app/middleware/rate_limit.py` (new)
+- `backend/deploy/nginx_complete.conf` (new)
+- `backend/deploy/apply_nginx_security.sh` (new)
+- `backend/security_fixes.sh` (new)
+
+### Security Improvements
+
+| Area | Before | After |
+|------|--------|-------|
+| CORS | Wildcard `*` | Whitelist thunderbird.bot only |
+| XSS | No sanitization | HTML escape on user inputs |
+| Rate limiting | None | Tiered limits by endpoint type |
+| Security headers | Basic nginx | Full OWASP headers |
+
+### Success Criteria
+
+- CORS blocks unauthorized domains
+- XSS attempts sanitized in admin console
+- Rate limiting prevents brute force attacks
+- Security headers pass securityheaders.com scan
+- All changes deployed to production
+
+### Dependencies
+
+- Phase 7 (existing infrastructure)
+
+### Risks Mitigated
+
+- CORS exploitation
+- XSS attacks
+- Brute force attacks
+- DDoS attacks
+- Clickjacking
+- Man-in-the-middle attacks
+
+---
+
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-28 - Phase 7 complete (Multi-Trail SMS Selection)*
+*Last updated: 2026-02-04 - Phase 8 complete (Security Hardening)*

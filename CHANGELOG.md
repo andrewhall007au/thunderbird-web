@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- **CORS Whitelisting** (2026-02-03)
+  - Restricted CORS to thunderbird.bot domains only (previously wildcard `*`)
+  - Prevents unauthorized domain access to API endpoints
+  - Whitelist: `thunderbird.bot`, `www.thunderbird.bot`, `localhost:3000`
+
+- **XSS Protection** (2026-02-03)
+  - Added HTML escaping for user inputs in beta applications
+  - Prevents script injection in admin console
+  - Sanitization applied to name field before database storage
+
+- **Rate Limiting** (2026-02-03)
+  - Implemented tiered rate limiting middleware
+  - Auth endpoints: 1 request/minute (prevents brute force)
+  - Beta applications: 5 requests/hour (prevents spam)
+  - API endpoints: 10 requests/second (prevents DDoS)
+
+- **Nginx Security Headers** (2026-02-03)
+  - HSTS: Force HTTPS connections
+  - X-Frame-Options: Prevent clickjacking
+  - X-Content-Type-Options: Prevent MIME sniffing
+  - Content-Security-Policy: Restrict resource loading
+  - Server version hidden
+  - Refs: backend/deploy/nginx_complete.conf
+
 ### Fixed
 - **Critical**: Added missing AU→BOM provider mapping (2026-02-03)
   - Australian coordinates now use native BOM provider (2.2km resolution)
@@ -22,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Validates router provider mappings match documentation
   - Prevents specification-to-implementation drift
   - Tests all 10 documented country mappings
+- Security hardening infrastructure (Phase 8)
+  - Rate limiting middleware
+  - Deployment scripts for security configuration
+  - Nginx security configuration templates
 
 ## [3.0.0] - 2026-01-XX
 
