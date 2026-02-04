@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Zap, Check, MapPin, MessageSquare, CreditCard, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { getTrackingContext, trackPurchaseCompleted, trackPageView } from '@/app/lib/analytics';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 type SessionStatus = 'loading' | 'success' | 'pending' | 'failed' | 'not_found' | 'already_used';
 

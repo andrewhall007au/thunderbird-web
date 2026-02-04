@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Zap, Lock, Mail, User, Eye, EyeOff, Check, Shield, Loader2, AlertCircle, LogOut } from 'lucide-react';
 import { initPathTracking, getTrackingContext, trackCheckoutStarted, trackPageView } from '@/app/lib/analytics';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 function CheckoutForm() {
   const router = useRouter();

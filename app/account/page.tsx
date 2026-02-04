@@ -10,7 +10,7 @@ import {
   ChevronRight, Wallet, Route, AlertCircle, Check
 } from 'lucide-react';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 function formatBalance(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;

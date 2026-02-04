@@ -17,7 +17,7 @@ interface PaywallModalProps {
   onClose: () => void;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 /**
  * PaywallModal - Purchase flow modal for route activation.
