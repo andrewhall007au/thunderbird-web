@@ -1335,7 +1335,7 @@ async def handle_checkout_completed(session):
     from app.services.email import send_order_confirmation
     from app.models.payments import order_store
     from app.models.account import account_store
-    from config.sms_pricing import get_segments_per_topup, get_country_from_phone
+    from config.sms_pricing import get_segments_for_topup, get_country_from_phone
 
     metadata = session.get("metadata", {}) or {}
     account_id_str = metadata.get("account_id")
@@ -1442,7 +1442,7 @@ async def handle_checkout_completed(session):
             country = get_country_from_phone(account.phone) if account.phone else "US"
             # For initial purchase, estimate based on amount paid
             # $10 top-up gives segments_per_topup, scale accordingly
-            segments = int((order.amount_cents / 1000) * get_segments_per_topup(country))
+            segments = int((order.amount_cents / 1000) * get_segments_for_topup(country, 10))
 
             email_result = await send_order_confirmation(
                 to_email=account.email,
