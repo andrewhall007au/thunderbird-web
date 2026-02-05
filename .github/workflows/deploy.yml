@@ -99,7 +99,24 @@ jobs:
             source venv/bin/activate
             python tests/smoke_test_production.py --url https://thunderbird.bot -v || echo "Production smoke test warning"
 
+      - name: Run browser-based smoke tests against production
+        run: |
+          npm install
+          npx playwright install chromium
+          npx playwright test e2e/critical-flows.spec.ts --config=e2e/production.config.ts --project=chromium
+        env:
+          TEST_URL: https://thunderbird.bot
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-test-results
+          path: test-results/
+          retention-days: 30
+
       - name: Deployment complete
         run: |
-          echo "Deployment successful!"
+          echo "✅ Deployment successful!"
+          echo "✅ Production smoke tests passed!"
           echo "Server: ${{ secrets.SERVER_HOST }}"
