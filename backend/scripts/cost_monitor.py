@@ -25,7 +25,7 @@ from pathlib import Path
 # Configuration
 WARN_THRESHOLD = 20.0   # Send warning SMS at $20
 STOP_THRESHOLD = 25.0   # Stop service at $25
-ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "+61410663673")
+ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "")
 DB_PATH = "/root/overland-weather/thunderbird.db"
 STATE_FILE = "/tmp/thunderbird_cost_alerts.txt"
 LOG_FILE = "/var/log/thunderbird-cost-monitor.log"

@@ -76,8 +76,12 @@ async def handle_inbound_sms(
     form_data = await request.form()
     params = dict(form_data)
 
-    # Validate Twilio signature in production
-    if not settings.DEBUG and x_twilio_signature:
+    # Validate Twilio signature (mandatory — only skipped in test suite)
+    import os
+    if os.environ.get("TESTING") != "true":
+        if not x_twilio_signature:
+            logger.warning("Missing Twilio signature - rejecting request")
+            raise HTTPException(status_code=403, detail="Missing signature")
         sms_service = get_sms_service()
         url = str(request.url)
         if not sms_service.validate_webhook(url, params, x_twilio_signature):
@@ -95,7 +99,9 @@ async def handle_inbound_sms(
     except ValueError:
         from_phone = from_phone_raw.strip()  # Fallback to stripped version
 
-    logger.info(f"SMS received from {PhoneUtils.mask(from_phone)}: {body[:50]}...")
+    # Log command keyword only, not full SMS body (may contain sensitive data)
+    command_word = body.strip().split()[0].upper() if body.strip() else "EMPTY"
+    logger.info(f"SMS received from {PhoneUtils.mask(from_phone)}: {command_word}")
 
     # Parse command for logging
     text_upper = body.strip().upper()
@@ -290,7 +296,10 @@ async def complete_user_registration(session):
 async def notify_admin_new_registration(trail_name: str, route_name: str):
     """Send SMS to admin when a new user registers."""
     import os
-    admin_phone = os.environ.get("ADMIN_PHONE", "+61410663673")
+    admin_phone = os.environ.get("ADMIN_PHONE", "")
+    if not admin_phone:
+        logger.warning("ADMIN_PHONE not configured - skipping admin notification")
+        return
 
     try:
         sms_service = get_sms_service()
@@ -419,7 +428,7 @@ async def process_command(phone: str, parsed) -> str:
         try:
             normalized_contact = PhoneUtils.normalize(contact_phone)
         except ValueError:
-            return f"Invalid phone number: {contact_phone}\n\nUse format: +61400123456"
+            return "Invalid phone number format.\n\nUse format: +61400123456"
 
         # Add contact
         if user_store.add_safecheck_contact(phone, normalized_contact, contact_name):
@@ -443,7 +452,7 @@ async def process_command(phone: str, parsed) -> str:
         try:
             normalized_contact = PhoneUtils.normalize(contact_phone)
         except ValueError:
-            return f"Invalid phone number: {contact_phone}"
+            return "Invalid phone number format."
 
         if user_store.remove_safecheck_contact(phone, normalized_contact):
             return f"SafeCheck contact removed: {PhoneUtils.mask(normalized_contact)}"

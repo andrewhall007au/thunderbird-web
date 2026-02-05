@@ -77,9 +77,10 @@ class Settings(BaseSettings):
     # Optional monitoring
     SENTRY_DSN: Optional[str] = None
     
-    # Admin interface
-    ADMIN_PASSWORD: str = "changeme"  # MUST change in production
-    ADMIN_SESSION_SECRET: str = "thunderbird-secret-key-change-me"
+    # Admin interface (MUST override in production .env)
+    ADMIN_PASSWORD: str = ""
+    ADMIN_SESSION_SECRET: str = ""
+    ADMIN_PHONE: str = ""  # Phone number for admin notifications
     
     # Testing
     LIVETEST_ENABLED: bool = False

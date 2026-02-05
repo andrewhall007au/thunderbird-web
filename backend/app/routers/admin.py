@@ -66,6 +66,7 @@ async def admin_login_submit(request: Request):
             "thunderbird_session",
             token,
             httponly=True,
+            secure=not settings.DEBUG,
             max_age=86400,  # 24 hours
             samesite="strict"
         )
@@ -209,8 +210,8 @@ async def admin_push_forecast(phone: str, request: Request):
         )
 
     except Exception as e:
-        logger.error(f"Error pushing forecast: {e}")
-        return RedirectResponse(f"/admin?msg=Error: {str(e)}", status_code=302)
+        logger.error(f"Error pushing forecast: {e}", exc_info=True)
+        return RedirectResponse("/admin?msg=Error pushing forecast. Check logs.", status_code=302)
 
 
 @router.post("/push-all")

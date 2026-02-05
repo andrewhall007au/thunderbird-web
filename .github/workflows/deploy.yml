@@ -41,9 +41,43 @@ jobs:
         run: |
           echo "Tests completed"
 
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install scanning tools
+        run: pip install bandit pip-audit
+
+      - name: Run Bandit (Python SAST)
+        run: bandit -r app/ -ll -f json -o bandit-report.json || true
+
+      - name: Run pip-audit (dependency CVEs)
+        run: pip-audit -r requirements.txt || true
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: backend/bandit-report.json
+          retention-days: 30
+
   deploy:
     name: Deploy to Production
-    needs: test
+    needs: [test, security]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 

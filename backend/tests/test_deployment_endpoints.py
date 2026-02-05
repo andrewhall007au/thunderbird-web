@@ -42,29 +42,22 @@ class TestHealthEndpoints:
         assert "version" in data
 
     def test_health_services_structure(self, client):
-        """Health endpoint should return expected service status fields."""
+        """Health endpoint should NOT expose service details (security hardening)."""
         response = client.get("/health")
         data = response.json()
 
-        # Per THUNDERBIRD_SPEC_v3.2.md section 12.10.1
-        expected_services = ["database", "redis", "bom_api", "twilio"]
-        services = data["services"]
-
-        for service in expected_services:
-            assert service in services, f"Service '{service}' missing from health check"
-            assert services[service] in ["ok", "not_configured", "error"], \
-                f"Service '{service}' has invalid status: {services[service]}"
+        # Services should be empty dict (no internal details exposed)
+        assert data["services"] == {}, "Health endpoint should not expose service details"
 
     def test_health_version_format(self, client):
-        """Health endpoint should return version in correct format."""
+        """Health endpoint should NOT expose real version (security hardening)."""
         response = client.get("/health")
         data = response.json()
 
         version = data["version"]
         assert isinstance(version, str)
-        assert len(version) > 0
-        # Should be semantic version like "3.1.0"
-        assert version.count(".") >= 1, "Version should contain at least one dot"
+        # Version should be opaque, not a real version number
+        assert "." not in version, "Health endpoint should not expose real version number"
 
 
 class TestAuthEndpointsExist:

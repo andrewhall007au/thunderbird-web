@@ -7,13 +7,19 @@ import logging
 from datetime import datetime, date
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
 
 from config.settings import settings, TZ_HOBART, TZ_UTC
 from app.services.sms import get_sms_service, PhoneUtils
 from app.services.bom import get_bom_service
 from app.services.routes import RouteLoader, get_route
+
+
+def require_admin_api_key(x_admin_key: str = Header(..., alias="X-Admin-Key")):
+    """Require admin API key for sensitive endpoints."""
+    if not settings.ADMIN_PASSWORD or x_admin_key != settings.ADMIN_PASSWORD:
+        raise HTTPException(status_code=403, detail="Invalid admin key")
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +56,8 @@ async def health_check():
     return HealthStatus(
         status=status,
         timestamp=datetime.now(TZ_UTC).isoformat(),
-        services=services,
-        version=settings.APP_VERSION
+        services={},
+        version="ok"
     )
 
 
@@ -65,10 +71,10 @@ class ForecastPushRequest(BaseModel):
     phone: Optional[str] = None  # If provided, push to single user
 
 
-@router.post("/forecast/push")
+@router.post("/forecast/push", dependencies=[Depends(require_admin_api_key)])
 async def trigger_forecast_push(request: ForecastPushRequest):
     """
-    Trigger manual forecast push.
+    Trigger manual forecast push. Requires X-Admin-Key header.
 
     - If phone provided: Push to that user only
     - If no phone: Push to all active users
@@ -105,10 +111,10 @@ async def trigger_forecast_push(request: ForecastPushRequest):
         return {"status": "complete", "type": request.forecast_type}
 
 
-@router.post("/forecast/test-push/{phone}")
+@router.post("/forecast/test-push/{phone}", dependencies=[Depends(require_admin_api_key)])
 async def test_push_to_user(phone: str, forecast_type: str = "morning"):
     """
-    Quick test endpoint to push forecast to a specific phone.
+    Push forecast to a specific phone. Requires X-Admin-Key header.
     Use: POST /api/forecast/test-push/+61400123456?forecast_type=morning
     """
     from app.models.database import user_store
@@ -120,7 +126,7 @@ async def test_push_to_user(phone: str, forecast_type: str = "morning"):
 
     user = user_store.get_user(normalized)
     if not user:
-        raise HTTPException(status_code=404, detail=f"User not found. Registered users: {len(user_store.list_users())}")
+        raise HTTPException(status_code=404, detail="User not found")
 
     try:
         from app.main import push_forecast_to_user
@@ -133,7 +139,7 @@ async def test_push_to_user(phone: str, forecast_type: str = "morning"):
         }
     except Exception as e:
         logger.error(f"Test push failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Forecast push failed")
 
 
 # ============================================================================

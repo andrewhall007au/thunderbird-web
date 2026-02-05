@@ -1,72 +1,77 @@
 # Thunderbird Backend Dependencies
 # Based on THUNDERBIRD_SPEC_v2.4
+# Pinned versions for reproducible builds
 
 # Web Framework
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-pydantic>=2.5.0
-pydantic-settings>=2.1.0
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+pydantic==2.5.3
+pydantic-settings==2.1.0
 
 # Database
-sqlalchemy>=2.0.25
-asyncpg>=0.29.0  # PostgreSQL async driver
-alembic>=1.13.0  # Database migrations
+sqlalchemy==2.0.25
+asyncpg==0.29.0  # PostgreSQL async driver
+alembic==1.13.1  # Database migrations
 
 # Redis (caching)
-redis>=5.0.0
+redis==5.0.1
 
 # HTTP Client
-httpx>=0.26.0
+httpx==0.26.0
 
 # Geohash (for BOM API location lookup)
-geohash2>=1.1
-pygeohash>=1.2.0
+geohash2==1.1
+pygeohash==1.2.0
 
 # Geo (for GPS country detection)
-geopip>=1.1
+geopip==1.1
 
 # Twilio SMS
-twilio>=8.10.0
+twilio==8.10.3
 
 # Astronomy (sunrise/sunset)
-astral>=3.2
+astral==3.2
 
 # Date/Time
-python-dateutil>=2.8.2
+python-dateutil==2.8.2
 
 # Scheduler
-apscheduler>=3.10.0
+apscheduler==3.10.4
 
 # Testing
-pytest>=7.4.0
-pytest-asyncio>=0.23.0
-pytest-cov>=4.1.0
+pytest==7.4.4
+pytest-asyncio==0.23.4
+pytest-cov==4.1.0
 
 # Development
-black>=23.12.0
-isort>=5.13.0
-mypy>=1.8.0
+black==23.12.1
+isort==5.13.2
+mypy==1.8.0
 
 # Logging
-python-json-logger>=2.0.7
+python-json-logger==2.0.7
 
 # Environment
-python-dotenv>=1.0.0
-python-multipart>=0.0.6
+python-dotenv==1.0.1
+python-multipart==0.0.6
 
 # Authentication
-pyjwt>=2.8.0
-pwdlib[argon2]>=0.2.0
-email-validator>=2.0.0
+pyjwt==2.8.0
+pwdlib[argon2]==0.2.0
+email-validator==2.1.0
 
 # Email (SendGrid - legacy)
-sendgrid>=6.11.0
+sendgrid==6.11.0
 
 # Email (Resend - transactional)
-resend>=2.0.0
+resend==2.0.0
 
 # GPX Parsing (Route Creation)
-gpxpy>=1.6.0
+gpxpy==1.6.2
 
 # Environment Canada Weather
-env-canada>=0.6.0
+env-canada==0.6.0
+
+# Security scanning (dev)
+bandit==1.7.7
+pip-audit==2.7.0

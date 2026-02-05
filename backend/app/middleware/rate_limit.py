@@ -91,11 +91,15 @@ rate_limiter = RateLimiter()
 
 # Rate limit configurations per endpoint pattern
 RATE_LIMITS = {
+    "/webhook/sms/inbound": (10, 60),  # 10 SMS per minute per IP (Twilio sends from known IPs)
+    "/admin/login": (3, 900),          # 3 admin login attempts per 15 minutes
     "/auth/token": (5, 300),           # 5 login attempts per 5 minutes
     "/auth/register": (3, 3600),       # 3 registrations per hour
     "/auth/forgot-password": (3, 3600), # 3 password resets per hour
+    "/api/forecast/push": (2, 3600),   # 2 forecast pushes per hour
+    "/api/forecast/test-push": (5, 300), # 5 test pushes per 5 minutes
     "/api/beta/apply": (100, 3600),    # 100 beta applications per hour (testing phase)
-    "default": (100, 60),              # 100 requests per minute for other endpoints
+    "default": (60, 60),               # 60 requests per minute for other endpoints
 }
 
 

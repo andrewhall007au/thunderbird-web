@@ -28,20 +28,27 @@ fi
 node --version
 npm --version
 
-# Clone/update repo
-echo "[4/9] Setting up application..."
-cd /root
-if [ -d "thunderbird-web" ]; then
-    cd thunderbird-web
-    git pull
-else
-    git clone https://github.com/andrewhall007au/thunderbird-web.git
-    cd thunderbird-web
+# Create service user (non-root)
+echo "[4/10] Creating service user..."
+if ! id -u thunderbird &>/dev/null; then
+    useradd --system --create-home --shell /usr/sbin/nologin thunderbird
 fi
 
+# Clone/update repo
+echo "[5/10] Setting up application..."
+APP_DIR="/opt/thunderbird-web"
+if [ -d "$APP_DIR" ]; then
+    cd "$APP_DIR"
+    git pull
+else
+    git clone https://github.com/andrewhall007au/thunderbird-web.git "$APP_DIR"
+    cd "$APP_DIR"
+fi
+chown -R thunderbird:thunderbird "$APP_DIR"
+
 # Setup Python backend
-echo "[5/9] Setting up Python backend..."
-cd /root/thunderbird-web/backend
+echo "[6/10] Setting up Python backend..."
+cd "$APP_DIR/backend"
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
@@ -68,29 +75,30 @@ EOF
 fi
 
 # Build Next.js frontend
-echo "[6/9] Building Next.js frontend..."
-cd /root/thunderbird-web
+echo "[7/10] Building Next.js frontend..."
+cd "$APP_DIR"
 npm ci
 NEXT_PUBLIC_API_URL=https://${DOMAIN}/api npm run build
 
 # Install systemd services
-echo "[7/9] Installing systemd services..."
+echo "[8/10] Installing systemd services..."
 
-# Backend service
-cat > /etc/systemd/system/thunderbird-api.service << 'EOF'
+# Backend service (runs as unprivileged thunderbird user)
+cat > /etc/systemd/system/thunderbird-api.service << EOF
 [Unit]
 Description=Thunderbird API (FastAPI)
 After=network.target
 
 [Service]
 Type=simple
-User=root
-WorkingDirectory=/root/thunderbird-web/backend
-Environment="PATH=/root/thunderbird-web/backend/venv/bin"
-Environment="THUNDERBIRD_DB_PATH=/root/thunderbird-web/backend/thunderbird.db"
+User=thunderbird
+Group=thunderbird
+WorkingDirectory=${APP_DIR}/backend
+Environment="PATH=${APP_DIR}/backend/venv/bin"
+Environment="THUNDERBIRD_DB_PATH=${APP_DIR}/backend/thunderbird.db"
 Environment="TZ=Australia/Hobart"
-EnvironmentFile=/root/thunderbird-web/backend/.env
-ExecStart=/root/thunderbird-web/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+EnvironmentFile=${APP_DIR}/backend/.env
+ExecStart=${APP_DIR}/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
 
@@ -98,16 +106,17 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Frontend service
-cat > /etc/systemd/system/thunderbird-web.service << 'EOF'
+# Frontend service (runs as unprivileged thunderbird user)
+cat > /etc/systemd/system/thunderbird-web.service << EOF
 [Unit]
 Description=Thunderbird Web (Next.js)
 After=network.target
 
 [Service]
 Type=simple
-User=root
-WorkingDirectory=/root/thunderbird-web
+User=thunderbird
+Group=thunderbird
+WorkingDirectory=${APP_DIR}
 Environment="NODE_ENV=production"
 Environment="PORT=3000"
 ExecStart=/usr/bin/npm start
@@ -118,12 +127,18 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
+# Set secure permissions on database and .env
+chmod 600 "${APP_DIR}/backend/thunderbird.db" 2>/dev/null || true
+chmod 600 "${APP_DIR}/backend/.env" 2>/dev/null || true
+chown thunderbird:thunderbird "${APP_DIR}/backend/thunderbird.db" 2>/dev/null || true
+chown thunderbird:thunderbird "${APP_DIR}/backend/.env" 2>/dev/null || true
+
 systemctl daemon-reload
 systemctl enable thunderbird-api thunderbird-web
 systemctl restart thunderbird-api thunderbird-web
 
 # Configure nginx
-echo "[8/9] Configuring nginx..."
+echo "[9/10] Configuring nginx..."
 cat > /etc/nginx/sites-available/thunderbird << EOF
 server {
     listen 80;
@@ -184,7 +199,7 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 
 # Firewall
-echo "[9/9] Configuring firewall..."
+echo "[10/10] Configuring firewall..."
 ufw allow 22/tcp
 ufw allow 80/tcp
 ufw allow 443/tcp

@@ -266,9 +266,14 @@ async def lifespan(app: FastAPI):
     """Manage application lifecycle."""
     global scheduler
 
-    # Validate JWT_SECRET in production
-    if not settings.DEBUG and not settings.JWT_SECRET:
-        raise RuntimeError("JWT_SECRET must be set in production")
+    # Validate required secrets in production
+    if not settings.DEBUG:
+        if not settings.JWT_SECRET:
+            raise RuntimeError("JWT_SECRET must be set in production")
+        if not settings.ADMIN_PASSWORD:
+            raise RuntimeError("ADMIN_PASSWORD must be set in production")
+        if not settings.ADMIN_SESSION_SECRET:
+            raise RuntimeError("ADMIN_SESSION_SECRET must be set in production")
 
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
 
@@ -334,11 +339,10 @@ app.add_middleware(
     allow_origins=[
         "https://thunderbird.bot",
         "https://www.thunderbird.bot",
-        "http://localhost:3000",  # For local development
-    ],
+    ] + (["http://localhost:3000"] if settings.DEBUG else []),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Admin-Key"],
 )
 
 # Include routers
@@ -388,4 +392,4 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Run with: uvicorn app.main:app --reload
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
