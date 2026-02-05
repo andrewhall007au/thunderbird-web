@@ -34,7 +34,7 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m pytest tests/ -v --tb=short -x --ignore=tests/e2e_sms || echo "Tests had failures but continuing..."
+          python -m pytest tests/ -v --tb=short -x --ignore=tests/e2e_sms
 
       - name: Test summary
         if: always()
@@ -86,7 +86,7 @@ jobs:
           script: |
             cd /root/thunderbird-web/backend
             source venv/bin/activate
-            python tests/smoke_test_server.py --url http://localhost:8000 || echo "Smoke test warning"
+            python tests/smoke_test_server.py --url http://localhost:8000
 
       - name: Run production smoke tests
         uses: appleboy/ssh-action@v1.0.3
@@ -97,7 +97,7 @@ jobs:
           script: |
             cd /root/thunderbird-web/backend
             source venv/bin/activate
-            python tests/smoke_test_production.py --url https://thunderbird.bot -v || echo "Production smoke test warning"
+            python tests/smoke_test_production.py --url https://thunderbird.bot -v
 
       - name: Run browser-based smoke tests against production
         run: |
