@@ -1287,7 +1287,11 @@ async def stripe_webhook(request: Request):
             raise HTTPException(status_code=400, detail="Invalid event data")
 
     # Idempotency check
-    event_id = event.id
+    try:
+        event_id = event.id
+    except (AttributeError, KeyError) as e:
+        logger.error(f"Invalid Stripe event - missing event ID: {e}")
+        raise HTTPException(status_code=400, detail="Invalid event - missing ID")
     if event_id in _processed_stripe_events:
         logger.info(f"Skipping duplicate Stripe event: {event_id}")
         return {"status": "already_processed"}
