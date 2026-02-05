@@ -311,8 +311,8 @@ class BalanceService:
                 return False
 
         # Calculate remaining segments
-        from config.sms_pricing import get_segments_per_topup
-        segments_per_10 = get_segments_per_topup(country_code)
+        from config.sms_pricing import get_segments_for_topup
+        segments_per_10 = get_segments_for_topup(country_code, 10)
         # Estimate segments from current balance
         # If balance is 200 cents ($2), and $10 = X segments, then $2 = X * 0.2
         segments_remaining = int((balance_cents / 1000) * segments_per_10)
