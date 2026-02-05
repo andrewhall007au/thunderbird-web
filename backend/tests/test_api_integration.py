@@ -44,6 +44,10 @@ def _cleanup_test_db():
         pass
 atexit.register(_cleanup_test_db)
 
+# Initialize database with all tables before importing app
+from tests.conftest import create_test_tables
+create_test_tables(_test_db_path)
+
 from app.main import app
 
 
