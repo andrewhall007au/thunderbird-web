@@ -118,9 +118,9 @@ async def handle_inbound_sms(
     from app.models.account import account_store
     account = account_store.get_by_phone(from_phone)
     if not account:
-        # Exception: allow STOP for compliance
-        if text_upper == "STOP":
-            pass  # Fall through to normal STOP processing below
+        # Exceptions: allow STOP (compliance), HELP, and KEY (informational commands)
+        if text_upper in ["STOP", "HELP", "KEY"]:
+            pass  # Fall through to normal command processing below
         else:
             reject_msg = "This phone number is not linked to a Thunderbird account. Apply at thunderbird.bot"
             log_twiml_response(from_phone, reject_msg, "BETA_GATE", "gate_reject")
