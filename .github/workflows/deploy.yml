@@ -123,6 +123,17 @@ jobs:
             sleep 5
             systemctl status thunderbird-api --no-pager
 
+      - name: Update nginx configuration
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /root/thunderbird-web
+            cp backend/deploy/nginx_complete.conf /root/nginx_complete.conf
+            bash backend/deploy/apply_nginx_fixed.sh
+
       - name: Run browser-based smoke tests against production
         run: |
           npm install
