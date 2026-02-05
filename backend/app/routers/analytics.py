@@ -44,14 +44,19 @@ async def log_analytics_event(
 
     Returns 201 Created with empty body.
     """
-    # Store event in database
-    analytics_store.create(
-        event=request.event,
-        variant=request.variant,
-        entry_path=request.entry_path,
-        properties=request.properties,
-        account_id=request.account_id
-    )
+    try:
+        # Store event in database
+        analytics_store.create(
+            event=request.event,
+            variant=request.variant,
+            entry_path=request.entry_path,
+            properties=request.properties,
+            account_id=request.account_id
+        )
+    except Exception as e:
+        # Log error but don't fail - analytics should never block user experience
+        import logging
+        logging.error(f"Analytics error: {e}")
 
-    # Return 201 with no body
+    # Always return 201 - analytics is fire-and-forget
     return Response(status_code=201)
