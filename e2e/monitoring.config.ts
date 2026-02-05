@@ -7,9 +7,6 @@ import { defineConfig, devices } from '@playwright/test';
  * It targets production with generous timeouts and JSON reporting for metric collection.
  */
 export default defineConfig({
-  // Always target production
-  baseURL: process.env.MONITOR_BASE_URL || 'https://thunderbird.bot',
-
   // Test directory (same as main config)
   testDir: './',
 
@@ -29,6 +26,9 @@ export default defineConfig({
 
   // Shared settings for all tests
   use: {
+    // Always target production
+    baseURL: process.env.MONITOR_BASE_URL || 'https://thunderbird.bot',
+
     // Run in headless mode
     headless: true,
 
