@@ -137,9 +137,11 @@ jobs:
             echo "Verifying installed config..."
             grep "worker-src\|openfreemap" /etc/nginx/sites-available/thunderbird || echo "CSP fix not in installed file!"
             nginx -t
-            systemctl reload nginx
+            echo "Restarting nginx (hard restart)..."
+            systemctl restart nginx
+            sleep 2
             echo "Checking live CSP header..."
-            curl -sI http://127.0.0.1 | grep -i "content-security-policy" || echo "No CSP header!"
+            curl -sI https://thunderbird.bot | grep -i "content-security-policy" || echo "No CSP header!"
 
       - name: Run browser-based smoke tests against production
         run: |
