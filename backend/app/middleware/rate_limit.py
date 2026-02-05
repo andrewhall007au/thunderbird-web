@@ -93,7 +93,7 @@ RATE_LIMITS = {
     "/auth/token": (5, 300),           # 5 login attempts per 5 minutes
     "/auth/register": (3, 3600),       # 3 registrations per hour
     "/auth/forgot-password": (3, 3600), # 3 password resets per hour
-    "/api/beta/apply": (5, 3600),      # 5 beta applications per hour
+    "/api/beta/apply": (100, 3600),    # 100 beta applications per hour (testing phase)
     "default": (100, 60),              # 100 requests per minute for other endpoints
 }
 
