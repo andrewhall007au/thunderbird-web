@@ -140,8 +140,10 @@ test.describe('Critical User Flows', () => {
     await page.selectOption('select', 'Australia');
     await page.click('button[type="submit"]');
 
-    // Wait for API call to complete
-    await page.waitForTimeout(3000);
+    // Wait for success message and close modal
+    await page.waitForSelector('text=Application Received');
+    await page.click('button:has-text("Close")');
+    await page.waitForTimeout(500); // Wait for modal to close
 
     // Verify API was called
     expect(apiRequests.some(url => url.includes('/api/beta/apply'))).toBeTruthy();
@@ -195,6 +197,13 @@ test.describe('Critical User Flows', () => {
     });
 
     await page.goto(PRODUCTION_URL);
+
+    // Close any open modals from previous tests
+    const closeButton = page.locator('button:has-text("Close")');
+    if (await closeButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await closeButton.click();
+      await page.waitForTimeout(500);
+    }
 
     // Test beta form submission
     await page.click('text=Apply for Beta');
