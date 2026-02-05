@@ -131,17 +131,17 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /root/thunderbird-web
-            echo "Checking nginx config file contents..."
-            grep "worker-src\|openfreemap" deploy/nginx_complete.conf || echo "CSP fix not found in source file!"
+            echo "Copying nginx config to BOTH sites-available and sites-enabled..."
             cp deploy/nginx_complete.conf /etc/nginx/sites-available/thunderbird
-            echo "Verifying installed config..."
-            grep "worker-src\|openfreemap" /etc/nginx/sites-available/thunderbird || echo "CSP fix not in installed file!"
+            cp deploy/nginx_complete.conf /etc/nginx/sites-enabled/thunderbird
+            echo "Verifying CSP in sites-enabled (the one nginx actually uses)..."
+            grep "worker-src\|openfreemap" /etc/nginx/sites-enabled/thunderbird || echo "CSP fix not in active config!"
             nginx -t
-            echo "Restarting nginx (hard restart)..."
+            echo "Restarting nginx..."
             systemctl restart nginx
             sleep 2
             echo "Checking live CSP header..."
-            curl -sI https://thunderbird.bot | grep -i "content-security-policy" || echo "No CSP header!"
+            curl -sI https://thunderbird.bot | grep -i "content-security-policy"
 
       - name: Investigate nginx setup
         uses: appleboy/ssh-action@v1.0.3
