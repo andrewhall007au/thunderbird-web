@@ -143,6 +143,45 @@ jobs:
             echo "Checking live CSP header..."
             curl -sI https://thunderbird.bot | grep -i "content-security-policy" || echo "No CSP header!"
 
+      - name: Investigate nginx setup
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "=== NGINX INVESTIGATION ==="
+            echo ""
+            echo "1. Checking for multiple nginx processes:"
+            ps aux | grep nginx | grep -v grep
+            echo ""
+            echo "2. Checking nginx config file being used:"
+            nginx -T 2>&1 | grep -A2 "configuration file"
+            echo ""
+            echo "3. Checking all server blocks in loaded config:"
+            nginx -T 2>&1 | grep -A3 "server_name thunderbird.bot"
+            echo ""
+            echo "4. Checking CSP header in ALL config locations:"
+            echo "From sites-available:"
+            grep -n "Content-Security-Policy" /etc/nginx/sites-available/thunderbird | head -2
+            echo "From sites-enabled:"
+            grep -n "Content-Security-Policy" /etc/nginx/sites-enabled/thunderbird | head -2
+            echo ""
+            echo "5. Checking if sites-available is symlinked to sites-enabled:"
+            ls -la /etc/nginx/sites-enabled/thunderbird
+            echo ""
+            echo "6. Testing direct nginx response (bypassing any proxy):"
+            curl -sI -H "Host: thunderbird.bot" http://127.0.0.1:443 2>&1 | grep -i "content-security\|curl:" || echo "Could not connect to local nginx"
+            echo ""
+            echo "7. Checking for any nginx config includes:"
+            grep -r "add_header.*Content-Security-Policy" /etc/nginx/conf.d/ 2>/dev/null || echo "No CSP in conf.d"
+            echo ""
+            echo "8. Verifying nginx loaded config matches file:"
+            echo "Config file CSP:"
+            grep "Content-Security-Policy" /etc/nginx/sites-available/thunderbird | grep -o "connect-src[^;]*"
+            echo "Loaded config CSP:"
+            nginx -T 2>&1 | grep "Content-Security-Policy" | grep -o "connect-src[^;]*" | head -1
+
       - name: Run browser-based smoke tests against production
         run: |
           npm install
