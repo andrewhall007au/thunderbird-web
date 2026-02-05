@@ -4,7 +4,8 @@ Analytics API endpoints.
 POST /api/analytics - Log analytics events from frontend.
 No authentication required (analytics should work for anonymous users).
 """
-from fastapi import APIRouter, Response
+from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 
@@ -25,8 +26,7 @@ class AnalyticsEventRequest(BaseModel):
 
 @router.post("", status_code=201)
 async def log_analytics_event(
-    request: AnalyticsEventRequest,
-    response: Response
+    request: AnalyticsEventRequest
 ):
     """
     Log an analytics event.
@@ -59,5 +59,6 @@ async def log_analytics_event(
         logging.error(f"Analytics error: {e}")
 
     # Always return 201 - analytics is fire-and-forget
-    # IMPORTANT: Include Content-Type header to prevent browser CORB/abort issues
-    return Response(status_code=201, content="{}", media_type="application/json")
+    # IMPORTANT: Use JSONResponse to include proper Content-Type header
+    # This prevents browser CORB from aborting the request
+    return JSONResponse(status_code=201, content={})
