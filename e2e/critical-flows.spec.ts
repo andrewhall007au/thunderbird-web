@@ -24,7 +24,7 @@ test.describe('Critical User Flows', () => {
 
     // Check key elements exist (use more specific selectors)
     await expect(page.getByRole('navigation').getByRole('link', { name: 'Thunderbird' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Apply for Beta' })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('button', { name: 'Apply for Beta' })).toBeVisible();
 
     // No console errors (excluding known warnings)
     const errors: string[] = [];
