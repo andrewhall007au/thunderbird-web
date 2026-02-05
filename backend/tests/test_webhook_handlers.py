@@ -473,7 +473,7 @@ class TestSMSWebhookCommands:
         assert response.status_code == 200
 
     def test_unknown_command_returns_help(self, client):
-        """Unknown command should suggest help."""
+        """Unknown command from unregistered user should get 'not linked' message."""
         response = client.post(
             "/webhook/sms/inbound",
             data={
@@ -484,8 +484,8 @@ class TestSMSWebhookCommands:
         )
 
         assert response.status_code == 200
-        # Should contain guidance
-        assert "HELP" in response.text or "command" in response.text.lower()
+        # Unregistered users get "not linked" message for unknown commands
+        assert "not linked" in response.text.lower() or "thunderbird.bot" in response.text.lower()
 
 
 class TestSMSWebhookValidation:
