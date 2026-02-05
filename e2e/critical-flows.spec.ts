@@ -22,9 +22,9 @@ test.describe('Critical User Flows', () => {
   test('1. Homepage loads correctly', async ({ page }) => {
     await page.goto(PRODUCTION_URL);
 
-    // Check key elements exist
-    await expect(page.locator('text=Thunderbird')).toBeVisible();
-    await expect(page.locator('text=Apply for Beta')).toBeVisible();
+    // Check key elements exist (use more specific selectors)
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'Thunderbird' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Apply for Beta' })).toBeVisible();
 
     // No console errors (excluding known warnings)
     const errors: string[] = [];
