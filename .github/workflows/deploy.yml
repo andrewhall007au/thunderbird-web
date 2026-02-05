@@ -132,8 +132,8 @@ jobs:
           script: |
             cd /root/thunderbird-web
             echo "Checking nginx config file contents..."
-            grep "worker-src\|openfreemap" backend/deploy/nginx_complete.conf || echo "CSP fix not found in source file!"
-            cp backend/deploy/nginx_complete.conf /etc/nginx/sites-available/thunderbird
+            grep "worker-src\|openfreemap" deploy/nginx_complete.conf || echo "CSP fix not found in source file!"
+            cp deploy/nginx_complete.conf /etc/nginx/sites-available/thunderbird
             echo "Verifying installed config..."
             grep "worker-src\|openfreemap" /etc/nginx/sites-available/thunderbird || echo "CSP fix not in installed file!"
             nginx -t
