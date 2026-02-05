@@ -298,6 +298,49 @@ def run_monthly_report_job():
         logger.error(f"Monthly report job failed: {e}")
 
 
+def run_browser_checks_job():
+    """Run browser-based synthetic monitoring."""
+    try:
+        import asyncio
+        from .checks_browser import run_all_browser_checks
+        from .storage import CheckResult
+
+        logger.info("Starting browser checks...")
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        results = loop.run_until_complete(
+            run_all_browser_checks(settings.MONITOR_PRODUCTION_URL)
+        )
+
+        alert_mgr = get_or_create_alert_manager()
+
+        # Check each result
+        for check_result in results["checks"]:
+            check_name = check_result.get("check", "unknown")
+            success = check_result.get("success", False)
+
+            if success:
+                logger.info(f"Browser check passed: {check_name}")
+            else:
+                logger.error(f"Browser check failed: {check_result}")
+                # Create CheckResult for alerting
+                result = CheckResult(
+                    check_name=check_name,
+                    status="fail",
+                    duration_ms=check_result.get("duration_ms", 0),
+                    error_message=check_result.get("error", "Unknown error"),
+                    details=check_result.get("details", {})
+                )
+                loop.run_until_complete(alert_mgr.evaluate_and_alert(result))
+
+        loop.close()
+        logger.info("Browser checks completed")
+    except Exception as e:
+        logger.error(f"Browser checks job failed: {e}")
+
+
 def job_error_listener(event):
     """Log job errors."""
     logger.error(f"Job {event.job_id} failed: {event.exception}")
@@ -427,6 +470,16 @@ def create_scheduler() -> AsyncIOScheduler:
             trigger=IntervalTrigger(minutes=15),
             id="synthetic_create_first",
             name="Synthetic: Create First"
+        )
+
+        # Browser checks - every 10 minutes (CRITICAL)
+        scheduler.add_job(
+            run_browser_checks_job,
+            trigger=IntervalTrigger(minutes=10),
+            id="browser_checks",
+            name="Browser Checks",
+            max_instances=1,
+            replace_existing=True
         )
 
         logger.info("Playwright browser synthetic tests enabled")

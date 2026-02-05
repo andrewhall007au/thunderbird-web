@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
 import time
+import os
 
 
 class RateLimiter:
@@ -113,6 +114,10 @@ async def rate_limit_middleware(request: Request, call_next):
     Apply different rate limits based on endpoint.
     Returns 429 Too Many Requests if limit exceeded.
     """
+    # Skip rate limiting during tests
+    if os.getenv("TESTING") == "true":
+        return await call_next(request)
+
     # Get client IP (handle proxy headers)
     client_ip = request.headers.get("X-Real-IP") or \
                 request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or \
