@@ -5,7 +5,7 @@
  * See backend/app/routers/routes.py for API spec.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 interface ApiError {
   detail: string;

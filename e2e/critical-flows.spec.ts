@@ -65,8 +65,8 @@ test.describe('Critical User Flows', () => {
     // CRITICAL: Should NOT see "Network error"
     await expect(page.locator('text=Network error')).not.toBeVisible({ timeout: 5000 });
 
-    // Should see success message
-    await expect(page.locator('text=Application Received')).toBeVisible({ timeout: 10000 });
+    // Should see success message (use heading to avoid strict mode violation)
+    await expect(page.getByRole('heading', { name: 'Application Received' })).toBeVisible({ timeout: 10000 });
 
     // Should show the success message content
     await expect(page.locator('text=login details at your email')).toBeVisible();

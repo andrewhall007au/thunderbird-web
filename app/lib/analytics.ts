@@ -10,7 +10,7 @@
  * - tb_session_start: ISO timestamp
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 // LocalStorage key constants
 const STORAGE_KEYS = {
