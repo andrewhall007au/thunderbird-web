@@ -75,11 +75,44 @@ test.describe('Critical User Flows', () => {
   test('3. API endpoints are reachable from frontend', async ({ page }) => {
     // Track network requests
     const apiRequests: string[] = [];
-    const failedRequests: Array<{ url: string; failure: string }> = [];
+    const failedRequests: Array<{ url: string; failure: string; method: string; headers: any }> = [];
+    const successfulRequests: Array<{ url: string; status: number }> = [];
+
+    // Capture console messages
+    const consoleLogs: string[] = [];
+    page.on('console', msg => {
+      consoleLogs.push(`[${msg.type()}] ${msg.text()}`);
+    });
+
+    // Capture CSP violations
+    page.on('console', msg => {
+      if (msg.text().includes('Content Security Policy') || msg.text().includes('CSP')) {
+        console.log(`CSP: ${msg.text()}`);
+      }
+    });
 
     page.on('request', request => {
       if (request.url().includes('/api/')) {
         apiRequests.push(request.url());
+        console.log(`Request started: ${request.method()} ${request.url()}`);
+      }
+    });
+
+    page.on('response', async response => {
+      if (response.url().includes('/api/')) {
+        const headers = response.headers();
+        successfulRequests.push({
+          url: response.url(),
+          status: response.status()
+        });
+        console.log(`Response received: ${response.status()} ${response.url()}`);
+        if (response.url().includes('/analytics')) {
+          console.log(`  Analytics response headers:`);
+          console.log(`    content-length: ${headers['content-length']}`);
+          console.log(`    content-type: ${headers['content-type']}`);
+          console.log(`    access-control-allow-origin: ${headers['access-control-allow-origin']}`);
+          console.log(`    access-control-allow-credentials: ${headers['access-control-allow-credentials']}`);
+        }
       }
     });
 
@@ -88,9 +121,13 @@ test.describe('Critical User Flows', () => {
         const failure = request.failure();
         failedRequests.push({
           url: request.url(),
-          failure: failure?.errorText || 'Unknown error'
+          failure: failure?.errorText || 'Unknown error',
+          method: request.method(),
+          headers: request.headers()
         });
-        console.log(`Request failed: ${request.url()} - ${failure?.errorText}`);
+        console.log(`Request failed: ${request.method()} ${request.url()}`);
+        console.log(`  Failure: ${failure?.errorText}`);
+        console.log(`  Headers: ${JSON.stringify(request.headers())}`);
       }
     });
 

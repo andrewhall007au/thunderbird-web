@@ -59,4 +59,5 @@ async def log_analytics_event(
         logging.error(f"Analytics error: {e}")
 
     # Always return 201 - analytics is fire-and-forget
-    return Response(status_code=201)
+    # IMPORTANT: Include Content-Type header to prevent browser CORB/abort issues
+    return Response(status_code=201, content="{}", media_type="application/json")
