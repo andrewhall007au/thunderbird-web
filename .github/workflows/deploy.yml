@@ -70,6 +70,8 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /root/thunderbird-web
+            # Clear build cache to ensure fresh build
+            rm -rf .next
             npm install --production
             npm run build
             systemctl restart thunderbird-web || true
