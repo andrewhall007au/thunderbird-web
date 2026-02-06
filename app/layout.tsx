@@ -40,8 +40,8 @@ function Navigation() {
           <Logo />
 
           <div className="hidden md:flex items-center gap-8">
-            <Link href="#how-it-works" className="nav-link">How It Works</Link>
-            <Link href="#why-sms" className="nav-link">Why SMS</Link>
+            <Link href="#where-it-works" className="nav-link">Where it works</Link>
+            <Link href="#features" className="nav-link">Forecast Metrics</Link>
             <Link href="#pricing" className="nav-link">Pricing</Link>
             <Link href="#faq" className="nav-link">FAQ</Link>
             <Link href="#about" className="nav-link">About</Link>

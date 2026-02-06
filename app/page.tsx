@@ -10,7 +10,7 @@ import {
   MapPin, Thermometer, Wind, Droplets, Mountain, Smartphone,
   Cloud, Snowflake, AlertTriangle, Navigation, Save, MessageSquare,
   Tent, BatteryCharging, ChevronRight, ExternalLink, Mail, Sun,
-  Compass, Database
+  Compass, Database, Info
 } from 'lucide-react'
 import { BetaButton } from './components/beta/BetaButton'
 import SatelliteChecker from './components/SatelliteChecker'
@@ -308,11 +308,11 @@ function Hero() {
           </h1>
 
           <p className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-zinc-500 max-w-4xl mx-auto mb-2 leading-tight">
-            Off grid hyper-detailed weather forecasts over SMS.
+            Off grid hyper-detailed weather forecasts.
           </p>
 
           <p className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-zinc-900 max-w-4xl mx-auto mb-6 leading-tight">
-            Satellite SMS Support
+            Regular and Satellite SMS Support.
           </p>
 
           <ul className="text-lg text-zinc-600 max-w-2xl mx-auto mb-5 leading-relaxed space-y-3 text-left px-4">
@@ -415,7 +415,11 @@ function WhereItWorks() {
           </details>
         </div>
 
-        <div className="text-center mt-12">
+        <p className="text-lg text-zinc-600 max-w-3xl mx-auto leading-relaxed text-center mt-12">
+          SMS is prioritised when off grid (i.e. satellite networks). Data and voice is often not available. When data is available, a single forecast uses less than 1KB vs 500Mb to open a weather page (difficult to do on 1 bar reception).
+        </p>
+
+        <div className="text-center mt-8">
           <BetaButton />
         </div>
       </div>
@@ -495,165 +499,6 @@ function HowItWorks() {
         </div>
 
         <div className="text-center mt-12">
-          <BetaButton />
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function WhySMS() {
-  const benefits = [
-    {
-      icon: Satellite,
-      title: "Works everywhere",
-      description: "Works anywhere with sky visibility — no cell towers, no data plan. A single forecast uses less than 1KB."
-    },
-    {
-      icon: BatteryCharging,
-      title: "Battery efficient",
-      description: "SMS uses a fraction of the power of a data connection. Your phone stays alive longer on trail."
-    },
-    {
-      icon: Shield,
-      title: "Reliable delivery",
-      description: "SMS routes through every satellite provider. Data doesn't. Your forecast gets through."
-    }
-  ];
-
-  return (
-    <section id="why-sms" className="py-24 bg-zinc-50 scroll-mt-20">
-      <div className="max-w-5xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
-            Why SMS?
-          </h2>
-          <p className="text-zinc-500 max-w-xl mx-auto">
-            Designed for the backcountry — reliable, fast, and works with minimal sky visibility.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {benefits.map((benefit, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-zinc-200 p-6 shadow-sm text-center">
-              <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center mb-4 mx-auto">
-                <benefit.icon className="w-5 h-5 text-zinc-600" />
-              </div>
-              <h3 className="font-medium text-zinc-900 mb-2">{benefit.title}</h3>
-              <p className="text-sm text-zinc-500 leading-relaxed">{benefit.description}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="text-center mt-12">
-          <BetaButton />
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function CompatibleDevices() {
-  return (
-    <section id="compatible-devices" className="py-24 bg-white scroll-mt-20">
-      <div className="max-w-5xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
-            Compatible devices
-          </h2>
-          <p className="text-zinc-500 max-w-xl mx-auto">
-            Works with your existing satellite-capable phone or dedicated device.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8 max-w-4xl mx-auto">
-          {/* Apple Satellite */}
-          <div className="flex flex-col items-center">
-            <div className="w-full h-[200px] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl p-4 shadow-lg border border-zinc-300 flex flex-col justify-start pt-6">
-              <div className="text-center mb-3">
-                <div className="h-10 flex items-end justify-center mb-2">
-                  <svg className="w-8 h-8 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                  </svg>
-                </div>
-                <span className="text-xs font-semibold text-zinc-700">Apple</span>
-              </div>
-              <div className="space-y-2 text-[11px] text-zinc-600 text-center">
-                <div>iPhone 14, 15, 16</div>
-                <div>Apple Watch Ultra 3</div>
-                <div className="text-zinc-500 text-[10px] mt-2">Built-in satellite SMS<br />No carrier required</div>
-              </div>
-            </div>
-            <span className="text-zinc-400 text-xs mt-4">Apple Satellite SMS</span>
-          </div>
-
-          {/* Android Satellite */}
-          <div className="flex flex-col items-center">
-            <div className="w-full h-[200px] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl p-4 shadow-lg border border-zinc-300 flex flex-col justify-start pt-6">
-              <div className="text-center mb-3">
-                <div className="h-10 flex items-end justify-center mb-2">
-                  <svg className="w-8 h-8 text-zinc-600" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-1.4-.59-2.94-.92-4.47-.92s-3.07.33-4.47.92L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.18-.37.54-.22.83L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/>
-                  </svg>
-                </div>
-                <span className="text-xs font-semibold text-zinc-700">Android</span>
-              </div>
-              <div className="space-y-2 text-[11px] text-zinc-600 text-center">
-                <div>Samsung Galaxy S25+</div>
-                <div>Google Pixel 9, 10</div>
-                <div>Pixel Watch 4</div>
-                <div className="text-zinc-500 text-[10px] mt-2">Requires carrier support</div>
-              </div>
-            </div>
-            <span className="text-zinc-400 text-xs mt-4">Android Satellite SMS</span>
-          </div>
-
-          {/* Carrier Partnerships */}
-          <div className="flex flex-col items-center">
-            <div className="w-full h-[200px] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl p-4 shadow-lg border border-zinc-300 flex flex-col justify-start pt-6">
-              <div className="text-center mb-3">
-                <div className="h-10 flex items-end justify-center mb-2">
-                  <Satellite className="w-8 h-8 text-zinc-600" />
-                </div>
-                <span className="text-xs font-semibold text-zinc-700">Starlink Direct</span>
-              </div>
-              <div className="space-y-1 text-[10px] text-zinc-600">
-                <div className="flex justify-between"><span>USA</span><span className="font-medium">T-Mobile</span></div>
-                <div className="flex justify-between"><span>Australia</span><span className="font-medium">Telstra, Optus</span></div>
-                <div className="flex justify-between"><span>Canada</span><span className="font-medium">Rogers</span></div>
-                <div className="flex justify-between"><span>NZ</span><span className="font-medium">One NZ</span></div>
-                <div className="flex justify-between"><span>Europe</span><span className="font-medium">Orange</span></div>
-              </div>
-            </div>
-            <span className="text-zinc-400 text-xs mt-4">Carrier Satellite SMS</span>
-          </div>
-
-          {/* Garmin */}
-          <div className="flex flex-col items-center">
-            <div className="w-full h-[200px] bg-gradient-to-br from-zinc-100 to-zinc-200 rounded-2xl p-4 shadow-lg border border-zinc-300 flex flex-col justify-start pt-6">
-              <div className="text-center mb-3">
-                <div className="h-10 flex items-end justify-center mb-2">
-                  <Navigation className="w-8 h-8 text-zinc-600" />
-                </div>
-                <span className="text-xs font-semibold text-zinc-700">Garmin inReach</span>
-              </div>
-              <div className="space-y-2 text-[11px] text-zinc-600 text-center">
-                <div>All Garmin satellite devices</div>
-                <div className="text-zinc-500 text-[10px] mt-2">May require subscription<br />to access SMS services</div>
-              </div>
-            </div>
-            <span className="text-zinc-400 text-xs mt-4">Iridium Satellite SMS</span>
-          </div>
-        </div>
-
-        <p className="text-center text-xs text-zinc-400 mb-8">
-          Carrier satellite SMS requires a compatible plan. Works with most modern smartphones on participating carriers.
-          <Link href="/compatibility" className="text-zinc-500 hover:text-zinc-700 ml-1 underline underline-offset-2">
-            Check compatibility
-          </Link>
-        </p>
-
-        <div className="text-center">
           <BetaButton />
         </div>
       </div>
@@ -906,7 +751,7 @@ function Features() {
   ]
 
   return (
-    <section className="py-24 bg-zinc-50">
+    <section id="features" className="py-24 bg-zinc-50 scroll-mt-20">
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
@@ -994,7 +839,7 @@ function Pricing() {
             Simple pricing
           </h2>
           <p className="text-zinc-500 max-w-xl mx-auto">
-            One-off purchase with USD $29.99 SMS credits included. Top up anytime with pay-as-you-go credits.
+            USD $29.99 up front with USD $29.99 of SMS credits included. Top up anytime with pay-as-you-go credits.
           </p>
         </div>
 
@@ -1015,12 +860,16 @@ function Pricing() {
                 <span className="font-medium">USD $0</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-700">
-                <span className="text-zinc-400">One-time</span>
+                <span className="text-zinc-400">1st Month</span>
                 <span className="font-medium">USD $29.99</span>
               </div>
-              <div className="flex justify-between py-2">
+              <div className="flex justify-between py-2 border-b border-zinc-700">
                 <span className="text-zinc-400">Per forecast</span>
                 <span className="font-medium">USD $0.33</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-zinc-400">12 month minimum</span>
+                <span className="font-medium">USD $29.99</span>
               </div>
             </div>
             <BetaButton className="btn-orange block w-full text-center mt-6">Apply for Beta</BetaButton>
@@ -1030,24 +879,39 @@ function Pricing() {
           <div className="bg-white rounded-2xl border border-zinc-200 p-6 flex flex-col">
             <div className="text-center mb-6">
               <Satellite className="w-8 h-8 text-zinc-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-zinc-900">Garmin inReach</h3>
+              <div className="flex items-center justify-center gap-2">
+                <h3 className="text-lg font-medium text-zinc-900">Garmin inReach</h3>
+                <a
+                  href="https://www.garmin.com/en-US/p/837461/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative"
+                  title="Based on cheapest plan: Enabled (USD $7.99/mo) + device (USD $350+) + activation (USD $39.99). View official pricing →"
+                >
+                  <Info className="w-4 h-4 text-zinc-400 hover:text-zinc-600 cursor-help" />
+                </a>
+              </div>
             </div>
             <div className="space-y-3 text-sm flex-1">
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">Device</span>
-                <span className="font-medium text-zinc-900">USD $399</span>
+                <span className="font-medium text-zinc-900">USD $350+</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">Monthly</span>
-                <span className="font-medium text-zinc-900">USD $15–$65</span>
+                <span className="font-medium text-zinc-900">USD $7.99–$50</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-100">
-                <span className="text-zinc-500">One-time</span>
-                <span className="font-medium text-zinc-900">USD $414+</span>
+                <span className="text-zinc-500">1st Month</span>
+                <span className="font-medium text-zinc-900">USD $390+</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-zinc-100">
+                <span className="text-zinc-500">Per forecast</span>
+                <span className="font-medium text-zinc-900">Up to USD $0.50</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-zinc-500">Per forecast</span>
-                <span className="font-medium text-zinc-900">USD $1–$2</span>
+                <span className="text-zinc-500">12 month minimum</span>
+                <span className="font-medium text-zinc-900">USD $486+</span>
               </div>
             </div>
             <div className="w-full bg-zinc-100 text-zinc-400 font-medium py-3 rounded-xl text-center text-sm mt-6">
@@ -1059,24 +923,39 @@ function Pricing() {
           <div className="bg-white rounded-2xl border border-zinc-200 p-6 flex flex-col">
             <div className="text-center mb-6">
               <MessageSquare className="w-8 h-8 text-zinc-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-zinc-900">Zoleo</h3>
+              <div className="flex items-center justify-center gap-2">
+                <h3 className="text-lg font-medium text-zinc-900">Zoleo</h3>
+                <a
+                  href="https://www.zoleo.com/en-us/plans"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative"
+                  title="Based on cheapest plan: Basic (USD $20/mo) + device (USD $200) + activation (USD $39.99). View official pricing →"
+                >
+                  <Info className="w-4 h-4 text-zinc-400 hover:text-zinc-600 cursor-help" />
+                </a>
+              </div>
             </div>
             <div className="space-y-3 text-sm flex-1">
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">Device</span>
-                <span className="font-medium text-zinc-900">USD $199</span>
+                <span className="font-medium text-zinc-900">USD $200</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-100">
                 <span className="text-zinc-500">Monthly</span>
                 <span className="font-medium text-zinc-900">USD $20–$50</span>
               </div>
               <div className="flex justify-between py-2 border-b border-zinc-100">
-                <span className="text-zinc-500">One-time</span>
-                <span className="font-medium text-zinc-900">USD $219+</span>
+                <span className="text-zinc-500">1st Month</span>
+                <span className="font-medium text-zinc-900">USD $240+</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-zinc-100">
+                <span className="text-zinc-500">Per forecast</span>
+                <span className="font-medium text-zinc-900">Up to USD $0.27</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-zinc-500">Per forecast</span>
-                <span className="font-medium text-zinc-900">USD $0.14–$0.80</span>
+                <span className="text-zinc-500">12 month minimum</span>
+                <span className="font-medium text-zinc-900">USD $480+</span>
               </div>
             </div>
             <div className="w-full bg-zinc-100 text-zinc-400 font-medium py-3 rounded-xl text-center text-sm mt-6">
@@ -1084,13 +963,6 @@ function Pricing() {
             </div>
           </div>
         </div>
-
-        <p className="text-center text-xs text-zinc-400 mt-8">
-          Already have a satellite device? Thunderbird works with your existing equipment.{' '}
-          <Link href="/compatibility" className="text-zinc-500 hover:text-zinc-700 underline underline-offset-2">
-            Check compatibility
-          </Link>
-        </p>
 
         <div className="text-center mt-10">
           <BetaButton />
@@ -1161,7 +1033,7 @@ function About() {
 const faqData = [
   {
     question: "What phones work with Thunderbird?",
-    answer: "Thunderbird works with any phone that supports satellite SMS, including iPhone 14 and newer, Apple Watch Ultra 3, and select Android phones on T-Mobile or Verizon (Pixel 9+, Galaxy S24+/S25+)."
+    answer: "Thunderbird works with any phone that supports satellite SMS, including iPhone 14 and newer, Apple Watch Ultra 3, and select Android phones in select geographical markets (Pixel 9+, Galaxy S24+/S25+). Check out our 'Where it Works' to check your own individual circumstances."
   },
   {
     question: "How does satellite SMS delivery work?",
@@ -1173,11 +1045,11 @@ const faqData = [
   },
   {
     question: "Do I need a subscription?",
-    answer: "No. Thunderbird is a one-time $29.99 purchase that includes $29.99 in SMS credits. Top up only when you need more. Credits never expire."
+    answer: "No. Thunderbird is a one-time USD $29.99 purchase that includes USD $29.99 in SMS credits. Top up only when you need more. Credits never expire."
   },
   {
     question: "How much does each forecast cost?",
-    answer: "Each forecast costs USD $0.33. The $29.99 starter credits cover approximately 90 forecasts. Top up anytime — credits never expire."
+    answer: "Each forecast starts at USD $0.33 (12 hr hourly and 7 day daily). 24hr hourly forecasts are double the length of a standard SMS so cost twice as much. The USD $29.99 starter credits cover approximately 90 standard forecasts. Top up anytime with USD $10, USD $25 or USD $50 SMS credits — credits never expire."
   },
   {
     question: "Can I create custom routes?",
@@ -1249,7 +1121,7 @@ function FinalCTA() {
           Ready to get started?
         </h2>
         <p className="text-zinc-500 mb-8">
-          $29.99 one-time. Includes $29.99 SMS credits. No subscription.
+          USD $29.99 one-time. Includes USD $29.99 SMS credits. No subscription.
         </p>
         <BetaButton className="btn-orange inline-flex items-center gap-2 px-8 py-4" />
       </div>
@@ -1272,8 +1144,6 @@ function HomeContent() {
       <WhereItWorks />
       <Features />
       <GlobalCoverage />
-      <WhySMS />
-      <CompatibleDevices />
       <HowItWorks />
       <RouteExample />
       <Pricing />

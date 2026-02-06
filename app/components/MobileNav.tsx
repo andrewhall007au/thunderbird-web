@@ -6,9 +6,8 @@ import { Menu, X } from 'lucide-react';
 import { BetaButton } from './beta/BetaButton';
 
 const navLinks = [
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '#why-sms', label: 'Why SMS' },
-  { href: '#see-it-in-action', label: 'See It In Action' },
+  { href: '#where-it-works', label: 'Where it works' },
+  { href: '#features', label: 'Forecast Metrics' },
   { href: '#pricing', label: 'Pricing' },
   { href: '#faq', label: 'FAQ' },
   { href: '#about', label: 'About' },

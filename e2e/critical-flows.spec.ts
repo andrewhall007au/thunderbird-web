@@ -265,3 +265,63 @@ test.describe('Performance & Loading', () => {
     expect(criticalFailures).toHaveLength(0);
   });
 });
+
+test.describe('Interactive Components', () => {
+  test('8. Map markers are clickable and show waypoint details', async ({ page }) => {
+    await page.goto(PRODUCTION_URL);
+
+    // Scroll to the "See it in action" section
+    await page.locator('text=See it in action').scrollIntoViewIfNeeded();
+
+    // Wait for map to load (MapEditor is dynamically loaded)
+    await page.waitForTimeout(2000);
+
+    // Find a waypoint marker by its SMS code (e.g., "KIA" for Kia Ora Hut)
+    // Markers show the first 3 letters of their SMS code
+    const marker = page.locator('text=KIA').first();
+
+    // Verify marker exists
+    await expect(marker).toBeVisible();
+
+    // Click the marker
+    await marker.click();
+
+    // Wait for waypoint details to appear below the map
+    await page.waitForTimeout(500);
+
+    // Verify waypoint details are displayed
+    // The selected waypoint should show its full name and SMS code
+    await expect(page.locator('text=Kia Ora Hut')).toBeVisible();
+    await expect(page.locator('text=KIAOR')).toBeVisible();
+
+    // Should also show "Text this code to" message
+    await expect(page.locator('text=Text this code to')).toBeVisible();
+  });
+
+  test('9. Satellite compatibility checker works', async ({ page }) => {
+    await page.goto(PRODUCTION_URL);
+
+    // Scroll to "Where it Works" section
+    await page.locator('text=Where it works').scrollIntoViewIfNeeded();
+
+    // Select USA
+    const countrySelect = page.locator('select').first();
+    await countrySelect.selectOption('US');
+
+    // Select iPhone
+    await page.click('text=iPhone 14 or newer');
+
+    // Carrier select should now be visible
+    const carrierSelect = page.locator('select').nth(1);
+    await expect(carrierSelect).toBeVisible();
+
+    // Select T-Mobile
+    await carrierSelect.selectOption('T-Mobile');
+
+    // Should show success message
+    await expect(page.locator('text=Great news! You should be able to receive Thunderbird')).toBeVisible();
+
+    // Should show Apple Satellite as available
+    await expect(page.locator('text=Apple Satellite SMS')).toBeVisible();
+  });
+});

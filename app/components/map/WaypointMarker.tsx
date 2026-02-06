@@ -61,7 +61,7 @@ export default function WaypointMarker({
     <Marker
       latitude={waypoint.lat}
       longitude={waypoint.lng}
-      draggable
+      draggable={!!onDragEnd}
       onDragEnd={handleDragEnd}
       anchor="bottom"
     >
