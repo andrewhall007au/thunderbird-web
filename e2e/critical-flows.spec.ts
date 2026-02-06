@@ -54,13 +54,16 @@ test.describe('Critical User Flows', () => {
     // Wait for modal to appear
     await expect(page.locator('text=Apply for Beta Access')).toBeVisible({ timeout: 5000 });
 
-    // Fill out form
-    await page.fill('input[type="text"]', 'E2E Test User');
-    await page.fill('input[type="email"]', TEST_EMAIL);
-    await page.selectOption('select', 'Australia');
+    // Get the modal container to scope our selectors
+    const modal = page.locator('[class*="fixed"][class*="z-[100]"]');
+
+    // Fill out form - scoped to modal only
+    await modal.locator('input[type="text"]').fill('E2E Test User');
+    await modal.locator('input[type="email"]').fill(TEST_EMAIL);
+    await modal.locator('select').selectOption('Australia');
 
     // Submit form
-    await page.click('button[type="submit"]');
+    await modal.locator('button[type="submit"]').click();
 
     // CRITICAL: Should NOT see "Network error"
     await expect(page.locator('text=Network error')).not.toBeVisible({ timeout: 5000 });
@@ -135,10 +138,14 @@ test.describe('Critical User Flows', () => {
 
     // Trigger beta signup to test API
     await page.click('text=Apply for Beta');
-    await page.fill('input[type="text"]', 'API Test User');
-    await page.fill('input[type="email"]', `api-test-${Date.now()}@example.com`);
-    await page.selectOption('select', 'Australia');
-    await page.click('button[type="submit"]');
+
+    // Get the modal container to scope our selectors
+    const modal = page.locator('[class*="fixed"][class*="z-[100]"]');
+
+    await modal.locator('input[type="text"]').fill('API Test User');
+    await modal.locator('input[type="email"]').fill(`api-test-${Date.now()}@example.com`);
+    await modal.locator('select').selectOption('Australia');
+    await modal.locator('button[type="submit"]').click();
 
     // Wait for success message and close modal
     await page.waitForSelector('text=Application Received');
@@ -207,10 +214,14 @@ test.describe('Critical User Flows', () => {
 
     // Test beta form submission
     await page.click('text=Apply for Beta');
-    await page.fill('input[type="text"]', 'Error Test User');
-    await page.fill('input[type="email"]', `error-test-${Date.now()}@example.com`);
-    await page.selectOption('select', 'Australia');
-    await page.click('button[type="submit"]');
+
+    // Get the modal container to scope our selectors
+    const modal = page.locator('[class*="fixed"][class*="z-[100]"]');
+
+    await modal.locator('input[type="text"]').fill('Error Test User');
+    await modal.locator('input[type="email"]').fill(`error-test-${Date.now()}@example.com`);
+    await modal.locator('select').selectOption('Australia');
+    await modal.locator('button[type="submit"]').click();
 
     await page.waitForTimeout(3000);
 
