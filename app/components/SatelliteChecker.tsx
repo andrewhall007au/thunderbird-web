@@ -3,7 +3,18 @@
 import { useState } from 'react';
 import { CheckCircle2, AlertCircle, XCircle, RotateCcw } from 'lucide-react';
 
-const SATELLITE_DATA = {
+type CarrierData = {
+  name: string;
+  starlinkPartner: boolean;
+  isLive: boolean;
+  appleSatelliteSMS: boolean;
+  unconfirmed?: boolean;
+};
+
+const SATELLITE_DATA: {
+  countries: Record<string, { name: string; appleSatelliteCountry: boolean; starlinkStatus: string; special?: string }>;
+  carriers: Record<string, CarrierData[]>;
+} = {
   countries: {
     US: { name: "USA", appleSatelliteCountry: true, starlinkStatus: "live" },
     AU: { name: "Australia", appleSatelliteCountry: false, starlinkStatus: "live" },
@@ -140,7 +151,7 @@ export default function SatelliteChecker() {
     }
 
     const hasAvailable = appleSatelliteStatus === 'available' || starlinkStatus === 'available';
-    const hasComing = appleSatelliteStatus === 'coming2026' || appleSatelliteStatus === 'unconfirmed' || starlinkStatus === 'coming2026';
+    const hasComing = appleSatelliteStatus === 'unconfirmed' || starlinkStatus === 'coming2026';
     const isOlderPhone = phone === 'older';
     const isMexicoSpecial = country === 'MX';
 
