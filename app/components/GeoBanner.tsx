@@ -75,19 +75,7 @@ export default function GeoBanner() {
 
   // Get country from cookie on mount
   useEffect(() => {
-    const geo = getCookie('geo-country')
-    const data = geo && geoData[geo] ? geoData[geo] : defaultGeoData
-
-    // Build messages array: alternate device message with each trail
-    const msgs: string[] = []
-
-    data.trails.forEach(trail => {
-      // Add device message before each trail
-      msgs.push(data.deviceMessage)
-      msgs.push(`Weather for ${trail} — or upload any GPX`)
-    })
-
-    setMessages(msgs)
+    setMessages(['Satellite Ready'])
   }, [])
 
   // Typing animation

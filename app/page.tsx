@@ -13,6 +13,7 @@ import {
   Compass, Database
 } from 'lucide-react'
 import { BetaButton } from './components/beta/BetaButton'
+import SatelliteChecker from './components/SatelliteChecker'
 
 const MapEditor = dynamic(() => import('./components/map/MapEditor'), {
   ssr: false,
@@ -302,20 +303,26 @@ function Hero() {
 
       <div className="relative max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-center max-w-4xl mx-auto mb-4 md:mb-6 leading-tight">
-            <span className="text-zinc-900">Introducing Thunderbird.</span>
-            <br />
-            <span className="text-zinc-500">Hyper-detailed weather forecasts delivered by satellite SMS.</span>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-center text-zinc-900 max-w-4xl mx-auto mb-2 leading-tight">
+            Introducing Thunderbird.
           </h1>
 
+          <p className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-zinc-500 max-w-4xl mx-auto mb-2 leading-tight">
+            Off grid hyper-detailed weather forecasts over SMS.
+          </p>
+
+          <p className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-zinc-900 max-w-4xl mx-auto mb-6 leading-tight">
+            Satellite SMS Support
+          </p>
+
           <ul className="text-lg text-zinc-600 max-w-2xl mx-auto mb-5 leading-relaxed space-y-3 text-left px-4">
-            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>Works with your existing phone — no extra hardware needed</li>
-            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>12 metrics per hour: temp, rain, snow, wind, cloud base, freezing level, and more</li>
-            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>Elevation-adjusted forecasts from official national weather services</li>
-            <li className="flex gap-3"><span className="text-orange-500 font-bold shrink-0">—</span>25+ popular trails built in, or upload your own GPX</li>
+            <li className="flex gap-3"><span className="w-2 h-2 bg-orange-500 rounded-sm shrink-0 mt-2"></span>Make better on trail decisions with the most up to date weather (forecast data updated hourly).</li>
+            <li className="flex gap-3"><span className="w-2 h-2 bg-orange-500 rounded-sm shrink-0 mt-2"></span>12 important metrics in every forecast: temp, rain, snow, wind, cloud base, freezing level, and more.</li>
+            <li className="flex gap-3"><span className="w-2 h-2 bg-orange-500 rounded-sm shrink-0 mt-2"></span>Forecasts based on this highest resolution data from official national weather services.</li>
+            <li className="flex gap-3"><span className="w-2 h-2 bg-orange-500 rounded-sm shrink-0 mt-2"></span>Forecast any point on trail using either the GPS pin, your GPX file or drop a pin on any of our community uploaded trails.</li>
           </ul>
-          <p className="text-sm text-zinc-400 max-w-xl mx-auto mb-8 md:mb-10">
-            Compatible with iPhone 14+, Apple Watch Ultra, Samsung Galaxy S25+, and Garmin inReach.
+          <p className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight text-zinc-900 max-w-4xl mx-auto mb-8 md:mb-10 leading-tight">
+            No Device Cost. No Lock in Contracts.
           </p>
 
           {/* CTA after bullet points */}
@@ -335,6 +342,81 @@ function Hero() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-3">
             <BetaButton />
           </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function WhereItWorks() {
+  return (
+    <section id="where-it-works" className="py-24 bg-zinc-50 scroll-mt-20">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-4">
+            Where it works
+          </h2>
+          <p className="text-lg text-zinc-600 max-w-3xl mx-auto leading-relaxed">
+            Thunderbird SMS forecasts work where you have regular cell coverage and in countries where satellite SMS coverage is provided. Satellite SMS coverage is rapidly evolving. Thunderbird will always work over regular SMS, check where satellite SMS coverage currently is with our checker below. This space is expanding rapidly, by the end of 2026 we expect most countries other than have some form of satellite SMS coverage.
+          </p>
+        </div>
+
+        <SatelliteChecker />
+
+        {/* Expandable sections */}
+        <div className="mt-12 space-y-4 max-w-3xl mx-auto">
+          <details className="bg-white rounded-lg border border-zinc-200 p-5">
+            <summary className="font-medium text-zinc-900 cursor-pointer">
+              Supported Devices
+            </summary>
+            <div className="mt-3 text-sm text-zinc-600 space-y-2">
+              <p>
+                <strong>iPhone:</strong> iPhone 14 and newer (all models).
+              </p>
+              <p>
+                <strong>Android:</strong> Samsung Galaxy S21+, Google Pixel 9+, recent Motorola models, and more.
+                List is growing. Must have latest OS update.
+              </p>
+            </div>
+          </details>
+
+          <details className="bg-white rounded-lg border border-zinc-200 p-5">
+            <summary className="font-medium text-zinc-900 cursor-pointer">
+              Supported Networks
+            </summary>
+            <div className="mt-3 text-sm text-zinc-600 space-y-2">
+              <p>
+                Two satellite pathways exist: Apple's built-in satellite (via Globalstar) on iPhones, and
+                Starlink Direct-to-Cell which works through participating mobile carriers on both iPhone and Android.
+              </p>
+              <p>
+                Major carriers in US (T-Mobile, AT&T, Verizon ~96% market share), Canada (Bell, Rogers, Telus ~90% market share),
+                Australia (Telstra), and New Zealand (One NZ) support satellite messaging. More carriers joining through 2026.
+              </p>
+            </div>
+          </details>
+
+          <details className="bg-white rounded-lg border border-zinc-200 p-5">
+            <summary className="font-medium text-zinc-900 cursor-pointer">
+              Supported Countries
+            </summary>
+            <div className="mt-3 text-sm text-zinc-600 space-y-2">
+              <p>
+                <strong>Apple satellite messaging</strong> currently works in USA, Canada, Mexico, and Japan.
+              </p>
+              <p>
+                <strong>Starlink Direct-to-Cell</strong> is live in USA, Australia (Telstra, launched June 2025),
+                New Zealand, and Ukraine, with Canada, Japan, Switzerland, UK, Chile, Peru, and Spain launching through 2026.
+              </p>
+              <p className="text-emerald-700 font-medium">
+                Coverage expanding rapidly.
+              </p>
+            </div>
+          </details>
+        </div>
+
+        <div className="text-center mt-12">
+          <BetaButton />
         </div>
       </div>
     </section>
@@ -377,7 +459,8 @@ function HowItWorks() {
 
         {/* Pre-configure route */}
         <div className="mb-12">
-          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-6 text-center">Pre-configure before departure</p>
+          <p className="text-sm font-semibold text-zinc-600 uppercase tracking-wide mb-2 text-center">Pre-configure before departure</p>
+          <p className="text-sm text-zinc-500 mb-6 text-center max-w-2xl mx-auto">Upload your own GPX file or use one of our community uploaded GPX files for your favourite trail.</p>
           <div className="grid md:grid-cols-3 gap-8">
             {optionA.map((item, i) => (
               <div key={i} className="relative">
@@ -395,18 +478,18 @@ function HowItWorks() {
         </div>
 
         <div className="border-t border-zinc-200 pt-12">
-          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-6 text-center">Or text GPS coordinates on trail</p>
+          <p className="text-sm font-semibold text-zinc-600 uppercase tracking-wide mb-6 text-center">Or text GPS coordinates on trail</p>
           <div className="max-w-xl mx-auto text-center">
             <p className="text-zinc-600 mb-4">
-              No pre-planning needed. Text your GPS coordinates from anywhere and get an instant forecast.
+              No pre-planning needed. Text your GPS coordinates from anywhere and get an instant forecast. Get GPS coordinates from your phone's compass app, Apple Maps, or Google Maps - GPS works even without cell coverage or data.
             </p>
             <div className="bg-zinc-50 rounded-xl border border-zinc-200 p-4 font-mono text-sm mb-6">
-              <span className="text-zinc-500">Send:</span> <span className="text-zinc-900">CAST -41.89, 146.08</span>
+              <span className="text-zinc-500">Send:</span> <span className="text-zinc-900">CAST12 -41.89, 146.08</span>
             </div>
-            <ul className="text-sm text-zinc-500 space-y-2">
-              <li className="flex items-center justify-center gap-2"><span className="text-orange-500 font-bold">—</span>Unplanned detours or route changes</li>
-              <li className="flex items-center justify-center gap-2"><span className="text-orange-500 font-bold">—</span>Checking conditions at your current position</li>
-              <li className="flex items-center justify-center gap-2"><span className="text-orange-500 font-bold">—</span>Exploring new areas without pre-setup</li>
+            <ul className="text-lg text-zinc-600 max-w-2xl mx-auto leading-relaxed space-y-3 text-left">
+              <li className="flex items-center justify-center gap-3"><span className="w-2 h-2 bg-orange-500 rounded-sm shrink-0 mt-2"></span>Unplanned detours or route changes.</li>
+              <li className="flex items-center justify-center gap-3"><span className="w-2 h-2 bg-orange-500 rounded-sm shrink-0 mt-2"></span>Checking conditions at your current position.</li>
+              <li className="flex items-center justify-center gap-3"><span className="w-2 h-2 bg-orange-500 rounded-sm shrink-0 mt-2"></span>Exploring new areas without pre-setup.</li>
             </ul>
           </div>
         </div>
@@ -665,28 +748,20 @@ function GlobalCoverage() {
           ))}
         </div>
 
-        {/* Desktop: horizontal table */}
+        {/* Desktop: grid layout */}
         <div className="hidden md:block">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200">
-                {markets.map((market) => (
-                  <th key={market.country} className="py-3 px-2 text-center font-semibold text-zinc-900 whitespace-nowrap">
-                    {market.country}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {markets.map((market) => (
-                  <td key={market.country} className="py-3 px-2 text-center text-zinc-500 whitespace-nowrap">
-                    {market.resolution}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
+          <div className="grid grid-cols-5 gap-6 max-w-4xl mx-auto">
+            {markets.map((market) => (
+              <div key={market.country} className="text-center">
+                <div className="font-semibold text-zinc-900 text-sm mb-2">
+                  {market.country}
+                </div>
+                <div className="text-zinc-500 text-sm">
+                  {market.resolution}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <p className="text-center text-xs text-zinc-400 mt-6">
@@ -919,7 +994,7 @@ function Pricing() {
             Simple pricing
           </h2>
           <p className="text-zinc-500 max-w-xl mx-auto">
-            One-off purchase with USD $10 SMS credits included. Top up anytime with pay-as-you-go credits.
+            One-off purchase with USD $29.99 SMS credits included. Top up anytime with pay-as-you-go credits.
           </p>
         </div>
 
@@ -945,7 +1020,7 @@ function Pricing() {
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-zinc-400">Per forecast</span>
-                <span className="font-medium">USD $0.07–$0.87</span>
+                <span className="font-medium">USD $0.33</span>
               </div>
             </div>
             <BetaButton className="btn-orange block w-full text-center mt-6">Apply for Beta</BetaButton>
@@ -1098,11 +1173,11 @@ const faqData = [
   },
   {
     question: "Do I need a subscription?",
-    answer: "No. Thunderbird is a one-time $29.99 purchase that includes $10 in SMS credits. Top up only when you need more. Credits never expire."
+    answer: "No. Thunderbird is a one-time $29.99 purchase that includes $29.99 in SMS credits. Top up only when you need more. Credits never expire."
   },
   {
     question: "How much does each forecast cost?",
-    answer: "Costs vary by country. The $10 USD starter credits cover up to 30 days on trail (30 US / 7 AU). Top up anytime — credits never expire."
+    answer: "Each forecast costs USD $0.33. The $29.99 starter credits cover approximately 90 forecasts. Top up anytime — credits never expire."
   },
   {
     question: "Can I create custom routes?",
@@ -1174,7 +1249,7 @@ function FinalCTA() {
           Ready to get started?
         </h2>
         <p className="text-zinc-500 mb-8">
-          $29.99 one-time. Includes $10 SMS credits. No subscription.
+          $29.99 one-time. Includes $29.99 SMS credits. No subscription.
         </p>
         <BetaButton className="btn-orange inline-flex items-center gap-2 px-8 py-4" />
       </div>
@@ -1194,6 +1269,7 @@ function HomeContent() {
   return (
     <>
       <Hero />
+      <WhereItWorks />
       <Features />
       <GlobalCoverage />
       <WhySMS />
