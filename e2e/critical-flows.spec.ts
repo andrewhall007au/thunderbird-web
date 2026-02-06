@@ -135,6 +135,7 @@ test.describe('Critical User Flows', () => {
     });
 
     await page.goto(PRODUCTION_URL);
+    await page.waitForLoadState('domcontentloaded');
 
     // Trigger beta signup to test API
     await page.click('text=Apply for Beta');
