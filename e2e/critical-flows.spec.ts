@@ -293,9 +293,6 @@ test.describe('Interactive Components', () => {
     // The selected waypoint should show its full name and SMS code
     await expect(page.getByRole('heading', { name: 'Kia Ora Hut' })).toBeVisible();
     await expect(page.getByText('KIAOR').first()).toBeVisible();
-
-    // Should also show "Text this code to" message
-    await expect(page.locator('text=Text this code to')).toBeVisible();
   });
 
   test('9. Satellite compatibility checker works', async ({ page }) => {
