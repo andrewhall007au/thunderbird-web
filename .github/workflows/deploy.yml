@@ -158,12 +158,20 @@ jobs:
             pip install -r requirements.txt -q
             echo "Restarting backend service..."
             systemctl restart thunderbird-api
-            sleep 5
+            echo "Waiting for backend to be healthy..."
+            for i in $(seq 1 30); do
+              if curl -sf http://localhost:8000/api/health > /dev/null 2>&1; then
+                echo "Backend healthy after ${i}s"
+                break
+              fi
+              if [ "$i" -eq 30 ]; then
+                echo "Backend failed to start within 30s"
+                systemctl status thunderbird-api --no-pager
+                exit 1
+              fi
+              sleep 1
+            done
             systemctl status thunderbird-api --no-pager
-            echo "Testing analytics endpoint..."
-            curl -i -X POST http://localhost:8000/api/analytics \
-              -H "Content-Type: application/json" \
-              -d '{"event":"deploy_test","variant":"A","entry_path":"organic"}' 2>&1 | grep -E "^HTTP|^content-type" || true
 
       - name: Update nginx configuration
         uses: appleboy/ssh-action@v1.0.3
@@ -223,6 +231,18 @@ jobs:
             grep "Content-Security-Policy" /etc/nginx/sites-available/thunderbird | grep -o "connect-src[^;]*"
             echo "Loaded config CSP:"
             nginx -T 2>&1 | grep "Content-Security-Policy" | grep -o "connect-src[^;]*" | head -1
+
+      - name: Wait for production to be fully ready
+        run: |
+          echo "Waiting for production to stabilize after deploy..."
+          for i in $(seq 1 30); do
+            STATUS=$(curl -sf https://thunderbird.bot/api/health 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))" 2>/dev/null || echo "")
+            if [ "$STATUS" = "ok" ]; then
+              echo "Production healthy after ${i}s"
+              break
+            fi
+            sleep 1
+          done
 
       - name: Run browser-based smoke tests against production
         run: |
