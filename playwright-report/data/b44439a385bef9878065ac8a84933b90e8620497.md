@@ -1,0 +1,58 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - img [ref=e5]
+    - generic [ref=e8]: Satellite Ready|
+  - navigation [ref=e9]:
+    - generic [ref=e11]:
+      - link "Thunderbird" [ref=e12] [cursor=pointer]:
+        - /url: /
+        - img [ref=e14]
+        - generic [ref=e16]: Thunderbird
+      - generic [ref=e17]:
+        - button "Open menu" [ref=e18] [cursor=pointer]:
+          - img [ref=e19]
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - generic [ref=e22]: Menu
+            - button "Close menu" [ref=e23] [cursor=pointer]:
+              - img [ref=e24]
+          - navigation [ref=e27]:
+            - list [ref=e28]:
+              - listitem [ref=e29]:
+                - link "Where it works" [ref=e30] [cursor=pointer]:
+                  - /url: "#where-it-works"
+              - listitem [ref=e31]:
+                - link "Forecast Metrics" [ref=e32] [cursor=pointer]:
+                  - /url: "#features"
+              - listitem [ref=e33]:
+                - link "Pricing" [ref=e34] [cursor=pointer]:
+                  - /url: "#pricing"
+              - listitem [ref=e35]:
+                - link "FAQ" [ref=e36] [cursor=pointer]:
+                  - /url: "#faq"
+              - listitem [ref=e37]:
+                - link "About" [ref=e38] [cursor=pointer]:
+                  - /url: "#about"
+            - button "Apply for Beta" [ref=e40] [cursor=pointer]
+  - main [ref=e41]:
+    - generic [ref=e43]:
+      - heading "404" [level=1] [ref=e44]
+      - heading "This page could not be found." [level=2] [ref=e46]
+  - contentinfo [ref=e47]:
+    - generic [ref=e48]:
+      - generic [ref=e49]:
+        - link "Thunderbird" [ref=e50] [cursor=pointer]:
+          - /url: /
+          - img [ref=e52]
+          - generic [ref=e54]: Thunderbird
+        - generic [ref=e55]:
+          - 'link "E: hello@thunderbird.bot" [ref=e56] [cursor=pointer]':
+            - /url: mailto:hello@thunderbird.bot
+          - 'link "W: www.thunderbird.bot" [ref=e57] [cursor=pointer]':
+            - /url: https://www.thunderbird.bot
+      - paragraph [ref=e59]: © 2026 Thunderbird
+  - alert [ref=e60]
+```

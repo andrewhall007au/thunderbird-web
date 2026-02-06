@@ -1,0 +1,593 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - img [ref=e5]
+    - generic [ref=e8]: Satellite Ready|
+  - navigation [ref=e9]:
+    - generic [ref=e11]:
+      - link "Thunderbird" [ref=e12] [cursor=pointer]:
+        - /url: /
+        - img [ref=e14]
+        - generic [ref=e16]: Thunderbird
+      - generic [ref=e17]:
+        - link "Where it works" [ref=e18] [cursor=pointer]:
+          - /url: "#where-it-works"
+        - link "Forecast Metrics" [ref=e19] [cursor=pointer]:
+          - /url: "#features"
+        - link "Pricing" [ref=e20] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "FAQ" [ref=e21] [cursor=pointer]:
+          - /url: "#faq"
+        - link "About" [ref=e22] [cursor=pointer]:
+          - /url: "#about"
+      - generic [ref=e24]:
+        - link "Sign In" [ref=e25] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e26]
+          - text: Sign In
+        - button "Apply for Beta" [ref=e29] [cursor=pointer]
+  - main [ref=e30]:
+    - generic [ref=e35]:
+      - heading "Introducing Thunderbird." [level=1] [ref=e36]
+      - paragraph [ref=e37]: Off grid hyper-detailed weather forecasts.
+      - paragraph [ref=e38]: Regular and Satellite SMS Support.
+      - list [ref=e39]:
+        - listitem [ref=e40]: Make better on trail decisions with the most up to date weather (forecast data updated hourly).
+        - listitem [ref=e42]: "12 important metrics in every forecast: temp, rain, snow, wind, cloud base, freezing level, and more."
+        - listitem [ref=e44]: Forecasts based on this highest resolution data from official national weather services.
+        - listitem [ref=e46]: Forecast any point on trail using either the GPS pin, your GPX file or drop a pin on any of our community uploaded trails.
+      - paragraph [ref=e48]: No Device Cost. No Lock in Contracts.
+      - button "Apply for Beta" [ref=e50] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e51]
+      - heading "SMS Weather Forecast Example" [level=3] [ref=e54]
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]: 7 Day Forecast
+          - generic [ref=e61]:
+            - generic [ref=e62]: Thunderbird
+            - generic [ref=e63]:
+              - generic [ref=e65]: CAST7 LAKEO
+              - generic [ref=e67]: CAST7 LAKEO 863m -41.8921, 146.0820 7-Day Forecast Mon 4-12o Rn15% W10-25 Cld35% Tue 6-14o Rn25% 0-2mm W12-28 Cld55% Wed 3-9o Rn65% 4-12mm W20-45 Cld85% Thu 2-8o Rn45% 2-6mm W18-38 Cld70% Fri 5-13o Rn20% W8-22 Cld40% Sat 7-16o Rn10% W6-18 Cld25% Sun 8-17o Rn5% W5-15 Cld20% Rn=Rain W=Wind Cld=Cloud
+          - generic [ref=e68]: iPhone 14+
+        - generic [ref=e69]:
+          - generic [ref=e70]: 7 Day Forecast
+          - generic [ref=e75]: CAST7 LAKEO 863m -41.8921, 146.0820 Mon 4-12o Rn15% W10-25 Tue 6-14o Rn25% W12-28 Wed 3-9o Rn65% W20-45 Thu 2-8o Rn45% W18-38 Fri 5-13o Rn20% W8-22 Sat 7-16o Rn10% W6-18 Sun 8-17o Rn5% W5-15
+          - generic [ref=e76]: Apple Watch Ultra 3
+      - button "Apply for Beta" [ref=e78] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e79]
+    - generic [ref=e82]:
+      - generic [ref=e83]:
+        - heading "Where it works" [level=2] [ref=e84]
+        - paragraph [ref=e85]: Thunderbird SMS forecasts work where you have regular cell coverage and in countries where satellite SMS coverage is provided. Satellite SMS coverage is rapidly evolving. Thunderbird will always work over regular SMS, check where satellite SMS coverage currently is with our checker below. This space is expanding rapidly, by the end of 2026 we expect most countries other than have some form of satellite SMS coverage.
+      - generic [ref=e87]:
+        - generic [ref=e88]:
+          - generic [ref=e89]: Where are you hiking?
+          - combobox [ref=e90]:
+            - option "Select your hiking destination..."
+            - option "USA"
+            - option "Australia" [selected]
+            - option "Canada"
+            - option "New Zealand"
+            - option "Ukraine"
+            - option "Japan"
+            - option "Switzerland"
+            - option "United Kingdom"
+            - option "Chile"
+            - option "Peru"
+            - option "Spain"
+            - option "Mexico"
+            - option "Other / Not listed"
+        - generic [ref=e91]:
+          - generic [ref=e92]: What phone do you have?
+          - generic [ref=e93]:
+            - button "iPhone 14 or newer" [ref=e94] [cursor=pointer]
+            - button "Android (Samsung Galaxy S21+, Pixel 9+, or recent Motorola/flagship)" [ref=e95] [cursor=pointer]
+            - button "Older phone / Not sure" [ref=e96] [cursor=pointer]
+      - generic [ref=e97]:
+        - group [ref=e98]:
+          - generic "Supported Devices" [ref=e99] [cursor=pointer]
+        - group [ref=e100]:
+          - generic "Supported Networks" [ref=e101] [cursor=pointer]
+        - group [ref=e102]:
+          - generic "Supported Countries" [ref=e103] [cursor=pointer]
+      - paragraph [ref=e104]: SMS is prioritised when off grid (i.e. satellite networks). Data and voice is often not available. When data is available, a single forecast uses less than 1KB vs 500Mb to open a weather page (difficult to do on 1 bar reception).
+      - button "Apply for Beta" [ref=e106] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e107]
+    - generic [ref=e110]:
+      - generic [ref=e111]:
+        - heading "What's in the forecast" [level=2] [ref=e112]
+        - paragraph [ref=e113]: Every metric you need to plan your day out on trail, optimized for SMS delivery.
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - generic [ref=e116]:
+            - img [ref=e117]
+            - code [ref=e120]: 06h
+          - heading "Hour-by-hour" [level=3] [ref=e121]
+          - paragraph [ref=e122]: Hour-by-hour intervals so you know exactly when conditions change.
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - img [ref=e125]
+            - code [ref=e127]: 5-7°
+          - heading "Temperature" [level=3] [ref=e128]
+          - paragraph [ref=e129]: Min-max range adjusted for your exact elevation using atmospheric lapse rates.
+        - generic [ref=e130]:
+          - generic [ref=e131]:
+            - img [ref=e132]
+            - code [ref=e135]: Rn25% 0-3mm
+          - heading "Rain" [level=3] [ref=e136]
+          - paragraph [ref=e137]: Probability and expected accumulation in millimeters.
+        - generic [ref=e138]:
+          - generic [ref=e139]:
+            - img [ref=e140]
+            - code [ref=e145]: Sn0-2cm
+          - heading "Snow" [level=3] [ref=e146]
+          - paragraph [ref=e147]: Accumulation in centimeters when temperatures drop.
+        - generic [ref=e148]:
+          - generic [ref=e149]:
+            - img [ref=e150]
+            - code [ref=e154]: W18-30
+          - heading "Wind speed" [level=3] [ref=e155]
+          - paragraph [ref=e156]: Sustained and gust speeds — critical for exposed ridgelines.
+        - generic [ref=e157]:
+          - generic [ref=e158]:
+            - img [ref=e159]
+            - code [ref=e162]: NW
+          - heading "Wind direction" [level=3] [ref=e163]
+          - paragraph [ref=e164]: Know which slopes are sheltered and which are exposed.
+        - generic [ref=e165]:
+          - generic [ref=e166]:
+            - img [ref=e167]
+            - code [ref=e169]: Cld60%
+          - heading "Cloud cover" [level=3] [ref=e170]
+          - paragraph [ref=e171]: How much sky is covered. Plan your visibility windows.
+        - generic [ref=e172]:
+          - generic [ref=e173]:
+            - img [ref=e174]
+            - code [ref=e176]: CB14
+          - heading "Cloud base" [level=3] [ref=e177]
+          - paragraph [ref=e178]: The altitude where clouds begin. Know when you'll be in them.
+        - generic [ref=e179]:
+          - generic [ref=e180]:
+            - img [ref=e181]
+            - code [ref=e186]: FL18
+          - heading "Freezing level" [level=3] [ref=e187]
+          - paragraph [ref=e188]: The altitude where temperatures drop below freezing.
+        - generic [ref=e189]:
+          - generic [ref=e190]:
+            - img [ref=e191]
+            - code [ref=e197]: 06:00-20:51
+          - heading "Light hours" [level=3] [ref=e198]
+          - paragraph [ref=e199]: Sunrise to sunset times so you can plan your start and finish.
+        - generic [ref=e200]:
+          - generic [ref=e201]:
+            - img [ref=e202]
+            - code [ref=e204]: TS!
+          - heading "Thunderstorm risk" [level=3] [ref=e205]
+          - paragraph [ref=e206]: CAPE-based storm probability — get off exposed ridges in time.
+        - generic [ref=e207]:
+          - generic [ref=e208]:
+            - img [ref=e209]
+            - code [ref=e211]: "!!!"
+          - heading "Danger rating" [level=3] [ref=e212]
+          - paragraph [ref=e213]: Ice, whiteout, extreme wind, and storm risk — flagged at a glance.
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - img [ref=e217]
+          - generic [ref=e221]:
+            - heading "What's in our weather forecast" [level=3] [ref=e222]
+            - paragraph [ref=e223]: Each forecast is synthesized from multiple national meteorological services — not generic third-party data. We query official APIs from the Bureau of Meteorology, National Weather Service, Met Office, Météo-France, MeteoSwiss, and others depending on your location.
+        - generic [ref=e224]:
+          - generic [ref=e225]:
+            - generic [ref=e226]: Elevation precision
+            - paragraph [ref=e227]: We sample 49 elevation points across each weather grid cell to calculate the true model orography, then apply atmospheric lapse rates (6.5°C per 1000m) to adjust temperatures for your exact position.
+          - generic [ref=e228]:
+            - generic [ref=e229]: Cloud base calculation
+            - paragraph [ref=e230]: Cloud base heights are derived using the Lifting Condensation Level formula from temperature and dewpoint data — the same method pilots use for flight planning.
+          - generic [ref=e231]:
+            - generic [ref=e232]: Intelligent danger rating
+            - paragraph [ref=e233]: Our algorithm evaluates ice risk, whiteout conditions, wind exposure, precipitation intensity, and convective energy (CAPE) to generate a single at-a-glance danger indicator.
+        - paragraph [ref=e234]: All of this computation happens in real-time, then gets compressed into an SMS that works on any device — even via satellite.
+      - button "Apply for Beta" [ref=e236] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e237]
+    - generic [ref=e240]:
+      - generic [ref=e241]:
+        - heading "High resolution global coverage" [level=2] [ref=e242]
+        - paragraph [ref=e243]: Official weather models from national meteorological services.
+      - generic [ref=e245]:
+        - generic [ref=e246]:
+          - generic [ref=e247]: Australia
+          - generic [ref=e248]: 2.2km × 2.2km
+        - generic [ref=e249]:
+          - generic [ref=e250]: USA
+          - generic [ref=e251]: 2.5km × 2.5km
+        - generic [ref=e252]:
+          - generic [ref=e253]: Canada
+          - generic [ref=e254]: 2.5km × 2.5km
+        - generic [ref=e255]:
+          - generic [ref=e256]: UK
+          - generic [ref=e257]: 1.5km × 1.5km
+        - generic [ref=e258]:
+          - generic [ref=e259]: France
+          - generic [ref=e260]: 1.5km × 1.5km
+        - generic [ref=e261]:
+          - generic [ref=e262]: Switzerland
+          - generic [ref=e263]: 2.0km × 2.0km
+        - generic [ref=e264]:
+          - generic [ref=e265]: Italy
+          - generic [ref=e266]: 7.0km × 7.0km
+        - generic [ref=e267]:
+          - generic [ref=e268]: Japan
+          - generic [ref=e269]: 5.0km × 5.0km
+        - generic [ref=e270]:
+          - generic [ref=e271]: New Zealand
+          - generic [ref=e272]: 9.0km × 9.0km
+        - generic [ref=e273]:
+          - generic [ref=e274]: South Africa
+          - generic [ref=e275]: 9.0km × 9.0km
+      - paragraph [ref=e276]: Resolution = weather model grid size. Smaller = more accurate for mountain terrain.
+      - button "Apply for Beta" [ref=e278] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e279]
+    - generic [ref=e282]:
+      - generic [ref=e283]:
+        - heading "How it works" [level=2] [ref=e284]
+        - paragraph [ref=e285]: "Two ways to get forecasts: pre-configure your route or text GPS coordinates on the fly."
+      - generic [ref=e286]:
+        - paragraph [ref=e287]: Pre-configure before departure
+        - paragraph [ref=e288]: Upload your own GPX file or use one of our community uploaded GPX files for your favourite trail.
+        - generic [ref=e289]:
+          - generic [ref=e291]:
+            - img [ref=e293]
+            - generic [ref=e295]: "01"
+            - heading "Set waypoints" [level=3] [ref=e296]
+            - paragraph [ref=e297]: Mark camps, peaks, and key locations along your route with precise elevations.
+          - generic [ref=e299]:
+            - img [ref=e301]
+            - generic [ref=e305]: "02"
+            - heading "Save your route" [level=3] [ref=e306]
+            - paragraph [ref=e307]: Each waypoint gets a unique SMS code. Upload GPX or build from scratch.
+          - generic [ref=e309]:
+            - img [ref=e311]
+            - generic [ref=e313]: "03"
+            - heading "Request forecasts" [level=3] [ref=e314]
+            - paragraph [ref=e315]: Text your waypoint code via satellite SMS. Receive detailed weather within minutes.
+      - generic [ref=e316]:
+        - paragraph [ref=e317]: Or text GPS coordinates on trail
+        - generic [ref=e318]:
+          - paragraph [ref=e319]: No pre-planning needed. Text your GPS coordinates from anywhere and get an instant forecast. Get GPS coordinates from your phone's compass app, Apple Maps, or Google Maps - GPS works even without cell coverage or data.
+          - generic [ref=e320]: "Send: CAST12 -41.89, 146.08"
+          - list [ref=e321]:
+            - listitem [ref=e322]: Unplanned detours or route changes.
+            - listitem [ref=e324]: Checking conditions at your current position.
+            - listitem [ref=e326]: Exploring new areas without pre-setup.
+      - button "Apply for Beta" [ref=e329] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e330]
+    - generic [ref=e333]:
+      - generic [ref=e334]:
+        - heading "See it in action" [level=2] [ref=e335]
+        - paragraph [ref=e336]: The Overland Track with 16 waypoints. Click any marker to see its SMS code.
+      - generic [ref=e337]:
+        - generic [ref=e339]:
+          - generic:
+            - region "Map" [ref=e340]
+            - generic:
+              - generic: Use Ctrl + scroll to zoom the map
+            - button "Map marker" [ref=e341] [cursor=pointer]:
+              - button "Ronny Creek - camp" [ref=e342]:
+                - generic [ref=e343]: RON
+            - button "Map marker" [ref=e345] [cursor=pointer]:
+              - button "Waterfall Valley Hut - camp" [ref=e346]:
+                - generic [ref=e347]: WAT
+            - button "Map marker" [ref=e349] [cursor=pointer]:
+              - button "Lake Windermere Hut - camp" [ref=e350]:
+                - generic [ref=e351]: WIN
+            - button "Map marker" [ref=e353] [cursor=pointer]:
+              - button "New Pelion Hut - camp" [ref=e354]:
+                - generic [ref=e355]: PEL
+            - button "Map marker" [ref=e357] [cursor=pointer]:
+              - button "Kia Ora Hut - camp" [ref=e358]:
+                - generic [ref=e359]: KIA
+            - button "Map marker" [ref=e361] [cursor=pointer]:
+              - button "Bert Nichols Hut - camp" [ref=e362]:
+                - generic [ref=e363]: BER
+            - button "Map marker" [ref=e365] [cursor=pointer]:
+              - button "Narcissus Hut - camp" [ref=e366]:
+                - generic [ref=e367]: NAR
+            - button "Map marker" [ref=e369] [cursor=pointer]:
+              - button "Cradle Mountain - peak" [ref=e370]:
+                - generic [ref=e371]: CRA
+            - button "Map marker" [ref=e373] [cursor=pointer]:
+              - button "Marions Lookout - peak" [ref=e374]:
+                - generic [ref=e375]: MAR
+            - button "Map marker" [ref=e377] [cursor=pointer]:
+              - button "Barn Bluff - peak" [ref=e378]:
+                - generic [ref=e379]: BAR
+            - button "Map marker" [ref=e381] [cursor=pointer]:
+              - button "Mt Oakleigh - peak" [ref=e382]:
+                - generic [ref=e383]: OAK
+            - button "Map marker" [ref=e385] [cursor=pointer]:
+              - button "Mt Pelion West - peak" [ref=e386]:
+                - generic [ref=e387]: PEL
+            - button "Map marker" [ref=e389] [cursor=pointer]:
+              - button "Mt Pelion East - peak" [ref=e390]:
+                - generic [ref=e391]: PEL
+            - button "Map marker" [ref=e393] [cursor=pointer]:
+              - button "Mt Ossa - peak" [ref=e394]:
+                - generic [ref=e395]: OSS
+            - button "Map marker" [ref=e397] [cursor=pointer]:
+              - button "The Acropolis - peak" [ref=e398]:
+                - generic [ref=e399]: ACR
+            - button "Map marker" [ref=e401] [cursor=pointer]:
+              - button "Kitchen Hut - poi" [ref=e402]:
+                - generic [ref=e403]: KIT
+          - generic:
+            - generic [ref=e405]:
+              - button "Zoom in" [ref=e406] [cursor=pointer]
+              - button "Zoom out" [ref=e408] [cursor=pointer]
+              - button "Reset bearing to north" [ref=e410]
+            - group [ref=e412]:
+              - generic "Toggle attribution" [ref=e413] [cursor=pointer]
+              - generic [ref=e414]:
+                - link "OpenFreeMap" [ref=e415] [cursor=pointer]:
+                  - /url: https://openfreemap.org
+                - link "© OpenMapTiles" [ref=e416] [cursor=pointer]:
+                  - /url: https://www.openmaptiles.org/
+                - text: Data from
+                - link "OpenStreetMap" [ref=e417] [cursor=pointer]:
+                  - /url: https://www.openstreetmap.org/copyright
+        - generic [ref=e419]:
+          - generic [ref=e422]: Camps (7)
+          - generic [ref=e425]: Peaks (8)
+          - generic [ref=e428]: POI (1)
+      - generic [ref=e429]:
+        - generic [ref=e430]:
+          - generic [ref=e431]:
+            - img [ref=e432]
+            - heading "Camps" [level=3] [ref=e436]
+          - generic [ref=e437]:
+            - button "RONNY Ronny Creek" [ref=e438] [cursor=pointer]:
+              - code [ref=e439]: RONNY
+              - generic [ref=e440]: Ronny Creek
+            - button "WATER Waterfall Valley Hut" [ref=e441] [cursor=pointer]:
+              - code [ref=e442]: WATER
+              - generic [ref=e443]: Waterfall Valley Hut
+            - button "WINDM Lake Windermere Hut" [ref=e444] [cursor=pointer]:
+              - code [ref=e445]: WINDM
+              - generic [ref=e446]: Lake Windermere Hut
+            - button "PELIO New Pelion Hut" [ref=e447] [cursor=pointer]:
+              - code [ref=e448]: PELIO
+              - generic [ref=e449]: New Pelion Hut
+            - button "KIAOR Kia Ora Hut" [ref=e450] [cursor=pointer]:
+              - code [ref=e451]: KIAOR
+              - generic [ref=e452]: Kia Ora Hut
+            - button "BERTN Bert Nichols Hut" [ref=e453] [cursor=pointer]:
+              - code [ref=e454]: BERTN
+              - generic [ref=e455]: Bert Nichols Hut
+            - button "NARCI Narcissus Hut" [ref=e456] [cursor=pointer]:
+              - code [ref=e457]: NARCI
+              - generic [ref=e458]: Narcissus Hut
+        - generic [ref=e459]:
+          - generic [ref=e460]:
+            - img [ref=e461]
+            - heading "Peaks" [level=3] [ref=e463]
+          - generic [ref=e464]:
+            - button "CRADL Cradle Mountain" [ref=e465] [cursor=pointer]:
+              - code [ref=e466]: CRADL
+              - generic [ref=e467]: Cradle Mountain
+            - button "MARIO Marions Lookout" [ref=e468] [cursor=pointer]:
+              - code [ref=e469]: MARIO
+              - generic [ref=e470]: Marions Lookout
+            - button "BARNB Barn Bluff" [ref=e471] [cursor=pointer]:
+              - code [ref=e472]: BARNB
+              - generic [ref=e473]: Barn Bluff
+            - button "OAKLE Mt Oakleigh" [ref=e474] [cursor=pointer]:
+              - code [ref=e475]: OAKLE
+              - generic [ref=e476]: Mt Oakleigh
+            - button "PELOW Mt Pelion West" [ref=e477] [cursor=pointer]:
+              - code [ref=e478]: PELOW
+              - generic [ref=e479]: Mt Pelion West
+            - button "PELOE Mt Pelion East" [ref=e480] [cursor=pointer]:
+              - code [ref=e481]: PELOE
+              - generic [ref=e482]: Mt Pelion East
+            - button "OSSAM Mt Ossa" [ref=e483] [cursor=pointer]:
+              - code [ref=e484]: OSSAM
+              - generic [ref=e485]: Mt Ossa
+            - button "ACROP The Acropolis" [ref=e486] [cursor=pointer]:
+              - code [ref=e487]: ACROP
+              - generic [ref=e488]: The Acropolis
+      - button "Apply for Beta" [ref=e490] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e491]
+    - generic [ref=e494]:
+      - generic [ref=e495]:
+        - heading "Simple pricing" [level=2] [ref=e496]
+        - paragraph [ref=e497]: USD $29.99 up front with USD $29.99 of SMS credits included. Top up anytime with pay-as-you-go credits.
+      - generic [ref=e498]:
+        - generic [ref=e499]:
+          - generic [ref=e500]:
+            - img [ref=e501]
+            - heading "Thunderbird" [level=3] [ref=e503]
+          - generic [ref=e504]:
+            - generic [ref=e505]:
+              - generic [ref=e506]: Device
+              - generic [ref=e507]: USD $0
+            - generic [ref=e508]:
+              - generic [ref=e509]: Monthly
+              - generic [ref=e510]: USD $0
+            - generic [ref=e511]:
+              - generic [ref=e512]: 1st Month
+              - generic [ref=e513]: USD $29.99
+            - generic [ref=e514]:
+              - generic [ref=e515]: Per forecast
+              - generic [ref=e516]: USD $0.33
+            - generic [ref=e517]:
+              - generic [ref=e518]: 12 month minimum
+              - generic [ref=e519]: USD $29.99
+          - button "Apply for Beta" [ref=e520] [cursor=pointer]
+        - generic [ref=e521]:
+          - generic [ref=e522]:
+            - img [ref=e523]
+            - generic [ref=e529]:
+              - heading "Garmin inReach" [level=3] [ref=e530]
+              - 'link "Based on cheapest plan: Enabled (USD $7.99/mo) + device (USD $350+) + activation (USD $39.99). View official pricing →" [ref=e531] [cursor=pointer]':
+                - /url: https://www.garmin.com/en-US/p/837461/
+                - img [ref=e532]
+          - generic [ref=e534]:
+            - generic [ref=e535]:
+              - generic [ref=e536]: Device
+              - generic [ref=e537]: USD $350+
+            - generic [ref=e538]:
+              - generic [ref=e539]: Monthly
+              - generic [ref=e540]: USD $7.99–$50
+            - generic [ref=e541]:
+              - generic [ref=e542]: 1st Month
+              - generic [ref=e543]: USD $390+
+            - generic [ref=e544]:
+              - generic [ref=e545]: Per forecast
+              - generic [ref=e546]: Up to USD $0.50
+            - generic [ref=e547]:
+              - generic [ref=e548]: 12 month minimum
+              - generic [ref=e549]: USD $486+
+          - generic [ref=e550]: External provider
+        - generic [ref=e551]:
+          - generic [ref=e552]:
+            - img [ref=e553]
+            - generic [ref=e555]:
+              - heading "Zoleo" [level=3] [ref=e556]
+              - 'link "Based on cheapest plan: Basic (USD $20/mo) + device (USD $200) + activation (USD $39.99). View official pricing →" [ref=e557] [cursor=pointer]':
+                - /url: https://www.zoleo.com/en-us/plans
+                - img [ref=e558]
+          - generic [ref=e560]:
+            - generic [ref=e561]:
+              - generic [ref=e562]: Device
+              - generic [ref=e563]: USD $200
+            - generic [ref=e564]:
+              - generic [ref=e565]: Monthly
+              - generic [ref=e566]: USD $20–$50
+            - generic [ref=e567]:
+              - generic [ref=e568]: 1st Month
+              - generic [ref=e569]: USD $240+
+            - generic [ref=e570]:
+              - generic [ref=e571]: Per forecast
+              - generic [ref=e572]: Up to USD $0.27
+            - generic [ref=e573]:
+              - generic [ref=e574]: 12 month minimum
+              - generic [ref=e575]: USD $480+
+          - generic [ref=e576]: External provider
+      - button "Apply for Beta" [ref=e578] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e579]
+    - generic [ref=e582]:
+      - heading "About Thunderbird" [level=2] [ref=e584]
+      - generic [ref=e585]:
+        - paragraph [ref=e586]:
+          - text: Thunderbird is an AI agent built by
+          - link "Andrew Hall" [ref=e587] [cursor=pointer]:
+            - /url: https://www.linkedin.com/in/andrewcwhall/
+            - text: Andrew Hall
+            - img [ref=e588]
+          - text: ", an avid AI entrepreneur and hiker."
+        - paragraph [ref=e592]: Thunderbird exists because getting detailed weather on trail shouldn't require a specialist device or a monthly subscription. It delivers the data you need to decide when to go and when to stay — directly to the satellite-enabled phone or watch you already carry.
+        - generic [ref=e593]:
+          - generic [ref=e594]:
+            - img [ref=e595]
+            - generic [ref=e598]: Get in Touch
+          - paragraph [ref=e599]:
+            - text: Come say hi at
+            - link "hello@thunderbird.bot" [ref=e600] [cursor=pointer]:
+              - /url: mailto:hello@thunderbird.bot
+            - text: — see you out on trail soon.
+        - button "Apply for Beta" [ref=e602] [cursor=pointer]:
+          - text: Apply for Beta
+          - img [ref=e603]
+    - generic [ref=e606]:
+      - heading "Questions" [level=2] [ref=e608]
+      - generic [ref=e609]:
+        - generic [ref=e610]:
+          - button "What phones work with Thunderbird? +" [ref=e611] [cursor=pointer]:
+            - generic [ref=e612]: What phones work with Thunderbird?
+            - generic [ref=e613]: +
+          - generic [ref=e614]: Thunderbird works with any phone that supports satellite SMS, including iPhone 14 and newer, Apple Watch Ultra 3, and select Android phones in select geographical markets (Pixel 9+, Galaxy S24+/S25+). Check out our 'Where it Works' to check your own individual circumstances.
+        - generic [ref=e615]:
+          - button "How does satellite SMS delivery work? +" [ref=e616] [cursor=pointer]:
+            - generic [ref=e617]: How does satellite SMS delivery work?
+            - generic [ref=e618]: +
+          - generic [ref=e619]: Text your waypoint code to our service number. Your phone routes the message through satellite when out of cell range. You receive a detailed weather forecast within minutes — no app or internet required.
+        - generic [ref=e620]:
+          - button "What weather data is included? +" [ref=e621] [cursor=pointer]:
+            - generic [ref=e622]: What weather data is included?
+            - generic [ref=e623]: +
+          - generic [ref=e624]: "Each forecast includes 12 metrics per hour: temperature (elevation-adjusted), rain probability and accumulation, snow accumulation, wind speed and direction, cloud cover, cloud base height, freezing level, light hours (sunrise/sunset), thunderstorm risk indicators, and an overall danger rating for hazardous conditions."
+        - generic [ref=e625]:
+          - button "Do I need a subscription? +" [ref=e626] [cursor=pointer]:
+            - generic [ref=e627]: Do I need a subscription?
+            - generic [ref=e628]: +
+          - generic [ref=e629]: No. Thunderbird is a one-time USD $29.99 purchase that includes USD $29.99 in SMS credits. Top up only when you need more. Credits never expire.
+        - generic [ref=e630]:
+          - button "How much does each forecast cost? +" [ref=e631] [cursor=pointer]:
+            - generic [ref=e632]: How much does each forecast cost?
+            - generic [ref=e633]: +
+          - generic [ref=e634]: Each forecast starts at USD $0.33 (12 hr hourly and 7 day daily). 24hr hourly forecasts are double the length of a standard SMS so cost twice as much. The USD $29.99 starter credits cover approximately 90 standard forecasts. Top up anytime with USD $10, USD $25 or USD $50 SMS credits — credits never expire.
+        - generic [ref=e635]:
+          - button "Can I create custom routes? +" [ref=e636] [cursor=pointer]:
+            - generic [ref=e637]: Can I create custom routes?
+            - generic [ref=e638]: +
+          - generic [ref=e639]: Yes. Upload your own GPX file or build from scratch using our map editor. You can also start from popular trail templates and customize them.
+      - button "Apply for Beta" [ref=e641] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e642]
+    - generic [ref=e645]:
+      - heading "Ready to get started?" [level=2] [ref=e646]
+      - paragraph [ref=e647]: USD $29.99 one-time. Includes USD $29.99 SMS credits. No subscription.
+      - button "Apply for Beta" [ref=e648] [cursor=pointer]:
+        - text: Apply for Beta
+        - img [ref=e649]
+  - contentinfo [ref=e651]:
+    - generic [ref=e652]:
+      - generic [ref=e653]:
+        - link "Thunderbird" [ref=e654] [cursor=pointer]:
+          - /url: /
+          - img [ref=e656]
+          - generic [ref=e658]: Thunderbird
+        - generic [ref=e659]:
+          - 'link "E: hello@thunderbird.bot" [ref=e660] [cursor=pointer]':
+            - /url: mailto:hello@thunderbird.bot
+          - 'link "W: www.thunderbird.bot" [ref=e661] [cursor=pointer]':
+            - /url: https://www.thunderbird.bot
+      - paragraph [ref=e663]: © 2026 Thunderbird
+  - alert [ref=e664]
+  - generic [ref=e666]:
+    - generic [ref=e667]:
+      - heading "Apply for Beta Access" [level=2] [ref=e668]
+      - button [ref=e669] [cursor=pointer]:
+        - img [ref=e670]
+    - generic [ref=e674]:
+      - paragraph [ref=e675]: Beta users get full SMS weather forecasts with $50 USD credit. No payment required.
+      - generic [ref=e676]:
+        - generic [ref=e677]: Name
+        - textbox "Your name" [ref=e678]: Test User
+      - generic [ref=e679]:
+        - generic [ref=e680]: Email
+        - textbox "you@example.com" [active] [ref=e681]: test@example.com
+      - generic [ref=e682]:
+        - generic [ref=e683]: Country
+        - combobox [ref=e684]:
+          - option "Select your country" [disabled] [selected]
+          - option "Australia"
+          - option "New Zealand"
+          - option "United States"
+          - option "United Kingdom"
+          - option "Canada"
+          - option "Germany"
+          - option "France"
+          - option "Japan"
+          - option "South Korea"
+      - button "Submit Application" [disabled] [ref=e685]
+```

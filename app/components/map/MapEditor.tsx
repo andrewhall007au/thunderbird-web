@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import Map, { NavigationControl, MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
+import Map, { NavigationControl, MapLayerMouseEvent, MapRef, Source, Layer } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RouteTrack from './RouteTrack';
 import WaypointMarker, { Waypoint } from './WaypointMarker';
+import { Mountain, Map as MapIcon } from 'lucide-react';
 
 interface MapEditorProps {
   trackGeojson?: GeoJSON.Feature;
@@ -18,6 +19,10 @@ interface MapEditorProps {
     latitude: number;
     longitude: number;
     zoom: number;
+  };
+  centerOn?: {
+    latitude: number;
+    longitude: number;
   };
 }
 
@@ -47,6 +52,8 @@ function getBoundsFromGeojson(geojson: GeoJSON.Feature): [[number, number], [num
   return [[minLng, minLat], [maxLng, maxLat]];
 }
 
+type MapStyle = 'street' | 'topo';
+
 export default function MapEditor({
   trackGeojson,
   waypoints = [],
@@ -55,11 +62,51 @@ export default function MapEditor({
   onWaypointSelect,
   onWaypointDrag,
   onWaypointDelete,
-  initialViewport = { latitude: -42.0, longitude: 146.0, zoom: 8 }
+  initialViewport = { latitude: -42.0, longitude: 146.0, zoom: 8 },
+  centerOn
 }: MapEditorProps) {
   const [viewState, setViewState] = useState(initialViewport);
+  const [mapStyle, setMapStyle] = useState<MapStyle>('street');
   const mapRef = useRef<MapRef>(null);
   const hasFittedBounds = useRef(false);
+
+  // Handle centering on a new location
+  useEffect(() => {
+    if (centerOn && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [centerOn.longitude, centerOn.latitude],
+        zoom: 13,
+        duration: 1500
+      });
+    }
+  }, [centerOn]);
+
+  const getMapStyle = () => {
+    if (mapStyle === 'topo') {
+      // OpenTopoMap style for topographic view
+      return {
+        version: 8,
+        sources: {
+          'opentopomap': {
+            type: 'raster',
+            tiles: ['https://tile.opentopomap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenTopoMap contributors'
+          }
+        },
+        layers: [
+          {
+            id: 'opentopomap',
+            type: 'raster',
+            source: 'opentopomap',
+            minzoom: 0,
+            maxzoom: 22
+          }
+        ]
+      };
+    }
+    return 'https://tiles.openfreemap.org/styles/liberty';
+  };
 
   // Fit bounds when GPX track changes
   const fitToBounds = useCallback(() => {
@@ -94,13 +141,41 @@ export default function MapEditor({
   }, [onMapClick]);
 
   return (
-    <div className="w-full h-[500px] md:h-[600px] rounded-lg overflow-hidden">
+    <div className="w-full h-[500px] md:h-[600px] rounded-lg overflow-hidden relative">
+      {/* Map Style Toggle */}
+      <div className="absolute top-4 left-4 z-10 bg-white rounded-lg shadow-lg border border-zinc-200 overflow-hidden flex">
+        <button
+          onClick={() => setMapStyle('street')}
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+            mapStyle === 'street'
+              ? 'bg-orange-500 text-white'
+              : 'bg-white text-zinc-700 hover:bg-zinc-50'
+          }`}
+          title="Street Map"
+        >
+          <MapIcon className="w-4 h-4" />
+          <span>Street</span>
+        </button>
+        <button
+          onClick={() => setMapStyle('topo')}
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-l border-zinc-200 ${
+            mapStyle === 'topo'
+              ? 'bg-orange-500 text-white'
+              : 'bg-white text-zinc-700 hover:bg-zinc-50'
+          }`}
+          title="Topographic Map"
+        >
+          <Mountain className="w-4 h-4" />
+          <span>Topo</span>
+        </button>
+      </div>
+
       <Map
         ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         onLoad={fitToBounds}
-        mapStyle="https://tiles.openfreemap.org/styles/liberty"
+        mapStyle={getMapStyle()}
         onClick={handleClick}
         cooperativeGestures={true}
         attributionControl={{ compact: true }}

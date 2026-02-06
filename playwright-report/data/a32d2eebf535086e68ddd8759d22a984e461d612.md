@@ -1,0 +1,49 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - img [ref=e5]
+    - generic [ref=e8]: Satellite Re|
+  - navigation [ref=e9]:
+    - generic [ref=e11]:
+      - link "Thunderbird" [ref=e12] [cursor=pointer]:
+        - /url: /
+        - img [ref=e14]
+        - generic [ref=e16]: Thunderbird
+      - generic [ref=e17]:
+        - link "Where it works" [ref=e18] [cursor=pointer]:
+          - /url: "#where-it-works"
+        - link "Forecast Metrics" [ref=e19] [cursor=pointer]:
+          - /url: "#features"
+        - link "Pricing" [ref=e20] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "FAQ" [ref=e21] [cursor=pointer]:
+          - /url: "#faq"
+        - link "About" [ref=e22] [cursor=pointer]:
+          - /url: "#about"
+      - generic [ref=e24]:
+        - link "Sign In" [ref=e25] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e26]
+          - text: Sign In
+        - button "Apply for Beta" [ref=e29] [cursor=pointer]
+  - main [ref=e30]:
+    - generic [ref=e32]:
+      - heading "404" [level=1] [ref=e33]
+      - heading "This page could not be found." [level=2] [ref=e35]
+  - contentinfo [ref=e36]:
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - link "Thunderbird" [ref=e39] [cursor=pointer]:
+          - /url: /
+          - img [ref=e41]
+          - generic [ref=e43]: Thunderbird
+        - generic [ref=e44]:
+          - 'link "E: hello@thunderbird.bot" [ref=e45] [cursor=pointer]':
+            - /url: mailto:hello@thunderbird.bot
+          - 'link "W: www.thunderbird.bot" [ref=e46] [cursor=pointer]':
+            - /url: https://www.thunderbird.bot
+      - paragraph [ref=e48]: © 2026 Thunderbird
+  - alert [ref=e49]
+```

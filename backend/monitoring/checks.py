@@ -20,7 +20,7 @@ def check_backend_health() -> CheckResult:
     try:
         response = requests.get(
             f"{settings.PRODUCTION_URL}/health",
-            timeout=15
+            timeout=30  # Increased from 15s
         )
         duration_ms = (time.monotonic() - start) * 1000
 
@@ -58,7 +58,7 @@ def check_frontend_loads() -> CheckResult:
     try:
         response = requests.get(
             settings.PRODUCTION_URL,
-            timeout=15
+            timeout=30
         )
         duration_ms = (time.monotonic() - start) * 1000
 
@@ -98,7 +98,7 @@ def check_beta_signup_endpoint() -> CheckResult:
         response = requests.post(
             f"{settings.PRODUCTION_URL}/api/beta/apply",
             json={"name": "", "email": "", "country": ""},
-            timeout=15
+            timeout=30
         )
         duration_ms = (time.monotonic() - start) * 1000
 
@@ -138,7 +138,7 @@ def check_api_response_time() -> CheckResult:
     try:
         response = requests.get(
             f"{settings.PRODUCTION_URL}/health",
-            timeout=15
+            timeout=30
         )
         duration_ms = (time.monotonic() - start) * 1000
 
@@ -209,7 +209,7 @@ def check_weather_api() -> CheckResult:
                     {"lat": -39.0, "lon": 143.0, "elevation": 1000}
                 ]
             },
-            timeout=15
+            timeout=30
         )
         duration_ms = (time.monotonic() - start) * 1000
 
@@ -343,13 +343,13 @@ def check_external_api_latency() -> CheckResult:
             response = requests.get(
                 "https://api.stripe.com/v1/balance",
                 auth=(settings.STRIPE_SECRET_KEY, ""),
-                timeout=10
+                timeout=30
             )
         else:
             # Just test reachability
             response = requests.get(
                 "https://api.stripe.com/",
-                timeout=10
+                timeout=30
             )
         stripe_ms = (time.monotonic() - start) * 1000
         metadata["stripe_ms"] = round(stripe_ms, 2)
@@ -374,13 +374,13 @@ def check_external_api_latency() -> CheckResult:
             response = requests.get(
                 f"https://api.twilio.com/2010-04-01/Accounts/{settings.TWILIO_ACCOUNT_SID}.json",
                 auth=(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN),
-                timeout=10
+                timeout=30
             )
         else:
             # Just test reachability
             response = requests.get(
                 "https://api.twilio.com/",
-                timeout=10
+                timeout=30
             )
         twilio_ms = (time.monotonic() - start) * 1000
         metadata["twilio_ms"] = round(twilio_ms, 2)

@@ -67,6 +67,12 @@ export default function WaypointList({
                     <code className="text-blue-400">{wp.smsCode}</code>
                     {' '}&middot;{' '}
                     {wp.lat.toFixed(3)}, {wp.lng.toFixed(3)}
+                    {wp.elevation && (
+                      <>
+                        {' '}&middot;{' '}
+                        <span className="font-medium">{wp.elevation}m</span>
+                      </>
+                    )}
                   </p>
                 </div>
               </button>

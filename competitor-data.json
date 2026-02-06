@@ -1,0 +1,249 @@
+{
+  "last_updated": "2026-02-06",
+  "sources": [
+    {
+      "url": "https://www.garmin.com/en-US/p/837461/",
+      "accessed": "2026-02-06",
+      "notes": "Official Garmin inReach consumer plans page"
+    },
+    {
+      "url": "https://www.garmin.com/en-US/blog/outdoor/overview-inreach-subscription-plans/",
+      "accessed": "2026-02-06",
+      "notes": "Garmin blog overview of subscription plans"
+    },
+    {
+      "url": "https://hikingguy.com/hiking-gear/garmin-inreach-subscription-cost-breakdown/",
+      "accessed": "2026-02-06",
+      "notes": "Third-party detailed pricing breakdown (HikingGuy.com)"
+    },
+    {
+      "url": "https://www.zoleo.com/en-us/plans",
+      "accessed": "2026-02-06",
+      "notes": "Official ZOLEO plans page (US pricing)"
+    },
+    {
+      "url": "https://www.zoleo.com/en-us/mobile-messaging-app",
+      "accessed": "2026-02-06",
+      "notes": "ZOLEO app features including weather specifications"
+    },
+    {
+      "url": "https://support.garmin.com/en-US/?faq=u0AlAZQKWe7EF9cNYiSaf6",
+      "accessed": "2026-02-06",
+      "notes": "Garmin support FAQ for weather forecasts (page did not render content)"
+    }
+  ],
+  "garmin_inreach": {
+    "plans": {
+      "enabled": {
+        "monthly_cost_usd": 7.99,
+        "messages_included": 0,
+        "weather_cost": "Pay-as-you-go at $0.50 per weather request",
+        "overage_per_message_usd": 0.50,
+        "tracking_cost": "$0.10 per tracking point (10 min+ interval)",
+        "suspension_terms": "Free suspension for up to 12 months at a time, no reactivation fee",
+        "activation_fee_usd": 39.99,
+        "minimum_commitment": "None - can suspend anytime after first month"
+      },
+      "essential": {
+        "monthly_cost_usd": 14.99,
+        "messages_included": 50,
+        "weather_cost": "Included in 50 text messages & weather requests",
+        "overage_per_message_usd": 0.50,
+        "tracking_cost": "Pay-as-you-go at $0.10 per tracking point",
+        "photo_voice_messages": 10,
+        "check_ins_reactions": "Unlimited",
+        "suspension_terms": "Free suspension for up to 12 months at a time, no reactivation fee",
+        "activation_fee_usd": 39.99,
+        "minimum_commitment": "None - can suspend anytime after first month"
+      },
+      "standard": {
+        "monthly_cost_usd": 30.00,
+        "messages_included": 150,
+        "weather_cost": "Included in 150 text messages & weather requests",
+        "overage_per_message_usd": 0.50,
+        "tracking_cost": "Unlimited (10 min+ interval)",
+        "photo_voice_messages": 25,
+        "check_ins_reactions": "Unlimited",
+        "suspension_terms": "Free suspension for up to 12 months at a time, no reactivation fee",
+        "activation_fee_usd": 39.99,
+        "minimum_commitment": "None - can suspend anytime after first month"
+      },
+      "premium": {
+        "monthly_cost_usd": 50.00,
+        "messages_included": "Unlimited",
+        "weather_cost": "Unlimited weather requests",
+        "overage_per_message_usd": 0,
+        "tracking_cost": "Unlimited (2 min+ interval)",
+        "photo_voice_messages": 50,
+        "check_ins_reactions": "Unlimited",
+        "suspension_terms": "Free suspension for up to 12 months at a time, no reactivation fee",
+        "activation_fee_usd": 39.99,
+        "minimum_commitment": "None - can suspend anytime after first month"
+      }
+    },
+    "weather_forecast": {
+      "basic": {
+        "duration_days": 2,
+        "resolution_intervals": "2-6 hour intervals throughout",
+        "metrics": ["temperature", "precipitation", "wind_speed", "wind_direction", "atmospheric_pressure"],
+        "data_source": "Forecast.io",
+        "altitude_aware": false,
+        "custom_location": true,
+        "custom_location_options": ["waypoint", "coordinates", "current_location"],
+        "notes": "Each weather request counts as one message against plan allowance"
+      },
+      "premium": {
+        "duration_days": 7,
+        "resolution_intervals": "1-2 hour intervals (day 1), 3-6 hour intervals (day 2), 12 hour intervals (days 3-7)",
+        "metrics": ["temperature", "precipitation", "wind_speed", "wind_direction", "atmospheric_pressure"],
+        "data_source": "OCENS",
+        "altitude_aware": false,
+        "custom_location": true,
+        "custom_location_options": ["waypoint", "coordinates", "current_location"],
+        "notes": "Each weather request counts as one message against plan allowance"
+      },
+      "basic_marine": {
+        "duration_days": 2,
+        "resolution_intervals": "2-6 hour intervals",
+        "metrics": ["temperature", "precipitation", "wind_speed", "wind_direction", "atmospheric_pressure", "wave_height", "wave_period"],
+        "data_source": "Forecast.io",
+        "altitude_aware": false,
+        "custom_location": true,
+        "custom_location_options": ["waypoint", "coordinates", "current_location"],
+        "notes": "Marine-specific forecast includes wave data"
+      },
+      "premium_marine": {
+        "duration_days": 7,
+        "resolution_intervals": "1-2 hour intervals (day 1), 3-6 hour intervals (day 2), 12 hour intervals (days 3-7)",
+        "metrics": ["temperature", "precipitation", "wind_speed", "wind_direction", "atmospheric_pressure", "wave_height", "wave_period"],
+        "data_source": "OCENS",
+        "altitude_aware": false,
+        "custom_location": true,
+        "custom_location_options": ["waypoint", "coordinates", "current_location"],
+        "notes": "Marine-specific forecast includes wave data"
+      }
+    }
+  },
+  "zoleo": {
+    "plans": {
+      "basic": {
+        "monthly_cost_usd": 20.00,
+        "monthly_cost_aud": null,
+        "monthly_cost_nzd": null,
+        "messages_included": 75,
+        "weather_cost": "1 message per weather request (counts against 75 message allowance)",
+        "overage_per_message_usd": 0.50,
+        "suspension_cost_usd": 4.00,
+        "activation_fee_usd": 39.99,
+        "minimum_commitment": "No suspension during first month; no credits for cancellations or suspensions within the first month",
+        "topup_bundles": [
+          {"messages": 20, "cost_usd": 8.00, "per_message_usd": 0.40},
+          {"messages": 75, "cost_usd": 15.00, "per_message_usd": 0.20}
+        ],
+        "check_ins": "Unlimited satellite check-in messages (free)",
+        "sos": "Unlimited SOS messages with 24/7 monitoring (free)"
+      },
+      "in_touch": {
+        "monthly_cost_usd": 35.00,
+        "monthly_cost_aud": null,
+        "monthly_cost_nzd": null,
+        "messages_included": 300,
+        "weather_cost": "1 message per weather request (counts against 300 message allowance)",
+        "overage_per_message_usd": 0.50,
+        "suspension_cost_usd": 4.00,
+        "activation_fee_usd": 39.99,
+        "minimum_commitment": "No suspension during first month; no credits for cancellations or suspensions within the first month",
+        "topup_bundles": [
+          {"messages": 20, "cost_usd": 8.00, "per_message_usd": 0.40},
+          {"messages": 75, "cost_usd": 15.00, "per_message_usd": 0.20}
+        ],
+        "check_ins": "Unlimited satellite check-in messages (free)",
+        "sos": "Unlimited SOS messages with 24/7 monitoring (free)"
+      },
+      "unlimited": {
+        "monthly_cost_usd": 50.00,
+        "monthly_cost_aud": null,
+        "monthly_cost_nzd": null,
+        "messages_included": "Unlimited",
+        "weather_cost": "Unlimited weather requests (free)",
+        "overage_per_message_usd": 0,
+        "suspension_cost_usd": 4.00,
+        "activation_fee_usd": 39.99,
+        "minimum_commitment": "No suspension during first month; no credits for cancellations or suspensions within the first month",
+        "topup_bundles": [],
+        "check_ins": "Unlimited satellite check-in messages (free)",
+        "sos": "Unlimited SOS messages with 24/7 monitoring (free)",
+        "notes": "Fair Use Policy restrictions apply"
+      }
+    },
+    "weather_forecast": {
+      "data_source": "Xweather (formerly AerisWeather) - described as 'one of the most accurate sources of hyperlocal weather'",
+      "spatial_resolution": "100 meters",
+      "current_conditions": {
+        "metrics": ["current_temperature", "apparent_temperature", "wind_speed", "wind_bearing", "visibility", "uv_index"]
+      },
+      "hourly_forecast": {
+        "total_hours": 44,
+        "resolution_breakdown": [
+          {"hours": 14, "interval": "2 hours"},
+          {"hours": 30, "interval": "6 hours"}
+        ],
+        "metrics": ["conditions", "temperature", "wind_speed", "wind_bearing", "precipitation_percentage", "precipitation_mm", "precipitation_type"]
+      },
+      "daily_forecast": {
+        "days": 5,
+        "metrics": ["conditions", "high_temperature", "low_temperature", "sunrise", "sunset", "precipitation_percentage", "precipitation_mm", "precipitation_type"]
+      },
+      "custom_location": true,
+      "altitude_aware": false,
+      "marine_forecast": false,
+      "notes": "Each weather request uses 1 satellite message. Unlimited check-in messages do not count against message allowance. WiFi/cellular messages do not count against satellite message allowance."
+    }
+  },
+  "effective_cost_per_weather_forecast": {
+    "garmin_enabled": {
+      "cost_usd": 0.50,
+      "calculation": "Pay-as-you-go: $0.50 per weather request"
+    },
+    "garmin_essential": {
+      "cost_usd": 0.30,
+      "calculation": "50 messages for $14.99 = $0.30/message if used exclusively for weather (realistic: higher due to other messaging needs)"
+    },
+    "garmin_standard": {
+      "cost_usd": 0.20,
+      "calculation": "150 messages for $30 = $0.20/message if used exclusively for weather (realistic: higher due to other messaging needs)"
+    },
+    "garmin_premium": {
+      "cost_usd": 0,
+      "calculation": "Unlimited weather requests - no marginal cost per forecast"
+    },
+    "zoleo_basic": {
+      "cost_usd": 0.27,
+      "calculation": "75 messages for $20 = $0.27/message if used exclusively for weather (realistic: higher due to other messaging needs)"
+    },
+    "zoleo_in_touch": {
+      "cost_usd": 0.12,
+      "calculation": "300 messages for $35 = $0.12/message if used exclusively for weather (realistic: higher due to other messaging needs)"
+    },
+    "zoleo_unlimited": {
+      "cost_usd": 0,
+      "calculation": "Unlimited weather requests - no marginal cost per forecast"
+    },
+    "thunderbird": {
+      "cost_usd": 0.33,
+      "calculation": "$29.99 provides 90 forecasts = $0.33 per forecast. No device cost ($0 vs $350-450 for inReach/ZOLEO). No subscription - prepay credits only."
+    }
+  },
+  "thunderbird_advantages": {
+    "multi_point_trail_forecast": "Neither competitor offers multi-waypoint forecasts in a single request. Garmin allows manual waypoint selection but each costs a message. ZOLEO only supports current location or single custom location.",
+    "altitude_aware": "Neither competitor adjusts forecasts for elevation. This is a documented complaint in Garmin forums and outdoor community discussions.",
+    "zero_marginal_cost_for_receiving": "Thunderbird forecasts arrive as inbound SMS via satellite - no message burned from plan allowance. Competitors charge per weather request (Garmin: $0.50 on Enabled, counts as message on other plans; ZOLEO: counts as 1 message on Basic/In Touch plans).",
+    "push_not_pull": "Scheduled delivery vs requiring hiker to actively request. Thunderbird can deliver forecasts at pre-scheduled times without user interaction.",
+    "no_extra_device": "Works on existing smartphone via satellite SMS (iPhone 14+, Android with Starlink D2C). No $350-450 dedicated hardware purchase required.",
+    "no_monthly_subscription": "One-time credit purchase ($29.99 for 90 forecasts) vs monthly recurring fees ($7.99-50/mo for Garmin, $20-50/mo for ZOLEO) even when not hiking.",
+    "higher_resolution_data": "Thunderbird uses highest resolution data from official national weather services with hourly updates. Competitors use commercial aggregators (Forecast.io, OCENS, Xweather) with lower resolution.",
+    "more_metrics": "12 important metrics including cloud base and freezing level - critical for alpine safety. Competitors provide basic metrics only (temp, wind, precip, pressure).",
+    "gpx_integration": "Upload GPX file and get forecasts for all waypoints along trail. Competitors require manual coordinate entry for each point.",
+    "community_trails": "Access community-uploaded GPX files for popular trails. Competitors have no trail database."
+  }
+}

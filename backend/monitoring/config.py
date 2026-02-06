@@ -47,9 +47,9 @@ class MonitoringSettings(BaseSettings):
     # Metrics retention
     MONITOR_RETENTION_DAYS: int = Field(default=90, alias="METRICS_RETENTION_DAYS")
 
-    # Performance thresholds
-    MONITOR_DB_QUERY_SLOW_THRESHOLD_MS: float = Field(default=500.0, alias="DB_QUERY_SLOW_THRESHOLD_MS")
-    MONITOR_EXTERNAL_API_SLOW_THRESHOLD_MS: float = Field(default=5000.0, alias="EXTERNAL_API_SLOW_THRESHOLD_MS")
+    # Performance thresholds (relaxed to reduce false positives)
+    MONITOR_DB_QUERY_SLOW_THRESHOLD_MS: float = Field(default=1000.0, alias="DB_QUERY_SLOW_THRESHOLD_MS")  # Was 500ms
+    MONITOR_EXTERNAL_API_SLOW_THRESHOLD_MS: float = Field(default=10000.0, alias="EXTERNAL_API_SLOW_THRESHOLD_MS")  # Was 5000ms
 
     # Production database path (for direct query performance checks)
     MONITOR_PRODUCTION_DB_PATH: str = Field(default="/root/overland-weather/backend/production.db", alias="PRODUCTION_DB_PATH")

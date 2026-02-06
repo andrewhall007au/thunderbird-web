@@ -16,7 +16,7 @@ function formatBalance(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function BalanceCard() {
+function BalanceCard({ disabled = false }: { disabled?: boolean }) {
   const { balance, refreshBalance } = useAuth();
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
 
@@ -44,7 +44,7 @@ function BalanceCard() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-zinc-200 p-6">
+    <div className={`bg-white rounded-xl border border-zinc-200 p-6 ${disabled ? 'opacity-40 pointer-events-none' : ''}`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
           <Wallet className="w-5 h-5 text-zinc-400" />
@@ -62,6 +62,7 @@ function BalanceCard() {
       {!isTopUpOpen ? (
         <button
           onClick={() => setIsTopUpOpen(true)}
+          disabled={disabled}
           className="w-full btn-orange py-2.5 flex items-center justify-center gap-2"
         >
           <CreditCard className="w-4 h-4" />
@@ -93,7 +94,7 @@ function BalanceCard() {
   );
 }
 
-function RoutesCard() {
+function RoutesCard({ disabled = false }: { disabled?: boolean }) {
   const [routes, setRoutes] = useState<RouteResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -109,22 +110,24 @@ function RoutesCard() {
         setIsLoading(false);
       }
     };
-    fetchRoutes();
-  }, []);
+    if (!disabled) {
+      fetchRoutes();
+    }
+  }, [disabled]);
 
   return (
-    <div className="bg-white rounded-xl border border-zinc-200 p-6">
+    <div className={`bg-white rounded-xl border border-zinc-200 p-6 ${disabled ? 'opacity-40 pointer-events-none' : ''}`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
           <Route className="w-5 h-5 text-zinc-400" />
-          My Routes
+          Route Library
         </h2>
         <Link
           href="/create"
           className="btn-orange px-4 py-2 text-sm flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          New Route
+          Add Route
         </Link>
       </div>
 
@@ -138,10 +141,10 @@ function RoutesCard() {
       ) : routes.length === 0 ? (
         <div className="py-8 text-center">
           <Map className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
-          <p className="text-zinc-500 mb-4">No routes yet</p>
+          <p className="text-zinc-500 mb-4">No routes in your library</p>
           <Link href="/create" className="btn-orange inline-flex items-center gap-2 px-4 py-2">
             <Plus className="w-4 h-4" />
-            Create Your First Route
+            Add Your First Route
           </Link>
         </div>
       ) : (
@@ -201,6 +204,8 @@ function SettingsCard() {
   const [phoneSuccess, setPhoneSuccess] = useState(false);
   const [unitSystem, setUnitSystem] = useState(account?.unit_system || 'metric');
   const [isSavingUnits, setIsSavingUnits] = useState(false);
+
+  const hasPhone = !!account?.phone;
 
   const handleLinkPhone = async () => {
     if (!phone) return;
@@ -270,11 +275,19 @@ function SettingsCard() {
       <div className="space-y-6">
         {/* Phone Number */}
         <div>
+          {!hasPhone && (
+            <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-sm font-medium text-orange-900 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                Phone number required to receive forecasts
+              </p>
+            </div>
+          )}
           <label className="block text-sm font-medium text-zinc-700 mb-2">
             <Phone className="w-4 h-4 inline mr-1.5" />
             Phone Number
           </label>
-          {account?.phone ? (
+          {hasPhone ? (
             <div className="flex items-center gap-2 text-zinc-900">
               <Check className="w-4 h-4 text-emerald-500" />
               {account.phone}
@@ -287,54 +300,60 @@ function SettingsCard() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+1 555 123 4567"
-                  className="flex-1 px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="flex-1 px-4 py-3 border-2 border-orange-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 />
                 <button
                   onClick={handleLinkPhone}
                   disabled={isLinkingPhone || !phone}
-                  className="px-4 py-2 bg-zinc-900 text-white text-sm rounded-lg hover:bg-zinc-800 disabled:opacity-50"
+                  className="px-6 py-3 bg-orange-500 text-white text-sm font-semibold rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                 >
-                  {isLinkingPhone ? 'Linking...' : 'Link'}
+                  {isLinkingPhone ? 'Linking...' : 'Link Phone'}
                 </button>
               </div>
               {phoneError && (
-                <p className="mt-1 text-sm text-red-500">{phoneError}</p>
+                <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {phoneError}
+                </p>
               )}
               {phoneSuccess && (
-                <p className="mt-1 text-sm text-emerald-600">Phone linked successfully!</p>
+                <p className="mt-2 text-sm text-emerald-600 flex items-center gap-1">
+                  <Check className="w-3 h-3" />
+                  Phone linked successfully!
+                </p>
               )}
-              <p className="mt-1 text-xs text-zinc-400">
-                Link your phone to receive SMS forecasts
+              <p className="mt-2 text-xs text-zinc-500">
+                Enter your satellite device phone number to receive weather forecasts via SMS
               </p>
             </div>
           )}
         </div>
 
         {/* Unit System */}
-        <div>
+        <div className={!hasPhone ? 'opacity-40' : ''}>
           <label className="block text-sm font-medium text-zinc-700 mb-2">
             Units
           </label>
           <div className="flex gap-2">
             <button
               onClick={() => handleUnitChange('metric')}
-              disabled={isSavingUnits}
+              disabled={isSavingUnits || !hasPhone}
               className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                 unitSystem === 'metric'
                   ? 'bg-zinc-900 text-white'
                   : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-              }`}
+              } ${!hasPhone ? 'cursor-not-allowed' : ''}`}
             >
               Metric (°C, m)
             </button>
             <button
               onClick={() => handleUnitChange('imperial')}
-              disabled={isSavingUnits}
+              disabled={isSavingUnits || !hasPhone}
               className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                 unitSystem === 'imperial'
                   ? 'bg-zinc-900 text-white'
                   : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-              }`}
+              } ${!hasPhone ? 'cursor-not-allowed' : ''}`}
             >
               Imperial (°F, ft)
             </button>
@@ -367,6 +386,8 @@ export default function AccountPage() {
     return null;
   }
 
+  const hasPhone = !!account?.phone;
+
   return (
     <div className="py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -385,12 +406,30 @@ export default function AccountPage() {
           </button>
         </div>
 
+        {/* Alert Banner */}
+        {!hasPhone && (
+          <div className="mb-6 p-4 bg-orange-100 border-2 border-orange-400 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-orange-900 mb-1">
+                  Complete Setup: Link Your Phone Number
+                </h3>
+                <p className="text-sm text-orange-800">
+                  You need to link your satellite device phone number before you can create routes or receive forecasts.
+                  Add your phone number in Settings below to get started.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Grid */}
         <div className="grid md:grid-cols-2 gap-6">
-          <BalanceCard />
+          <BalanceCard disabled={!hasPhone} />
           <SettingsCard />
           <div className="md:col-span-2">
-            <RoutesCard />
+            <RoutesCard disabled={!hasPhone} />
           </div>
         </div>
       </div>

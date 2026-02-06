@@ -10,7 +10,10 @@ import WaypointEditor from '../components/waypoint/WaypointEditor';
 import { Waypoint, WaypointType } from '../components/map/WaypointMarker';
 import TrailSelector from '../components/trails/TrailSelector';
 import ElevationProfile from '../components/elevation/ElevationProfile';
-import { TrailData } from '../data/popularTrails';
+import LocationSearch from '../components/map/LocationSearch';
+import QuickLocationSearch from '../components/map/QuickLocationSearch';
+import { TrailData, popularTrails } from '../data/popularTrails';
+import { getElevation } from '../lib/elevation';
 import {
   createRoute,
   updateRoute,
@@ -57,16 +60,22 @@ interface WaypointWithBackend extends Waypoint {
   backendId?: number;
 }
 
+type CreationMethod = 'library' | 'gpx' | 'manual' | null;
+
 // Inner component that uses useSearchParams
 function CreateRouteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const routeIdParam = searchParams.get('id');
 
+  const [creationMethod, setCreationMethod] = useState<CreationMethod>(null);
   const [trackGeojson, setTrackGeojson] = useState<GeoJSON.Feature | null>(null);
   const [routeName, setRouteName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [manualLocation, setManualLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
+  const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | undefined>(undefined);
+  const [isFetchingElevation, setIsFetchingElevation] = useState(false);
 
   // Waypoint state
   const [waypoints, setWaypoints] = useState<WaypointWithBackend[]>([]);
@@ -87,8 +96,20 @@ function CreateRouteContent() {
   useEffect(() => {
     if (currentRouteId) {
       loadExistingRoute(currentRouteId);
+      // Auto-select creation method when editing
+      setCreationMethod('gpx'); // Default to GPX for editing
     }
   }, [currentRouteId]);
+
+  // Auto-load first trail when library method is selected
+  useEffect(() => {
+    if (creationMethod === 'library' && !trackGeojson) {
+      const firstTrail = [...popularTrails].sort((a, b) => a.name.localeCompare(b.name))[0];
+      if (firstTrail) {
+        handleTrailSelect(firstTrail);
+      }
+    }
+  }, [creationMethod]);
 
   // Unsaved changes warning
   useEffect(() => {
@@ -278,11 +299,14 @@ function CreateRouteContent() {
   };
 
   // Waypoint handlers
-  const handleMapClick = (lat: number, lng: number) => {
+  const handleMapClick = async (lat: number, lng: number) => {
     const existingCodes = waypoints.map(w => w.smsCode);
     const defaultName = `Waypoint ${waypoints.length + 1}`;
+
+    // Create waypoint immediately (without elevation)
+    const tempId = crypto.randomUUID();
     const newWaypoint: WaypointWithBackend = {
-      id: crypto.randomUUID(),
+      id: tempId,
       lat,
       lng,
       name: defaultName,
@@ -290,8 +314,19 @@ function CreateRouteContent() {
       smsCode: generateSMSCode(defaultName, existingCodes)
     };
     setWaypoints([...waypoints, newWaypoint]);
-    setSelectedWaypointId(newWaypoint.id);
+    setSelectedWaypointId(tempId);
     setIsDirty(true);
+
+    // Fetch elevation in background and update waypoint
+    setIsFetchingElevation(true);
+    const elevation = await getElevation(lat, lng);
+    setIsFetchingElevation(false);
+
+    if (elevation) {
+      setWaypoints(prev => prev.map(wp =>
+        wp.id === tempId ? { ...wp, elevation } : wp
+      ));
+    }
   };
 
   const handleWaypointUpdate = (id: string, updates: Partial<Waypoint>) => {
@@ -345,7 +380,9 @@ function CreateRouteContent() {
   const selectedWaypoint = waypoints.find(w => w.id === selectedWaypointId) || null;
 
   // Determine current step
-  const currentStep = !trackGeojson ? 1 : waypoints.length === 0 ? 2 : 3;
+  const hasSelectedMethod = creationMethod !== null;
+  const hasTrackOrManual = trackGeojson !== null || (creationMethod === 'manual' && manualLocation !== null);
+  const currentStep = !hasSelectedMethod ? 0 : !hasTrackOrManual ? 1 : waypoints.length === 0 ? 2 : 3;
 
   // Step indicator component
   const StepIndicator = ({ step, title, isActive, isComplete }: {
@@ -376,12 +413,31 @@ function CreateRouteContent() {
           {currentRouteId ? 'Edit Route' : 'Create Your Route'}
         </h1>
 
-        {/* Persistent Step Indicators */}
-        <div className="mb-8 space-y-3">
-          <StepIndicator step={1} title="Upload GPX File" isActive={currentStep === 1} isComplete={currentStep > 1} />
-          <StepIndicator step={2} title="Set Waypoints on Map" isActive={currentStep === 2} isComplete={currentStep > 2} />
-          <StepIndicator step={3} title="Preview SMS Forecast" isActive={currentStep === 3} isComplete={false} />
-        </div>
+        {/* Persistent Step Indicators - only show after method selected */}
+        {hasSelectedMethod && (
+          <div className="mb-6">
+            <div className="space-y-3 mb-4">
+              <StepIndicator step={1} title="Choose Route Source" isActive={currentStep === 1} isComplete={currentStep > 1} />
+              <StepIndicator step={2} title="Set Waypoints on Map" isActive={currentStep === 2} isComplete={currentStep > 2} />
+              <StepIndicator step={3} title="Preview SMS Forecast" isActive={currentStep === 3} isComplete={false} />
+            </div>
+
+            {/* Back to method selection button */}
+            <button
+              onClick={() => {
+                setCreationMethod(null);
+                setTrackGeojson(null);
+                setWaypoints([]);
+                setRouteName('');
+                setManualLocation(null);
+              }}
+              className="btn-orange inline-flex items-center gap-2 px-8 py-3.5"
+            >
+              <span>←</span>
+              <span>Back to method selection</span>
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
@@ -389,33 +445,91 @@ function CreateRouteContent() {
           </div>
         )}
 
-        {/* STEP 1: Choose source */}
-        {currentStep === 1 && !isLoading && (
-          <div className="space-y-6">
-            {/* Popular Trails Dropdown */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">🥾</span>
-                <h2 className="text-xl font-semibold text-gray-900">Popular Trails</h2>
-              </div>
-              <p className="text-gray-600 mb-4">
-                Choose from 25 of the world&apos;s most iconic hiking trails
-              </p>
-              <TrailSelector onSelect={handleTrailSelect} disabled={isLoading} />
-            </div>
+        {/* STEP 0: Choose Creation Method */}
+        {currentStep === 0 && (
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl font-semibold text-center mb-3">How do you want to create your route forecast?</h2>
+            <p className="text-center text-zinc-600 mb-8">Choose the method that works best for you</p>
 
-            {/* Upload GPX Card */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">📁</span>
-                <h2 className="text-xl font-semibold text-gray-900">Upload GPX File</h2>
-              </div>
-              <p className="text-gray-600 mb-4">
-                Import from Gaia GPS, AllTrails, Caltopo, or any hiking app
-              </p>
-              <GPXUpload onUpload={handleGPXUpload} isLoading={isLoading} />
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Library Route Option */}
+              <button
+                onClick={() => setCreationMethod('library')}
+                className="group bg-white border-2 border-zinc-200 rounded-xl p-6 hover:border-orange-500 hover:shadow-lg transition-all text-left"
+              >
+                <div className="text-4xl mb-4">🥾</div>
+                <h3 className="text-lg font-semibold text-zinc-900 mb-2 group-hover:text-orange-500">
+                  Library Route
+                </h3>
+                <p className="text-sm text-zinc-600">
+                  Choose from 25 popular trails around the world
+                </p>
+              </button>
+
+              {/* GPX File Option */}
+              <button
+                onClick={() => setCreationMethod('gpx')}
+                className="group bg-white border-2 border-zinc-200 rounded-xl p-6 hover:border-orange-500 hover:shadow-lg transition-all text-left"
+              >
+                <div className="text-4xl mb-4">📁</div>
+                <h3 className="text-lg font-semibold text-zinc-900 mb-2 group-hover:text-orange-500">
+                  GPX File
+                </h3>
+                <p className="text-sm text-zinc-600">
+                  Upload from Gaia GPS, AllTrails, or any hiking app
+                </p>
+              </button>
+
+              {/* Manual GPS Points Option */}
+              <button
+                onClick={() => setCreationMethod('manual')}
+                className="group bg-white border-2 border-zinc-200 rounded-xl p-6 hover:border-orange-500 hover:shadow-lg transition-all text-left"
+              >
+                <div className="text-4xl mb-4">📍</div>
+                <h3 className="text-lg font-semibold text-zinc-900 mb-2 group-hover:text-orange-500">
+                  Search GPS Points
+                </h3>
+                <p className="text-sm text-zinc-600">
+                  Manually place waypoints on the map
+                </p>
+              </button>
             </div>
           </div>
+        )}
+
+        {/* STEP 1: Based on chosen method */}
+        {currentStep === 1 && !isLoading && (
+          <>
+            {/* Library Route - skip this, auto-loads first trail and goes to map */}
+
+            {/* GPX File Upload */}
+            {creationMethod === 'gpx' && (
+              <div className="max-w-3xl mx-auto">
+                <div className="bg-white rounded-xl p-8 border-2 border-zinc-200">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-4xl">📁</span>
+                    <div>
+                      <h2 className="text-2xl font-semibold text-zinc-900">Upload Your GPX File</h2>
+                      <p className="text-zinc-600">
+                        Import from Gaia GPS, AllTrails, Caltopo, or any hiking app
+                      </p>
+                    </div>
+                  </div>
+                  <GPXUpload onUpload={handleGPXUpload} isLoading={isLoading} />
+                </div>
+              </div>
+            )}
+
+            {/* Manual GPS Points - show location search */}
+            {creationMethod === 'manual' && (
+              <LocationSearch
+                onLocationSelect={(lat, lng, name) => {
+                  setManualLocation({ lat, lng, name });
+                  setRouteName(name);
+                }}
+              />
+            )}
+          </>
         )}
 
         {isLoading && !trackGeojson && (
@@ -426,22 +540,44 @@ function CreateRouteContent() {
         )}
 
         {/* STEP 2: Set Waypoints */}
-        {currentStep >= 2 && trackGeojson && (
+        {currentStep >= 2 && (trackGeojson || manualLocation) && (
           <div className="space-y-6">
-            {/* Route name input */}
+            {/* Route name input or trail selector */}
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-              <div className="flex-1 max-w-md">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Route Name
-                </label>
-                <input
-                  type="text"
-                  value={routeName}
-                  onChange={handleRouteNameChange}
-                  className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
-                  placeholder="My Awesome Hike"
-                />
-              </div>
+              {creationMethod === 'library' ? (
+                <div className="flex-1 max-w-md">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Selected Trail
+                  </label>
+                  <select
+                    value={routeName}
+                    onChange={(e) => {
+                      const trail = popularTrails.find(t => t.name === e.target.value);
+                      if (trail) handleTrailSelect(trail);
+                    }}
+                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
+                  >
+                    {[...popularTrails].sort((a, b) => a.name.localeCompare(b.name)).map(trail => (
+                      <option key={trail.id} value={trail.name}>
+                        {trail.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="flex-1 max-w-md">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Route Name
+                  </label>
+                  <input
+                    type="text"
+                    value={routeName}
+                    onChange={handleRouteNameChange}
+                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
+                    placeholder="My Awesome Hike"
+                  />
+                </div>
+              )}
 
               <div className="flex items-center gap-4">
                 <button
@@ -481,6 +617,12 @@ function CreateRouteContent() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Map takes 2 columns on large screens */}
                 <div className="lg:col-span-2">
+                  {/* Quick location search */}
+                  <QuickLocationSearch
+                    onLocationSelect={(lat, lng) => {
+                      setMapCenter({ latitude: lat, longitude: lng });
+                    }}
+                  />
                   <MapEditor
                     trackGeojson={trackGeojson}
                     waypoints={waypoints}
@@ -489,10 +631,22 @@ function CreateRouteContent() {
                     onWaypointSelect={setSelectedWaypointId}
                     onWaypointDrag={handleWaypointDrag}
                     onWaypointDelete={handleWaypointDelete}
+                    initialViewport={
+                      manualLocation
+                        ? { latitude: manualLocation.lat, longitude: manualLocation.lng, zoom: 11 }
+                        : undefined
+                    }
+                    centerOn={mapCenter}
                   />
-                  <p className="mt-2 text-sm text-gray-600">
-                    Click to add • Drag to move • Select to edit
-                  </p>
+                  <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
+                    <p>Click to add • Drag to move • Select to edit</p>
+                    {isFetchingElevation && (
+                      <p className="flex items-center gap-2 text-orange-600">
+                        <span className="inline-block w-3 h-3 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                        Fetching elevation...
+                      </p>
+                    )}
+                  </div>
                   {trackGeojson && (
                     <div className="mt-4">
                       <ElevationProfile

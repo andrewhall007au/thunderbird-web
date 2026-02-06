@@ -1,0 +1,185 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - img [ref=e5]
+    - generic [ref=e8]: Satellite R|
+  - navigation [ref=e9]:
+    - generic [ref=e11]:
+      - link "Thunderbird" [ref=e12] [cursor=pointer]:
+        - /url: /
+        - img [ref=e14]
+        - generic [ref=e16]: Thunderbird
+      - generic [ref=e17]:
+        - link "Where it works" [ref=e18] [cursor=pointer]:
+          - /url: "#where-it-works"
+        - link "Forecast Metrics" [ref=e19] [cursor=pointer]:
+          - /url: "#features"
+        - link "Pricing" [ref=e20] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "FAQ" [ref=e21] [cursor=pointer]:
+          - /url: "#faq"
+        - link "About" [ref=e22] [cursor=pointer]:
+          - /url: "#about"
+      - generic [ref=e24]:
+        - link "Sign In" [ref=e25] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e26]
+          - text: Sign In
+        - button "Apply for Beta" [ref=e29] [cursor=pointer]
+  - main [ref=e30]:
+    - generic [ref=e32]:
+      - heading "Create Your Route" [level=1] [ref=e33]
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: "1"
+          - generic [ref=e37]: Upload GPX File
+        - generic [ref=e38]:
+          - generic [ref=e39]: "2"
+          - generic [ref=e40]: Set Waypoints on Map
+        - generic [ref=e41]:
+          - generic [ref=e42]: "3"
+          - generic [ref=e43]: Preview SMS Forecast
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - generic [ref=e47]: 🥾
+            - heading "Popular Trails" [level=2] [ref=e48]
+          - paragraph [ref=e49]: Choose from 25 of the world's most iconic hiking trails
+          - generic [ref=e50]:
+            - generic [ref=e51]: Popular Trails
+            - combobox [ref=e52]:
+              - option "Select a popular trail..." [selected]
+              - option "5 Lakes Walk (Zermatt - 10km, 1 days)"
+              - option "Abel Tasman Coast Track (Nelson - 60km, 3-5 days)"
+              - option "Adolf Munkel Trail (Val di Funes - 10km, 1 days)"
+              - option "Alpstein Circuit (NE Switzerland - 30km, 2-3 days)"
+              - option "Alta Via 1 (Dolomites - 125km, 10-12 days)"
+              - option "Alta Via 2 (Dolomites - 160km, 12-14 days)"
+              - option "Amatola Trail (Eastern Cape - 100km, 6 days)"
+              - option "Amphitheatre/Tugela Falls (Drakensberg - 19km, 1-2 days)"
+              - option "Appalachian Trail (GA to ME - 3524km, 150-210 days)"
+              - option "Berg Lake Trail (Mt Robson, BC - 44km, 3-5 days)"
+              - option "Bernese Oberland Traverse (Eiger region - 110km, 8-10 days)"
+              - option "Bibbulmun Track (Western Australia - 1000km, 56 (sections) days)"
+              - option "Cambrian Way (Wales - 479km, 15-20 days)"
+              - option "Cape Chignecto (Nova Scotia - 51km, 3-4 days)"
+              - option "Cape to Cape (Western Australia - 135km, 5-7 days)"
+              - option "Cape Wrath Trail (Scotland - 370km, 14-21 days)"
+              - option "Cathedral Peak (Drakensberg - 19km, 1-2 days)"
+              - option "Chilkoot Trail (Yukon - 53km, 3-5 days)"
+              - option "Cinque Terre (Liguria - 12km, 1 days)"
+              - option "Cirque de Gavarnie (Pyrenees - 14km, 1 days)"
+              - option "Coast to Coast Walk (England - 309km, 12-14 days)"
+              - option "Continental Divide Trail (MT to NM - 4989km, 150-180 days)"
+              - option "Daisetsuzan Grand Traverse (Hokkaido - 55km, 3-5 days)"
+              - option "Dolomites High Route 8 (Dolomites - 180km, 14+ days)"
+              - option "Drakensberg Grand Traverse (KwaZulu-Natal - 220km, 12-14 days)"
+              - option "Eifelsteig (Eifel region - 313km, 15 days)"
+              - option "Fife Coastal Path (Scotland - 187km, 8-10 days)"
+              - option "Fish River Canyon (Namibia border - 85km, 5 days)"
+              - option "Four Pass Loop (Colorado - 45km, 3-4 days)"
+              - option "Freycinet Circuit (Tasmania - 30km, 2-3 days)"
+              - option "Giant's Cup Trail (Drakensberg - 60km, 5 days)"
+              - option "Glyndwr's Way (Mid-Wales - 217km, 9-12 days)"
+              - option "GR10 (Pyrenees) (Pyrenees - 866km, 40-50 days)"
+              - option "GR20 (Corsica - 180km, 15 days)"
+              - option "GR54 Tour des Ecrins (Ecrins NP - 176km, 10-14 days)"
+              - option "Gran Paradiso Traverse (Aosta Valley - 60km, 4-5 days)"
+              - option "Grand Canyon Rim-to-Rim (Arizona - 34km, 2-3 days)"
+              - option "Great Divide Trail (Alberta/BC - 1200km, 42-56 days)"
+              - option "Great Ocean Walk (Victoria - 104km, 6-8 days)"
+              - option "Hadrian's Wall Path (N England - 135km, 6-8 days)"
+              - option "Hardergrat Trail (Interlaken - 27km, 1-2 days)"
+              - option "Haute Route Pyreneenne (Pyrenees - 800km, 40+ days)"
+              - option "Heaphy Track (Kahurangi NP - 79km, 4-6 days)"
+              - option "Heysen Trail (South Australia - 1200km, sections days)"
+              - option "Hochplatte (Ammergau Alps - 15km, 1 days)"
+              - option "Hump Ridge Track (Southland - 61km, 3 days)"
+              - option "Isle Royale (Michigan - 68km, 5-6 days)"
+              - option "Japan Alps (Kamikochi) (Nagano - 50km, 3-7 days)"
+              - option "John Muir Trail (Sierra Nevada, CA - 340km, 15-22 days)"
+              - option "Jurasteig (Bavarian Jura - 237km, 13-16 days)"
+              - option "Kepler Track (Fiordland - 60km, 3-4 days)"
+              - option "Kumano Kodo (Nakahechi) (Kii Peninsula - 70km, 4-6 days)"
+              - option "La Cloche Silhouette (Ontario - 78km, 7-10 days)"
+              - option "Lac Blanc (Chamonix - 11km, 1 days)"
+              - option "Lake Waikaremoana (Te Urewera - 46km, 3-4 days)"
+              - option "Larapinta Trail (Northern Territory - 223km, 12-14 days)"
+              - option "Mafadi Summit (Drakensberg - 52km, 4 days)"
+              - option "Malerweg (Saxon Switzerland - 112km, 8 days)"
+              - option "Matterhorn Circuit (Valais - 150km, 8-10 days)"
+              - option "Mercantour Traverse (SE France - 120km, 5-10 days)"
+              - option "Michinoku Coastal Trail (Tohoku Coast - 1000km, sections days)"
+              - option "Milford Track (Fiordland - 54km, 4 days)"
+              - option "Mittelweg (Central Trail) (Black Forest - 230km, 9 days)"
+              - option "Mount Fuji (Shizuoka - 15km, 1-2 days)"
+              - option "Mt Yarigatake (Northern Alps - 40km, 3-4 days)"
+              - option "Nakasendo (Kiso Valley) (Central Alps - 75km, 4-5 days)"
+              - option "Offa's Dyke Path (Wales border - 285km, 12 days)"
+              - option "Otter Trail (Garden Route - 42km, 5 days)"
+              - option "Overland Track (Tasmania - 65km, 5-7 days)"
+              - option "Pacific Crest Trail (CA/OR/WA - 4265km, 150-180 days)"
+              - option "Paparoa Track (West Coast - 55km, 3 days)"
+              - option "Pennine Way (England - 431km, 15-20 days)"
+              - option "Rakiura Track (Stewart Island - 32km, 3 days)"
+              - option "Rebun Island Trails (Hokkaido - 30km, 2-3 days)"
+              - option "Rheinsteig (Rhine Valley - 320km, 15-20 days)"
+              - option "Rim of Africa (Cape Fold Mountains - 650km, sections days)"
+              - option "Rockwall Trail (Kootenay NP - 56km, 3-5 days)"
+              - option "Routeburn Track (Fiordland - 32km, 2-3 days)"
+              - option "SalzAlpenSteig (Bavarian Alps - 233km, 18 days)"
+              - option "Schluchtensteig (Black Forest - 120km, 6 days)"
+              - option "Schynige Platte to First (Bernese Alps - 16km, 1 days)"
+              - option "Seceda (Val Gardena - 12km, 1 days)"
+              - option "Sentiero degli Dei (Amalfi Coast - 8km, 1 days)"
+              - option "Shikoku Pilgrimage (Shikoku Island - 1200km, 30-60 days)"
+              - option "Skyline Trail (Jasper NP - 44km, 2-4 days)"
+              - option "South West Coast Path (SW England - 1014km, 49-56 days)"
+              - option "Sunshine Coast Trail (BC - 180km, 8-10 days)"
+              - option "Swiss National Park (Engadin - 80km, 1-5 days)"
+              - option "Teton Crest Trail (Wyoming - 64km, 3-5 days)"
+              - option "The Enchantments (Washington - 29km, 1-3 days)"
+              - option "Thorsborne Trail (Queensland - 32km, 4 days)"
+              - option "Three Capes Track (Tasmania - 48km, 4 days)"
+              - option "Tongariro Northern Circuit (North Island - 43km, 3-4 days)"
+              - option "Tonquin Valley (Jasper NP - 44km, 3-4 days)"
+              - option "Tour du Mont Blanc (Alps (FR/IT/CH) - 170km, 10-12 days)"
+              - option "Tre Cime di Lavaredo (Dolomites - 10km, 1 days)"
+              - option "Tsitsikamma Trail (Garden Route - 60km, 6 days)"
+              - option "Vercors Traverse (Vercors - 120km, 6-8 days)"
+              - option "Via Alpina (Swiss section) (Cross-country - 400km, 20+ days)"
+              - option "Walker's Haute Route (Chamonix-Zermatt - 180km, 10-14 days)"
+              - option "West Coast Trail (Vancouver Island - 75km, 6-8 days)"
+              - option "West Highland Way (Scotland - 154km, 6-8 days)"
+              - option "Western Arthurs Traverse (Tasmania - 55km, 5-8 days)"
+              - option "Westweg (Black Forest) (Black Forest - 290km, 12-14 days)"
+              - option "Wonderland Trail (Mt Rainier, WA - 150km, 8-12 days)"
+              - option "Yakushima Island (Kagoshima - 22km, 1-2 days)"
+              - option "Zugspitze (Bavarian Alps - 22km, 1-2 days)"
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - generic [ref=e55]: 📁
+            - heading "Upload GPX File" [level=2] [ref=e56]
+          - paragraph [ref=e57]: Import from Gaia GPS, AllTrails, Caltopo, or any hiking app
+          - generic [ref=e58] [cursor=pointer]:
+            - button "Choose File" [ref=e59]
+            - img [ref=e60]
+            - paragraph [ref=e63]: Drag & drop a GPX file, or click to select
+            - paragraph [ref=e64]: Export from Gaia GPS, AllTrails, Caltopo, or your GPS device
+  - contentinfo [ref=e65]:
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - link "Thunderbird" [ref=e68] [cursor=pointer]:
+          - /url: /
+          - img [ref=e70]
+          - generic [ref=e72]: Thunderbird
+        - generic [ref=e73]:
+          - 'link "E: hello@thunderbird.bot" [ref=e74] [cursor=pointer]':
+            - /url: mailto:hello@thunderbird.bot
+          - 'link "W: www.thunderbird.bot" [ref=e75] [cursor=pointer]':
+            - /url: https://www.thunderbird.bot
+      - paragraph [ref=e77]: © 2026 Thunderbird
+  - alert [ref=e78]
+```
