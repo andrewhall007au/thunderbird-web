@@ -291,7 +291,7 @@ test.describe('Interactive Components', () => {
 
     // Verify waypoint details are displayed
     // The selected waypoint should show its full name and SMS code
-    await expect(page.locator('text=Kia Ora Hut')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Kia Ora Hut' })).toBeVisible();
     await expect(page.locator('text=KIAOR')).toBeVisible();
 
     // Should also show "Text this code to" message
@@ -302,7 +302,7 @@ test.describe('Interactive Components', () => {
     await page.goto(PRODUCTION_URL);
 
     // Scroll to "Where it Works" section
-    await page.locator('text=Where it works').scrollIntoViewIfNeeded();
+    await page.getByRole('heading', { name: 'Where it works' }).scrollIntoViewIfNeeded();
 
     // Select USA
     const countrySelect = page.locator('select').first();
