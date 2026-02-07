@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Pacific Crest Trail",
+    "coordinates": [[-116.467, 32.589, 850], [-116.800, 33.200, 1800]],
+    "country": "US"
+  },
+  {
+    "name": "PCT",
+    "coordinates": [[-116.467, 32.589, 850], [-116.801, 33.201, 1800]],
+    "country": "US"
+  },
+  {
+    "name": "Appalachian Trail",
+    "coordinates": [[-84.194, 34.627, 1134], [-83.800, 35.200, 1600]],
+    "country": "US"
+  },
+  {
+    "name": "Appalachian Track",
+    "coordinates": [[-84.195, 34.628, 1134], [-83.801, 35.201, 1600]],
+    "country": "US"
+  }
+]
