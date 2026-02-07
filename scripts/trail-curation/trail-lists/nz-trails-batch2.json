@@ -1,0 +1,352 @@
+[
+  {
+    "name": "Tongariro Alpine Crossing",
+    "searchName": "Tongariro Alpine Crossing",
+    "region": "Tongariro National Park",
+    "country": "NZ",
+    "officialDistanceKm": 19.4,
+    "typicalDays": "1",
+    "bbox": [
+      -39.3,
+      175.5,
+      -39.1,
+      175.7
+    ]
+  },
+  {
+    "name": "Pouakai Crossing",
+    "searchName": "Pouakai Crossing",
+    "region": "Taranaki",
+    "country": "NZ",
+    "officialDistanceKm": 19,
+    "typicalDays": "1",
+    "bbox": [
+      -39.3,
+      174,
+      -39.2,
+      174.2
+    ]
+  },
+  {
+    "name": "Mt Taranaki Summit Track",
+    "searchName": "Mt Taranaki Summit Track",
+    "region": "Taranaki",
+    "country": "NZ",
+    "officialDistanceKm": 13,
+    "typicalDays": "1",
+    "bbox": [
+      -39.3,
+      174,
+      -39.2,
+      174.1
+    ]
+  },
+  {
+    "name": "Pinnacles Walk",
+    "searchName": "Pinnacles Track",
+    "region": "Coromandel",
+    "country": "NZ",
+    "officialDistanceKm": 7,
+    "typicalDays": "1-2",
+    "bbox": [
+      -37.1,
+      175.7,
+      -37,
+      175.8
+    ]
+  },
+  {
+    "name": "Kaimai Ridgeway",
+    "searchName": "Kaimai Ridgeway",
+    "region": "Bay of Plenty",
+    "country": "NZ",
+    "officialDistanceKm": 24,
+    "typicalDays": "2",
+    "bbox": [
+      -37.8,
+      175.9,
+      -37.6,
+      176.1
+    ]
+  },
+  {
+    "name": "Te Araroa - Tararua Section",
+    "searchName": "Tararua Southern Crossing",
+    "region": "Wellington/Tararua",
+    "country": "NZ",
+    "officialDistanceKm": 35,
+    "typicalDays": "2-3",
+    "bbox": [
+      -40.9,
+      175.3,
+      -40.7,
+      175.5
+    ]
+  },
+  {
+    "name": "Old Ghost Road",
+    "searchName": "Old Ghost Road",
+    "region": "Buller",
+    "country": "NZ",
+    "officialDistanceKm": 85,
+    "typicalDays": "4-5",
+    "bbox": [
+      -41.9,
+      171.8,
+      -41.5,
+      172.2
+    ]
+  },
+  {
+    "name": "Matemateaonga Track",
+    "searchName": "Matemateaonga Track",
+    "region": "Whanganui",
+    "country": "NZ",
+    "officialDistanceKm": 42,
+    "typicalDays": "2-3",
+    "bbox": [
+      -39.5,
+      174.8,
+      -39.3,
+      175
+    ]
+  },
+  {
+    "name": "Whirinaki Track",
+    "searchName": "Whirinaki Track",
+    "region": "Bay of Plenty",
+    "country": "NZ",
+    "officialDistanceKm": 45,
+    "typicalDays": "3",
+    "bbox": [
+      -38.6,
+      176.7,
+      -38.4,
+      176.9
+    ]
+  },
+  {
+    "name": "Rangitoto Summit Track",
+    "searchName": "Rangitoto Summit Track",
+    "region": "Auckland",
+    "country": "NZ",
+    "officialDistanceKm": 7,
+    "typicalDays": "0.5",
+    "bbox": [
+      -36.8,
+      174.8,
+      -36.7,
+      174.9
+    ]
+  },
+  {
+    "name": "Cape Brett Track",
+    "searchName": "Cape Brett Track",
+    "region": "Northland",
+    "country": "NZ",
+    "officialDistanceKm": 16.4,
+    "typicalDays": "1-2",
+    "bbox": [
+      -35.2,
+      174.3,
+      -35.1,
+      174.4
+    ]
+  },
+  {
+    "name": "Mt Holdsworth - Jumbo Circuit",
+    "searchName": "Mt Holdsworth Jumbo Circuit",
+    "region": "Tararua",
+    "country": "NZ",
+    "officialDistanceKm": 25,
+    "typicalDays": "2",
+    "bbox": [
+      -40.9,
+      175.4,
+      -40.8,
+      175.5
+    ]
+  },
+  {
+    "name": "Tama Lakes Track",
+    "searchName": "Tama Lakes Track",
+    "region": "Tongariro National Park",
+    "country": "NZ",
+    "officialDistanceKm": 17,
+    "typicalDays": "1",
+    "bbox": [
+      -39.2,
+      175.5,
+      -39.1,
+      175.6
+    ]
+  },
+  {
+    "name": "Avalanche Peak Route",
+    "searchName": "Avalanche Peak Track",
+    "region": "Arthur's Pass",
+    "country": "NZ",
+    "officialDistanceKm": 7,
+    "typicalDays": "1",
+    "bbox": [
+      -42.9,
+      171.5,
+      -42.8,
+      171.6
+    ]
+  },
+  {
+    "name": "Key Summit Track",
+    "searchName": "Key Summit Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 3,
+    "typicalDays": "0.5",
+    "bbox": [
+      -44.9,
+      168.1,
+      -44.8,
+      168.2
+    ]
+  },
+  {
+    "name": "Gertrude Saddle Route",
+    "searchName": "Gertrude Saddle Route",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 9,
+    "typicalDays": "1",
+    "bbox": [
+      -44.8,
+      168.1,
+      -44.7,
+      168.2
+    ]
+  },
+  {
+    "name": "Lake Marian Track",
+    "searchName": "Lake Marian Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 6,
+    "typicalDays": "0.5",
+    "bbox": [
+      -44.9,
+      168.2,
+      -44.8,
+      168.3
+    ]
+  },
+  {
+    "name": "Luxmore Hut Day Walk",
+    "searchName": "Luxmore Hut Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 18,
+    "typicalDays": "1",
+    "bbox": [
+      -45.4,
+      167.7,
+      -45.3,
+      167.8
+    ]
+  },
+  {
+    "name": "Sealy Tarns Track",
+    "searchName": "Sealy Tarns Track",
+    "region": "Aoraki/Mt Cook",
+    "country": "NZ",
+    "officialDistanceKm": 6,
+    "typicalDays": "0.5",
+    "bbox": [
+      -43.7,
+      170,
+      -43.6,
+      170.1
+    ]
+  },
+  {
+    "name": "Mt Robert Circuit",
+    "searchName": "Mt Robert Circuit",
+    "region": "Nelson Lakes",
+    "country": "NZ",
+    "officialDistanceKm": 11,
+    "typicalDays": "1",
+    "bbox": [
+      -41.9,
+      172.7,
+      -41.8,
+      172.8
+    ]
+  },
+  {
+    "name": "Angelus Hut via Robert Ridge",
+    "searchName": "Angelus Hut Track",
+    "region": "Nelson Lakes",
+    "country": "NZ",
+    "officialDistanceKm": 24,
+    "typicalDays": "1-2",
+    "bbox": [
+      -41.8,
+      172.6,
+      -41.7,
+      172.7
+    ]
+  },
+  {
+    "name": "Welcome Flat Hot Springs Track",
+    "searchName": "Copland Track",
+    "region": "Westland",
+    "country": "NZ",
+    "officialDistanceKm": 34,
+    "typicalDays": "2-3",
+    "bbox": [
+      -43.6,
+      170,
+      -43.4,
+      170.2
+    ]
+  },
+  {
+    "name": "Alex Knob Track",
+    "searchName": "Alex Knob Track",
+    "region": "Westland",
+    "country": "NZ",
+    "officialDistanceKm": 17,
+    "typicalDays": "1",
+    "bbox": [
+      -43.4,
+      170.1,
+      -43.3,
+      170.2
+    ]
+  },
+  {
+    "name": "Isthmus Peak Track",
+    "searchName": "Isthmus Peak Track",
+    "region": "Wanaka",
+    "country": "NZ",
+    "officialDistanceKm": 14,
+    "typicalDays": "1",
+    "bbox": [
+      -44.7,
+      168.8,
+      -44.6,
+      168.9
+    ]
+  },
+  {
+    "name": "Roys Peak to Mt Alpha Traverse",
+    "searchName": "Roys Peak Mt Alpha Traverse",
+    "region": "Wanaka",
+    "country": "NZ",
+    "officialDistanceKm": 20,
+    "typicalDays": "1",
+    "bbox": [
+      -44.8,
+      168.8,
+      -44.7,
+      168.9
+    ]
+  }
+]

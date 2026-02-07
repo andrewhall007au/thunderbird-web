@@ -1,0 +1,452 @@
+[
+  {
+    "name": "Great Divide Trail",
+    "searchName": "Great Divide Trail",
+    "region": "British Columbia / Alberta",
+    "country": "CA",
+    "officialDistanceKm": 1200,
+    "typicalDays": 60,
+    "bbox": [49.0, -121.5, 54.5, -115.5]
+  },
+  {
+    "name": "West Coast Trail",
+    "searchName": "West Coast Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 75,
+    "typicalDays": 7,
+    "bbox": [48.55, -125.2, 48.75, -124.7]
+  },
+  {
+    "name": "Berg Lake Trail",
+    "searchName": "Berg Lake Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 23,
+    "typicalDays": 3,
+    "bbox": [52.95, -119.3, 53.15, -119.1]
+  },
+  {
+    "name": "Chilkoot Trail",
+    "searchName": "Chilkoot Trail",
+    "region": "British Columbia / Alaska",
+    "country": "CA",
+    "officialDistanceKm": 53,
+    "typicalDays": 4,
+    "bbox": [59.4, -135.5, 59.8, -134.8]
+  },
+  {
+    "name": "Sunshine Coast Trail",
+    "searchName": "Sunshine Coast Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 180,
+    "typicalDays": 10,
+    "bbox": [49.5, -124.5, 50.2, -123.8]
+  },
+  {
+    "name": "Rockwall Trail",
+    "searchName": "Rockwall Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 55,
+    "typicalDays": 4,
+    "bbox": [50.5, -116.2, 50.8, -115.8]
+  },
+  {
+    "name": "Juan de Fuca Marine Trail",
+    "searchName": "Juan de Fuca Marine Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 47,
+    "typicalDays": 4,
+    "bbox": [48.3, -124.7, 48.5, -123.9]
+  },
+  {
+    "name": "Garibaldi Lake Trail",
+    "searchName": "Garibaldi Lake Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 18,
+    "typicalDays": 2,
+    "bbox": [49.9, -123.15, 50.05, -122.95]
+  },
+  {
+    "name": "Joffre Lakes Trail",
+    "searchName": "Joffre Lakes Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 11,
+    "typicalDays": 1,
+    "bbox": [50.35, -122.55, 50.45, -122.45]
+  },
+  {
+    "name": "Stein Valley Traverse",
+    "searchName": "Stein Valley Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 80,
+    "typicalDays": 6,
+    "bbox": [50.2, -122.5, 50.6, -121.5]
+  },
+  {
+    "name": "Howe Sound Crest Trail",
+    "searchName": "Howe Sound Crest Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 29,
+    "typicalDays": 2,
+    "bbox": [49.4, -123.3, 49.7, -123.1]
+  },
+  {
+    "name": "Golden Ears Trail",
+    "searchName": "Golden Ears Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 24,
+    "typicalDays": 2,
+    "bbox": [49.35, -122.55, 49.5, -122.45]
+  },
+  {
+    "name": "Della Falls Trail",
+    "searchName": "Della Falls Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 32,
+    "typicalDays": 3,
+    "bbox": [49.6, -125.8, 49.75, -125.5]
+  },
+  {
+    "name": "Nootka Trail",
+    "searchName": "Nootka Trail",
+    "region": "British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 35,
+    "typicalDays": 5,
+    "bbox": [49.6, -126.8, 49.85, -126.5]
+  },
+  {
+    "name": "Skyline Trail (Jasper)",
+    "searchName": "Skyline Trail Jasper",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 44,
+    "typicalDays": 3,
+    "bbox": [52.8, -118.2, 53.0, -117.8]
+  },
+  {
+    "name": "Tonquin Valley Trail",
+    "searchName": "Tonquin Valley Trail",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 44,
+    "typicalDays": 3,
+    "bbox": [52.8, -118.2, 53.0, -117.9]
+  },
+  {
+    "name": "Plain of Six Glaciers Trail",
+    "searchName": "Plain of Six Glaciers Trail",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 14,
+    "typicalDays": 1,
+    "bbox": [51.38, -116.3, 51.45, -116.15]
+  },
+  {
+    "name": "Lake Agnes and Big Beehive Trail",
+    "searchName": "Lake Agnes Big Beehive",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 13,
+    "typicalDays": 1,
+    "bbox": [51.38, -116.3, 51.43, -116.2]
+  },
+  {
+    "name": "Crypt Lake Trail",
+    "searchName": "Crypt Lake Trail",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 17,
+    "typicalDays": 1,
+    "bbox": [49.0, -113.95, 49.05, -113.8]
+  },
+  {
+    "name": "Sentinel Pass Trail",
+    "searchName": "Sentinel Pass Trail",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 12,
+    "typicalDays": 1,
+    "bbox": [51.3, -116.3, 51.35, -116.2]
+  },
+  {
+    "name": "Mt Assiniboine via Wonder Pass",
+    "searchName": "Mount Assiniboine Wonder Pass",
+    "region": "Alberta / British Columbia",
+    "country": "CA",
+    "officialDistanceKm": 55,
+    "typicalDays": 4,
+    "bbox": [50.7, -115.8, 50.9, -115.5]
+  },
+  {
+    "name": "Egypt Lake via Healy Pass",
+    "searchName": "Egypt Lake Healy Pass",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 24,
+    "typicalDays": 2,
+    "bbox": [51.1, -116.2, 51.2, -116.0]
+  },
+  {
+    "name": "Sawback Trail",
+    "searchName": "Sawback Trail",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 74,
+    "typicalDays": 5,
+    "bbox": [51.2, -116.0, 51.5, -115.5]
+  },
+  {
+    "name": "Skoki Loop",
+    "searchName": "Skoki Loop",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 35,
+    "typicalDays": 3,
+    "bbox": [51.4, -116.4, 51.5, -116.2]
+  },
+  {
+    "name": "La Cloche Silhouette Trail",
+    "searchName": "La Cloche Silhouette Trail",
+    "region": "Ontario",
+    "country": "CA",
+    "officialDistanceKm": 78,
+    "typicalDays": 7,
+    "bbox": [46.0, -81.6, 46.3, -81.3]
+  },
+  {
+    "name": "Bruce Trail (Bruce Peninsula)",
+    "searchName": "Bruce Trail Peninsula",
+    "region": "Ontario",
+    "country": "CA",
+    "officialDistanceKm": 100,
+    "typicalDays": 7,
+    "bbox": [44.8, -81.7, 45.3, -81.0]
+  },
+  {
+    "name": "Algonquin Highlands Backpacking Trail",
+    "searchName": "Algonquin Highlands Backpacking Trail",
+    "region": "Ontario",
+    "country": "CA",
+    "officialDistanceKm": 88,
+    "typicalDays": 7,
+    "bbox": [45.4, -78.8, 45.7, -78.3]
+  },
+  {
+    "name": "Coastal Trail (Pukaskwa)",
+    "searchName": "Pukaskwa Coastal Trail",
+    "region": "Ontario",
+    "country": "CA",
+    "officialDistanceKm": 60,
+    "typicalDays": 5,
+    "bbox": [47.8, -85.9, 48.3, -85.3]
+  },
+  {
+    "name": "Killarney Provincial Park - The Crack",
+    "searchName": "The Crack Killarney",
+    "region": "Ontario",
+    "country": "CA",
+    "officialDistanceKm": 6,
+    "typicalDays": 1,
+    "bbox": [46.0, -81.5, 46.05, -81.4]
+  },
+  {
+    "name": "Cup and Saucer Trail",
+    "searchName": "Cup and Saucer Trail Manitoulin",
+    "region": "Ontario",
+    "country": "CA",
+    "officialDistanceKm": 9,
+    "typicalDays": 1,
+    "bbox": [45.7, -82.4, 45.75, -82.3]
+  },
+  {
+    "name": "Sentier des Caps de Charlevoix",
+    "searchName": "Sentier des Caps de Charlevoix",
+    "region": "Quebec",
+    "country": "CA",
+    "officialDistanceKm": 51,
+    "typicalDays": 3,
+    "bbox": [47.4, -70.8, 47.6, -70.3]
+  },
+  {
+    "name": "Mont Jacques-Cartier Trail",
+    "searchName": "Mont Jacques-Cartier",
+    "region": "Quebec",
+    "country": "CA",
+    "officialDistanceKm": 16,
+    "typicalDays": 1,
+    "bbox": [48.95, -65.95, 49.0, -65.85]
+  },
+  {
+    "name": "Les Loups Trail",
+    "searchName": "Les Loups Trail Parc National",
+    "region": "Quebec",
+    "country": "CA",
+    "officialDistanceKm": 45,
+    "typicalDays": 3,
+    "bbox": [48.6, -66.2, 48.8, -65.9]
+  },
+  {
+    "name": "Mont Albert Circuit",
+    "searchName": "Mont Albert Circuit",
+    "region": "Quebec",
+    "country": "CA",
+    "officialDistanceKm": 17,
+    "typicalDays": 2,
+    "bbox": [48.95, -66.5, 49.05, -66.35]
+  },
+  {
+    "name": "Sentier International des Appalaches",
+    "searchName": "Sentier International des Appalaches Quebec",
+    "region": "Quebec",
+    "country": "CA",
+    "officialDistanceKm": 650,
+    "typicalDays": 40,
+    "bbox": [45.0, -73.5, 49.0, -65.5]
+  },
+  {
+    "name": "Mont Tremblant Summit Trail",
+    "searchName": "Mont Tremblant Summit Trail",
+    "region": "Quebec",
+    "country": "CA",
+    "officialDistanceKm": 11,
+    "typicalDays": 1,
+    "bbox": [46.2, -74.65, 46.25, -74.55]
+  },
+  {
+    "name": "Cape Chignecto Coastal Trail",
+    "searchName": "Cape Chignecto Coastal Trail",
+    "region": "Nova Scotia",
+    "country": "CA",
+    "officialDistanceKm": 51,
+    "typicalDays": 4,
+    "bbox": [45.2, -65.1, 45.4, -64.8]
+  },
+  {
+    "name": "East Coast Trail",
+    "searchName": "East Coast Trail",
+    "region": "Newfoundland",
+    "country": "CA",
+    "officialDistanceKm": 336,
+    "typicalDays": 20,
+    "bbox": [47.2, -53.0, 47.8, -52.5]
+  },
+  {
+    "name": "Fundy Footpath",
+    "searchName": "Fundy Footpath",
+    "region": "New Brunswick",
+    "country": "CA",
+    "officialDistanceKm": 41,
+    "typicalDays": 3,
+    "bbox": [45.4, -65.5, 45.6, -65.1]
+  },
+  {
+    "name": "Skyline Trail (Cape Breton)",
+    "searchName": "Skyline Trail Cape Breton",
+    "region": "Nova Scotia",
+    "country": "CA",
+    "officialDistanceKm": 9,
+    "typicalDays": 1,
+    "bbox": [46.65, -61.0, 46.7, -60.9]
+  },
+  {
+    "name": "Long Range Traverse",
+    "searchName": "Long Range Traverse Gros Morne",
+    "region": "Newfoundland",
+    "country": "CA",
+    "officialDistanceKm": 35,
+    "typicalDays": 4,
+    "bbox": [49.5, -57.9, 49.7, -57.6]
+  },
+  {
+    "name": "Tablelands Trail",
+    "searchName": "Tablelands Trail Gros Morne",
+    "region": "Newfoundland",
+    "country": "CA",
+    "officialDistanceKm": 4,
+    "typicalDays": 1,
+    "bbox": [49.45, -58.0, 49.5, -57.95]
+  },
+  {
+    "name": "Canol Heritage Trail",
+    "searchName": "Canol Heritage Trail",
+    "region": "Yukon / Northwest Territories",
+    "country": "CA",
+    "officialDistanceKm": 355,
+    "typicalDays": 21,
+    "bbox": [61.5, -131.0, 63.0, -125.5]
+  },
+  {
+    "name": "Chilkoot Pass Trail",
+    "searchName": "Chilkoot Pass",
+    "region": "Yukon / Alaska",
+    "country": "CA",
+    "officialDistanceKm": 53,
+    "typicalDays": 4,
+    "bbox": [59.4, -135.5, 59.8, -134.8]
+  },
+  {
+    "name": "Tombstone Grizzly Lake Trail",
+    "searchName": "Tombstone Grizzly Lake",
+    "region": "Yukon",
+    "country": "CA",
+    "officialDistanceKm": 20,
+    "typicalDays": 2,
+    "bbox": [64.45, -138.35, 64.5, -138.25]
+  },
+  {
+    "name": "Aulavik River Route",
+    "searchName": "Aulavik River",
+    "region": "Northwest Territories",
+    "country": "CA",
+    "officialDistanceKm": 140,
+    "typicalDays": 10,
+    "bbox": [73.5, -120.0, 74.0, -118.0]
+  },
+  {
+    "name": "Mantario Trail",
+    "searchName": "Mantario Trail",
+    "region": "Manitoba",
+    "country": "CA",
+    "officialDistanceKm": 63,
+    "typicalDays": 5,
+    "bbox": [49.7, -95.4, 50.0, -95.0]
+  },
+  {
+    "name": "Grey Owl Trail",
+    "searchName": "Grey Owl Trail Prince Albert",
+    "region": "Saskatchewan",
+    "country": "CA",
+    "officialDistanceKm": 40,
+    "typicalDays": 3,
+    "bbox": [53.8, -106.5, 54.0, -106.0]
+  },
+  {
+    "name": "Akamina Ridge Trail",
+    "searchName": "Akamina Ridge Trail",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 10,
+    "typicalDays": 1,
+    "bbox": [49.0, -114.15, 49.05, -114.05]
+  },
+  {
+    "name": "Carthew-Alderson Trail",
+    "searchName": "Carthew-Alderson Trail",
+    "region": "Alberta",
+    "country": "CA",
+    "officialDistanceKm": 20,
+    "typicalDays": 1,
+    "bbox": [49.0, -114.1, 49.1, -113.9]
+  }
+]

@@ -1,0 +1,702 @@
+[
+  {
+    "name": "Yosemite Valley Loop Trail",
+    "searchName": "Valley Loop Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 11.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.72,
+      -119.62,
+      37.75,
+      -119.56
+    ]
+  },
+  {
+    "name": "Mount Tallac Trail",
+    "searchName": "Mount Tallac Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 15.8,
+    "typicalDays": "1 day",
+    "bbox": [
+      38.92,
+      -120.13,
+      38.94,
+      -120.08
+    ]
+  },
+  {
+    "name": "Dipsea Trail",
+    "searchName": "Dipsea Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 11.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.87,
+      -122.6,
+      37.92,
+      -122.53
+    ]
+  },
+  {
+    "name": "Alamere Falls via Coast Trail",
+    "searchName": "Coast Trail to Alamere Falls",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 21.9,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.93,
+      -122.82,
+      37.98,
+      -122.75
+    ]
+  },
+  {
+    "name": "Mount Baldy via Devil's Backbone",
+    "searchName": "Devils Backbone Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 17.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      34.23,
+      -117.67,
+      34.29,
+      -117.62
+    ]
+  },
+  {
+    "name": "Mount San Jacinto via Marion Mountain",
+    "searchName": "Marion Mountain Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 20.9,
+    "typicalDays": "1 day",
+    "bbox": [
+      33.8,
+      -116.72,
+      33.82,
+      -116.66
+    ]
+  },
+  {
+    "name": "Cucamonga Peak Trail",
+    "searchName": "Cucamonga Peak Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 19.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      34.2,
+      -117.63,
+      34.24,
+      -117.58
+    ]
+  },
+  {
+    "name": "Three Sisters Loop",
+    "searchName": "Three Sisters Loop",
+    "region": "OR",
+    "country": "US",
+    "officialDistanceKm": 76,
+    "typicalDays": "4-5 days",
+    "bbox": [
+      44.07,
+      -121.9,
+      44.3,
+      -121.65
+    ]
+  },
+  {
+    "name": "Timberline Trail",
+    "searchName": "Timberline Trail",
+    "region": "OR",
+    "country": "US",
+    "officialDistanceKm": 66.1,
+    "typicalDays": "4-5 days",
+    "bbox": [
+      45.3,
+      -121.78,
+      45.45,
+      -121.62
+    ]
+  },
+  {
+    "name": "Eagle Creek Trail",
+    "searchName": "Eagle Creek Trail",
+    "region": "OR",
+    "country": "US",
+    "officialDistanceKm": 20.9,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      45.62,
+      -121.93,
+      45.68,
+      -121.88
+    ]
+  },
+  {
+    "name": "South Sister via Green Lakes",
+    "searchName": "South Sister Summit Trail",
+    "region": "OR",
+    "country": "US",
+    "officialDistanceKm": 18.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      44.08,
+      -121.8,
+      44.11,
+      -121.76
+    ]
+  },
+  {
+    "name": "Mount Hood via South Side Route",
+    "searchName": "South Side Climbing Route",
+    "region": "OR",
+    "country": "US",
+    "officialDistanceKm": 14.5,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      45.35,
+      -121.72,
+      45.38,
+      -121.69
+    ]
+  },
+  {
+    "name": "Enchanted Valley via Graves Creek",
+    "searchName": "Enchanted Valley Trail",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 43.5,
+    "typicalDays": "3-4 days",
+    "bbox": [
+      47.52,
+      -123.5,
+      47.65,
+      -123.3
+    ]
+  },
+  {
+    "name": "Maple Pass Loop",
+    "searchName": "Maple Pass Loop",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 11.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      48.51,
+      -120.75,
+      48.53,
+      -120.72
+    ]
+  },
+  {
+    "name": "Chain Lakes Loop",
+    "searchName": "Chain Lakes Loop",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 11.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      48.85,
+      -121.7,
+      48.87,
+      -121.65
+    ]
+  },
+  {
+    "name": "Gothic Basin Trail",
+    "searchName": "Gothic Basin Trail",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 15.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      48.08,
+      -121.45,
+      48.1,
+      -121.4
+    ]
+  },
+  {
+    "name": "Mount Si Trail",
+    "searchName": "Mount Si Trail",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 12.9,
+    "typicalDays": "1 day",
+    "bbox": [
+      47.48,
+      -121.73,
+      47.5,
+      -121.7
+    ]
+  },
+  {
+    "name": "Mailbox Peak Trail",
+    "searchName": "Mailbox Peak Trail",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 10.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      47.46,
+      -121.68,
+      47.48,
+      -121.65
+    ]
+  },
+  {
+    "name": "Mount Adams South Climb",
+    "searchName": "South Climb Route",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 16.1,
+    "typicalDays": "2 days",
+    "bbox": [
+      46.18,
+      -121.52,
+      46.21,
+      -121.48
+    ]
+  },
+  {
+    "name": "Iceberg Lake Trail",
+    "searchName": "Iceberg Lake Trail",
+    "region": "MT",
+    "country": "US",
+    "officialDistanceKm": 15.4,
+    "typicalDays": "1 day",
+    "bbox": [
+      48.79,
+      -113.68,
+      48.82,
+      -113.63
+    ]
+  },
+  {
+    "name": "Scenic Point Trail",
+    "searchName": "Scenic Point Trail",
+    "region": "MT",
+    "country": "US",
+    "officialDistanceKm": 11.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      48.4,
+      -113.4,
+      48.43,
+      -113.36
+    ]
+  },
+  {
+    "name": "Granite Peak Montana",
+    "searchName": "Granite Peak",
+    "region": "MT",
+    "country": "US",
+    "officialDistanceKm": 32.2,
+    "typicalDays": "2-3 days",
+    "bbox": [
+      45.15,
+      -109.85,
+      45.18,
+      -109.8
+    ]
+  },
+  {
+    "name": "Sky Pond via Glacier Gorge",
+    "searchName": "Sky Pond Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 14.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      40.3,
+      -105.67,
+      40.32,
+      -105.63
+    ]
+  },
+  {
+    "name": "Conundrum Hot Springs",
+    "searchName": "Conundrum Creek Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 27.4,
+    "typicalDays": "2 days",
+    "bbox": [
+      39,
+      -106.87,
+      39.05,
+      -106.82
+    ]
+  },
+  {
+    "name": "Hanging Lake Trail",
+    "searchName": "Hanging Lake Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 4.8,
+    "typicalDays": "1 day",
+    "bbox": [
+      39.6,
+      -107.21,
+      39.61,
+      -107.19
+    ]
+  },
+  {
+    "name": "Mount Elbert via Northeast Ridge",
+    "searchName": "Mount Elbert Northeast Ridge",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 14.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      39.11,
+      -106.48,
+      39.12,
+      -106.44
+    ]
+  },
+  {
+    "name": "Quandary Peak East Ridge",
+    "searchName": "Quandary Peak Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 10.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      39.39,
+      -106.12,
+      39.4,
+      -106.1
+    ]
+  },
+  {
+    "name": "Devil's Causeway",
+    "searchName": "Devils Causeway Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 28.2,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      39.98,
+      -107.25,
+      40.05,
+      -107.15
+    ]
+  },
+  {
+    "name": "Capitol Peak Northeast Ridge",
+    "searchName": "Capitol Peak Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 27.4,
+    "typicalDays": "2 days",
+    "bbox": [
+      39.14,
+      -107.1,
+      39.16,
+      -107.05
+    ]
+  },
+  {
+    "name": "Blue Lakes Trail",
+    "searchName": "Blue Lakes Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 11.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.91,
+      -107.77,
+      37.94,
+      -107.73
+    ]
+  },
+  {
+    "name": "Mesa Arch Trail",
+    "searchName": "Mesa Arch Trail",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 0.8,
+    "typicalDays": "1 day",
+    "bbox": [
+      38.38,
+      -109.87,
+      38.39,
+      -109.86
+    ]
+  },
+  {
+    "name": "Navajo Loop and Queens Garden",
+    "searchName": "Navajo Loop Trail",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 4.6,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.62,
+      -112.17,
+      37.63,
+      -112.16
+    ]
+  },
+  {
+    "name": "Peek-a-Boo Loop Bryce",
+    "searchName": "Peek-a-Boo Loop",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 8.9,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.6,
+      -112.25,
+      37.63,
+      -112.23
+    ]
+  },
+  {
+    "name": "Kings Peak via Henrys Fork",
+    "searchName": "Henrys Fork Trail",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 44.3,
+    "typicalDays": "3 days",
+    "bbox": [
+      40.72,
+      -110.42,
+      40.78,
+      -110.35
+    ]
+  },
+  {
+    "name": "Buckskin Gulch",
+    "searchName": "Buckskin Gulch",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 32.2,
+    "typicalDays": "2-3 days",
+    "bbox": [
+      36.98,
+      -112.1,
+      37.05,
+      -111.95
+    ]
+  },
+  {
+    "name": "South Kaibab to Phantom Ranch",
+    "searchName": "South Kaibab Trail",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 11.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      36.05,
+      -112.1,
+      36.11,
+      -112.06
+    ]
+  },
+  {
+    "name": "Humphreys Peak Trail",
+    "searchName": "Humphreys Peak Trail",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 15.4,
+    "typicalDays": "1 day",
+    "bbox": [
+      35.33,
+      -111.7,
+      35.35,
+      -111.67
+    ]
+  },
+  {
+    "name": "Horsetail Falls Trail",
+    "searchName": "Horsetail Falls Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 3.2,
+    "typicalDays": "1 day",
+    "bbox": [
+      38.83,
+      -120.13,
+      38.84,
+      -120.11
+    ]
+  },
+  {
+    "name": "Mount Dana Trail",
+    "searchName": "Mount Dana Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 9.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.89,
+      -119.23,
+      37.9,
+      -119.21
+    ]
+  },
+  {
+    "name": "Mono Pass Trail Yosemite",
+    "searchName": "Mono Pass Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 12.9,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.89,
+      -119.27,
+      37.91,
+      -119.24
+    ]
+  },
+  {
+    "name": "Lakes Trail to Pear Lake",
+    "searchName": "Lakes Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 21,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      36.58,
+      -118.73,
+      36.6,
+      -118.68
+    ]
+  },
+  {
+    "name": "Moro Rock Trail",
+    "searchName": "Moro Rock Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 0.6,
+    "typicalDays": "1 day",
+    "bbox": [
+      36.54,
+      -118.77,
+      36.55,
+      -118.76
+    ]
+  },
+  {
+    "name": "Big Baldy Trail",
+    "searchName": "Big Baldy Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 6.9,
+    "typicalDays": "1 day",
+    "bbox": [
+      36.68,
+      -118.9,
+      36.69,
+      -118.88
+    ]
+  },
+  {
+    "name": "Mount San Gorgonio via Vivian Creek",
+    "searchName": "Vivian Creek Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 26,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      34.09,
+      -116.9,
+      34.18,
+      -116.82
+    ]
+  },
+  {
+    "name": "Cactus to Clouds Trail",
+    "searchName": "Skyline Trail Palm Springs",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 33.8,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      33.8,
+      -116.7,
+      33.87,
+      -116.54
+    ]
+  },
+  {
+    "name": "Telescope Peak Trail",
+    "searchName": "Telescope Peak Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 22.5,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      36.16,
+      -117.1,
+      36.17,
+      -117.05
+    ]
+  },
+  {
+    "name": "North Dome via Indian Rock",
+    "searchName": "North Dome Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 14.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.74,
+      -119.55,
+      37.76,
+      -119.52
+    ]
+  },
+  {
+    "name": "Sentinel Dome and Taft Point",
+    "searchName": "Sentinel Dome Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 8,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.71,
+      -119.6,
+      37.72,
+      -119.57
+    ]
+  },
+  {
+    "name": "Beartooth Traverse",
+    "searchName": "Beartooth Loop",
+    "region": "MT-WY",
+    "country": "US",
+    "officialDistanceKm": 48.3,
+    "typicalDays": "3-4 days",
+    "bbox": [
+      44.95,
+      -109.6,
+      45.15,
+      -109.3
+    ]
+  },
+  {
+    "name": "Precipice Trail Acadia",
+    "searchName": "Precipice Trail",
+    "region": "ME",
+    "country": "US",
+    "officialDistanceKm": 3.2,
+    "typicalDays": "1 day",
+    "bbox": [
+      44.33,
+      -68.2,
+      44.35,
+      -68.18
+    ]
+  }
+]

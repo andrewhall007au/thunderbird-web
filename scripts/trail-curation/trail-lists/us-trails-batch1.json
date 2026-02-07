@@ -1,0 +1,702 @@
+[
+  {
+    "name": "Pacific Crest Trail",
+    "searchName": "Pacific Crest National Scenic Trail",
+    "region": "CA-OR-WA",
+    "country": "US",
+    "officialDistanceKm": 4265,
+    "typicalDays": "5-6 months",
+    "bbox": [
+      32.5,
+      -124,
+      49,
+      -116.5
+    ]
+  },
+  {
+    "name": "Appalachian Trail",
+    "searchName": "Appalachian National Scenic Trail",
+    "region": "GA-ME",
+    "country": "US",
+    "officialDistanceKm": 3524,
+    "typicalDays": "5-7 months",
+    "bbox": [
+      34.6,
+      -84.2,
+      45.9,
+      -68.2
+    ]
+  },
+  {
+    "name": "Continental Divide Trail",
+    "searchName": "Continental Divide National Scenic Trail",
+    "region": "NM-CO-WY-MT",
+    "country": "US",
+    "officialDistanceKm": 5000,
+    "typicalDays": "5-6 months",
+    "bbox": [
+      31.3,
+      -114.8,
+      49,
+      -104
+    ]
+  },
+  {
+    "name": "John Muir Trail",
+    "searchName": "John Muir Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 339,
+    "typicalDays": "2-3 weeks",
+    "bbox": [
+      36.5,
+      -119.3,
+      37.8,
+      -118.2
+    ]
+  },
+  {
+    "name": "Half Dome via Mist Trail",
+    "searchName": "Half Dome Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 22.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.71,
+      -119.6,
+      37.76,
+      -119.5
+    ]
+  },
+  {
+    "name": "Angels Landing",
+    "searchName": "Angels Landing Trail",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 8.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.25,
+      -112.97,
+      37.28,
+      -112.93
+    ]
+  },
+  {
+    "name": "The Narrows",
+    "searchName": "The Narrows Zion",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 16,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.28,
+      -112.98,
+      37.33,
+      -112.93
+    ]
+  },
+  {
+    "name": "Bright Angel Trail to Plateau Point",
+    "searchName": "Bright Angel Trail",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 19.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      36.05,
+      -112.15,
+      36.1,
+      -112.08
+    ]
+  },
+  {
+    "name": "Rim to Rim Grand Canyon",
+    "searchName": "North Kaibab Trail",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 33.8,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      36.05,
+      -112.15,
+      36.22,
+      -112.05
+    ]
+  },
+  {
+    "name": "Kalalau Trail",
+    "searchName": "Kalalau Trail",
+    "region": "HI",
+    "country": "US",
+    "officialDistanceKm": 35.4,
+    "typicalDays": "2-3 days",
+    "bbox": [
+      22.18,
+      -159.65,
+      22.22,
+      -159.58
+    ]
+  },
+  {
+    "name": "Mount Whitney Trail",
+    "searchName": "Mount Whitney Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 35.4,
+    "typicalDays": "2-3 days",
+    "bbox": [
+      36.56,
+      -118.32,
+      36.6,
+      -118.23
+    ]
+  },
+  {
+    "name": "Old Rag Mountain Loop",
+    "searchName": "Old Rag Mountain Circuit",
+    "region": "VA",
+    "country": "US",
+    "officialDistanceKm": 14.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      38.53,
+      -78.35,
+      38.57,
+      -78.28
+    ]
+  },
+  {
+    "name": "Mount Washington via Tuckerman Ravine",
+    "searchName": "Tuckerman Ravine Trail",
+    "region": "NH",
+    "country": "US",
+    "officialDistanceKm": 13.6,
+    "typicalDays": "1 day",
+    "bbox": [
+      44.22,
+      -71.35,
+      44.27,
+      -71.28
+    ]
+  },
+  {
+    "name": "Presidential Traverse",
+    "searchName": "Presidential Range Traverse",
+    "region": "NH",
+    "country": "US",
+    "officialDistanceKm": 37,
+    "typicalDays": "2-3 days",
+    "bbox": [
+      44.15,
+      -71.4,
+      44.3,
+      -71.25
+    ]
+  },
+  {
+    "name": "Mount Katahdin via Hunt Trail",
+    "searchName": "Hunt Trail",
+    "region": "ME",
+    "country": "US",
+    "officialDistanceKm": 16.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      45.89,
+      -68.95,
+      45.91,
+      -68.9
+    ]
+  },
+  {
+    "name": "Franconia Ridge Loop",
+    "searchName": "Franconia Ridge Trail",
+    "region": "NH",
+    "country": "US",
+    "officialDistanceKm": 14.1,
+    "typicalDays": "1 day",
+    "bbox": [
+      44.13,
+      -71.68,
+      44.18,
+      -71.62
+    ]
+  },
+  {
+    "name": "The Subway at Zion",
+    "searchName": "Left Fork North Creek",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 15.4,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.23,
+      -113.05,
+      37.26,
+      -112.97
+    ]
+  },
+  {
+    "name": "Cascade Canyon to Lake Solitude",
+    "searchName": "Cascade Canyon Trail",
+    "region": "WY",
+    "country": "US",
+    "officialDistanceKm": 30.6,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      43.75,
+      -110.82,
+      43.8,
+      -110.72
+    ]
+  },
+  {
+    "name": "Teton Crest Trail",
+    "searchName": "Teton Crest Trail",
+    "region": "WY",
+    "country": "US",
+    "officialDistanceKm": 64.4,
+    "typicalDays": "4-5 days",
+    "bbox": [
+      43.5,
+      -110.9,
+      43.85,
+      -110.7
+    ]
+  },
+  {
+    "name": "Skyline Trail (Mount Rainier)",
+    "searchName": "Skyline Trail Paradise",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 9,
+    "typicalDays": "1 day",
+    "bbox": [
+      46.78,
+      -121.75,
+      46.8,
+      -121.72
+    ]
+  },
+  {
+    "name": "Wonderland Trail",
+    "searchName": "Wonderland Trail",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 150,
+    "typicalDays": "10-14 days",
+    "bbox": [
+      46.75,
+      -121.91,
+      46.95,
+      -121.6
+    ]
+  },
+  {
+    "name": "Enchantments Thru-Hike",
+    "searchName": "Enchantments Trail",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 29.8,
+    "typicalDays": "2-3 days",
+    "bbox": [
+      47.45,
+      -120.85,
+      47.53,
+      -120.7
+    ]
+  },
+  {
+    "name": "Hoh River to Blue Glacier",
+    "searchName": "Hoh River Trail",
+    "region": "WA",
+    "country": "US",
+    "officialDistanceKm": 43.5,
+    "typicalDays": "3-4 days",
+    "bbox": [
+      47.8,
+      -123.95,
+      47.97,
+      -123.65
+    ]
+  },
+  {
+    "name": "Highline Trail (Glacier NP)",
+    "searchName": "Highline Trail Glacier",
+    "region": "MT",
+    "country": "US",
+    "officialDistanceKm": 19.2,
+    "typicalDays": "1 day",
+    "bbox": [
+      48.69,
+      -113.75,
+      48.8,
+      -113.65
+    ]
+  },
+  {
+    "name": "Grinnell Glacier Trail",
+    "searchName": "Grinnell Glacier Trail",
+    "region": "MT",
+    "country": "US",
+    "officialDistanceKm": 18.5,
+    "typicalDays": "1 day",
+    "bbox": [
+      48.74,
+      -113.7,
+      48.76,
+      -113.65
+    ]
+  },
+  {
+    "name": "Four Pass Loop",
+    "searchName": "Four Pass Loop",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 45.1,
+    "typicalDays": "3-4 days",
+    "bbox": [
+      39,
+      -106.98,
+      39.12,
+      -106.82
+    ]
+  },
+  {
+    "name": "Maroon Bells Crater Lake",
+    "searchName": "Maroon Bells Scenic Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 6.1,
+    "typicalDays": "1 day",
+    "bbox": [
+      39.08,
+      -106.97,
+      39.1,
+      -106.94
+    ]
+  },
+  {
+    "name": "Longs Peak via Keyhole Route",
+    "searchName": "Keyhole Route",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 24.1,
+    "typicalDays": "1-2 days",
+    "bbox": [
+      40.24,
+      -105.65,
+      40.26,
+      -105.6
+    ]
+  },
+  {
+    "name": "Chicago Basin 14ers Loop",
+    "searchName": "Chicago Basin Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 50,
+    "typicalDays": "3-4 days",
+    "bbox": [
+      37.55,
+      -107.7,
+      37.7,
+      -107.5
+    ]
+  },
+  {
+    "name": "Colorado Trail",
+    "searchName": "Colorado Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 788,
+    "typicalDays": "4-6 weeks",
+    "bbox": [
+      37.48,
+      -108.05,
+      39.57,
+      -105.4
+    ]
+  },
+  {
+    "name": "Ice Lakes Basin",
+    "searchName": "Ice Lakes Trail",
+    "region": "CO",
+    "country": "US",
+    "officialDistanceKm": 11.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.88,
+      -107.77,
+      37.92,
+      -107.72
+    ]
+  },
+  {
+    "name": "Delicate Arch Trail",
+    "searchName": "Delicate Arch Trail",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 4.8,
+    "typicalDays": "1 day",
+    "bbox": [
+      38.73,
+      -109.52,
+      38.74,
+      -109.5
+    ]
+  },
+  {
+    "name": "Observation Point via East Mesa",
+    "searchName": "Observation Point Trail",
+    "region": "UT",
+    "country": "US",
+    "officialDistanceKm": 12.9,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.25,
+      -113,
+      37.3,
+      -112.93
+    ]
+  },
+  {
+    "name": "Wave via Wire Pass",
+    "searchName": "The Wave",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 9.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      36.99,
+      -112.02,
+      37.01,
+      -111.99
+    ]
+  },
+  {
+    "name": "Havasu Falls",
+    "searchName": "Havasu Falls Trail",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 16.1,
+    "typicalDays": "2-3 days",
+    "bbox": [
+      36.22,
+      -112.7,
+      36.27,
+      -112.65
+    ]
+  },
+  {
+    "name": "West Fork Oak Creek",
+    "searchName": "West Fork Trail",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 11.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      34.98,
+      -111.77,
+      35.02,
+      -111.73
+    ]
+  },
+  {
+    "name": "Cathedral Rock Trail",
+    "searchName": "Cathedral Rock Trail",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 2.4,
+    "typicalDays": "1 day",
+    "bbox": [
+      34.82,
+      -111.79,
+      34.83,
+      -111.78
+    ]
+  },
+  {
+    "name": "Kalepa Ridge Trail",
+    "searchName": "Kalepa Ridge Trail",
+    "region": "HI",
+    "country": "US",
+    "officialDistanceKm": 3.2,
+    "typicalDays": "1 day",
+    "bbox": [
+      22.21,
+      -159.49,
+      22.22,
+      -159.48
+    ]
+  },
+  {
+    "name": "Haleakala Sliding Sands Trail",
+    "searchName": "Sliding Sands Trail",
+    "region": "HI",
+    "country": "US",
+    "officialDistanceKm": 17.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      20.71,
+      -156.25,
+      20.76,
+      -156.2
+    ]
+  },
+  {
+    "name": "Koko Crater Trail",
+    "searchName": "Koko Head Trail",
+    "region": "HI",
+    "country": "US",
+    "officialDistanceKm": 2.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      21.27,
+      -157.69,
+      21.29,
+      -157.68
+    ]
+  },
+  {
+    "name": "Mist Trail to Vernal Fall",
+    "searchName": "Mist Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 8.9,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.72,
+      -119.56,
+      37.73,
+      -119.53
+    ]
+  },
+  {
+    "name": "Four Mile Trail to Glacier Point",
+    "searchName": "Four Mile Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 7.7,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.72,
+      -119.6,
+      37.73,
+      -119.57
+    ]
+  },
+  {
+    "name": "Clouds Rest Trail",
+    "searchName": "Clouds Rest Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 23.3,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.74,
+      -119.51,
+      37.78,
+      -119.48
+    ]
+  },
+  {
+    "name": "High Sierra Trail to Mount Whitney",
+    "searchName": "High Sierra Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 113,
+    "typicalDays": "7-10 days",
+    "bbox": [
+      36.56,
+      -118.78,
+      36.6,
+      -118.23
+    ]
+  },
+  {
+    "name": "Rae Lakes Loop",
+    "searchName": "Rae Lakes Loop",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 66.8,
+    "typicalDays": "4-5 days",
+    "bbox": [
+      36.75,
+      -118.55,
+      36.9,
+      -118.35
+    ]
+  },
+  {
+    "name": "Lost Coast Trail",
+    "searchName": "Lost Coast Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 40.2,
+    "typicalDays": "3-4 days",
+    "bbox": [
+      39.98,
+      -124.13,
+      40.25,
+      -123.95
+    ]
+  },
+  {
+    "name": "Tahoe Rim Trail",
+    "searchName": "Tahoe Rim Trail",
+    "region": "CA-NV",
+    "country": "US",
+    "officialDistanceKm": 274,
+    "typicalDays": "10-15 days",
+    "bbox": [
+      38.9,
+      -120.25,
+      39.35,
+      -119.9
+    ]
+  },
+  {
+    "name": "Mount Shasta via Avalanche Gulch",
+    "searchName": "Avalanche Gulch Route",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 18.5,
+    "typicalDays": "2 days",
+    "bbox": [
+      41.4,
+      -122.22,
+      41.41,
+      -122.19
+    ]
+  },
+  {
+    "name": "Lassen Peak Trail",
+    "searchName": "Lassen Peak Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 8,
+    "typicalDays": "1 day",
+    "bbox": [
+      40.48,
+      -121.51,
+      40.49,
+      -121.49
+    ]
+  },
+  {
+    "name": "Devil's Postpile to Rainbow Falls",
+    "searchName": "Rainbow Falls Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 8.4,
+    "typicalDays": "1 day",
+    "bbox": [
+      37.6,
+      -119.1,
+      37.63,
+      -119.07
+    ]
+  }
+]

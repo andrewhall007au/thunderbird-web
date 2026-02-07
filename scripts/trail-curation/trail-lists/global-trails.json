@@ -1,0 +1,910 @@
+[
+  {
+    "name": "Kumano Kodo",
+    "region": "Kii Peninsula",
+    "country": "JP",
+    "officialDistanceKm": 70,
+    "typicalDays": "5-7",
+    "bbox": [33.5, 135.5, 34.0, 136.0],
+    "targetPoints": 100
+  },
+  {
+    "name": "Nakasendo Trail",
+    "region": "Kiso Valley",
+    "country": "JP",
+    "officialDistanceKm": 70,
+    "typicalDays": "5-7",
+    "bbox": [35.4, 137.4, 35.8, 138.0],
+    "targetPoints": 100
+  },
+  {
+    "name": "Mount Fuji Yoshida Trail",
+    "searchName": "Yoshida Trail",
+    "region": "Fuji",
+    "country": "JP",
+    "officialDistanceKm": 14,
+    "typicalDays": "2",
+    "bbox": [35.2, 138.6, 35.5, 138.9],
+    "targetPoints": 80
+  },
+  {
+    "name": "Daisetsuzan Grand Traverse",
+    "region": "Hokkaido",
+    "country": "JP",
+    "officialDistanceKm": 55,
+    "typicalDays": "5-7",
+    "bbox": [43.4, 142.6, 43.8, 143.2],
+    "targetPoints": 100
+  },
+  {
+    "name": "Kamikochi to Yarigatake",
+    "region": "Northern Japan Alps",
+    "country": "JP",
+    "officialDistanceKm": 30,
+    "typicalDays": "3-4",
+    "bbox": [36.1, 137.5, 36.5, 137.8],
+    "targetPoints": 90
+  },
+  {
+    "name": "Yakushima Forest Trail",
+    "region": "Yakushima Island",
+    "country": "JP",
+    "officialDistanceKm": 22,
+    "typicalDays": "2",
+    "bbox": [30.2, 130.4, 30.5, 130.7],
+    "targetPoints": 80
+  },
+  {
+    "name": "Michinoku Coastal Trail",
+    "region": "Tohoku",
+    "country": "JP",
+    "officialDistanceKm": 1000,
+    "typicalDays": "60-70",
+    "bbox": [37.8, 140.8, 40.5, 141.9],
+    "targetPoints": 200
+  },
+  {
+    "name": "Mount Yarigatake",
+    "region": "Northern Japan Alps",
+    "country": "JP",
+    "officialDistanceKm": 24,
+    "typicalDays": "2-3",
+    "bbox": [36.2, 137.6, 36.4, 137.7],
+    "targetPoints": 80
+  },
+  {
+    "name": "Shikoku Pilgrimage",
+    "searchName": "88 Temple Trail",
+    "region": "Shikoku",
+    "country": "JP",
+    "officialDistanceKm": 1200,
+    "typicalDays": "45-60",
+    "bbox": [33.0, 132.5, 34.5, 134.5],
+    "targetPoints": 200
+  },
+  {
+    "name": "Rebun Island Trail",
+    "region": "Hokkaido",
+    "country": "JP",
+    "officialDistanceKm": 15,
+    "typicalDays": "1",
+    "bbox": [45.2, 141.0, 45.5, 141.1],
+    "targetPoints": 70
+  },
+  {
+    "name": "Mount Tsurugi",
+    "region": "Shikoku",
+    "country": "JP",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [33.8, 133.9, 34.0, 134.1],
+    "targetPoints": 70
+  },
+  {
+    "name": "Shiratani Unsuikyo",
+    "region": "Yakushima",
+    "country": "JP",
+    "officialDistanceKm": 7,
+    "typicalDays": "1",
+    "bbox": [30.3, 130.5, 30.4, 130.6],
+    "targetPoints": 60
+  },
+  {
+    "name": "Mount Kita-dake",
+    "region": "Southern Japan Alps",
+    "country": "JP",
+    "officialDistanceKm": 20,
+    "typicalDays": "2",
+    "bbox": [35.6, 138.1, 35.8, 138.3],
+    "targetPoints": 80
+  },
+  {
+    "name": "Tateyama-Kurobe Alpine Route",
+    "region": "Northern Japan Alps",
+    "country": "JP",
+    "officialDistanceKm": 25,
+    "typicalDays": "2-3",
+    "bbox": [36.4, 137.4, 36.7, 137.7],
+    "targetPoints": 85
+  },
+  {
+    "name": "Japan Alps Kamikochi",
+    "region": "Northern Japan Alps",
+    "country": "JP",
+    "officialDistanceKm": 15,
+    "typicalDays": "1-2",
+    "bbox": [36.2, 137.6, 36.3, 137.7],
+    "targetPoints": 75
+  },
+  {
+    "name": "West Highland Way",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 154,
+    "typicalDays": "7-8",
+    "bbox": [55.9, -5.0, 56.8, -4.3],
+    "targetPoints": 120
+  },
+  {
+    "name": "Coast to Coast Walk",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 308,
+    "typicalDays": "14-16",
+    "bbox": [54.3, -3.6, 54.7, -0.3],
+    "targetPoints": 150
+  },
+  {
+    "name": "Pennine Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 429,
+    "typicalDays": "19-21",
+    "bbox": [53.3, -2.5, 55.8, -2.0],
+    "targetPoints": 180
+  },
+  {
+    "name": "Cape Wrath Trail",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 370,
+    "typicalDays": "15-20",
+    "bbox": [57.0, -5.5, 58.6, -4.2],
+    "targetPoints": 160
+  },
+  {
+    "name": "South West Coast Path",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 1014,
+    "typicalDays": "52",
+    "bbox": [49.9, -5.7, 51.2, -2.3],
+    "targetPoints": 200
+  },
+  {
+    "name": "Hadrian's Wall Path",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 135,
+    "typicalDays": "7",
+    "bbox": [54.9, -3.0, 55.1, -1.6],
+    "targetPoints": 110
+  },
+  {
+    "name": "Offa's Dyke Path",
+    "region": "Wales/England",
+    "country": "GB",
+    "officialDistanceKm": 285,
+    "typicalDays": "12",
+    "bbox": [51.6, -3.2, 53.3, -2.8],
+    "targetPoints": 145
+  },
+  {
+    "name": "Cambrian Way",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 479,
+    "typicalDays": "20-25",
+    "bbox": [51.4, -4.1, 53.4, -3.7],
+    "targetPoints": 185
+  },
+  {
+    "name": "Fife Coastal Path",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 188,
+    "typicalDays": "7-9",
+    "bbox": [56.0, -3.5, 56.4, -2.6],
+    "targetPoints": 125
+  },
+  {
+    "name": "Glyndwr's Way",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 217,
+    "typicalDays": "9-10",
+    "bbox": [52.4, -3.8, 52.9, -3.2],
+    "targetPoints": 135
+  },
+  {
+    "name": "Pembrokeshire Coast Path",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 299,
+    "typicalDays": "14",
+    "bbox": [51.6, -5.3, 52.1, -4.6],
+    "targetPoints": 150
+  },
+  {
+    "name": "South Downs Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 160,
+    "typicalDays": "8",
+    "bbox": [50.7, -1.2, 51.0, 0.2],
+    "targetPoints": 115
+  },
+  {
+    "name": "Cleveland Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 177,
+    "typicalDays": "9",
+    "bbox": [54.1, -1.3, 54.6, -0.6],
+    "targetPoints": 120
+  },
+  {
+    "name": "Great Glen Way",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 117,
+    "typicalDays": "5-6",
+    "bbox": [56.8, -5.1, 57.5, -4.4],
+    "targetPoints": 105
+  },
+  {
+    "name": "Tour du Mont Blanc",
+    "region": "Alps",
+    "country": "FR",
+    "officialDistanceKm": 170,
+    "typicalDays": "10-12",
+    "bbox": [45.7, 6.7, 46.1, 7.1],
+    "targetPoints": 125
+  },
+  {
+    "name": "GR20",
+    "searchName": "GR 20",
+    "region": "Corsica",
+    "country": "FR",
+    "officialDistanceKm": 180,
+    "typicalDays": "15",
+    "bbox": [41.4, 8.7, 42.5, 9.1],
+    "targetPoints": 130
+  },
+  {
+    "name": "GR10",
+    "searchName": "GR 10",
+    "region": "Pyrenees",
+    "country": "FR",
+    "officialDistanceKm": 866,
+    "typicalDays": "50",
+    "bbox": [42.4, -1.8, 43.0, 3.0],
+    "targetPoints": 200
+  },
+  {
+    "name": "GR54",
+    "searchName": "GR 54",
+    "region": "Ecrins",
+    "country": "FR",
+    "officialDistanceKm": 180,
+    "typicalDays": "14",
+    "bbox": [44.7, 6.0, 45.2, 6.7],
+    "targetPoints": 130
+  },
+  {
+    "name": "Haute Route Pyreneenne",
+    "region": "Pyrenees",
+    "country": "FR",
+    "officialDistanceKm": 800,
+    "typicalDays": "45",
+    "bbox": [42.6, -1.0, 43.1, 2.5],
+    "targetPoints": 200
+  },
+  {
+    "name": "Haute Route",
+    "searchName": "Chamonix to Zermatt",
+    "region": "Alps",
+    "country": "FR",
+    "officialDistanceKm": 180,
+    "typicalDays": "12",
+    "bbox": [45.8, 6.8, 46.1, 7.8],
+    "targetPoints": 130
+  },
+  {
+    "name": "Cirque de Gavarnie",
+    "region": "Pyrenees",
+    "country": "FR",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [42.6, -0.1, 42.8, 0.1],
+    "targetPoints": 70
+  },
+  {
+    "name": "Lac Blanc",
+    "region": "Chamonix",
+    "country": "FR",
+    "officialDistanceKm": 13,
+    "typicalDays": "1",
+    "bbox": [45.9, 6.8, 46.0, 6.9],
+    "targetPoints": 75
+  },
+  {
+    "name": "Mercantour Traverse",
+    "region": "Maritime Alps",
+    "country": "FR",
+    "officialDistanceKm": 98,
+    "typicalDays": "7",
+    "bbox": [43.9, 7.0, 44.3, 7.6],
+    "targetPoints": 105
+  },
+  {
+    "name": "Vercors Traverse",
+    "region": "Vercors",
+    "country": "FR",
+    "officialDistanceKm": 85,
+    "typicalDays": "6",
+    "bbox": [44.8, 5.3, 45.2, 5.7],
+    "targetPoints": 100
+  },
+  {
+    "name": "GR34",
+    "searchName": "GR 34",
+    "region": "Brittany",
+    "country": "FR",
+    "officialDistanceKm": 2090,
+    "typicalDays": "90",
+    "bbox": [47.2, -5.1, 48.8, -1.0],
+    "targetPoints": 200
+  },
+  {
+    "name": "Calanques Trail",
+    "region": "Provence",
+    "country": "FR",
+    "officialDistanceKm": 28,
+    "typicalDays": "2",
+    "bbox": [43.1, 5.4, 43.3, 5.6],
+    "targetPoints": 85
+  },
+  {
+    "name": "GR5",
+    "searchName": "GR 5",
+    "region": "Alps",
+    "country": "FR",
+    "officialDistanceKm": 674,
+    "typicalDays": "40",
+    "bbox": [45.0, 6.0, 46.5, 7.0],
+    "targetPoints": 200
+  },
+  {
+    "name": "Tour du Queyras",
+    "region": "Queyras",
+    "country": "FR",
+    "officialDistanceKm": 107,
+    "typicalDays": "7-8",
+    "bbox": [44.6, 6.7, 44.9, 7.1],
+    "targetPoints": 110
+  },
+  {
+    "name": "Bernese Oberland Trek",
+    "region": "Bernese Alps",
+    "country": "CH",
+    "officialDistanceKm": 85,
+    "typicalDays": "6",
+    "bbox": [46.4, 7.6, 46.7, 8.2],
+    "targetPoints": 100
+  },
+  {
+    "name": "Via Alpina Swiss",
+    "region": "Swiss Alps",
+    "country": "CH",
+    "officialDistanceKm": 390,
+    "typicalDays": "20",
+    "bbox": [46.0, 7.0, 47.0, 9.8],
+    "targetPoints": 175
+  },
+  {
+    "name": "Matterhorn Circuit",
+    "region": "Valais",
+    "country": "CH",
+    "officialDistanceKm": 145,
+    "typicalDays": "10",
+    "bbox": [45.9, 7.5, 46.1, 7.8],
+    "targetPoints": 120
+  },
+  {
+    "name": "Five Lakes Walk Pizol",
+    "region": "Pizol",
+    "country": "CH",
+    "officialDistanceKm": 6,
+    "typicalDays": "1",
+    "bbox": [46.9, 9.3, 47.0, 9.4],
+    "targetPoints": 60
+  },
+  {
+    "name": "Hardergrat Trail",
+    "region": "Interlaken",
+    "country": "CH",
+    "officialDistanceKm": 24,
+    "typicalDays": "2",
+    "bbox": [46.6, 7.8, 46.7, 8.0],
+    "targetPoints": 85
+  },
+  {
+    "name": "Schynige Platte to First",
+    "region": "Bernese Oberland",
+    "country": "CH",
+    "officialDistanceKm": 15,
+    "typicalDays": "1",
+    "bbox": [46.6, 7.9, 46.7, 8.1],
+    "targetPoints": 75
+  },
+  {
+    "name": "Swiss National Park Trails",
+    "region": "Engadin",
+    "country": "CH",
+    "officialDistanceKm": 80,
+    "typicalDays": "5",
+    "bbox": [46.6, 10.0, 46.8, 10.3],
+    "targetPoints": 95
+  },
+  {
+    "name": "Alpstein Circuit",
+    "region": "Appenzell",
+    "country": "CH",
+    "officialDistanceKm": 50,
+    "typicalDays": "3",
+    "bbox": [47.1, 9.3, 47.4, 9.5],
+    "targetPoints": 90
+  },
+  {
+    "name": "Eiger Trail",
+    "region": "Bernese Oberland",
+    "country": "CH",
+    "officialDistanceKm": 6,
+    "typicalDays": "1",
+    "bbox": [46.5, 7.9, 46.6, 8.0],
+    "targetPoints": 60
+  },
+  {
+    "name": "Tour du Monte Rosa",
+    "region": "Valais",
+    "country": "CH",
+    "officialDistanceKm": 163,
+    "typicalDays": "9-10",
+    "bbox": [45.9, 7.7, 46.1, 8.0],
+    "targetPoints": 125
+  },
+  {
+    "name": "Haute Route Swiss section",
+    "region": "Valais",
+    "country": "CH",
+    "officialDistanceKm": 120,
+    "typicalDays": "8",
+    "bbox": [45.9, 7.3, 46.2, 7.8],
+    "targetPoints": 110
+  },
+  {
+    "name": "Aletsch Glacier Panorama Trail",
+    "region": "Valais",
+    "country": "CH",
+    "officialDistanceKm": 13,
+    "typicalDays": "1",
+    "bbox": [46.3, 7.9, 46.5, 8.1],
+    "targetPoints": 70
+  },
+  {
+    "name": "Four Headwaters Trail",
+    "region": "Central Switzerland",
+    "country": "CH",
+    "officialDistanceKm": 85,
+    "typicalDays": "5",
+    "bbox": [46.4, 8.3, 46.7, 8.6],
+    "targetPoints": 100
+  },
+  {
+    "name": "Jungfrau Eiger Walk",
+    "region": "Bernese Oberland",
+    "country": "CH",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [46.5, 7.9, 46.6, 8.0],
+    "targetPoints": 65
+  },
+  {
+    "name": "Alta Via 1",
+    "region": "Dolomites",
+    "country": "IT",
+    "officialDistanceKm": 180,
+    "typicalDays": "12",
+    "bbox": [46.2, 11.8, 46.8, 12.2],
+    "targetPoints": 130
+  },
+  {
+    "name": "Alta Via 2",
+    "region": "Dolomites",
+    "country": "IT",
+    "officialDistanceKm": 160,
+    "typicalDays": "10",
+    "bbox": [46.2, 11.7, 46.7, 12.1],
+    "targetPoints": 120
+  },
+  {
+    "name": "Tre Cime di Lavaredo Circuit",
+    "region": "Dolomites",
+    "country": "IT",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [46.6, 12.2, 46.7, 12.4],
+    "targetPoints": 70
+  },
+  {
+    "name": "Cinque Terre",
+    "region": "Liguria",
+    "country": "IT",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [44.1, 9.6, 44.2, 9.7],
+    "targetPoints": 70
+  },
+  {
+    "name": "Sentiero degli Dei",
+    "region": "Amalfi Coast",
+    "country": "IT",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [40.6, 14.5, 40.7, 14.6],
+    "targetPoints": 65
+  },
+  {
+    "name": "Gran Paradiso Traverse",
+    "region": "Gran Paradiso",
+    "country": "IT",
+    "officialDistanceKm": 65,
+    "typicalDays": "5",
+    "bbox": [45.4, 7.1, 45.6, 7.5],
+    "targetPoints": 95
+  },
+  {
+    "name": "Seceda Ridgeline",
+    "region": "Dolomites",
+    "country": "IT",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [46.6, 11.7, 46.7, 11.8],
+    "targetPoints": 70
+  },
+  {
+    "name": "Adolf Munkel Trail",
+    "region": "Dolomites",
+    "country": "IT",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [46.6, 11.7, 46.7, 11.8],
+    "targetPoints": 65
+  },
+  {
+    "name": "Dolomites High Route 8",
+    "region": "Dolomites",
+    "country": "IT",
+    "officialDistanceKm": 170,
+    "typicalDays": "11",
+    "bbox": [46.3, 11.9, 46.8, 12.5],
+    "targetPoints": 125
+  },
+  {
+    "name": "Path of the Gods extension",
+    "region": "Amalfi Coast",
+    "country": "IT",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [40.6, 14.5, 40.7, 14.6],
+    "targetPoints": 70
+  },
+  {
+    "name": "Tour of the Matterhorn Italian side",
+    "region": "Aosta Valley",
+    "country": "IT",
+    "officialDistanceKm": 85,
+    "typicalDays": "6",
+    "bbox": [45.9, 7.6, 46.1, 7.8],
+    "targetPoints": 100
+  },
+  {
+    "name": "Sentiero Roma",
+    "region": "Bergamo Alps",
+    "country": "IT",
+    "officialDistanceKm": 55,
+    "typicalDays": "4",
+    "bbox": [46.2, 9.4, 46.4, 9.7],
+    "targetPoints": 90
+  },
+  {
+    "name": "Selvaggio Blu",
+    "region": "Sardinia",
+    "country": "IT",
+    "officialDistanceKm": 45,
+    "typicalDays": "5-7",
+    "bbox": [39.9, 9.6, 40.1, 9.7],
+    "targetPoints": 90
+  },
+  {
+    "name": "Tour of Monte Bianco",
+    "region": "Aosta Valley",
+    "country": "IT",
+    "officialDistanceKm": 170,
+    "typicalDays": "10-12",
+    "bbox": [45.7, 6.7, 46.1, 7.1],
+    "targetPoints": 125
+  },
+  {
+    "name": "Giants Cup Trail",
+    "region": "Drakensberg",
+    "country": "ZA",
+    "officialDistanceKm": 60,
+    "typicalDays": "5",
+    "bbox": [-29.8, 29.2, -29.4, 29.5],
+    "targetPoints": 95
+  },
+  {
+    "name": "Otter Trail",
+    "region": "Garden Route",
+    "country": "ZA",
+    "officialDistanceKm": 45,
+    "typicalDays": "5",
+    "bbox": [-34.1, 23.8, -33.9, 24.0],
+    "targetPoints": 90
+  },
+  {
+    "name": "Drakensberg Grand Traverse",
+    "region": "Drakensberg",
+    "country": "ZA",
+    "officialDistanceKm": 220,
+    "typicalDays": "14-16",
+    "bbox": [-29.5, 28.9, -28.6, 29.5],
+    "targetPoints": 145
+  },
+  {
+    "name": "Amphitheatre to Tugela Falls",
+    "region": "Drakensberg",
+    "country": "ZA",
+    "officialDistanceKm": 14,
+    "typicalDays": "1",
+    "bbox": [-28.8, 28.8, -28.7, 28.9],
+    "targetPoints": 75
+  },
+  {
+    "name": "Cathedral Peak",
+    "region": "Drakensberg",
+    "country": "ZA",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [-28.9, 29.2, -28.8, 29.3],
+    "targetPoints": 70
+  },
+  {
+    "name": "Mafadi Summit",
+    "region": "Drakensberg",
+    "country": "ZA",
+    "officialDistanceKm": 18,
+    "typicalDays": "2",
+    "bbox": [-29.2, 29.3, -29.1, 29.4],
+    "targetPoints": 80
+  },
+  {
+    "name": "Fish River Canyon Trail",
+    "region": "Namibia border",
+    "country": "ZA",
+    "officialDistanceKm": 85,
+    "typicalDays": "5",
+    "bbox": [-27.8, 17.4, -27.3, 17.7],
+    "targetPoints": 100
+  },
+  {
+    "name": "Rim of Africa",
+    "region": "Western Cape",
+    "country": "ZA",
+    "officialDistanceKm": 650,
+    "typicalDays": "35",
+    "bbox": [-34.0, 18.4, -33.3, 19.5],
+    "targetPoints": 200
+  },
+  {
+    "name": "Amatola Trail",
+    "region": "Eastern Cape",
+    "country": "ZA",
+    "officialDistanceKm": 105,
+    "typicalDays": "6",
+    "bbox": [-32.7, 27.0, -32.3, 27.4],
+    "targetPoints": 110
+  },
+  {
+    "name": "Tsitsikamma Trail",
+    "region": "Garden Route",
+    "country": "ZA",
+    "officialDistanceKm": 60,
+    "typicalDays": "5",
+    "bbox": [-33.9, 23.8, -33.8, 24.0],
+    "targetPoints": 95
+  },
+  {
+    "name": "Table Mountain Traverse",
+    "region": "Cape Town",
+    "country": "ZA",
+    "officialDistanceKm": 15,
+    "typicalDays": "1",
+    "bbox": [-34.0, 18.3, -33.9, 18.5],
+    "targetPoints": 75
+  },
+  {
+    "name": "Whale Trail",
+    "region": "Western Cape",
+    "country": "ZA",
+    "officialDistanceKm": 55,
+    "typicalDays": "5",
+    "bbox": [-34.6, 19.3, -34.4, 19.6],
+    "targetPoints": 90
+  },
+  {
+    "name": "Wild Coast Hiking Trail",
+    "region": "Eastern Cape",
+    "country": "ZA",
+    "officialDistanceKm": 280,
+    "typicalDays": "12-14",
+    "bbox": [-32.5, 28.8, -31.3, 29.8],
+    "targetPoints": 150
+  },
+  {
+    "name": "Leopard Trail",
+    "region": "Garden Route",
+    "country": "ZA",
+    "officialDistanceKm": 48,
+    "typicalDays": "4",
+    "bbox": [-33.9, 23.3, -33.7, 23.5],
+    "targetPoints": 90
+  },
+  {
+    "name": "Sentinel Peak Hike",
+    "region": "Drakensberg",
+    "country": "ZA",
+    "officialDistanceKm": 15,
+    "typicalDays": "1",
+    "bbox": [-28.8, 28.8, -28.7, 28.9],
+    "targetPoints": 75
+  },
+  {
+    "name": "Zugspitze",
+    "region": "Bavaria",
+    "country": "DE",
+    "officialDistanceKm": 21,
+    "typicalDays": "2",
+    "bbox": [47.3, 10.9, 47.5, 11.1],
+    "targetPoints": 80
+  },
+  {
+    "name": "Westweg",
+    "region": "Black Forest",
+    "country": "DE",
+    "officialDistanceKm": 285,
+    "typicalDays": "12",
+    "bbox": [47.6, 7.8, 49.0, 8.5],
+    "targetPoints": 150
+  },
+  {
+    "name": "Mittelweg",
+    "region": "Black Forest",
+    "country": "DE",
+    "officialDistanceKm": 233,
+    "typicalDays": "10",
+    "bbox": [47.8, 7.9, 48.8, 8.4],
+    "targetPoints": 140
+  },
+  {
+    "name": "Schluchtensteig",
+    "region": "Black Forest",
+    "country": "DE",
+    "officialDistanceKm": 119,
+    "typicalDays": "6",
+    "bbox": [47.7, 8.0, 47.9, 8.5],
+    "targetPoints": 110
+  },
+  {
+    "name": "Jurasteig",
+    "region": "Bavaria",
+    "country": "DE",
+    "officialDistanceKm": 237,
+    "typicalDays": "10",
+    "bbox": [48.9, 11.3, 49.5, 12.2],
+    "targetPoints": 140
+  },
+  {
+    "name": "Salzalpensteig",
+    "region": "Bavaria",
+    "country": "DE",
+    "officialDistanceKm": 230,
+    "typicalDays": "10",
+    "bbox": [47.5, 12.3, 47.9, 13.2],
+    "targetPoints": 140
+  },
+  {
+    "name": "Malerweg",
+    "region": "Saxon Switzerland",
+    "country": "DE",
+    "officialDistanceKm": 112,
+    "typicalDays": "5-6",
+    "bbox": [50.8, 13.9, 51.0, 14.3],
+    "targetPoints": 105
+  },
+  {
+    "name": "Rheinsteig",
+    "region": "Rhine Valley",
+    "country": "DE",
+    "officialDistanceKm": 320,
+    "typicalDays": "14",
+    "bbox": [50.0, 7.1, 50.9, 7.8],
+    "targetPoints": 160
+  },
+  {
+    "name": "Eifelsteig",
+    "region": "Eifel",
+    "country": "DE",
+    "officialDistanceKm": 313,
+    "typicalDays": "13",
+    "bbox": [50.3, 6.3, 50.8, 7.1],
+    "targetPoints": 155
+  },
+  {
+    "name": "Hochplatte",
+    "region": "Bavaria",
+    "country": "DE",
+    "officialDistanceKm": 18,
+    "typicalDays": "1",
+    "bbox": [47.6, 12.6, 47.7, 12.8],
+    "targetPoints": 80
+  },
+  {
+    "name": "Albsteig",
+    "region": "Swabian Alps",
+    "country": "DE",
+    "officialDistanceKm": 350,
+    "typicalDays": "14",
+    "bbox": [48.0, 8.6, 48.7, 9.8],
+    "targetPoints": 165
+  },
+  {
+    "name": "Rennsteig",
+    "region": "Thuringia",
+    "country": "DE",
+    "officialDistanceKm": 169,
+    "typicalDays": "8",
+    "bbox": [50.4, 10.3, 50.9, 11.1],
+    "targetPoints": 120
+  },
+  {
+    "name": "Goldsteig",
+    "region": "Bavaria",
+    "country": "DE",
+    "officialDistanceKm": 660,
+    "typicalDays": "28",
+    "bbox": [48.8, 12.2, 49.8, 13.4],
+    "targetPoints": 200
+  },
+  {
+    "name": "Heidschnuckenweg",
+    "region": "Lower Saxony",
+    "country": "DE",
+    "officialDistanceKm": 223,
+    "typicalDays": "10",
+    "bbox": [53.1, 9.7, 53.5, 10.5],
+    "targetPoints": 135
+  }
+]

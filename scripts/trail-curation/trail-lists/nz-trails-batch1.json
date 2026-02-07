@@ -1,0 +1,227 @@
+[
+  {
+    "name": "Milford Track",
+    "searchName": "Milford Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 53.5,
+    "typicalDays": "4-5",
+    "bbox": [-45.5, 167.5, -44.5, 168.2]
+  },
+  {
+    "name": "Routeburn Track",
+    "searchName": "Routeburn Track",
+    "region": "Fiordland/Mt Aspiring",
+    "country": "NZ",
+    "officialDistanceKm": 32,
+    "typicalDays": "2-3",
+    "bbox": [-44.9, 168.0, -44.6, 168.3]
+  },
+  {
+    "name": "Kepler Track",
+    "searchName": "Kepler Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 60,
+    "typicalDays": "3-4",
+    "bbox": [-45.5, 167.6, -45.2, 167.9]
+  },
+  {
+    "name": "Abel Tasman Coast Track",
+    "searchName": "Abel Tasman Coast Track",
+    "region": "Nelson/Tasman",
+    "country": "NZ",
+    "officialDistanceKm": 60,
+    "typicalDays": "3-5",
+    "bbox": [-41.0, 172.9, -40.8, 173.1]
+  },
+  {
+    "name": "Tongariro Northern Circuit",
+    "searchName": "Tongariro Northern Circuit",
+    "region": "Tongariro National Park",
+    "country": "NZ",
+    "officialDistanceKm": 43,
+    "typicalDays": "3-4",
+    "bbox": [-39.3, 175.5, -39.1, 175.7]
+  },
+  {
+    "name": "Heaphy Track",
+    "searchName": "Heaphy Track",
+    "region": "Kahurangi National Park",
+    "country": "NZ",
+    "officialDistanceKm": 78.4,
+    "typicalDays": "4-6",
+    "bbox": [-41.3, 172.0, -40.8, 172.6]
+  },
+  {
+    "name": "Paparoa Track",
+    "searchName": "Paparoa Track",
+    "region": "Paparoa National Park",
+    "country": "NZ",
+    "officialDistanceKm": 55,
+    "typicalDays": "2-3",
+    "bbox": [-42.2, 171.3, -41.8, 171.6]
+  },
+  {
+    "name": "Hump Ridge Track",
+    "searchName": "Hump Ridge Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 61,
+    "typicalDays": "3",
+    "bbox": [-46.5, 167.5, -46.2, 167.8]
+  },
+  {
+    "name": "Lake Waikaremoana Great Walk",
+    "searchName": "Lake Waikaremoana Track",
+    "region": "Te Urewera",
+    "country": "NZ",
+    "officialDistanceKm": 46,
+    "typicalDays": "3-4",
+    "bbox": [-38.8, 177.0, -38.7, 177.2]
+  },
+  {
+    "name": "Rakiura Track",
+    "searchName": "Rakiura Track",
+    "region": "Stewart Island",
+    "country": "NZ",
+    "officialDistanceKm": 32,
+    "typicalDays": "3",
+    "bbox": [-47.0, 168.0, -46.8, 168.2]
+  },
+  {
+    "name": "Mueller Hut Route",
+    "searchName": "Mueller Hut Route",
+    "region": "Aoraki/Mt Cook",
+    "country": "NZ",
+    "officialDistanceKm": 10,
+    "typicalDays": "1-2",
+    "bbox": [-43.8, 170.0, -43.7, 170.1]
+  },
+  {
+    "name": "Hooker Valley Track",
+    "searchName": "Hooker Valley Track",
+    "region": "Aoraki/Mt Cook",
+    "country": "NZ",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [-43.8, 170.0, -43.7, 170.1]
+  },
+  {
+    "name": "Rob Roy Glacier Track",
+    "searchName": "Rob Roy Glacier Track",
+    "region": "Mt Aspiring",
+    "country": "NZ",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [-44.5, 169.2, -44.4, 169.3]
+  },
+  {
+    "name": "Roy's Peak Track",
+    "searchName": "Roys Peak Track",
+    "region": "Wanaka",
+    "country": "NZ",
+    "officialDistanceKm": 16,
+    "typicalDays": "1",
+    "bbox": [-44.8, 168.8, -44.7, 168.9]
+  },
+  {
+    "name": "Ben Lomond Track",
+    "searchName": "Ben Lomond Track",
+    "region": "Queenstown",
+    "country": "NZ",
+    "officialDistanceKm": 11,
+    "typicalDays": "1",
+    "bbox": [-45.1, 168.6, -45.0, 168.7]
+  },
+  {
+    "name": "Cascade Saddle Route",
+    "searchName": "Cascade Saddle Route",
+    "region": "Mt Aspiring",
+    "country": "NZ",
+    "officialDistanceKm": 30,
+    "typicalDays": "2-3",
+    "bbox": [-44.5, 168.7, -44.3, 169.0]
+  },
+  {
+    "name": "Gillespie Pass Circuit",
+    "searchName": "Gillespie Pass Circuit",
+    "region": "Mt Aspiring",
+    "country": "NZ",
+    "officialDistanceKm": 58,
+    "typicalDays": "3-4",
+    "bbox": [-44.5, 169.0, -44.2, 169.3]
+  },
+  {
+    "name": "Rees-Dart Track",
+    "searchName": "Rees-Dart Track",
+    "region": "Mt Aspiring",
+    "country": "NZ",
+    "officialDistanceKm": 70,
+    "typicalDays": "4-5",
+    "bbox": [-44.9, 168.5, -44.5, 168.9]
+  },
+  {
+    "name": "Greenstone-Caples Track",
+    "searchName": "Greenstone Caples Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 61,
+    "typicalDays": "4-5",
+    "bbox": [-45.0, 168.1, -44.6, 168.5]
+  },
+  {
+    "name": "Hollyford Track",
+    "searchName": "Hollyford Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 56,
+    "typicalDays": "4",
+    "bbox": [-45.0, 167.8, -44.5, 168.2]
+  },
+  {
+    "name": "Dusky Track",
+    "searchName": "Dusky Track",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 84,
+    "typicalDays": "7-10",
+    "bbox": [-45.8, 167.3, -45.4, 167.7]
+  },
+  {
+    "name": "George Sound Track",
+    "searchName": "George Sound Route",
+    "region": "Fiordland",
+    "country": "NZ",
+    "officialDistanceKm": 48,
+    "typicalDays": "4-5",
+    "bbox": [-44.9, 167.4, -44.6, 167.7]
+  },
+  {
+    "name": "St James Walkway",
+    "searchName": "St James Walkway",
+    "region": "Canterbury",
+    "country": "NZ",
+    "officialDistanceKm": 66,
+    "typicalDays": "4-5",
+    "bbox": [-42.6, 172.4, -42.3, 172.8]
+  },
+  {
+    "name": "Banks Peninsula Track",
+    "searchName": "Banks Peninsula Track",
+    "region": "Canterbury",
+    "country": "NZ",
+    "officialDistanceKm": 35,
+    "typicalDays": "2-4",
+    "bbox": [-43.9, 172.8, -43.7, 173.0]
+  },
+  {
+    "name": "Queen Charlotte Track",
+    "searchName": "Queen Charlotte Track",
+    "region": "Marlborough Sounds",
+    "country": "NZ",
+    "officialDistanceKm": 71,
+    "typicalDays": "3-5",
+    "bbox": [-41.3, 173.9, -41.1, 174.2]
+  }
+]
