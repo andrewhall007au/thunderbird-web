@@ -289,7 +289,7 @@ def check_sms_webhook_synthetic() -> CheckResult:
 
         # POST to webhook endpoint
         response = requests.post(
-            f"{settings.PRODUCTION_URL}/api/webhook/sms",
+            f"{settings.PRODUCTION_URL}/api/webhook/sms/inbound",
             data=payload,  # Twilio sends form data, not JSON
             timeout=15
         )
