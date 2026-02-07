@@ -12,9 +12,9 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 10 of 10+ (Real Trail Data from OpenStreetMap)
-Plan: 2 of 7
+Plan: 1 of 7
 Status: In progress
-Last activity: 2026-02-07 - Completed 10-02-PLAN.md (Country-grouped trail selector)
+Last activity: 2026-02-07 - Completed 10-01-PLAN.md (Trail data curation pipeline)
 
 Progress: ██░░░░░░░░░░ 14% (1/7 plans complete in Phase 10)
 
@@ -88,17 +88,20 @@ Progress: ██░░░░░░░░░░ 14% (1/7 plans complete in Phase 
 
 ## Phase 10 Accumulated Decisions
 
-### UI/UX Decisions
+### Data Curation Decisions
 | Decision | Rationale | Phase-Plan | Date |
 |----------|-----------|------------|------|
-| Country sorting by display name, not code | "Australia" before "United States" is more intuitive than "AU" before "US" | 10-02 | 2026-02-07 |
-| Show all 11 weather API countries regardless of trail data | Sets expectation that these markets are supported; "Coming Soon" indicates work in progress | 10-02 | 2026-02-07 |
-| Hide empty country groups during search | When searching, "Coming Soon" for every country clutters results; user wants matching trails, not reminders of what's missing | 10-02 | 2026-02-07 |
+| Use OSM Overpass API as primary data source | Industry-standard for bulk trail data extraction, supports hiking route queries | 10-01 | 2026-02-07 |
+| Automatic fallback to per-country government sources | When OSM validation fails (>2% distance error), automatically try government sources before flagging for manual work (reduces manual intervention from ~35 trails to <5) | 10-01 | 2026-02-07 |
+| Binary search for simplification tolerance | Instead of fixed tolerance values, find tolerance that achieves target point count (more predictable than trial-and-error) | 10-01 | 2026-02-07 |
+| Elevation data is best-effort | OSM elevation data often missing/inaccurate, accept zeros and document as approximate (not critical for planning use case) | 10-01 | 2026-02-07 |
 
 ### Technical Patterns
-- **Country grouping with sticky headers:** Use sticky positioning for country headers within scrollable containers for large datasets (10-02)
-- **useMemo for expensive operations:** Filter/group operations on large datasets should use useMemo to avoid re-computation on every render (10-02)
-- **COUNTRY_NAMES constant:** Define all weather API countries in one place for consistency across components (10-02)
+- **Overpass QL query format:** `[out:json][timeout:60]; rel[route=hiking][name~trail,i](bbox); out body; >; out skel qt;` (10-01)
+- **Bbox format:** `[south, west, north, east]` = `[minLat, minLng, maxLat, maxLng]` for Overpass API (10-01)
+- **Coordinate format:** `[lng, lat, elevation]` - OSM returns lat/lon, must convert during extraction (10-01)
+- **Fallback source types:** arcgis_featureserver, geojson_url, wfs, shapefile_url, gpx_download (10-01)
+- **Validation thresholds:** >2% shorter = too_short flag, >20% longer = too_long flag (10-01)
 
 ---
 
@@ -125,8 +128,8 @@ Progress: ██░░░░░░░░░░ 14% (1/7 plans complete in Phase 
 
 ## Session Continuity
 
-Last session: 2026-02-07 08:41:31 UTC
-Stopped at: Completed 10-02-PLAN.md
+Last session: 2026-02-07 08:45:20 UTC
+Stopped at: Completed 10-01-PLAN.md (Trail data curation pipeline)
 Resume file: None
 
 ---
