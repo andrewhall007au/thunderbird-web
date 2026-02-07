@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Map, { NavigationControl, MapLayerMouseEvent, MapRef, Source, Layer } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RouteTrack from './RouteTrack';
@@ -8,7 +8,7 @@ import WaypointMarker, { Waypoint } from './WaypointMarker';
 import { Mountain, Map as MapIcon } from 'lucide-react';
 
 interface MapEditorProps {
-  trackGeojson?: GeoJSON.Feature;
+  trackGeojson?: GeoJSON.Feature | null;
   waypoints?: Waypoint[];
   selectedWaypointId?: string | null;
   onMapClick?: (lat: number, lng: number) => void;
@@ -68,7 +68,6 @@ export default function MapEditor({
   const [viewState, setViewState] = useState(initialViewport);
   const [mapStyle, setMapStyle] = useState<MapStyle>('street');
   const mapRef = useRef<MapRef>(null);
-  const hasFittedBounds = useRef(false);
 
   // Handle centering on a new location
   useEffect(() => {
@@ -85,10 +84,10 @@ export default function MapEditor({
     if (mapStyle === 'topo') {
       // OpenTopoMap style for topographic view
       return {
-        version: 8,
+        version: 8 as const,
         sources: {
           'opentopomap': {
-            type: 'raster',
+            type: 'raster' as const,
             tiles: ['https://tile.opentopomap.org/{z}/{x}/{y}.png'],
             tileSize: 256,
             attribution: '© OpenTopoMap contributors'
@@ -97,7 +96,7 @@ export default function MapEditor({
         layers: [
           {
             id: 'opentopomap',
-            type: 'raster',
+            type: 'raster' as const,
             source: 'opentopomap',
             minzoom: 0,
             maxzoom: 22
@@ -108,29 +107,16 @@ export default function MapEditor({
     return 'https://tiles.openfreemap.org/styles/liberty';
   };
 
-  // Fit bounds when GPX track changes
-  const fitToBounds = useCallback(() => {
-    if (trackGeojson && mapRef.current && !hasFittedBounds.current) {
+  // Fit map to track bounds whenever the track changes
+  useEffect(() => {
+    if (trackGeojson && mapRef.current) {
       const bounds = getBoundsFromGeojson(trackGeojson);
       if (bounds) {
         mapRef.current.fitBounds(bounds, {
           padding: 50,
           duration: 1000
         });
-        hasFittedBounds.current = true;
       }
-    }
-  }, [trackGeojson]);
-
-  // Zoom to fit GPX track when loaded - also handle map load event
-  useEffect(() => {
-    fitToBounds();
-  }, [fitToBounds]);
-
-  // Reset fitted bounds flag when track changes
-  useEffect(() => {
-    if (!trackGeojson) {
-      hasFittedBounds.current = false;
     }
   }, [trackGeojson]);
 
@@ -174,7 +160,14 @@ export default function MapEditor({
         ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
-        onLoad={fitToBounds}
+        onLoad={() => {
+          if (trackGeojson && mapRef.current) {
+            const bounds = getBoundsFromGeojson(trackGeojson);
+            if (bounds) {
+              mapRef.current.fitBounds(bounds, { padding: 50, duration: 1000 });
+            }
+          }
+        }}
         mapStyle={getMapStyle()}
         onClick={handleClick}
         cooperativeGestures={true}

@@ -374,6 +374,9 @@ function CreateRouteContent() {
     };
     setTrackGeojson(geojson);
     setRouteName(trail.name);
+    setWaypoints([]);
+    setSelectedWaypointId(null);
+    setCurrentRouteId(null);
     setIsDirty(true);
   };
 
@@ -555,13 +558,63 @@ function CreateRouteContent() {
                       const trail = popularTrails.find(t => t.name === e.target.value);
                       if (trail) handleTrailSelect(trail);
                     }}
-                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-orange-500"
                   >
-                    {[...popularTrails].sort((a, b) => a.name.localeCompare(b.name)).map(trail => (
-                      <option key={trail.id} value={trail.name}>
-                        {trail.name}
-                      </option>
-                    ))}
+                    {(() => {
+                      const countryNames: Record<string, string> = {
+                        'US': 'United States',
+                        'CA': 'Canada',
+                        'AU': 'Australia',
+                        'NZ': 'New Zealand',
+                        'GB': 'United Kingdom',
+                        'FR': 'France',
+                        'CH': 'Switzerland',
+                        'IT': 'Italy',
+                        'JP': 'Japan',
+                        'ZA': 'South Africa',
+                        'DE': 'Germany',
+                      };
+                      // Countries with trail data, sorted
+                      const trailsByCountry = new Map<string, TrailData[]>();
+                      for (const trail of popularTrails) {
+                        const existing = trailsByCountry.get(trail.country) || [];
+                        existing.push(trail);
+                        trailsByCountry.set(trail.country, existing);
+                      }
+                      // Sort trails within each country
+                      Array.from(trailsByCountry.values()).forEach(trails => {
+                        trails.sort((a, b) => a.name.localeCompare(b.name));
+                      });
+                      // Country display order: launch markets first, then alphabetical
+                      const launchMarkets = ['US', 'CA', 'AU'];
+                      const otherCountries = Object.keys(countryNames)
+                        .filter(c => !launchMarkets.includes(c))
+                        .sort((a, b) => countryNames[a].localeCompare(countryNames[b]));
+                      const orderedCountries = [...launchMarkets, ...otherCountries];
+
+                      return orderedCountries.map(countryCode => {
+                        const trails = trailsByCountry.get(countryCode);
+                        const label = `${countryNames[countryCode] || countryCode}`;
+                        if (!trails || trails.length === 0) {
+                          return (
+                            <optgroup key={countryCode} label={label}>
+                              <option disabled value="">
+                                Coming Soon
+                              </option>
+                            </optgroup>
+                          );
+                        }
+                        return (
+                          <optgroup key={countryCode} label={label}>
+                            {trails.map(trail => (
+                              <option key={trail.id} value={trail.name}>
+                                {trail.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      });
+                    })()}
                   </select>
                 </div>
               ) : (
