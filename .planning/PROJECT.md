@@ -57,6 +57,19 @@ Hikers anywhere in the world can create a custom route and receive accurate, loc
 
 ## Current State (v1.0 - Shipped 2026-02-04)
 
+**THIS IS THE ACTIVE PROJECT:** Thunderbird Web (Global)
+**OLD PROJECT (DEAD):** overland-weather (Tasmania only - deprecated)
+
+**Deployment Locations:**
+- **Local Development:** `/Users/andrewhall/thunderbird-web`
+- **Production Server:** `root@thunderbird.bot:/root/thunderbird-web`
+- **Old Code (Ignore):** `/root/overland-weather` (not running, deprecated)
+
+**Production Services Running:**
+- `thunderbird-api.service` - Backend FastAPI (port 8000)
+- `thunderbird-web.service` - Frontend Next.js (port 3000)
+- `thunderbird-monitoring.service` - Health monitoring (port 8001)
+
 **Codebase:**
 - ~1,754,000 lines (TypeScript + Python)
 - Next.js 14 frontend, FastAPI backend, SQLite database
@@ -80,6 +93,13 @@ Hikers anywhere in the world can create a custom route and receive accurate, loc
 **Known Issues:**
 - International weather infrastructure built but not activated for SMS users (intentional - ready for future expansion)
 - Monitoring dashboard has no authentication (internal tool only)
+
+**Monitoring Configuration (Updated 2026-02-07):**
+- Configured for beta phase with reduced check frequencies (hourly weather checks)
+- Tests external weather APIs directly (BOM, NWS, Open-Meteo)
+- Skips Stripe/Twilio checks when credentials not configured
+- **Action Required:** Review and increase monitoring frequency for retail launch (see `.planning/FUTURE-PHASE-beta-to-retail.md`)
+- See `.planning/MONITORING_FIXES_2026-02-07.md` for configuration details
 
 ## Constraints
 

@@ -128,9 +128,37 @@ class SMSService:
     def __init__(self):
         self.account_sid = settings.TWILIO_ACCOUNT_SID
         self.auth_token = settings.TWILIO_AUTH_TOKEN
-        self.from_number = settings.TWILIO_PHONE_NUMBER
+        self.from_number = settings.TWILIO_PHONE_NUMBER  # Default fallback
+        self.from_number_au = getattr(settings, 'TWILIO_PHONE_NUMBER_AU', None)
+        self.from_number_us = getattr(settings, 'TWILIO_PHONE_NUMBER_US', None)
         self._client: Optional[Client] = None
         self._validator: Optional[RequestValidator] = None
+
+    def _get_from_number(self, to: str) -> str:
+        """
+        Select appropriate Twilio number based on destination country.
+        Uses local numbers to minimize international SMS costs.
+
+        Args:
+            to: Destination phone number (E.164 format)
+
+        Returns:
+            Best Twilio number for this destination
+        """
+        # Australian destinations: use AU number if available
+        if to.startswith('+61') and self.from_number_au:
+            return self.from_number_au
+
+        # US destinations: use US number if available
+        elif to.startswith('+1') and self.from_number_us:
+            return self.from_number_us
+
+        # International: prefer US toll-free (cheaper international rates)
+        elif self.from_number_us:
+            return self.from_number_us
+
+        # Fallback to default
+        return self.from_number
     
     @property
     def client(self) -> Client:
@@ -205,9 +233,12 @@ class SMSService:
         cost_aud = cost_cents / 100.0
 
         try:
+            # Select optimal number for destination country
+            from_number = self._get_from_number(normalized_to)
+
             message = self.client.messages.create(
                 to=normalized_to,
-                from_=self.from_number,
+                from_=from_number,
                 body=body
             )
 

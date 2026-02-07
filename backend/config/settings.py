@@ -37,7 +37,9 @@ class Settings(BaseSettings):
     # Twilio SMS
     TWILIO_ACCOUNT_SID: str = ""
     TWILIO_AUTH_TOKEN: str = ""
-    TWILIO_PHONE_NUMBER: str = ""
+    TWILIO_PHONE_NUMBER: str = ""  # Default/fallback number
+    TWILIO_PHONE_NUMBER_AU: Optional[str] = None  # Australian number (for AU users)
+    TWILIO_PHONE_NUMBER_US: Optional[str] = None  # US toll-free (for US + intl users)
     
     # BOM API (undocumented api.weather.bom.gov.au - no API key required)
     # Just needs User-Agent header, uses geohash for location lookup
