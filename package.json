@@ -23,7 +23,9 @@
     "react": "^18",
     "react-dom": "^18",
     "react-dropzone": "^14.3.8",
-    "react-map-gl": "^8.1.0"
+    "react-map-gl": "^8.1.0",
+    "simplify-js": "^1.2.4",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.0",
