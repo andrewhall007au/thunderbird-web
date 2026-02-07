@@ -196,49 +196,89 @@ def check_database_health() -> CheckResult:
 
 
 def check_weather_api() -> CheckResult:
-    """Check weather API endpoint responds."""
+    """
+    Check external weather API providers are working.
+    Tests actual APIs directly, not Thunderbird endpoints.
+
+    Tests all providers hourly during beta (24 calls/day per provider).
+    """
     check_name = "weather_api"
-    start = time.monotonic()
+    overall_start = time.monotonic()
 
+    results = {}
+
+    # Test BOM (Australia)
     try:
-        # Test with dummy coordinates
-        response = requests.post(
-            f"{settings.PRODUCTION_URL}/api/routes/forecast-preview",
-            json={
-                "coordinates": [
-                    {"lat": -39.0, "lon": 143.0, "elevation": 1000}
-                ]
-            },
-            timeout=30
+        start = time.monotonic()
+        response = requests.get(
+            "https://api.weather.bom.gov.au/v1/locations/r3dp2v/forecasts/hourly",
+            timeout=10
         )
-        duration_ms = (time.monotonic() - start) * 1000
-
-        # Should get 200/400/422, not 404 or 500
-        if response.status_code in [200, 400, 422]:
-            result = CheckResult(
-                check_name=check_name,
-                status="pass",
-                duration_ms=duration_ms,
-                metadata={"status_code": response.status_code}
-            )
-        else:
-            result = CheckResult(
-                check_name=check_name,
-                status="fail",
-                duration_ms=duration_ms,
-                error_message=f"HTTP {response.status_code}"
-            )
-
+        bom_ms = (time.monotonic() - start) * 1000
+        results['bom_ms'] = round(bom_ms, 2)
+        results['bom'] = response.status_code == 200 and bool(response.json().get('data'))
     except Exception as e:
-        duration_ms = (time.monotonic() - start) * 1000
-        result = CheckResult(
-            check_name=check_name,
-            status="fail",
-            duration_ms=duration_ms,
-            error_message=str(e)
-        )
+        results['bom'] = False
+        results['bom_error'] = str(e)
 
-    return result
+    # Test NWS (USA)
+    try:
+        start = time.monotonic()
+        response = requests.get(
+            "https://api.weather.gov/points/40.7,-74.0",
+            headers={"User-Agent": "(Thunderbird-Web, support@thunderbird.app)"},
+            timeout=10
+        )
+        nws_ms = (time.monotonic() - start) * 1000
+        results['nws_ms'] = round(nws_ms, 2)
+        results['nws'] = response.status_code == 200
+    except Exception as e:
+        results['nws'] = False
+        results['nws_error'] = str(e)
+
+    # Test Open-Meteo (Fallback + Europe/Asia/etc)
+    try:
+        start = time.monotonic()
+        response = requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={
+                "latitude": 48.8,
+                "longitude": 2.3,
+                "hourly": "temperature_2m",
+                "forecast_days": 1
+            },
+            timeout=10
+        )
+        openmeteo_ms = (time.monotonic() - start) * 1000
+        results['openmeteo_ms'] = round(openmeteo_ms, 2)
+        results['openmeteo'] = response.status_code == 200 and bool(response.json().get('hourly'))
+    except Exception as e:
+        results['openmeteo'] = False
+        results['openmeteo_error'] = str(e)
+
+    # Determine overall status
+    working = [k for k in ['bom', 'nws', 'openmeteo'] if results.get(k)]
+    failed = [k for k in ['bom', 'nws', 'openmeteo'] if not results.get(k)]
+
+    overall_duration_ms = (time.monotonic() - overall_start) * 1000
+
+    if len(working) >= 2:  # At least 2 providers working
+        status = "pass"
+        error = None
+    elif len(working) >= 1:  # At least 1 provider working
+        status = "degraded"
+        error = f"Some providers down: {', '.join(failed)}"
+    else:
+        status = "fail"
+        error = f"All weather providers unavailable: {', '.join(failed)}"
+
+    return CheckResult(
+        check_name=check_name,
+        status=status,
+        duration_ms=overall_duration_ms,
+        error_message=error,
+        metadata=results
+    )
 
 
 def check_database_query_performance() -> CheckResult:
@@ -335,67 +375,59 @@ def check_external_api_latency() -> CheckResult:
     metadata = {}
     statuses = []
 
-    # Test Stripe API
-    try:
-        start = time.monotonic()
-        if settings.STRIPE_SECRET_KEY:
-            # Authenticated call if key available
+    # Test Stripe API (skip if not configured)
+    if settings.STRIPE_SECRET_KEY:
+        try:
+            start = time.monotonic()
             response = requests.get(
                 "https://api.stripe.com/v1/balance",
                 auth=(settings.STRIPE_SECRET_KEY, ""),
                 timeout=30
             )
-        else:
-            # Just test reachability
-            response = requests.get(
-                "https://api.stripe.com/",
-                timeout=30
-            )
-        stripe_ms = (time.monotonic() - start) * 1000
-        metadata["stripe_ms"] = round(stripe_ms, 2)
+            stripe_ms = (time.monotonic() - start) * 1000
+            metadata["stripe_ms"] = round(stripe_ms, 2)
 
-        if response.status_code in [200, 401]:
-            statuses.append("pass" if stripe_ms < settings.EXTERNAL_API_SLOW_THRESHOLD_MS else "degraded")
-        else:
+            if response.status_code in [200, 401]:
+                statuses.append("pass" if stripe_ms < settings.EXTERNAL_API_SLOW_THRESHOLD_MS else "degraded")
+            else:
+                statuses.append("fail")
+                metadata["stripe_error"] = f"HTTP {response.status_code}"
+
+        except Exception as e:
+            stripe_ms = (time.monotonic() - start) * 1000
+            metadata["stripe_ms"] = round(stripe_ms, 2)
+            metadata["stripe_error"] = str(e)
             statuses.append("fail")
-            metadata["stripe_error"] = f"HTTP {response.status_code}"
+    else:
+        # Skip Stripe check when not configured (beta/development)
+        metadata["stripe_status"] = "skipped (not configured)"
 
-    except Exception as e:
-        stripe_ms = (time.monotonic() - start) * 1000
-        metadata["stripe_ms"] = round(stripe_ms, 2)
-        metadata["stripe_error"] = str(e)
-        statuses.append("fail")
-
-    # Test Twilio API
-    try:
-        start = time.monotonic()
-        if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
-            # Authenticated call if credentials available
+    # Test Twilio API (skip if not configured)
+    if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
+        try:
+            start = time.monotonic()
             response = requests.get(
                 f"https://api.twilio.com/2010-04-01/Accounts/{settings.TWILIO_ACCOUNT_SID}.json",
                 auth=(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN),
                 timeout=30
             )
-        else:
-            # Just test reachability
-            response = requests.get(
-                "https://api.twilio.com/",
-                timeout=30
-            )
-        twilio_ms = (time.monotonic() - start) * 1000
-        metadata["twilio_ms"] = round(twilio_ms, 2)
+            twilio_ms = (time.monotonic() - start) * 1000
+            metadata["twilio_ms"] = round(twilio_ms, 2)
 
-        if response.status_code in [200, 401]:
-            statuses.append("pass" if twilio_ms < settings.EXTERNAL_API_SLOW_THRESHOLD_MS else "degraded")
-        else:
+            if response.status_code in [200, 401]:
+                statuses.append("pass" if twilio_ms < settings.EXTERNAL_API_SLOW_THRESHOLD_MS else "degraded")
+            else:
+                statuses.append("fail")
+                metadata["twilio_error"] = f"HTTP {response.status_code}"
+
+        except Exception as e:
+            twilio_ms = (time.monotonic() - start) * 1000
+            metadata["twilio_ms"] = round(twilio_ms, 2)
+            metadata["twilio_error"] = str(e)
             statuses.append("fail")
-            metadata["twilio_error"] = f"HTTP {response.status_code}"
-
-    except Exception as e:
-        twilio_ms = (time.monotonic() - start) * 1000
-        metadata["twilio_ms"] = round(twilio_ms, 2)
-        metadata["twilio_error"] = str(e)
-        statuses.append("fail")
+    else:
+        # Skip Twilio check when not configured (beta/development)
+        metadata["twilio_status"] = "skipped (not configured)"
 
     # Test Open-Meteo weather API
     try:
