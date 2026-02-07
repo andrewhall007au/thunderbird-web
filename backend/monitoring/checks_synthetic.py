@@ -205,10 +205,10 @@ def check_login_synthetic() -> CheckResult:
         )
 
     try:
-        # POST to login endpoint
+        # POST to login endpoint (OAuth2 password flow)
         response = requests.post(
-            f"{settings.PRODUCTION_URL}/api/auth/login",
-            json={"email": test_email, "password": test_password},
+            f"{settings.PRODUCTION_URL}/auth/token",
+            data={"username": test_email, "password": test_password},  # OAuth2 uses form data, not JSON
             timeout=15
         )
 
