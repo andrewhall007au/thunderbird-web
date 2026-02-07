@@ -12,9 +12,14 @@ test.describe('Beta Signup Flow', () => {
     // Wait for modal to appear
     await expect(page.locator('text=Apply for Beta Access')).toBeVisible();
 
-    // Fill in the form
-    await page.fill('input[type="text"]', 'Test User');
-    await page.fill('input[type="email"]', `test-${Date.now()}@example.com`);
+    // Fill in the form (use click+type to properly trigger React onChange)
+    await page.click('input[type="text"]');
+    await page.keyboard.type('Test User');
+
+    const testEmail = `test-${Date.now()}@example.com`;
+    await page.click('input[type="email"]');
+    await page.keyboard.type(testEmail);
+
     await page.selectOption('select', 'Australia');
 
     // Wait for form validation to enable submit button
