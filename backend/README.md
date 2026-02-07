@@ -31,6 +31,24 @@ python scripts/init_db.py
 uvicorn app.main:app --reload
 ```
 
+## Monitoring
+
+The monitoring system is configured for beta phase with reduced check frequencies.
+
+**Current Configuration (Beta):**
+- Weather API checks: Hourly (tests BOM, NWS, Open-Meteo directly)
+- Database performance: Every 15 minutes
+- External APIs: Every 30 minutes
+- Stripe/Twilio: Skipped when not configured
+
+**See:**
+- `.planning/MONITORING_FIXES_2026-02-07.md` - Recent configuration changes
+- `.planning/FUTURE-PHASE-beta-to-retail.md` - Retail monitoring requirements
+- `monitoring/config.py` - Configuration file
+
+**⚠️ Action Required for Retail Launch:**
+Review and update monitoring intervals and thresholds before going to production.
+
 ## Project Structure
 
 ```

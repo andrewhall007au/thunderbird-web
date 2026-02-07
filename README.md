@@ -1,4 +1,12 @@
-# Thunderbird Website
+# Thunderbird Web (Global)
+
+**⚠️ ACTIVE PROJECT:** thunderbird-web (global version)
+**OLD PROJECT (DEAD):** overland-weather (Tasmania only - deprecated)
+
+**Production:** `root@thunderbird.bot:/root/thunderbird-web/`
+**Deployment Info:** See `.planning/PRODUCTION_DEPLOYMENT.md`
+
+---
 
 Alpine weather forecasts via satellite SMS - website for thunderbird.bot
 
