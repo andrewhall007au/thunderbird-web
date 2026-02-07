@@ -17,6 +17,9 @@ test.describe('Beta Signup Flow', () => {
     await page.fill('input[type="email"]', `test-${Date.now()}@example.com`);
     await page.selectOption('select', 'Australia');
 
+    // Wait for form validation to enable submit button
+    await expect(page.locator('button:has-text("Submit Application")')).toBeEnabled({ timeout: 5000 });
+
     // Submit the form
     await page.click('button:has-text("Submit Application")');
 
@@ -92,6 +95,7 @@ test.describe('Beta Signup Flow', () => {
     await page.fill('input[type="text"]', 'First User');
     await page.fill('input[type="email"]', duplicateEmail);
     await page.selectOption('select', 'Australia');
+    await expect(page.locator('button:has-text("Submit Application")')).toBeEnabled({ timeout: 5000 });
     await page.click('button:has-text("Submit Application")');
 
     // Wait for success or continue
@@ -103,6 +107,7 @@ test.describe('Beta Signup Flow', () => {
     await page.fill('input[type="text"]', 'Second User');
     await page.fill('input[type="email"]', duplicateEmail);
     await page.selectOption('select', 'Australia');
+    await expect(page.locator('button:has-text("Submit Application")')).toBeEnabled({ timeout: 5000 });
     await page.click('button:has-text("Submit Application")');
 
     // Should show error (might be "already registered" or "already exists")
@@ -117,6 +122,7 @@ test.describe('Beta Signup Flow', () => {
     await page.fill('input[type="text"]', 'Test User');
     await page.fill('input[type="email"]', 'test@example.com');
     await page.selectOption('select', 'Australia');
+    await expect(page.locator('button:has-text("Submit Application")')).toBeEnabled({ timeout: 5000 });
     await page.click('button:has-text("Submit Application")');
 
     // Should show network error message
@@ -160,6 +166,7 @@ test.describe('Beta Signup - Production Environment', () => {
     await page.fill('input[type="text"]', 'Test User');
     await page.fill('input[type="email"]', `test-${Date.now()}@example.com`);
     await page.selectOption('select', 'Australia');
+    await expect(page.locator('button:has-text("Submit Application")')).toBeEnabled({ timeout: 5000 });
     await page.click('button:has-text("Submit Application")');
 
     // Wait for API call
