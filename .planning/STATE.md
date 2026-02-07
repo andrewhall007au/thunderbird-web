@@ -1,7 +1,7 @@
 # Project State: Thunderbird Global
 
-**Last updated:** 2026-02-04
-**Current milestone:** v1.0 COMPLETE ✅
+**Last updated:** 2026-02-07
+**Current milestone:** v1.1 Trail Data & UX Polish
 
 ## Project Reference
 
@@ -11,11 +11,15 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 ## Current Position
 
-Milestone: v1.0 Global Launch - SHIPPED (2026-02-04)
-Status: All 9 phases complete, ready to plan next milestone
-Last activity: 2026-02-04 - Milestone v1.0 archived
+Phase: 10 of 10+ (Real Trail Data from OpenStreetMap)
+Plan: 2 of 7
+Status: In progress
+Last activity: 2026-02-07 - Completed 10-02-PLAN.md (Country-grouped trail selector)
 
-Progress: ████████████ 100% (v1.0 complete: 81 requirements shipped across 9 phases)
+Progress: ██░░░░░░░░░░ 14% (1/7 plans complete in Phase 10)
+
+### Roadmap Evolution
+- Phase 10 added: Replace simplified trail data with real GPX-quality data from OpenStreetMap. Expand to ~200 trails (100 US, 25 Canada, 100 global). Add country codes to UI.
 
 ---
 
@@ -82,6 +86,22 @@ Progress: ████████████ 100% (v1.0 complete: 81 requireme
 
 ---
 
+## Phase 10 Accumulated Decisions
+
+### UI/UX Decisions
+| Decision | Rationale | Phase-Plan | Date |
+|----------|-----------|------------|------|
+| Country sorting by display name, not code | "Australia" before "United States" is more intuitive than "AU" before "US" | 10-02 | 2026-02-07 |
+| Show all 11 weather API countries regardless of trail data | Sets expectation that these markets are supported; "Coming Soon" indicates work in progress | 10-02 | 2026-02-07 |
+| Hide empty country groups during search | When searching, "Coming Soon" for every country clutters results; user wants matching trails, not reminders of what's missing | 10-02 | 2026-02-07 |
+
+### Technical Patterns
+- **Country grouping with sticky headers:** Use sticky positioning for country headers within scrollable containers for large datasets (10-02)
+- **useMemo for expensive operations:** Filter/group operations on large datasets should use useMemo to avoid re-computation on every render (10-02)
+- **COUNTRY_NAMES constant:** Define all weather API countries in one place for consistency across components (10-02)
+
+---
+
 ## Key Files Reference
 
 **Planning:**
@@ -103,4 +123,12 @@ Progress: ████████████ 100% (v1.0 complete: 81 requireme
 
 ---
 
-*State updated: 2026-02-04*
+## Session Continuity
+
+Last session: 2026-02-07 08:41:31 UTC
+Stopped at: Completed 10-02-PLAN.md
+Resume file: None
+
+---
+
+*State updated: 2026-02-07*
