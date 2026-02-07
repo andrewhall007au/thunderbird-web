@@ -47,5 +47,24 @@ ps aux | grep python | grep thunderbird-web
 nano /root/thunderbird-web/backend/.env
 ```
 
+## Git Branch (IMPORTANT!)
+
+**Production MUST be on `main` branch:**
+```bash
+# Verify production is on main
+ssh root@thunderbird.bot
+cd /root/thunderbird-web
+git branch  # Should show: * main
+```
+
+**If production is on wrong branch:**
+```bash
+git stash
+git checkout main
+git pull origin main
+systemctl restart thunderbird-api thunderbird-monitoring
+```
+
 ## Last Updated
 2026-02-07 - Created to prevent confusion
+2026-02-07 - Added git branch strategy

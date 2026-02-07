@@ -82,12 +82,18 @@ systemctl restart thunderbird-monitoring
 ```
 
 ### Deploy Code Updates
+
+**⚠️ IMPORTANT: Production ALWAYS uses `main` branch**
+
 ```bash
-# On local machine
+# On local machine - commit and push to main
+git add .
+git commit -m "your changes"
 git push origin main
 
-# On production server
+# On production server - pull from main
 cd /root/thunderbird-web
+git checkout main  # Ensure on main branch
 git pull origin main
 
 # Restart services
@@ -95,6 +101,11 @@ systemctl restart thunderbird-api
 systemctl restart thunderbird-web
 systemctl restart thunderbird-monitoring
 ```
+
+**Git Branch Strategy:**
+- `main` = Production-ready code (deploy from here)
+- `feature/*` = Development branches (merge to main when ready)
+- **Never deploy from version branches (v1.1, v1.2, etc.) - those are tags/archives**
 
 ### View Logs
 ```bash
