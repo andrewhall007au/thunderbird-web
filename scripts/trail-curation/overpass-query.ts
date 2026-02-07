@@ -32,10 +32,13 @@ export function buildTrailQuery(
 ): string {
   const bboxStr = bbox ? `(${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]})` : '';
 
+  // Search for hiking route relations first, then fall back to named ways/paths
   return `
 [out:json][timeout:60];
 (
   rel[route="hiking"]["name"~"${trailName}",i]${bboxStr};
+  rel[route="foot"]["name"~"${trailName}",i]${bboxStr};
+  way[highway~"path|track|footway"]["name"~"${trailName}",i]${bboxStr};
 );
 out body;
 >;

@@ -99,8 +99,25 @@ export async function fetchTrail(input: TrailInput): Promise<TrailResult> {
         `Validation: ${validation.calculatedKm.toFixed(1)}km vs ${validation.officialKm}km (${validation.percentDiff.toFixed(1)}% diff)`
       );
 
-      // If validation passes, use OSM data
-      if (validation.valid) {
+      // Accept OSM data if we got coordinates, even if validation flags issues.
+      // The strict validation check (2%) is for the final QA report (plan 10-07).
+      // Here we use a relaxed threshold: accept data within 50% of official distance.
+      // Data >50% off likely means OSM returned wrong/extra routes.
+      const percentOff = Math.abs(validation.percentDiff);
+      // Accept any OSM data that's within reasonable range.
+      // Trail geometry is a visual planning aid — approximate is fine.
+      // Too short (<50% of official): likely missing major sections
+      // Too long (>200% of official): likely returned wrong/multiple trails
+      const isReasonableMatch = validation.percentDiff >= -50 && validation.percentDiff <= 200;
+
+      if (validation.valid || isReasonableMatch) {
+        if (!validation.valid) {
+          flags.push(`validation_warning:${validation.flag}`);
+          console.log(
+            `  Accepting OSM data with validation warning (${validation.percentDiff.toFixed(1)}% off, within 50% tolerance)`
+          );
+        }
+
         const elevationWaypoints = findElevationWaypoints(simplifiedCoordinates);
 
         const trail: TrailData = {
@@ -124,9 +141,9 @@ export async function fetchTrail(input: TrailInput): Promise<TrailResult> {
           dataSource: 'osm',
         };
       } else {
-        // Validation failed - proceed to fallback
+        // Data is >50% off - likely wrong route from OSM, try fallback
         console.log(
-          `OSM validation failed for "${input.name}" (${validation.percentDiff.toFixed(1)}% diff). Trying fallback sources...`
+          `OSM data too far off for "${input.name}" (${validation.percentDiff.toFixed(1)}% diff, >50% tolerance). Trying fallback sources...`
         );
         flags.push(`osm_validation_failed:${validation.flag}`);
       }

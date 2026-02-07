@@ -94,7 +94,7 @@ export async function batchFetch(inputPath: string, outputPath?: string): Promis
 
     // Rate limiting: 2-second delay between requests
     if (i < trails.length - 1) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   }
 
