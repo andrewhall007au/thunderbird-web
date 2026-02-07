@@ -30,14 +30,14 @@ class MonitoringSettings(BaseSettings):
 
     # Check intervals (minutes)
     MONITOR_CHECK_INTERVALS: dict = Field(default={
-        "health_check": 1,
-        "beta_signup_flow": 5,
-        "checkout_flow": 15,
-        "login_flow": 10,
-        "weather_api": 10,
+        "health_check": 5,
+        "beta_signup_flow": 30,  # Reduced to avoid rate limiting
+        "checkout_flow": 60,
+        "login_flow": 30,
+        "weather_api": 60,  # Hourly during beta
         "sms_webhook": 1440,  # daily
-        "db_query_performance": 5,
-        "external_api_latency": 10,
+        "db_query_performance": 15,
+        "external_api_latency": 30,
     }, alias="CHECK_INTERVALS")
 
     # Alert thresholds
@@ -52,7 +52,7 @@ class MonitoringSettings(BaseSettings):
     MONITOR_EXTERNAL_API_SLOW_THRESHOLD_MS: float = Field(default=10000.0, alias="EXTERNAL_API_SLOW_THRESHOLD_MS")  # Was 5000ms
 
     # Production database path (for direct query performance checks)
-    MONITOR_PRODUCTION_DB_PATH: str = Field(default="/root/overland-weather/backend/production.db", alias="PRODUCTION_DB_PATH")
+    MONITOR_PRODUCTION_DB_PATH: str = Field(default="/root/thunderbird-web/backend/thunderbird.db", alias="PRODUCTION_DB_PATH")
 
     # Import credentials from parent settings (no prefix)
     TWILIO_ACCOUNT_SID: str = ""
