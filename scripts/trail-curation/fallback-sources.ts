@@ -6,6 +6,7 @@ export interface FallbackSource {
   country: string;
   type: 'arcgis_featureserver' | 'geojson_url' | 'shapefile_url' | 'wfs' | 'gpx_download';
   url: string;
+  nameField?: string; // Field name to search against (varies per source)
   queryParam?: string;
   format: 'geojson' | 'shapefile' | 'gpx';
   attribution: string;
@@ -16,34 +17,26 @@ export interface FallbackSource {
 const FALLBACK_REGISTRY: Record<string, FallbackSource[]> = {
   US: [
     {
-      id: 'usfs_trails',
-      name: 'USFS National Forest System Trails',
-      country: 'US',
-      type: 'arcgis_featureserver',
-      url: 'https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_TrailNFS_01/MapServer/0',
-      format: 'geojson',
-      attribution: 'USDA Forest Service',
-      notes: 'Federal trails in National Forests',
-    },
-    {
       id: 'nps_trails',
       name: 'National Park Service Trails',
       country: 'US',
       type: 'arcgis_featureserver',
-      url: 'https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/NPS_Trails/FeatureServer/0',
+      url: 'https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/National_Park_Service_Trails/FeatureServer/0',
+      nameField: 'TRLNAME',
       format: 'geojson',
       attribution: 'National Park Service',
       notes: 'Trails in National Parks',
     },
     {
-      id: 'blm_trails',
-      name: 'BLM National Trails and Byways',
+      id: 'usfs_trails',
+      name: 'USFS National Forest System Trails',
       country: 'US',
       type: 'arcgis_featureserver',
-      url: 'https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_Trails_and_Byways/MapServer/1',
+      url: 'https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_TrailNFSPublish_01/MapServer/0',
+      nameField: 'TRAIL_NAME',
       format: 'geojson',
-      attribution: 'Bureau of Land Management',
-      notes: 'BLM-managed trails',
+      attribution: 'USDA Forest Service',
+      notes: 'Federal trails in National Forests',
     },
   ],
 
@@ -52,21 +45,12 @@ const FALLBACK_REGISTRY: Record<string, FallbackSource[]> = {
       id: 'parks_canada',
       name: 'Parks Canada Trails',
       country: 'CA',
-      type: 'geojson_url',
-      url: 'https://open.canada.ca/data/en/dataset/64a90e8d-5bc0-4027-8645-b5881b4068d4.geojson',
+      type: 'arcgis_featureserver',
+      url: 'https://services2.arcgis.com/wCOMu5IS7YdSyPNx/arcgis/rest/services/vw_Trails_Sentiers_APCA_V2_FGP/FeatureServer/0',
+      nameField: 'Name_Official_e',
       format: 'geojson',
-      attribution: 'Parks Canada',
-      notes: 'National park trails',
-    },
-    {
-      id: 'bc_trails',
-      name: 'BC Recreation Sites and Trails',
-      country: 'CA',
-      type: 'geojson_url',
-      url: 'https://catalogue.data.gov.bc.ca/dataset/recreation-lines/resource/trails.geojson',
-      format: 'geojson',
-      attribution: 'Government of British Columbia',
-      notes: 'Provincial trails in BC',
+      attribution: 'Parks Canada (Open Government Licence)',
+      notes: 'National park trails. Bilingual names.',
     },
   ],
 
@@ -119,21 +103,11 @@ const FALLBACK_REGISTRY: Record<string, FallbackSource[]> = {
       name: 'DOC Walking Tracks',
       country: 'NZ',
       type: 'arcgis_featureserver',
-      url: 'https://services1.arcgis.com/3JjYDyG3oajxU6HO/arcgis/rest/services/DOC_Tracks/FeatureServer/0',
+      url: 'https://mapserver.doc.govt.nz/arcgis/rest/services/DOCMaps/DOCMaps/MapServer/4',
+      nameField: 'DESCRIPTION',
       format: 'geojson',
-      attribution: 'Department of Conservation',
-      notes: 'Great Walks and DOC tracks',
-    },
-    {
-      id: 'linz_topo',
-      name: 'LINZ Topographic Data',
-      country: 'NZ',
-      type: 'wfs',
-      url: 'https://data.linz.govt.nz/services/query/v1/vector.json',
-      queryParam: 'layer-50329',
-      format: 'geojson',
-      attribution: 'Land Information New Zealand',
-      notes: 'Topographic trail data (requires API key)',
+      attribution: 'Department of Conservation (CC-BY 4.0)',
+      notes: 'Great Walks and DOC tracks. Names are UPPERCASE. Trails may be split into segments.',
     },
   ],
 
@@ -284,7 +258,9 @@ export async function fetchFromFallback(
     switch (source.type) {
       case 'arcgis_featureserver': {
         // ArcGIS Feature Service query
-        const where = `TRAIL_NAME LIKE '%${trailName}%' OR NAME LIKE '%${trailName}%'`;
+        const nameField = source.nameField || 'TRAIL_NAME';
+        // Use UPPER() for case-insensitive matching (DOC uses uppercase names)
+        const where = `UPPER(${nameField}) LIKE UPPER('%${trailName}%')`;
         const params = new URLSearchParams({
           where,
           outFields: '*',
@@ -358,42 +334,48 @@ function extractGeoJSONCoordinates(
     return null;
   }
 
-  // Search for feature matching trail name
+  // Search for feature matching trail name across common field names
   const normalizedSearch = trailName.toLowerCase();
   let matchingFeature = geojson.features.find((feature: any) => {
-    const name = feature.properties?.name || feature.properties?.TRAIL_NAME || '';
+    const props = feature.properties || {};
+    const name =
+      props.name || props.NAME || props.TRAIL_NAME || props.TRLNAME ||
+      props.DESCRIPTION || props.Name_Official_e || '';
     return name.toLowerCase().includes(normalizedSearch);
   });
 
-  // If no match, use first feature
-  if (!matchingFeature) {
-    matchingFeature = geojson.features[0];
-  }
+  // Collect ALL matching features (some sources split trails into segments)
+  const matchingFeatures = geojson.features.filter((feature: any) => {
+    const props = feature.properties || {};
+    const name =
+      props.name || props.NAME || props.TRAIL_NAME || props.TRLNAME ||
+      props.DESCRIPTION || props.Name_Official_e || '';
+    return name.toLowerCase().includes(normalizedSearch);
+  });
 
-  const geometry = matchingFeature.geometry;
-  if (!geometry) {
-    return null;
-  }
+  // If no match by name, use first feature
+  const featuresToProcess =
+    matchingFeatures.length > 0 ? matchingFeatures : [geojson.features[0]];
 
   const coordinates: [number, number, number][] = [];
 
-  if (geometry.type === 'LineString') {
-    // Single line
-    for (const coord of geometry.coordinates) {
-      const [lng, lat, ele = 0] = coord;
-      coordinates.push([lng, lat, ele]);
-    }
-  } else if (geometry.type === 'MultiLineString') {
-    // Multiple line segments - concatenate
-    for (const line of geometry.coordinates) {
-      for (const coord of line) {
+  for (const feature of featuresToProcess) {
+    const geometry = feature.geometry;
+    if (!geometry) continue;
+
+    if (geometry.type === 'LineString') {
+      for (const coord of geometry.coordinates) {
         const [lng, lat, ele = 0] = coord;
         coordinates.push([lng, lat, ele]);
       }
+    } else if (geometry.type === 'MultiLineString') {
+      for (const line of geometry.coordinates) {
+        for (const coord of line) {
+          const [lng, lat, ele = 0] = coord;
+          coordinates.push([lng, lat, ele]);
+        }
+      }
     }
-  } else {
-    console.warn(`Unsupported geometry type: ${geometry.type}`);
-    return null;
   }
 
   return coordinates.length > 0 ? coordinates : null;

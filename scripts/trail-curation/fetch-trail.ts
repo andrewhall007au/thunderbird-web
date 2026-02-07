@@ -5,6 +5,7 @@ import { simplifyCoordinates } from './simplify-coordinates.js';
 import { findElevationWaypoints, ElevationWaypoint } from './elevation-waypoints.js';
 import { validateTrail, ValidationResult } from './validate-trails.js';
 import { tryFallbackChain, FallbackSource } from './fallback-sources.js';
+import { fetchFromWaymarkedTrails } from './waymarked-trails.js';
 
 export interface TrailInput {
   name: string;
@@ -153,7 +154,73 @@ export async function fetchTrail(input: TrailInput): Promise<TrailResult> {
     flags.push('osm_query_failed');
   }
 
-  // Step 2: Try fallback sources
+  // Step 2: Try Waymarked Trails API (better name-based search over OSM data)
+  console.log(`Trying Waymarked Trails API for "${searchName}"...`);
+
+  try {
+    const wmResult = await fetchFromWaymarkedTrails(searchName, input.bbox);
+
+    if (wmResult.coordinates && wmResult.coordinates.length > 0) {
+      console.log(
+        `Waymarked Trails returned ${wmResult.coordinates.length} coordinates (relation ${wmResult.relationId})`
+      );
+
+      const simplifiedCoordinates = simplifyCoordinates(wmResult.coordinates, targetPoints);
+      const validation = validateTrail({
+        name: input.name,
+        coordinates: simplifiedCoordinates,
+        officialDistanceKm: input.officialDistanceKm,
+      });
+
+      console.log(
+        `WM validation: ${validation.calculatedKm.toFixed(1)}km vs ${validation.officialKm}km (${validation.percentDiff.toFixed(1)}% diff)`
+      );
+
+      const isReasonableMatch = validation.percentDiff >= -50 && validation.percentDiff <= 200;
+
+      if (validation.valid || isReasonableMatch) {
+        if (!validation.valid) {
+          flags.push(`validation_warning:${validation.flag}`);
+        }
+
+        const elevationWaypoints = findElevationWaypoints(simplifiedCoordinates);
+
+        const trail: TrailData = {
+          id: generateTrailId(input.name),
+          name: input.name,
+          region: input.region,
+          country: input.country,
+          distance_km: input.officialDistanceKm,
+          typical_days: input.typicalDays,
+          coordinates: simplifiedCoordinates,
+        };
+
+        return {
+          success: true,
+          trail,
+          validation,
+          elevationWaypoints,
+          flags,
+          rawPointCount: wmResult.coordinates.length,
+          simplifiedPointCount: simplifiedCoordinates.length,
+          dataSource: 'waymarked_trails',
+        };
+      } else {
+        console.log(
+          `Waymarked Trails data too far off (${validation.percentDiff.toFixed(1)}% diff). Trying government fallbacks...`
+        );
+        flags.push(`waymarked_validation_failed:${validation.flag}`);
+      }
+    } else {
+      console.log(`Waymarked Trails returned no data for "${searchName}"`);
+      flags.push('waymarked_no_data');
+    }
+  } catch (error) {
+    console.log(`Waymarked Trails query failed: ${error}`);
+    flags.push('waymarked_query_failed');
+  }
+
+  // Step 3: Try government fallback sources
   console.log(`Trying fallback sources for country: ${input.country}...`);
 
   const fallbackResult = await tryFallbackChain(input.country, searchName, input.bbox);
