@@ -1,0 +1,19 @@
+[
+  {"name": "Freycinet Peninsula Circuit", "searchName": "Freycinet Peninsula", "region": "Tasmania", "country": "AU", "officialDistanceKm": 30, "typicalDays": "2-3", "bbox": [-42.2, 148.2, -42.1, 148.35]},
+  {"name": "Frenchmans Cap Track", "searchName": "Frenchmans Cap", "region": "Tasmania", "country": "AU", "officialDistanceKm": 46, "typicalDays": "3-4", "bbox": [-42.3, 145.8, -42.1, 146.0]},
+  {"name": "Mt Anne Circuit", "searchName": "Mount Anne", "region": "Tasmania", "country": "AU", "officialDistanceKm": 32, "typicalDays": "2-3", "bbox": [-43.1, 146.3, -42.9, 146.5]},
+  {"name": "Walls of Jerusalem Circuit", "searchName": "Walls of Jerusalem", "region": "Tasmania", "country": "AU", "officialDistanceKm": 16, "typicalDays": "1-2", "bbox": [-41.8, 146.2, -41.6, 146.4]},
+  {"name": "Cradle Mountain Summit Trail", "searchName": "Cradle Mountain", "region": "Tasmania", "country": "AU", "officialDistanceKm": 13, "typicalDays": "1", "bbox": [-41.7, 145.9, -41.6, 146.0]},
+  {"name": "Tarn Shelf Circuit", "searchName": "Tarn Shelf", "region": "Tasmania", "country": "AU", "officialDistanceKm": 12, "typicalDays": "0.5", "bbox": [-42.7, 146.5, -42.6, 146.7]},
+  {"name": "Cape Pillar Track", "searchName": "Cape Pillar", "region": "Tasmania", "country": "AU", "officialDistanceKm": 28, "typicalDays": "2", "bbox": [-43.3, 147.8, -43.1, 148.0]},
+  {"name": "Bay of Fires Lodge Walk", "searchName": "Bay of Fires", "region": "Tasmania", "country": "AU", "officialDistanceKm": 32, "typicalDays": "4", "bbox": [-41.1, 148.2, -40.8, 148.4]},
+  {"name": "Wineglass Bay Circuit", "searchName": "Wineglass Bay", "region": "Tasmania", "country": "AU", "officialDistanceKm": 11, "typicalDays": "0.5", "bbox": [-42.2, 148.2, -42.1, 148.3]},
+  {"name": "Maria Island Walk", "searchName": "Maria Island", "region": "Tasmania", "country": "AU", "officialDistanceKm": 40, "typicalDays": "4", "bbox": [-42.7, 148.0, -42.5, 148.2]},
+  {"name": "Labyrinth Pine Valley", "searchName": "Pine Valley", "region": "Tasmania", "country": "AU", "officialDistanceKm": 27, "typicalDays": "2-3", "bbox": [-41.8, 146.0, -41.6, 146.2]},
+  {"name": "Hartz Peak Track", "searchName": "Hartz Peak", "region": "Tasmania", "country": "AU", "officialDistanceKm": 8, "typicalDays": "0.5", "bbox": [-43.3, 146.7, -43.2, 146.8]},
+  {"name": "Dove Lake Circuit", "searchName": "Dove Lake", "region": "Tasmania", "country": "AU", "officialDistanceKm": 6, "typicalDays": "0.5", "bbox": [-41.7, 145.9, -41.6, 146.0]},
+  {"name": "Precipitous Bluff Track", "searchName": "Precipitous Bluff", "region": "Tasmania", "country": "AU", "officialDistanceKm": 30, "typicalDays": "3", "bbox": [-43.5, 146.5, -43.3, 146.7]},
+  {"name": "Federation Peak Approach", "searchName": "Federation Peak", "region": "Tasmania", "country": "AU", "officialDistanceKm": 40, "typicalDays": "4-5", "bbox": [-43.3, 146.4, -43.1, 146.6]},
+  {"name": "Southwest Cape Track", "searchName": "South West Cape", "region": "Tasmania", "country": "AU", "officialDistanceKm": 72, "typicalDays": "4-6", "bbox": [-43.6, 146.0, -43.3, 146.3]},
+  {"name": "Douglas-Apsley Waterhole Track", "searchName": "Douglas Apsley", "region": "Tasmania", "country": "AU", "officialDistanceKm": 10, "typicalDays": "0.5", "bbox": [-41.8, 148.1, -41.6, 148.3]}
+]
