@@ -12,7 +12,7 @@ import TrailSelector from '../components/trails/TrailSelector';
 import ElevationProfile from '../components/elevation/ElevationProfile';
 import LocationSearch from '../components/map/LocationSearch';
 import QuickLocationSearch from '../components/map/QuickLocationSearch';
-import { TrailData, popularTrails } from '../data/popularTrails';
+import { TrailData, popularTrails, lazyTrailIds, loadTrailCoordinates } from '../data/popularTrails';
 import { getElevation } from '../lib/elevation';
 import {
   createRoute,
@@ -363,13 +363,28 @@ function CreateRouteContent() {
     setIsDirty(true);
   };
 
-  const handleTrailSelect = (trail: TrailData) => {
+  const handleTrailSelect = async (trail: TrailData) => {
+    let coordinates = trail.coordinates;
+
+    // Lazy-load coordinates for high-res trails stored as separate files
+    if (lazyTrailIds.has(trail.id) && coordinates.length === 0) {
+      setIsLoading(true);
+      try {
+        coordinates = await loadTrailCoordinates(trail.id);
+      } catch (err) {
+        setError(`Failed to load trail data for ${trail.name}`);
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(false);
+    }
+
     const geojson: GeoJSON.Feature = {
       type: 'Feature',
       properties: { name: trail.name },
       geometry: {
         type: 'LineString',
-        coordinates: trail.coordinates
+        coordinates
       }
     };
     setTrackGeojson(geojson);

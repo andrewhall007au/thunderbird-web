@@ -66,7 +66,7 @@ export default function MapEditor({
   centerOn
 }: MapEditorProps) {
   const [viewState, setViewState] = useState(initialViewport);
-  const [mapStyle, setMapStyle] = useState<MapStyle>('street');
+  const [mapStyle, setMapStyle] = useState<MapStyle>('topo');
   const mapRef = useRef<MapRef>(null);
 
   // Handle centering on a new location
