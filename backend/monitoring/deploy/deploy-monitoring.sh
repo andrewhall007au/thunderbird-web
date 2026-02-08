@@ -57,11 +57,17 @@ MONITOR_PRODUCTION_URL=https://thunderbird.bot
 MONITOR_ALERT_PHONE_NUMBERS=+61468092783
 MONITOR_ALERT_EMAIL_ADDRESSES=admin@thunderbird.bot
 
+# Synthetic test credentials (created via setup-test-account.sh)
+# MONITOR_TEST_EMAIL=monitor@thunderbird.bot
+# MONITOR_TEST_PASSWORD=<generated-password>
+# MONITOR_TEST_PHONE=+1234567890
+
 # Copy these from the main app .env file
 # TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxx
 # TWILIO_AUTH_TOKEN=xxxxxxxxxxxxx
 # TWILIO_PHONE_NUMBER=+18662801940
 # RESEND_API_KEY=re_xxx
+# STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxx
 ENVEOF
     echo "Created $ENV_FILE"
     echo "⚠️  IMPORTANT: Edit $ENV_FILE with real values before starting service"

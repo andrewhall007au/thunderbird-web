@@ -27,7 +27,7 @@ export default defineConfig({
   // Shared settings for all tests
   use: {
     // Always target production
-    baseURL: process.env.MONITOR_BASE_URL || 'https://thunderbird.bot',
+    baseURL: process.env.BASE_URL || 'https://thunderbird.bot',
 
     // Run in headless mode
     headless: true,

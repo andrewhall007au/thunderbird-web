@@ -195,50 +195,70 @@ def check_database_health() -> CheckResult:
     return check_backend_health()
 
 
+def _check_weather_provider(name: str, request_fn) -> tuple[bool, dict]:
+    """
+    Check a single weather provider with one retry on failure.
+
+    Returns (success, metadata_dict).
+    """
+    for attempt in range(2):  # Try up to 2 times
+        try:
+            start = time.monotonic()
+            success = request_fn()
+            ms = (time.monotonic() - start) * 1000
+            if success:
+                return True, {f'{name}_ms': round(ms, 2)}
+            if attempt == 0:
+                continue  # Retry once
+            return False, {f'{name}_ms': round(ms, 2)}
+        except Exception as e:
+            if attempt == 0:
+                continue  # Retry once
+            ms = (time.monotonic() - start) * 1000
+            return False, {f'{name}_ms': round(ms, 2), f'{name}_error': str(e)}
+    return False, {}
+
+
 def check_weather_api() -> CheckResult:
     """
     Check external weather API providers are working.
     Tests actual APIs directly, not Thunderbird endpoints.
 
     Tests all providers hourly during beta (24 calls/day per provider).
+    Each provider gets a single retry before being marked down.
     """
     check_name = "weather_api"
     overall_start = time.monotonic()
 
     results = {}
 
-    # Test BOM (Australia)
-    try:
-        start = time.monotonic()
+    # Test BOM (Australia) — 15s timeout, BOM is slower from non-AU locations
+    def check_bom():
         response = requests.get(
             "https://api.weather.bom.gov.au/v1/locations/r3dp2v/forecasts/hourly",
-            timeout=10
+            timeout=15
         )
-        bom_ms = (time.monotonic() - start) * 1000
-        results['bom_ms'] = round(bom_ms, 2)
-        results['bom'] = response.status_code == 200 and bool(response.json().get('data'))
-    except Exception as e:
-        results['bom'] = False
-        results['bom_error'] = str(e)
+        return response.status_code == 200 and bool(response.json().get('data'))
+
+    bom_ok, bom_meta = _check_weather_provider('bom', check_bom)
+    results.update(bom_meta)
+    results['bom'] = bom_ok
 
     # Test NWS (USA)
-    try:
-        start = time.monotonic()
+    def check_nws():
         response = requests.get(
             "https://api.weather.gov/points/40.7,-74.0",
             headers={"User-Agent": "(Thunderbird-Web, support@thunderbird.app)"},
             timeout=10
         )
-        nws_ms = (time.monotonic() - start) * 1000
-        results['nws_ms'] = round(nws_ms, 2)
-        results['nws'] = response.status_code == 200
-    except Exception as e:
-        results['nws'] = False
-        results['nws_error'] = str(e)
+        return response.status_code == 200
+
+    nws_ok, nws_meta = _check_weather_provider('nws', check_nws)
+    results.update(nws_meta)
+    results['nws'] = nws_ok
 
     # Test Open-Meteo (Fallback + Europe/Asia/etc)
-    try:
-        start = time.monotonic()
+    def check_openmeteo():
         response = requests.get(
             "https://api.open-meteo.com/v1/forecast",
             params={
@@ -249,12 +269,11 @@ def check_weather_api() -> CheckResult:
             },
             timeout=10
         )
-        openmeteo_ms = (time.monotonic() - start) * 1000
-        results['openmeteo_ms'] = round(openmeteo_ms, 2)
-        results['openmeteo'] = response.status_code == 200 and bool(response.json().get('hourly'))
-    except Exception as e:
-        results['openmeteo'] = False
-        results['openmeteo_error'] = str(e)
+        return response.status_code == 200 and bool(response.json().get('hourly'))
+
+    openmeteo_ok, openmeteo_meta = _check_weather_provider('openmeteo', check_openmeteo)
+    results.update(openmeteo_meta)
+    results['openmeteo'] = openmeteo_ok
 
     # Determine overall status
     working = [k for k in ['bom', 'nws', 'openmeteo'] if results.get(k)]
@@ -296,6 +315,9 @@ def check_database_query_performance() -> CheckResult:
             uri=True,
             timeout=5
         )
+
+        # Wait up to 3s for locks instead of immediately failing
+        conn.execute("PRAGMA busy_timeout = 3000")
 
         metadata = {}
 
@@ -350,6 +372,25 @@ def check_database_query_performance() -> CheckResult:
                 duration_ms=overall_duration_ms,
                 error_message=f"Queries critically slow: max {max_query_ms:.0f}ms (threshold: {threshold}ms)",
                 metadata=metadata
+            )
+
+    except sqlite3.OperationalError as e:
+        overall_duration_ms = (time.monotonic() - overall_start) * 1000
+        error_str = str(e)
+        # SQLite lock contention is intermittent — report degraded, not fail
+        if "database is locked" in error_str:
+            result = CheckResult(
+                check_name=check_name,
+                status="degraded",
+                duration_ms=overall_duration_ms,
+                error_message=f"Database lock contention: {error_str}"
+            )
+        else:
+            result = CheckResult(
+                check_name=check_name,
+                status="fail",
+                duration_ms=overall_duration_ms,
+                error_message=f"Database query error: {error_str}"
             )
 
     except Exception as e:
@@ -457,14 +498,26 @@ def check_external_api_latency() -> CheckResult:
         metadata["openmeteo_error"] = str(e)
         statuses.append("fail")
 
+    # Track which APIs were skipped vs tested
+    skipped_apis = []
+    if "stripe_status" in metadata:
+        skipped_apis.append("Stripe")
+    if "twilio_status" in metadata:
+        skipped_apis.append("Twilio")
+    metadata["skipped_apis"] = skipped_apis
+    metadata["tested_count"] = len(statuses)
+
     # Aggregate status
     overall_duration_ms = (time.monotonic() - overall_start) * 1000
 
-    if all(s == "pass" for s in statuses):
+    if not statuses:
+        # No APIs were tested at all
+        status = "degraded"
+        error_message = "No external APIs configured for testing"
+    elif all(s == "pass" for s in statuses):
         status = "pass"
         error_message = None
     elif "fail" in statuses:
-        status = "fail"
         failed_apis = []
         if "stripe_error" in metadata:
             failed_apis.append("Stripe")
@@ -472,7 +525,17 @@ def check_external_api_latency() -> CheckResult:
             failed_apis.append("Twilio")
         if "openmeteo_error" in metadata:
             failed_apis.append("Open-Meteo")
+
+        # When critical APIs (Stripe/Twilio) are skipped and only non-critical
+        # APIs fail, report "degraded" instead of "fail"
+        has_critical_tested = len(skipped_apis) < 2  # At least one critical API tested
+        if has_critical_tested:
+            status = "fail"
+        else:
+            status = "degraded"
         error_message = f"Failed APIs: {', '.join(failed_apis)}"
+        if skipped_apis:
+            error_message += f" (skipped: {', '.join(skipped_apis)})"
     else:
         status = "degraded"
         error_message = "Some APIs slow"

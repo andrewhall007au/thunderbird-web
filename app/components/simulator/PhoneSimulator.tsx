@@ -71,7 +71,7 @@ export function PhoneSimulator({
  */
 function IPhoneVariant({ content, className }: { content: string; className: string }) {
   return (
-    <div className={`flex flex-col items-center ${className}`}>
+    <div data-testid="phone-simulator" className={`flex flex-col items-center ${className}`}>
       {/* iPhone frame - 280x560px with 36px border radius */}
       <div className="w-[280px] h-[560px] bg-black rounded-[36px] p-[12px] shadow-2xl relative">
         {/* Notch - 100x22px centered at top */}

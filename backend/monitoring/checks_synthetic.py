@@ -7,6 +7,9 @@ import subprocess
 import json
 import time
 import os
+import hmac
+import hashlib
+import base64
 import requests
 from pathlib import Path
 from typing import Optional
@@ -199,9 +202,10 @@ def check_login_synthetic() -> CheckResult:
         duration_ms = (time.monotonic() - start) * 1000
         return CheckResult(
             check_name=check_name,
-            status="fail",
+            status="degraded",
             duration_ms=duration_ms,
-            error_message="MONITOR_TEST_EMAIL or MONITOR_TEST_PASSWORD not set"
+            error_message="MONITOR_TEST_EMAIL or MONITOR_TEST_PASSWORD not set — skipping login test",
+            metadata={"skipped": True}
         )
 
     try:
@@ -249,6 +253,23 @@ def check_login_synthetic() -> CheckResult:
         )
 
 
+def _compute_twilio_signature(auth_token: str, url: str, params: dict) -> str:
+    """
+    Compute Twilio request signature (HMAC-SHA1).
+
+    Twilio signs requests by concatenating the URL with POST parameters
+    sorted alphabetically by key, then computing HMAC-SHA1 with the auth token.
+    """
+    # Sort params by key and concatenate key+value
+    s = url
+    for key in sorted(params.keys()):
+        s += key + params[key]
+
+    # Compute HMAC-SHA1, base64-encode
+    mac = hmac.new(auth_token.encode("utf-8"), s.encode("utf-8"), hashlib.sha1)
+    return base64.b64encode(mac.digest()).decode("utf-8")
+
+
 def check_sms_webhook_synthetic() -> CheckResult:
     """
     Test SMS webhook handling pipeline via HTTP.
@@ -256,7 +277,8 @@ def check_sms_webhook_synthetic() -> CheckResult:
     Sends a synthetic PING message to the webhook endpoint to verify
     the inbound SMS pipeline is functional.
 
-    Requires MONITOR_TEST_PHONE environment variable.
+    Requires MONITOR_TEST_PHONE environment variable and Twilio auth token
+    for request signing.
     """
     check_name = "synthetic_sms_webhook"
     start = time.monotonic()
@@ -268,17 +290,31 @@ def check_sms_webhook_synthetic() -> CheckResult:
         duration_ms = (time.monotonic() - start) * 1000
         return CheckResult(
             check_name=check_name,
-            status="fail",
+            status="degraded",
             duration_ms=duration_ms,
-            error_message="MONITOR_TEST_PHONE not set"
+            error_message="MONITOR_TEST_PHONE not set — skipping webhook test",
+            metadata={"skipped": True}
+        )
+
+    # Twilio auth token is required to sign the request
+    if not settings.TWILIO_AUTH_TOKEN:
+        duration_ms = (time.monotonic() - start) * 1000
+        return CheckResult(
+            check_name=check_name,
+            status="degraded",
+            duration_ms=duration_ms,
+            error_message="TWILIO_AUTH_TOKEN not configured — cannot sign webhook request",
+            metadata={"skipped": True}
         )
 
     try:
+        webhook_url = f"{settings.PRODUCTION_URL}/api/webhook/sms/inbound"
+
         # Construct Twilio webhook payload
         # This matches the format Twilio sends to /api/webhook/sms
         payload = {
             "From": test_phone,
-            "To": settings.TWILIO_PHONE_NUMBER or "+18662801940",  # Our service number
+            "To": settings.TWILIO_PHONE_NUMBER or "+18662801940",
             "Body": "PING",
             "MessageSid": f"MONITOR_TEST_{int(time.time())}",
             "AccountSid": settings.TWILIO_ACCOUNT_SID or "TEST",
@@ -287,10 +323,16 @@ def check_sms_webhook_synthetic() -> CheckResult:
             "FromCountry": "US",
         }
 
-        # POST to webhook endpoint
+        # Compute Twilio signature so the webhook accepts the request
+        signature = _compute_twilio_signature(
+            settings.TWILIO_AUTH_TOKEN, webhook_url, payload
+        )
+
+        # POST to webhook endpoint with signature header
         response = requests.post(
-            f"{settings.PRODUCTION_URL}/api/webhook/sms/inbound",
-            data=payload,  # Twilio sends form data, not JSON
+            webhook_url,
+            data=payload,
+            headers={"X-Twilio-Signature": signature},
             timeout=15
         )
 

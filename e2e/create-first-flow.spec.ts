@@ -21,24 +21,26 @@ test.describe('Create First Flow', () => {
   });
 
   test('can navigate to route creation page', async ({ page }) => {
-    await page.goto(PAGES.home);
-
-    // Click "Create Route" or similar CTA
-    await page.click('text=Create');
+    // Navigate directly to /create — homepage CTA may not exist in beta mode
+    await page.goto(PAGES.create);
 
     await expect(page).toHaveURL(/\/create/);
-    await expect(page.locator('text=Upload GPX')).toBeVisible();
+    // Page shows creation method selection first
+    await expect(page.locator('text=How do you want to create your route forecast')).toBeVisible();
   });
 
   test('can upload GPX file and see track on map', async ({ page }) => {
     await page.goto(PAGES.create);
 
-    // Wait for map to load
-    await page.waitForSelector('.maplibregl-map', { timeout: 10000 });
+    // Select GPX creation method
+    await page.click('text=GPX File');
 
-    // Upload GPX file
+    // Wait for GPX upload area to appear
+    await expect(page.locator('text=Drag & drop a GPX file')).toBeVisible({ timeout: 5000 });
+
+    // Upload GPX file via the dropzone
     const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.click('text=Upload GPX');
+    await page.click('text=Drag & drop a GPX file');
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles({
       name: 'test-route.gpx',
@@ -46,12 +48,25 @@ test.describe('Create First Flow', () => {
       buffer: Buffer.from(SAMPLE_GPX),
     });
 
-    // Should see route name input appear
-    await expect(page.locator('input[placeholder*="Route name"]').or(page.locator('input[name="routeName"]'))).toBeVisible({ timeout: 5000 });
+    // Should see route name input appear with placeholder "My Awesome Hike"
+    await expect(page.locator('input[placeholder*="Awesome Hike"]').or(page.locator('input[name="routeName"]'))).toBeVisible({ timeout: 5000 });
   });
 
   test('can add waypoint by clicking on map', async ({ page }) => {
     await page.goto(PAGES.create);
+
+    // Select GPX creation method and upload
+    await page.click('text=GPX File');
+    await expect(page.locator('text=Drag & drop a GPX file')).toBeVisible({ timeout: 5000 });
+
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text=Drag & drop a GPX file');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'test-route.gpx',
+      mimeType: 'application/gpx+xml',
+      buffer: Buffer.from(SAMPLE_GPX),
+    });
 
     // Wait for map to load
     const map = page.locator('.maplibregl-map');
@@ -68,6 +83,19 @@ test.describe('Create First Flow', () => {
 
   test('waypoint gets auto-generated SMS code', async ({ page }) => {
     await page.goto(PAGES.create);
+
+    // Select GPX creation method and upload
+    await page.click('text=GPX File');
+    await expect(page.locator('text=Drag & drop a GPX file')).toBeVisible({ timeout: 5000 });
+
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text=Drag & drop a GPX file');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'test-route.gpx',
+      mimeType: 'application/gpx+xml',
+      buffer: Buffer.from(SAMPLE_GPX),
+    });
 
     // Wait for map
     const map = page.locator('.maplibregl-map');
@@ -87,9 +115,12 @@ test.describe('Create First Flow', () => {
   test('can navigate to preview page with route', async ({ page }) => {
     await page.goto(PAGES.create);
 
-    // Upload GPX first
+    // Select GPX creation method and upload
+    await page.click('text=GPX File');
+    await expect(page.locator('text=Drag & drop a GPX file')).toBeVisible({ timeout: 5000 });
+
     const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.click('text=Upload GPX');
+    await page.click('text=Drag & drop a GPX file');
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles({
       name: 'test-route.gpx',
@@ -98,7 +129,7 @@ test.describe('Create First Flow', () => {
     });
 
     // Enter route name
-    await page.fill('input[placeholder*="Route name"]', 'Test Hiking Route');
+    await page.fill('input[placeholder*="Awesome Hike"]', 'Test Hiking Route');
 
     // Wait for map and add a waypoint
     const map = page.locator('.maplibregl-map');
@@ -164,22 +195,21 @@ test.describe('Create First Flow', () => {
 });
 
 test.describe('Create First Flow - Full Journey', () => {
-  test('complete journey from create to checkout redirect', async ({ page }) => {
+  test('complete journey from create to waypoint creation', async ({ page }) => {
     const testEmail = generateTestEmail();
 
-    // 1. Start at home page
-    await page.goto(PAGES.home);
+    // 1. Start directly at create page
+    await page.goto(PAGES.create);
 
-    // 2. Click create route
-    await page.click('text=Create');
-    await expect(page).toHaveURL(/\/create/);
+    // 2. Select GPX creation method
+    await page.click('text=GPX File');
 
-    // 3. Wait for map to load
-    await page.waitForSelector('.maplibregl-map', { timeout: 10000 });
+    // 3. Wait for upload area
+    await expect(page.locator('text=Drag & drop a GPX file')).toBeVisible({ timeout: 5000 });
 
     // 4. Upload GPX
     const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.click('text=Upload GPX');
+    await page.click('text=Drag & drop a GPX file');
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles({
       name: 'test-route.gpx',
@@ -188,13 +218,14 @@ test.describe('Create First Flow - Full Journey', () => {
     });
 
     // 5. Enter route name
-    const routeNameInput = page.locator('input[placeholder*="Route name"]').or(page.locator('input[name="routeName"]'));
+    const routeNameInput = page.locator('input[placeholder*="Awesome Hike"]').or(page.locator('input[name="routeName"]'));
     if (await routeNameInput.isVisible()) {
       await routeNameInput.fill('E2E Test Route');
     }
 
-    // 6. Add a waypoint
+    // 6. Wait for map and add a waypoint
     const map = page.locator('.maplibregl-map');
+    await expect(map).toBeVisible({ timeout: 10000 });
     await map.click({ position: { x: 300, y: 300 } });
 
     // 7. Name the waypoint

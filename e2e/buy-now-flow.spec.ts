@@ -19,11 +19,9 @@ test.describe('Buy Now Flow', () => {
     await page.context().clearCookies();
   });
 
-  test('can navigate to checkout page from home', async ({ page }) => {
-    await page.goto(PAGES.home);
-
-    // Click "Buy Now" or similar CTA
-    await page.click('text=Buy Now');
+  test('can navigate to checkout page', async ({ page }) => {
+    // Navigate directly to checkout — no "Buy Now" CTA on homepage in beta mode
+    await page.goto(PAGES.checkout);
 
     await expect(page).toHaveURL(/\/checkout/);
   });
@@ -156,8 +154,11 @@ test.describe('Buy Now Flow', () => {
 test.describe('Buy Now Flow - Logged In User', () => {
   test('logged in user sees simplified checkout', async ({ page, context }) => {
     // Set a fake token to simulate logged-in state
+    // Use the actual domain from baseURL (not localhost)
+    const baseURL = process.env.BASE_URL || 'https://thunderbird.bot';
+    const domain = new URL(baseURL).hostname;
     await context.addCookies([
-      { name: 'tb_token', value: 'fake_token', domain: 'localhost', path: '/' }
+      { name: 'tb_token', value: 'fake_token', domain, path: '/' }
     ]);
 
     // Also set in localStorage via page evaluation
