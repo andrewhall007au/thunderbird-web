@@ -68,3 +68,25 @@ Plans:
 - [x] 10-05-PLAN.md — Global trails (39/100 fetched across JP, GB, FR, CH, IT, ZA, DE)
 - [x] 10-06-PLAN.md — Final integration (251 trails merged into popularTrails.ts)
 - [x] 10-07-PLAN.md — Validation report generated, build passes
+
+### Phase 11: JSON Forecast API (Satellite Data Ready)
+
+**Goal:** Add a JSON API that serves the same forecast data the CAST SMS commands already generate, formatted for app/satellite consumption. Both SMS and JSON are pull-based request/response — same backend, two interfaces. Zero changes to SMS behavior.
+
+**Depends on:** Phase 10 (trail data complete, stable platform)
+**Plans:** TBD (estimated 2 plans)
+
+**Key context:** System is pull-based — users request forecasts via CAST commands, server responds. Satellite-to-phone data apps are live in US (T-Mobile), Canada (Rogers), NZ (One NZ) with AccuWeather already delivering structured weather data. Adding a JSON endpoint to the existing forecast engine lets any satellite app, PWA, or native app consume the same data. Thunderbird's forecast payload at <5KB is ideal for satellite constraints.
+
+**Proposal:** `.planning/phases/11-delivery-abstraction/PROPOSAL.md` (includes full satellite market research)
+
+**What this delivers:**
+- Refactor generate_cast_forecast() to return structured data (ForecastResult)
+- JSON serializer with compact satellite-optimized format (<5KB)
+- New `/api/v1/forecast` endpoint covering all CAST variants
+- API key auth + request logging
+- All CAST types: 12hr, 24hr, 7-day, GPS coords, all-camps, all-peaks
+
+Plans:
+- [ ] 11-01: TBD
+- [ ] 11-02: TBD

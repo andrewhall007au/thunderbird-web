@@ -28,6 +28,7 @@ Progress: ████████████ 100% (8/8 plans complete)
 ### Roadmap Evolution
 - Phase 10 added: Replace simplified trail data with real GPX-quality data from OpenStreetMap. Expand to ~350 trails. Add country codes to UI.
 - Phase 10 complete: 251 trails (189 new + 62 old fallback) from OSM, Waymarked Trails, and government sources. Pipeline added Waymarked Trails API as second source (ef9153c).
+- Phase 11 proposed: Delivery Channel Abstraction (SMS + Satellite Data). Decouple forecast from SMS delivery to support JSON over satellite data apps. Market research shows satellite data live in US/CA/NZ, all other launch markets launching 2026. See `.planning/phases/11-delivery-abstraction/PROPOSAL.md`.
 
 ---
 
@@ -136,9 +137,21 @@ Progress: ████████████ 100% (8/8 plans complete)
 
 ## Session Continuity
 
-Last session: 2026-02-07 12:55:00 UTC
-Stopped at: Phase 10 complete — all 8 plans executed, 251 trails in production
+Last session: 2026-02-08
+Stopped at: Phase 11 proposed (JSON Forecast API) + Phase 12 direction set (native companion app). Satellite market research complete. PWA rejected for satellite use case — iOS cache eviction makes it unreliable for safety-critical tool. Native app is the right answer for satellite-first users.
 Resume file: None
+
+### Key artifacts from 2026-02-08 session:
+- `.planning/phases/11-delivery-abstraction/PROPOSAL.md` — Phase 11 proposal (JSON API, 2 plans) + Phase 12 native app direction
+- `.planning/phases/11-delivery-abstraction/SATELLITE-RESEARCH-2026-02-08.md` — full satellite market research across all launch markets
+- ROADMAP.md updated with Phase 11 entry
+
+### Key decisions from 2026-02-08:
+- System is pull-based (CAST commands), NOT push. Docs may say otherwise — trust the code.
+- Phase 11 is small (2 plans): refactor forecast functions to return structured data + JSON API endpoint
+- PWA rejected: iOS evicts service worker caches after ~7 days non-use, unacceptable for satellite safety tool
+- Native app (Phase 12): installed permanently, only 5KB API calls over satellite, never re-downloads shell
+- AccuWeather + Plan My Walk already whitelisted on satellite services — direct competitors
 
 ---
 
