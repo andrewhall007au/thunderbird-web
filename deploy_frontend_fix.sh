@@ -26,10 +26,10 @@ cd /root/thunderbird-web 2>/dev/null || cd /root/overland-weather 2>/dev/null ||
     exit 1
 }
 
-echo "📥 Pulling latest changes from v1.1..."
+echo "📥 Pulling latest changes from main..."
 git fetch origin
-git checkout v1.1
-git pull origin v1.1
+git checkout main
+git pull origin main
 
 echo "📦 Installing dependencies (if needed)..."
 npm install --production

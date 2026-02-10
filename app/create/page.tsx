@@ -545,6 +545,13 @@ function CreateRouteContent() {
                   setManualLocation({ lat, lng, name });
                   setRouteName(name);
                 }}
+                onTrailSelect={(trailId) => {
+                  const trail = popularTrails.find(t => t.id === trailId);
+                  if (trail) {
+                    setCreationMethod('library');
+                    handleTrailSelect(trail);
+                  }
+                }}
               />
             )}
           </>

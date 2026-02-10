@@ -3,8 +3,37 @@
 import { useState } from 'react';
 import { Search, MapPin } from 'lucide-react';
 
+// Trailhead locations for nearby trail matching
+// [trailId, lat, lng]
+const trailheads: [string, number, number][] = [
+  ['overland_track', -41.636, 145.949],
+];
+
+// Haversine distance in km
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function findClosestTrail(lat: number, lng: number, radiusKm = 50): string | null {
+  let closest: { id: string; dist: number } | null = null;
+  for (const [id, tLat, tLng] of trailheads) {
+    const dist = haversineKm(lat, lng, tLat, tLng);
+    if (dist <= radiusKm && (closest === null || dist < closest.dist)) {
+      closest = { id, dist };
+    }
+  }
+  return closest?.id ?? null;
+}
+
 interface LocationSearchProps {
   onLocationSelect: (lat: number, lng: number, name: string) => void;
+  onTrailSelect?: (trailId: string) => void;
 }
 
 // Popular hiking regions as quick options
@@ -17,7 +46,7 @@ const popularRegions = [
   { name: 'Himalayas, Nepal', lat: 28.0, lng: 84.0 },
 ];
 
-export default function LocationSearch({ onLocationSelect }: LocationSearchProps) {
+export default function LocationSearch({ onLocationSelect, onTrailSelect }: LocationSearchProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -43,7 +72,16 @@ export default function LocationSearch({ onLocationSelect }: LocationSearchProps
       const results = await response.json();
       if (results.length > 0) {
         const { lat, lon, display_name } = results[0];
-        onLocationSelect(parseFloat(lat), parseFloat(lon), display_name);
+        const parsedLat = parseFloat(lat);
+        const parsedLng = parseFloat(lon);
+
+        // If a known trail is nearby, load it directly
+        const trailId = findClosestTrail(parsedLat, parsedLng);
+        if (trailId && onTrailSelect) {
+          onTrailSelect(trailId);
+        } else {
+          onLocationSelect(parsedLat, parsedLng, display_name);
+        }
       } else {
         alert('Location not found. Try a popular region or enter coordinates.');
       }

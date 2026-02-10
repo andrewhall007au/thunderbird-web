@@ -90,7 +90,7 @@ export default function RouteTrack({ geojson }: RouteTrackProps) {
           id="route-marker-border"
           type="circle"
           paint={{
-            'circle-radius': 12,
+            'circle-radius': 6,
             'circle-color': '#FF10F0',
             'circle-opacity': 0.9
           }}
@@ -99,7 +99,7 @@ export default function RouteTrack({ geojson }: RouteTrackProps) {
           id="route-marker-fill"
           type="circle"
           paint={{
-            'circle-radius': 7.5,
+            'circle-radius': 3.75,
             'circle-color': '#FFFFFF',
             'circle-opacity': 1
           }}
