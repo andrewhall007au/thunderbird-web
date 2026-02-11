@@ -54,13 +54,24 @@ export default function TimeScrubber({ currentHour, onHourChange, maxHours }: Ti
     onHourChange(parseInt(e.target.value, 10));
   };
 
-  const handleMouseDown = () => setIsDragging(true);
+  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true);
+    // Prevent page scroll during drag
+    if ('touches' in e) {
+      e.preventDefault();
+    }
+  };
+
   const handleMouseUp = () => setIsDragging(false);
 
   useEffect(() => {
     const handleGlobalMouseUp = () => setIsDragging(false);
     window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('touchend', handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('touchend', handleGlobalMouseUp);
+    };
   }, []);
 
   return (
@@ -121,13 +132,13 @@ export default function TimeScrubber({ currentHour, onHourChange, maxHours }: Ti
         <div>+72h</div>
       </div>
 
-      {/* Custom slider styles */}
+      {/* Custom slider styles - larger for mobile */}
       <style jsx>{`
         .time-scrubber-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 24px;
-          height: 24px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           background: #3b82f6;
           cursor: pointer;
@@ -141,12 +152,12 @@ export default function TimeScrubber({ currentHour, onHourChange, maxHours }: Ti
         }
 
         .time-scrubber-slider::-webkit-slider-thumb:active {
-          transform: scale(1.05);
+          transform: scale(1.15);
         }
 
         .time-scrubber-slider::-moz-range-thumb {
-          width: 24px;
-          height: 24px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           background: #3b82f6;
           cursor: pointer;
@@ -161,7 +172,7 @@ export default function TimeScrubber({ currentHour, onHourChange, maxHours }: Ti
         }
 
         .time-scrubber-slider::-moz-range-thumb:active {
-          transform: scale(1.05);
+          transform: scale(1.15);
         }
 
         .time-scrubber-slider::-webkit-slider-runnable-track {

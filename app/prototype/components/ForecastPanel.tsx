@@ -75,15 +75,16 @@ export default function ForecastPanel({
           ) : (
             <>
               {/* Horizontal scrollable forecast cards */}
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto snap-x snap-mandatory">
                 <div className="flex gap-3 p-4 min-w-min">
                   {pins.map(pin => (
-                    <ForecastCard
-                      key={pin.id}
-                      pin={pin}
-                      currentHour={currentHour}
-                      onRemove={() => onRemovePin(pin.id)}
-                    />
+                    <div key={pin.id} className="snap-center">
+                      <ForecastCard
+                        pin={pin}
+                        currentHour={currentHour}
+                        onRemove={() => onRemovePin(pin.id)}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>

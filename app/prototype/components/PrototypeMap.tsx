@@ -253,12 +253,12 @@ export default function PrototypeMap({
               onClick={() => handlePinClick(pin.id)}
               title={`${pin.lat.toFixed(3)}°, ${pin.lng.toFixed(3)}°`}
             >
-              {/* Pin circle with stem */}
-              <div className="relative">
+              {/* Pin circle with stem - larger touch target */}
+              <div className="relative p-2 -m-2">
                 <div
                   className={`
-                    w-8 h-8 rounded-full flex items-center justify-center
-                    text-white font-bold text-sm shadow-lg
+                    w-10 h-10 rounded-full flex items-center justify-center
+                    text-white font-bold text-base shadow-lg
                     transition-all
                     ${isSelected
                       ? 'ring-4 ring-yellow-300 scale-110'
@@ -274,7 +274,7 @@ export default function PrototypeMap({
                 </div>
                 {/* Stem pointing down */}
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 top-full w-1 h-2"
+                  className="absolute left-1/2 -translate-x-1/2 top-full w-1.5 h-3"
                   style={{
                     backgroundColor: isSelected ? '#eab308' : bgColor
                   }}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import TrailPicker from './components/TrailPicker';
 import ForecastPanel from './components/ForecastPanel';
@@ -133,23 +133,53 @@ export default function PrototypePage() {
     }
   };
 
-  // Calculate severity summary for all pins at current hour
-  const severitySummary = pins
-    .filter(p => p.forecast && !p.loading)
-    .map(p => {
-      const hourlyData = p.forecast!.hourly[currentHour] || p.forecast!.hourly[0];
-      return calculateSeverity(hourlyData);
-    });
-  const summary = severitySummary.length > 0 ? getSeveritySummary(severitySummary) : null;
+  // Calculate severity summary for all pins at current hour (memoized for performance)
+  const severitySummary = useMemo(() => {
+    return pins
+      .filter(p => p.forecast && !p.loading)
+      .map(p => {
+        const hourlyData = p.forecast!.hourly[currentHour] || p.forecast!.hourly[0];
+        return calculateSeverity(hourlyData);
+      });
+  }, [pins, currentHour]);
+
+  const summary = useMemo(() => {
+    return severitySummary.length > 0 ? getSeveritySummary(severitySummary) : null;
+  }, [severitySummary]);
+
+  // Online/offline detection
+  const [isOnline, setIsOnline] = useState(true);
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    setIsOnline(navigator.onLine);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-zinc-900 text-zinc-100">
+    <div className="h-screen flex flex-col bg-zinc-900 text-zinc-100" style={{ height: '100dvh' }}>
       {/* Header */}
       <div className="bg-zinc-800 border-b border-zinc-700 px-4 py-3">
-        <h1 className="text-lg font-bold">Thunderbird Trail Weather</h1>
-        <p className="text-sm text-zinc-400 mt-1">
-          Drop pins along a trail. Copy coordinates for SMS forecast.
-        </p>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-lg font-bold">Thunderbird Trail Weather</h1>
+            <p className="text-sm text-zinc-400 mt-1">
+              Drop pins along a trail. Copy coordinates for SMS forecast.
+            </p>
+          </div>
+          {/* Online/offline indicator */}
+          <div className={`
+            text-xs px-2 py-1 rounded flex-shrink-0 ml-2
+            ${isOnline ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}
+          `}>
+            {isOnline ? '🌐 Online' : '📵 Offline'}
+          </div>
+        </div>
       </div>
 
       {/* Satellite mode banner */}
@@ -263,7 +293,7 @@ export default function PrototypePage() {
         </div>
       )}
 
-      {/* Loading bar animation */}
+      {/* Loading bar animation and safe-area support */}
       <style jsx global>{`
         @keyframes loading-bar {
           from {
@@ -275,6 +305,13 @@ export default function PrototypePage() {
         }
         .animate-loading-bar {
           animation: loading-bar linear forwards;
+        }
+
+        /* Safe area insets for notched devices */
+        @supports (padding: env(safe-area-inset-bottom)) {
+          body {
+            padding-bottom: env(safe-area-inset-bottom);
+          }
         }
       `}</style>
     </div>
