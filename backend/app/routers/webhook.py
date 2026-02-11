@@ -102,11 +102,6 @@ async def handle_inbound_sms(
     # Log command keyword only, not full SMS body (may contain sensitive data)
     command_word = body.strip().split()[0].upper() if body.strip() else "EMPTY"
     logger.info(f"SMS received from {PhoneUtils.mask(from_phone)}: {command_word}")
-    # TEMP DEBUG: log full body with hex for DMS coordinate debugging
-    if 'CAST' in command_word:
-        hex_body = ' '.join(f'{ord(c):04x}' for c in body)
-        logger.info(f"DEBUG CAST raw body: {repr(body)}")
-        logger.info(f"DEBUG CAST hex: {hex_body}")
 
     # Parse command for logging
     text_upper = body.strip().upper()
