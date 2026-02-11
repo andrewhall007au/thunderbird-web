@@ -7,6 +7,7 @@ export interface Pin {
   lat: number;
   lng: number;
   label: string;      // Same as id
+  elevation?: number; // Trail elevation in meters (from GPX data)
   forecast?: PinForecast;
   loading?: boolean;
 }
@@ -16,6 +17,7 @@ export interface PinForecast {
   elevation: number;       // Model elevation in meters
   modelResolution: string; // e.g. "HRRR 3km", "GFS 13km"
   fetchedAt: Date;
+  lightHours?: { sunrise: string; sunset: string; duration: string };
 }
 
 export interface HourlyData {
@@ -29,4 +31,9 @@ export interface HourlyData {
   precipitation: number;   // mm
   weatherCode: number;     // WMO weather code
   cloudCover: number;      // 0-100%
+  dewpoint: number;        // °C
+  freezingLevel: number;   // meters ASL
+  snowfall: number;        // cm
+  cape: number;            // J/kg
+  cloudBase: number;       // meters ASL (calculated from LCL)
 }

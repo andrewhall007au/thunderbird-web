@@ -6,6 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Grid } from 'lucide-react';
 import type { Pin } from '../lib/types';
 import WeatherGrid from './WeatherGrid';
+import BomGrid from './BomGrid';
 import { calculateSeverity, SEVERITY_COLORS, type SeverityLevel } from '../lib/severity';
 
 interface PrototypeMapProps {
@@ -16,6 +17,7 @@ interface PrototypeMapProps {
   onPinRemove: (id: string) => void;
   gridVisible: boolean;
   onGridToggle: () => void;
+  mode?: 'online' | 'offline';
 }
 
 // Calculate bounding box from GeoJSON coordinates
@@ -73,11 +75,9 @@ function getTrailCenter(geojson: GeoJSON.Feature): { lat: number; lng: number } 
 
 // Infer grid resolution based on trail location
 function getGridResolution(center: { lat: number; lng: number }): number {
-  // US (HRRR 3km)
   if (center.lat >= 24 && center.lat <= 50 && center.lng >= -130 && center.lng <= -60) {
     return 3;
   }
-  // Default: GFS 13km
   return 13;
 }
 
@@ -88,7 +88,8 @@ export default function PrototypeMap({
   onMapClick,
   onPinRemove,
   gridVisible,
-  onGridToggle
+  onGridToggle,
+  mode = 'online'
 }: PrototypeMapProps) {
   const [viewState, setViewState] = useState({
     latitude: 39.8,
@@ -96,24 +97,25 @@ export default function PrototypeMap({
     zoom: 4
   });
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
+  const [mapBounds, setMapBounds] = useState<{ west: number; south: number; east: number; north: number } | null>(null);
   const mapRef = useRef<MapRef>(null);
 
-  // OpenTopoMap basemap style
-  const topoStyle = {
+  // OSM basemap style (fast tile servers)
+  const mapStyle = {
     version: 8 as const,
     sources: {
-      'topo-tiles': {
+      'osm-tiles': {
         type: 'raster' as const,
-        tiles: ['https://tile.opentopomap.org/{z}/{x}/{y}.png'],
+        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
         tileSize: 256,
-        attribution: '© OpenTopoMap contributors'
+        attribution: '© OpenStreetMap contributors'
       }
     },
     layers: [
       {
-        id: 'topo',
+        id: 'osm',
         type: 'raster' as const,
-        source: 'topo-tiles'
+        source: 'osm-tiles'
       }
     ]
   };
@@ -133,7 +135,6 @@ export default function PrototypeMap({
 
   // Handle map click to add pin
   const handleMapClick = (e: MapLayerMouseEvent) => {
-    // Don't add pin if clicking on a marker
     if (e.originalEvent.target instanceof HTMLElement &&
         e.originalEvent.target.closest('.pin-marker')) {
       return;
@@ -144,11 +145,9 @@ export default function PrototypeMap({
   // Handle pin marker click
   const handlePinClick = (pinId: string) => {
     if (selectedPinId === pinId) {
-      // Second click removes the pin
       onPinRemove(pinId);
       setSelectedPinId(null);
     } else {
-      // First click selects it
       setSelectedPinId(pinId);
     }
   };
@@ -162,34 +161,45 @@ export default function PrototypeMap({
     <Map
       ref={mapRef}
       {...viewState}
-      onMove={evt => setViewState(evt.viewState)}
-      mapStyle={topoStyle}
+      onMove={evt => {
+        setViewState(evt.viewState);
+        const b = mapRef.current?.getBounds();
+        if (b) setMapBounds({ west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() });
+      }}
+      mapStyle={mapStyle}
       style={{ width: '100%', height: '100%' }}
       onClick={handleMapClick}
+      scrollZoom={true}
+      keyboard={true}
       touchPitch={false}
     >
       {/* Navigation controls */}
       <NavigationControl position="top-right" />
 
-      {/* Grid toggle button */}
-      <div className="absolute top-4 right-16 z-10">
-        <button
-          onClick={onGridToggle}
-          className={`
-            p-2 rounded shadow-lg transition-colors
-            ${gridVisible
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-zinc-900 hover:bg-zinc-100'
-            }
-          `}
-          title="Toggle weather grid"
-        >
-          <Grid className="w-5 h-5" />
-        </button>
-      </div>
+      {/* BOM geohash6 grid — faint mesh, visible at zoom >= 10 */}
+      <BomGrid zoom={viewState.zoom} bounds={mapBounds} />
 
-      {/* Weather grid overlay */}
-      {gridVisible && trailCenter && trailBounds && (
+      {/* Grid toggle button (online only) */}
+      {mode === 'online' && (
+        <div className="absolute top-4 right-16 z-10">
+          <button
+            onClick={onGridToggle}
+            className={`
+              p-2 rounded shadow-lg transition-colors
+              ${gridVisible
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-zinc-900 hover:bg-zinc-100'
+              }
+            `}
+            title="Toggle weather grid"
+          >
+            <Grid className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Weather grid overlay (online only) */}
+      {mode === 'online' && gridVisible && trailCenter && trailBounds && (
         <WeatherGrid
           visible={gridVisible}
           center={trailCenter}
@@ -201,7 +211,6 @@ export default function PrototypeMap({
       {/* Trail line rendering */}
       {trailGeojson && (
         <Source id="trail-line" type="geojson" data={trailGeojson}>
-          {/* White border for contrast */}
           <Layer
             id="trail-border"
             type="line"
@@ -211,7 +220,6 @@ export default function PrototypeMap({
               'line-opacity': 0.8
             }}
           />
-          {/* Magenta trail line */}
           <Layer
             id="trail-main"
             type="line"
@@ -225,21 +233,23 @@ export default function PrototypeMap({
 
       {/* Pin markers */}
       {pins.map(pin => {
-        // Calculate severity color for this pin at current hour
         let severityLevel: SeverityLevel = 'green';
-        let bgColor = '#3b82f6'; // Default blue for loading/no data
+        let dangerStr = '';
+        let bgColor = '#3b82f6'; // Default blue for loading/no data/offline
 
-        if (pin.forecast && !pin.loading) {
+        if (mode === 'online' && pin.forecast && !pin.loading) {
           const hourlyData = pin.forecast.hourly[currentHour] || pin.forecast.hourly[0];
           if (hourlyData) {
-            const severity = calculateSeverity(hourlyData);
+            const severity = calculateSeverity(hourlyData, pin.forecast.elevation);
             severityLevel = severity.level;
+            dangerStr = severity.danger;
             bgColor = SEVERITY_COLORS[severityLevel].bg;
           }
         }
 
         const isSelected = selectedPinId === pin.id;
-        const isRed = severityLevel === 'red';
+        const shouldPulse = dangerStr === '!!' || dangerStr === '!!!';
+        const pinLabel = dangerStr ? `${pin.label}${dangerStr}` : pin.label;
 
         return (
           <Marker
@@ -251,26 +261,23 @@ export default function PrototypeMap({
             <div
               className="pin-marker cursor-pointer relative"
               onClick={() => handlePinClick(pin.id)}
-              title={`${pin.lat.toFixed(3)}°, ${pin.lng.toFixed(3)}°`}
+              title={`${pin.lat.toFixed(3)}, ${pin.lng.toFixed(3)}`}
             >
-              {/* Pin circle with stem - larger touch target */}
               <div className="relative p-2 -m-2">
                 <div
                   className={`
                     w-10 h-10 rounded-full flex items-center justify-center
-                    text-white font-bold text-base shadow-lg
+                    text-white font-bold shadow-lg
                     transition-all
-                    ${isSelected
-                      ? 'ring-4 ring-yellow-300 scale-110'
-                      : ''
-                    }
-                    ${isRed ? 'animate-pulse-glow' : ''}
+                    ${isSelected ? 'ring-4 ring-yellow-300 scale-110' : ''}
+                    ${shouldPulse ? 'animate-pulse-glow' : ''}
                   `}
                   style={{
-                    backgroundColor: isSelected ? '#eab308' : bgColor
+                    backgroundColor: isSelected ? '#eab308' : bgColor,
+                    fontSize: dangerStr ? '0.65rem' : '0.875rem'
                   }}
                 >
-                  {pin.label}
+                  {pinLabel}
                 </div>
                 {/* Stem pointing down */}
                 <div
@@ -285,7 +292,7 @@ export default function PrototypeMap({
         );
       })}
 
-      {/* CSS for red pin pulse animation */}
+      {/* CSS for pin pulse animation */}
       <style jsx global>{`
         @keyframes pulse-glow {
           0%, 100% {
