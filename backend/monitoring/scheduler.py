@@ -21,6 +21,7 @@ from .checks import (
     check_weather_api,
     check_database_query_performance,
     check_external_api_latency,
+    check_dependency_health,
 )
 from .storage import cleanup_old_metrics
 from . import storage as storage_module
@@ -124,6 +125,17 @@ def run_external_api_latency_check():
         logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
     except Exception as e:
         logger.error(f"External API latency check failed: {e}")
+
+
+def run_dependency_health_check():
+    """Run dependency health check (cffi, timezonefinder, LightCalculator)."""
+    alert_mgr = get_or_create_alert_manager()
+    try:
+        result = check_dependency_health()
+        asyncio.create_task(alert_mgr.evaluate_and_alert(result))
+        logger.info(f"{result.check_name}: {result.status} ({result.duration_ms:.0f}ms)")
+    except Exception as e:
+        logger.error(f"Dependency health check failed: {e}")
 
 
 def run_cleanup_job():
@@ -410,6 +422,14 @@ def create_scheduler() -> AsyncIOScheduler:
         trigger=IntervalTrigger(minutes=intervals["external_api_latency"]),
         id="external_api_latency",
         name="External API Latency"
+    )
+
+    # Dependency health (cffi conflict, timezonefinder, LightCalculator) - daily
+    scheduler.add_job(
+        run_dependency_health_check,
+        trigger=CronTrigger(hour=4, minute=0, timezone="UTC"),
+        id="dependency_health",
+        name="Dependency Health"
     )
 
     # Cleanup job - daily at 3 AM UTC

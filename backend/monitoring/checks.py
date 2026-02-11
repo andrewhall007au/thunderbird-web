@@ -551,6 +551,102 @@ def check_external_api_latency() -> CheckResult:
     return result
 
 
+def check_dependency_health() -> CheckResult:
+    """
+    Check critical Python dependencies are working correctly.
+
+    Monitors:
+    - cffi: timezonefinder requires cffi<2, but cryptography wants cffi>=2.
+      If cryptography breaks, SSL/TLS (Twilio, Stripe, etc.) will fail.
+    - timezonefinder: GPS coordinate timezone resolution must work.
+      If broken, GPS CAST forecasts show wrong daylight hours.
+    - LightCalculator: End-to-end check that Perth gets AWST, not AEDT.
+
+    Added: 2026-02-11 after timezonefinder install caused cffi downgrade.
+    """
+    import sys
+    check_name = "dependency_health"
+    start = time.monotonic()
+
+    issues = []
+    metadata = {}
+
+    # 1. Check cryptography imports (cffi conflict canary)
+    try:
+        from cryptography.fernet import Fernet
+        # Quick smoke test — generate a key to exercise cffi bindings
+        Fernet.generate_key()
+        metadata["cryptography"] = "ok"
+    except ImportError:
+        # Not installed — not a problem (dev environment), skip
+        metadata["cryptography"] = "not_installed"
+    except Exception as e:
+        # Installed but broken — this is the cffi conflict we're watching for
+        issues.append(f"cryptography broken (likely cffi conflict): {e}")
+        metadata["cryptography"] = str(e)
+
+    # 2. Check timezonefinder resolves Perth correctly
+    try:
+        from timezonefinder import TimezoneFinder
+        tf = TimezoneFinder()
+        perth_tz = tf.timezone_at(lat=-31.95, lng=115.86)
+        if perth_tz == "Australia/Perth":
+            metadata["timezonefinder"] = "ok"
+        else:
+            issues.append(f"timezonefinder returned '{perth_tz}' for Perth, expected 'Australia/Perth'")
+            metadata["timezonefinder"] = perth_tz
+    except Exception as e:
+        issues.append(f"timezonefinder broken: {e}")
+        metadata["timezonefinder"] = str(e)
+
+    # 3. Check LightCalculator produces correct Perth times (not AEDT)
+    try:
+        sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
+        from app.services.formatter import LightCalculator
+        from datetime import date
+        import re
+
+        light_str = LightCalculator.get_light_hours(-31.95, 115.86, date.today())
+        match = re.search(r'Light (\d{2}):', light_str)
+        if match:
+            sunrise_hour = int(match.group(1))
+            # Perth sunrise is always before 07:00 AWST year-round.
+            # If showing AEDT, it would be 08:00-10:00.
+            if sunrise_hour <= 7:
+                metadata["light_calculator"] = "ok"
+                metadata["perth_light"] = light_str
+            else:
+                issues.append(
+                    f"Perth sunrise hour {sunrise_hour} suggests wrong timezone "
+                    f"(expected <07 AWST): {light_str}"
+                )
+                metadata["light_calculator"] = light_str
+        else:
+            issues.append(f"Could not parse light string: {light_str}")
+            metadata["light_calculator"] = light_str
+    except Exception as e:
+        issues.append(f"LightCalculator broken: {e}")
+        metadata["light_calculator"] = str(e)
+
+    duration_ms = (time.monotonic() - start) * 1000
+
+    if not issues:
+        return CheckResult(
+            check_name=check_name,
+            status="pass",
+            duration_ms=duration_ms,
+            metadata=metadata
+        )
+    else:
+        return CheckResult(
+            check_name=check_name,
+            status="fail",
+            duration_ms=duration_ms,
+            error_message="; ".join(issues),
+            metadata=metadata
+        )
+
+
 def run_all_health_checks() -> list[CheckResult]:
     """
     Run all health checks and store results.
@@ -566,6 +662,7 @@ def run_all_health_checks() -> list[CheckResult]:
         check_weather_api,
         check_database_query_performance,
         check_external_api_latency,
+        check_dependency_health,
     ]
 
     results = []
