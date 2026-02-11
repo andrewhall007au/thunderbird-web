@@ -3,28 +3,28 @@
 import { useState, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import TrailPicker from './components/TrailPicker';
-import PinPanel from './components/PinPanel';
+import ForecastPanel from './components/ForecastPanel';
+import TimeScrubber from './components/TimeScrubber';
+import { Pin } from './lib/types';
+import { fetchMultiPinWeather } from './lib/openmeteo';
 
 // Dynamic import to avoid SSR with MapLibre
 const PrototypeMap = dynamic(() => import('./components/PrototypeMap'), { ssr: false });
 
-export interface Pin {
-  id: string;
-  lat: number;
-  lng: number;
-  label: string;
-}
-
 const PIN_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const MAX_PINS = 8;
+const SMS_MAX_LENGTH = 160;
 
 export default function PrototypePage() {
   const [selectedTrailId, setSelectedTrailId] = useState<string | null>(null);
   const [trailGeojson, setTrailGeojson] = useState<GeoJSON.Feature | null>(null);
   const [pins, setPins] = useState<Pin[]>([]);
+  const [currentHour, setCurrentHour] = useState(0);
+  const [gridVisible, setGridVisible] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   // Add a new pin at the specified location
-  const addPin = (lat: number, lng: number) => {
+  const addPin = async (lat: number, lng: number) => {
     if (pins.length >= MAX_PINS) {
       return; // Max pins reached
     }
@@ -34,10 +34,34 @@ export default function PrototypePage() {
       id: `pin-${Date.now()}`,
       lat,
       lng,
-      label: nextLabel
+      label: nextLabel,
+      loading: true
     };
 
-    setPins([...pins, newPin]);
+    // Add pin to state immediately with loading state
+    setPins(prev => [...prev, newPin]);
+
+    // Fetch weather for the new pin
+    try {
+      const forecasts = await fetchMultiPinWeather([{ lat, lng }]);
+      const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
+      const forecast = forecasts.get(key);
+
+      // Update pin with forecast data
+      setPins(prev => prev.map(p =>
+        p.id === newPin.id
+          ? { ...p, forecast, loading: false }
+          : p
+      ));
+    } catch (error) {
+      console.error('Failed to fetch weather for pin:', error);
+      // Clear loading state but leave forecast undefined
+      setPins(prev => prev.map(p =>
+        p.id === newPin.id
+          ? { ...p, loading: false }
+          : p
+      ));
+    }
   };
 
   // Remove a specific pin
@@ -60,6 +84,37 @@ export default function PrototypePage() {
   const handleTrailSelect = (trailId: string, geojson: GeoJSON.Feature) => {
     setSelectedTrailId(trailId);
     setTrailGeojson(geojson);
+  };
+
+  // Generate WX command for all pins
+  const getAllPinsWxCommand = (): string => {
+    const coordPairs = pins.map(p => `${p.lat.toFixed(3)} ${p.lng.toFixed(3)}`);
+    return `WX ${coordPairs.join(' ')}`;
+  };
+
+  // Copy WX command to clipboard
+  const handleCopyWxCommand = async () => {
+    const command = getAllPinsWxCommand();
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(command);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = command;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopyFeedback('Copied WX command!');
+      setTimeout(() => setCopyFeedback(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      alert('Failed to copy to clipboard');
+    }
   };
 
   return (
@@ -92,18 +147,38 @@ export default function PrototypePage() {
             pins={pins}
             onMapClick={addPin}
             onPinRemove={removePin}
+            gridVisible={gridVisible}
+            onGridToggle={() => setGridVisible(!gridVisible)}
           />
         </Suspense>
       </div>
 
-      {/* Pin Panel - bottom sheet */}
+      {/* Time Scrubber */}
       <div className="flex-shrink-0">
-        <PinPanel
-          pins={pins}
-          onRemovePin={removePin}
-          onClearPins={clearPins}
+        <TimeScrubber
+          currentHour={currentHour}
+          onHourChange={setCurrentHour}
+          maxHours={72}
         />
       </div>
+
+      {/* Forecast Panel - bottom sheet */}
+      <div className="flex-shrink-0">
+        <ForecastPanel
+          pins={pins}
+          currentHour={currentHour}
+          onRemovePin={removePin}
+          onClearPins={clearPins}
+          onCopyWxCommand={handleCopyWxCommand}
+        />
+      </div>
+
+      {/* Copy feedback toast */}
+      {copyFeedback && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 bg-green-600 text-white rounded shadow-lg text-sm font-medium animate-fade-in z-50">
+          {copyFeedback}
+        </div>
+      )}
     </div>
   );
 }

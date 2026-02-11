@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Pin } from '../page';
+import type { Pin } from '../lib/types';
 import { Copy, X, Trash2, ChevronUp } from 'lucide-react';
 
 interface PinPanelProps {

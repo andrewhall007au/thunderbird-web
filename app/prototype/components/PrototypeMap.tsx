@@ -3,13 +3,17 @@
 import { useState, useRef, useEffect } from 'react';
 import Map, { Source, Layer, Marker, NavigationControl, MapRef, MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import type { Pin } from '../page';
+import { Grid } from 'lucide-react';
+import type { Pin } from '../lib/types';
+import WeatherGrid from './WeatherGrid';
 
 interface PrototypeMapProps {
   trailGeojson: GeoJSON.Feature | null;
   pins: Pin[];
   onMapClick: (lat: number, lng: number) => void;
   onPinRemove: (id: string) => void;
+  gridVisible: boolean;
+  onGridToggle: () => void;
 }
 
 // Calculate bounding box from GeoJSON coordinates
@@ -40,11 +44,48 @@ function getBoundsFromGeojson(geojson: GeoJSON.Feature): [[number, number], [num
   return [[minLng, minLat], [maxLng, maxLat]];
 }
 
+// Calculate trail center for grid resolution
+function getTrailCenter(geojson: GeoJSON.Feature): { lat: number; lng: number } | null {
+  const geometry = geojson.geometry;
+  if (geometry.type !== 'LineString' && geometry.type !== 'MultiLineString') {
+    return null;
+  }
+
+  const coords = geometry.type === 'LineString'
+    ? geometry.coordinates
+    : geometry.coordinates.flat();
+
+  if (coords.length === 0) return null;
+
+  let sumLng = 0, sumLat = 0;
+  for (const coord of coords) {
+    sumLng += coord[0];
+    sumLat += coord[1];
+  }
+
+  return {
+    lat: sumLat / coords.length,
+    lng: sumLng / coords.length
+  };
+}
+
+// Infer grid resolution based on trail location
+function getGridResolution(center: { lat: number; lng: number }): number {
+  // US (HRRR 3km)
+  if (center.lat >= 24 && center.lat <= 50 && center.lng >= -130 && center.lng <= -60) {
+    return 3;
+  }
+  // Default: GFS 13km
+  return 13;
+}
+
 export default function PrototypeMap({
   trailGeojson,
   pins,
   onMapClick,
-  onPinRemove
+  onPinRemove,
+  gridVisible,
+  onGridToggle
 }: PrototypeMapProps) {
   const [viewState, setViewState] = useState({
     latitude: 39.8,
@@ -109,6 +150,11 @@ export default function PrototypeMap({
     }
   };
 
+  // Calculate grid properties
+  const trailCenter = trailGeojson ? getTrailCenter(trailGeojson) : null;
+  const trailBounds = trailGeojson ? getBoundsFromGeojson(trailGeojson) : null;
+  const gridResolution = trailCenter ? getGridResolution(trailCenter) : 13;
+
   return (
     <Map
       ref={mapRef}
@@ -121,6 +167,33 @@ export default function PrototypeMap({
     >
       {/* Navigation controls */}
       <NavigationControl position="top-right" />
+
+      {/* Grid toggle button */}
+      <div className="absolute top-4 right-16 z-10">
+        <button
+          onClick={onGridToggle}
+          className={`
+            p-2 rounded shadow-lg transition-colors
+            ${gridVisible
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-zinc-900 hover:bg-zinc-100'
+            }
+          `}
+          title="Toggle weather grid"
+        >
+          <Grid className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Weather grid overlay */}
+      {gridVisible && trailCenter && trailBounds && (
+        <WeatherGrid
+          visible={gridVisible}
+          center={trailCenter}
+          bounds={[trailBounds[0][0], trailBounds[0][1], trailBounds[1][0], trailBounds[1][1]]}
+          resolution={gridResolution}
+        />
+      )}
 
       {/* Trail line rendering */}
       {trailGeojson && (
