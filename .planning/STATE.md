@@ -12,11 +12,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 12 of 12 (Companion App — Web POC)
-Plan: 1 of 3 — Coordinate Picker & SMS Export complete
-Status: Phase 12A in progress (Wave 1 complete)
-Last activity: 2026-02-11 - Completed 12-01-PLAN.md
+Plan: 2 of 3 — Multi-Pin Weather + Grid + Time Scrubber complete
+Status: Phase 12B in progress (Wave 2 complete)
+Last activity: 2026-02-11 - Completed 12-02-PLAN.md
 
-Progress: ███░░░░░░░ 33% (1/3 plans complete)
+Progress: ██████░░░░ 67% (2/3 plans complete)
 
 ### Phase 10 Results
 - **251 trails** in popularTrails.ts (up from 107)
@@ -122,12 +122,20 @@ Progress: ███░░░░░░░ 33% (1/3 plans complete)
 | Use /prototype route in main app, not separate project | Reuses existing MapLibre, trail data, and infrastructure. POC validates UX before building native app. Low risk - isolated route, no auth required. | 12-01 | 2026-02-11 |
 | SMS mode first (coordinate copy), weather mode later | Delivers immediate value for satellite SMS users (Telstra, T-Mobile). Step 1 of 3-step POC. | 12-01 | 2026-02-11 |
 | Max 8 pins, SMS 160 character limit | ~4 pins fit in single SMS. 8 allows split across 2 messages. Character counter warns user to prevent frustration. | 12-01 | 2026-02-11 |
+| Call Open-Meteo directly from frontend (no backend proxy) | POC simplicity. Production app would use backend to avoid CORS and rate limits. | 12-02 | 2026-02-11 |
+| Batch all pins in single API call | Open-Meteo supports up to 1,000 locations. Single call reduces latency vs N separate calls. | 12-02 | 2026-02-11 |
+| Fetch weather immediately on pin drop | Users see forecast data as soon as pin is placed. No manual refresh needed. | 12-02 | 2026-02-11 |
+| Infer model resolution from location | Open-Meteo doesn't report which model was used. Estimate from lat/lng (US=3km, Europe=2km, etc). | 12-02 | 2026-02-11 |
 
 ### Technical Patterns
 - **Mobile-first layout:** `h-screen flex flex-col` with map taking `flex-1` (12-01)
 - **Dynamic MapLibre import:** `dynamic(() => import(), { ssr: false })` to avoid SSR issues (12-01)
 - **WX command format:** `WX lat1 lng1 lat2 lng2 ...` with 3 decimal places (~100m precision) (12-01)
 - **Pin labeling:** Sequential A-H, re-label on removal to maintain sequence (12-01)
+- **Batch API calls:** Comma-separated lat/lng for multiple locations in single Open-Meteo request (12-02)
+- **Loading states:** Skeleton UI during API calls, error states for failed fetches (12-02)
+- **Time synchronization:** All forecast cards read from same `currentHour` state (12-02)
+- **Grid latitude correction:** Longitude cell size = km / (111 * cos(lat)) for square cells (12-02)
 
 ---
 
@@ -155,7 +163,7 @@ Progress: ███░░░░░░░ 33% (1/3 plans complete)
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 12-01-PLAN.md (Coordinate Picker & SMS Export)
+Stopped at: Completed 12-02-PLAN.md (Multi-Pin Weather + Grid + Time Scrubber)
 Resume file: None
 
 ### Key artifacts from 2026-02-11 session:
@@ -163,17 +171,26 @@ Resume file: None
 - `.planning/phases/12-companion-app/RESEARCH.md` — Synthesis of 5 research streams (codebase, maps, weather, satellite, distribution)
 - `.planning/phases/12-companion-app/12-01-PLAN.md` — Coordinate Picker & SMS Export (Wave 1) ✅ COMPLETE
 - `.planning/phases/12-companion-app/12-01-SUMMARY.md` — Execution summary (4 tasks, 4 commits, 753 lines)
-- `.planning/phases/12-companion-app/12-02-PLAN.md` — Multi-Pin Weather + Grid + Time Scrubber (Wave 2) — NEXT
-- `.planning/phases/12-companion-app/12-03-PLAN.md` — Severity + Satellite Sim + Polish (Wave 3)
+- `.planning/phases/12-companion-app/12-02-PLAN.md` — Multi-Pin Weather + Grid + Time Scrubber (Wave 2) ✅ COMPLETE
+- `.planning/phases/12-companion-app/12-02-SUMMARY.md` — Execution summary (5 tasks, 5 commits, 971 lines)
+- `.planning/phases/12-companion-app/12-03-PLAN.md` — Severity + Satellite Sim + Polish (Wave 3) — NEXT
 - ROADMAP.md updated with Phase 12 entry
 
 ### Completed in this session:
+**Wave 1 (12-01):**
 - ✅ `/prototype` route created with mobile-first layout
 - ✅ PrototypeMap: MapLibre with OpenTopoMap, trail display, pin drop
 - ✅ TrailPicker: search + lazy loading for 252 trails
 - ✅ PinPanel: SMS WX command copy with character counter
-- ✅ Build passes, route loads, all verification criteria met
 - ✅ 4 atomic commits (dd3d4c1, 8e8c5d9, f395a59, 4f7e3a5)
+
+**Wave 2 (12-02):**
+- ✅ Weather types and Open-Meteo API client (batch calls, WMO codes, model inference)
+- ✅ ForecastPanel: horizontal scrollable cards with weather display
+- ✅ TimeScrubber: 0-72h slider with day/night gradient
+- ✅ WeatherGrid: toggleable model resolution overlay
+- ✅ Integration: weather fetching on pin drop, time sync across cards
+- ✅ 5 atomic commits (84060bf, e6c72eb, 9ec0fc2, 6140230, dacbce4)
 
 ### Key decisions from 2026-02-11:
 - POC is a new Next.js route (`/prototype`), not a separate project — reuses existing MapLibre, trail data, and infrastructure
