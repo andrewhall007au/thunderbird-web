@@ -1,6 +1,6 @@
 # Project State: Thunderbird Global
 
-**Last updated:** 2026-02-07
+**Last updated:** 2026-02-11
 **Current milestone:** v1.1 Trail Data & UX Polish
 
 ## Project Reference
@@ -11,12 +11,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 10 of 10+ (Real Trail Data from OpenStreetMap)
-Plan: All 8 plans complete (Waves 1-4)
-Status: Phase 10 complete — pending user verification
-Last activity: 2026-02-07 - All trail data merged, build passing
+Phase: 12 of 12 (Companion App — Web POC)
+Plan: 1 of 3 — Coordinate Picker & SMS Export complete
+Status: Phase 12A in progress (Wave 1 complete)
+Last activity: 2026-02-11 - Completed 12-01-PLAN.md
 
-Progress: ████████████ 100% (8/8 plans complete)
+Progress: ███░░░░░░░ 33% (1/3 plans complete)
 
 ### Phase 10 Results
 - **251 trails** in popularTrails.ts (up from 107)
@@ -114,6 +114,23 @@ Progress: ████████████ 100% (8/8 plans complete)
 
 ---
 
+## Phase 12 Accumulated Decisions
+
+### Companion App POC Decisions
+| Decision | Rationale | Phase-Plan | Date |
+|----------|-----------|------------|------|
+| Use /prototype route in main app, not separate project | Reuses existing MapLibre, trail data, and infrastructure. POC validates UX before building native app. Low risk - isolated route, no auth required. | 12-01 | 2026-02-11 |
+| SMS mode first (coordinate copy), weather mode later | Delivers immediate value for satellite SMS users (Telstra, T-Mobile). Step 1 of 3-step POC. | 12-01 | 2026-02-11 |
+| Max 8 pins, SMS 160 character limit | ~4 pins fit in single SMS. 8 allows split across 2 messages. Character counter warns user to prevent frustration. | 12-01 | 2026-02-11 |
+
+### Technical Patterns
+- **Mobile-first layout:** `h-screen flex flex-col` with map taking `flex-1` (12-01)
+- **Dynamic MapLibre import:** `dynamic(() => import(), { ssr: false })` to avoid SSR issues (12-01)
+- **WX command format:** `WX lat1 lng1 lat2 lng2 ...` with 3 decimal places (~100m precision) (12-01)
+- **Pin labeling:** Sequential A-H, re-label on removal to maintain sequence (12-01)
+
+---
+
 ## Key Files Reference
 
 **Planning:**
@@ -137,14 +154,35 @@ Progress: ████████████ 100% (8/8 plans complete)
 
 ## Session Continuity
 
-Last session: 2026-02-08
-Stopped at: Phase 11 proposed (JSON Forecast API) + Phase 12 direction set (native companion app). Satellite market research complete. PWA rejected for satellite use case — iOS cache eviction makes it unreliable for safety-critical tool. Native app is the right answer for satellite-first users.
+Last session: 2026-02-11
+Stopped at: Completed 12-01-PLAN.md (Coordinate Picker & SMS Export)
 Resume file: None
 
-### Key artifacts from 2026-02-08 session:
-- `.planning/phases/11-delivery-abstraction/PROPOSAL.md` — Phase 11 proposal (JSON API, 2 plans) + Phase 12 native app direction
-- `.planning/phases/11-delivery-abstraction/SATELLITE-RESEARCH-2026-02-08.md` — full satellite market research across all launch markets
-- ROADMAP.md updated with Phase 11 entry
+### Key artifacts from 2026-02-11 session:
+- `.planning/phases/12-companion-app/PROPOSAL.md` — Full companion app spec (dual-mode, multi-pin, 4 delivery phases)
+- `.planning/phases/12-companion-app/RESEARCH.md` — Synthesis of 5 research streams (codebase, maps, weather, satellite, distribution)
+- `.planning/phases/12-companion-app/12-01-PLAN.md` — Coordinate Picker & SMS Export (Wave 1) ✅ COMPLETE
+- `.planning/phases/12-companion-app/12-01-SUMMARY.md` — Execution summary (4 tasks, 4 commits, 753 lines)
+- `.planning/phases/12-companion-app/12-02-PLAN.md` — Multi-Pin Weather + Grid + Time Scrubber (Wave 2) — NEXT
+- `.planning/phases/12-companion-app/12-03-PLAN.md` — Severity + Satellite Sim + Polish (Wave 3)
+- ROADMAP.md updated with Phase 12 entry
+
+### Completed in this session:
+- ✅ `/prototype` route created with mobile-first layout
+- ✅ PrototypeMap: MapLibre with OpenTopoMap, trail display, pin drop
+- ✅ TrailPicker: search + lazy loading for 252 trails
+- ✅ PinPanel: SMS WX command copy with character counter
+- ✅ Build passes, route loads, all verification criteria met
+- ✅ 4 atomic commits (dd3d4c1, 8e8c5d9, f395a59, 4f7e3a5)
+
+### Key decisions from 2026-02-11:
+- POC is a new Next.js route (`/prototype`), not a separate project — reuses existing MapLibre, trail data, and infrastructure
+- Open-Meteo called directly from frontend for POC (no backend proxy needed)
+- SMS mode (coordinate copy) is Step 1 — delivers value on day one for Telstra/T-Mobile SMS users
+- Data mode (JSON weather) is Step 2 — adds forecast cards, time scrubber
+- Severity coloring (green/amber/red) is Step 3 — the decision-making layer
+- Satellite simulation validates UX under real constraints (2-10s latency)
+- PMTiles for offline tiles deferred to production app (Phase 12C) — POC uses online OpenTopoMap tiles
 
 ### Key decisions from 2026-02-08:
 - System is pull-based (CAST commands), NOT push. Docs may say otherwise — trust the code.
@@ -155,4 +193,4 @@ Resume file: None
 
 ---
 
-*State updated: 2026-02-07*
+*State updated: 2026-02-11*
