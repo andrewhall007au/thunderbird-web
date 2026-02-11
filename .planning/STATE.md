@@ -12,11 +12,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 12 of 12 (Companion App — Web POC)
-Plan: 2 of 3 — Multi-Pin Weather + Grid + Time Scrubber complete
-Status: Phase 12B in progress (Wave 2 complete)
-Last activity: 2026-02-11 - Completed 12-02-PLAN.md
+Plan: 3 of 3 — Phase 12 COMPLETE
+Status: Phase 12 complete (all 3 waves done)
+Last activity: 2026-02-11 - Completed 12-03-PLAN.md
 
-Progress: ██████░░░░ 67% (2/3 plans complete)
+Progress: ██████████ 100% (3/3 plans complete)
 
 ### Phase 10 Results
 - **251 trails** in popularTrails.ts (up from 107)
@@ -126,6 +126,10 @@ Progress: ██████░░░░ 67% (2/3 plans complete)
 | Batch all pins in single API call | Open-Meteo supports up to 1,000 locations. Single call reduces latency vs N separate calls. | 12-02 | 2026-02-11 |
 | Fetch weather immediately on pin drop | Users see forecast data as soon as pin is placed. No manual refresh needed. | 12-02 | 2026-02-11 |
 | Infer model resolution from location | Open-Meteo doesn't report which model was used. Estimate from lat/lng (US=3km, Europe=2km, etc). | 12-02 | 2026-02-11 |
+| Use North American wind chill formula | Industry-standard formula for hypothermia risk. Only applies when temp <= 10°C and wind > 4.8 km/h. | 12-03 | 2026-02-11 |
+| Severity calculated client-side from existing data | No additional API calls needed. Fast (~1ms) and updates instantly when time scrubber moves. | 12-03 | 2026-02-11 |
+| Red pins pulse to draw attention | Dangerous conditions need immediate visual feedback. Pulsing animation without being aggressive. | 12-03 | 2026-02-11 |
+| Satellite simulation as dev tool only | Validates UX under real constraints (2-10s latency). Not needed in production native app. | 12-03 | 2026-02-11 |
 
 ### Technical Patterns
 - **Mobile-first layout:** `h-screen flex flex-col` with map taking `flex-1` (12-01)
@@ -163,7 +167,7 @@ Progress: ██████░░░░ 67% (2/3 plans complete)
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 12-02-PLAN.md (Multi-Pin Weather + Grid + Time Scrubber)
+Stopped at: Completed 12-03-PLAN.md (Severity + Satellite Sim + Polish) — Phase 12 COMPLETE
 Resume file: None
 
 ### Key artifacts from 2026-02-11 session:
@@ -173,8 +177,10 @@ Resume file: None
 - `.planning/phases/12-companion-app/12-01-SUMMARY.md` — Execution summary (4 tasks, 4 commits, 753 lines)
 - `.planning/phases/12-companion-app/12-02-PLAN.md` — Multi-Pin Weather + Grid + Time Scrubber (Wave 2) ✅ COMPLETE
 - `.planning/phases/12-companion-app/12-02-SUMMARY.md` — Execution summary (5 tasks, 5 commits, 971 lines)
-- `.planning/phases/12-companion-app/12-03-PLAN.md` — Severity + Satellite Sim + Polish (Wave 3) — NEXT
+- `.planning/phases/12-companion-app/12-03-PLAN.md` — Severity + Satellite Sim + Polish (Wave 3) ✅ COMPLETE
+- `.planning/phases/12-companion-app/12-03-SUMMARY.md` — Execution summary (4 tasks, 4 commits, 796 lines)
 - ROADMAP.md updated with Phase 12 entry
+- **Phase 12 POC complete** — Ready for user testing and validation
 
 ### Completed in this session:
 **Wave 1 (12-01):**
@@ -191,6 +197,16 @@ Resume file: None
 - ✅ WeatherGrid: toggleable model resolution overlay
 - ✅ Integration: weather fetching on pin drop, time sync across cards
 - ✅ 5 atomic commits (84060bf, e6c72eb, 9ec0fc2, 6140230, dacbce4)
+
+**Wave 3 (12-03):**
+- ✅ Severity calculation with wind chill and configurable thresholds
+- ✅ Color-coded pins (green/amber/red) with pulse animation for danger
+- ✅ Severity badges on forecast cards with reasons
+- ✅ Summary bar showing overall risk across pins
+- ✅ Satellite simulation (2-10s latency toggle)
+- ✅ Payload inspector with byte size and feasibility assessment
+- ✅ Mobile polish: touch targets, snap scrolling, safe-area-inset, online/offline indicator
+- ✅ 4 atomic commits (14002b4, dd15acf, 388156d, a2029c2)
 
 ### Key decisions from 2026-02-11:
 - POC is a new Next.js route (`/prototype`), not a separate project — reuses existing MapLibre, trail data, and infrastructure
