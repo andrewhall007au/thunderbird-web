@@ -255,6 +255,32 @@ export const trailheads: [string, number, number][] = [
   ['yuraygir_coastal_walk', -29.83, 153.287],
 ];
 
+// Parse GPS coordinates from text input
+// Supports: "-41.636, 145.949", "41.636S 145.949E", "41.636 S, 145.949 E"
+export function parseCoordinates(input: string): { lat: number; lng: number } | null {
+  const s = input.trim().replace(/,/g, ' ').replace(/\s+/g, ' ');
+
+  // Try: number[N/S] number[E/W]
+  const dirMatch = s.match(/^(-?\d+\.?\d*)\s*([NSns])[\s]*(-?\d+\.?\d*)\s*([EWew])$/);
+  if (dirMatch) {
+    let lat = parseFloat(dirMatch[1]);
+    let lng = parseFloat(dirMatch[3]);
+    if (dirMatch[2].toUpperCase() === 'S') lat = -lat;
+    if (dirMatch[4].toUpperCase() === 'W') lng = -lng;
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) return { lat, lng };
+  }
+
+  // Try: two plain numbers (lat, lng)
+  const numMatch = s.match(/^(-?\d+\.?\d*)\s+(-?\d+\.?\d*)$/);
+  if (numMatch) {
+    const lat = parseFloat(numMatch[1]);
+    const lng = parseFloat(numMatch[2]);
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) return { lat, lng };
+  }
+
+  return null;
+}
+
 // Haversine distance in km
 export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;

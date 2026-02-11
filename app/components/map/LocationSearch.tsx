@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Search, MapPin } from 'lucide-react';
-import { findClosestTrail } from '@/app/lib/trailMatch';
+import { findClosestTrail, parseCoordinates } from '@/app/lib/trailMatch';
 
 interface LocationSearchProps {
   onLocationSelect: (lat: number, lng: number, name: string) => void;
@@ -27,8 +27,24 @@ export default function LocationSearch({ onLocationSelect, onTrailSelect }: Loca
     onLocationSelect(region.lat, region.lng, region.name);
   };
 
+  const handleResult = (lat: number, lng: number, name: string) => {
+    const trailId = findClosestTrail(lat, lng);
+    if (trailId && onTrailSelect) {
+      onTrailSelect(trailId);
+    } else {
+      onLocationSelect(lat, lng, name);
+    }
+  };
+
   const handleManualSearch = async () => {
     if (!searchQuery.trim()) return;
+
+    // Try parsing as GPS coordinates first
+    const coords = parseCoordinates(searchQuery);
+    if (coords) {
+      handleResult(coords.lat, coords.lng, `${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)}`);
+      return;
+    }
 
     setIsSearching(true);
     try {
@@ -45,18 +61,9 @@ export default function LocationSearch({ onLocationSelect, onTrailSelect }: Loca
       const results = await response.json();
       if (results.length > 0) {
         const { lat, lon, display_name } = results[0];
-        const parsedLat = parseFloat(lat);
-        const parsedLng = parseFloat(lon);
-
-        // If a known trail is nearby, load it directly
-        const trailId = findClosestTrail(parsedLat, parsedLng);
-        if (trailId && onTrailSelect) {
-          onTrailSelect(trailId);
-        } else {
-          onLocationSelect(parsedLat, parsedLng, display_name);
-        }
+        handleResult(parseFloat(lat), parseFloat(lon), display_name);
       } else {
-        alert('Location not found. Try a popular region or enter coordinates.');
+        alert('Location not found. Try a place name or coordinates (e.g., 41.636S 145.949E).');
       }
     } catch (error) {
       console.error('Search error:', error);

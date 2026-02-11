@@ -1,4 +1,4 @@
-import { haversineKm, findClosestTrail, trailheads } from './trailMatch';
+import { haversineKm, findClosestTrail, parseCoordinates, trailheads } from './trailMatch';
 
 describe('haversineKm', () => {
   it('returns 0 for same point', () => {
@@ -58,6 +58,42 @@ describe('findClosestTrail', () => {
     // Grand Canyon Village — near both Bright Angel and South Kaibab
     const trail = findClosestTrail(36.06, -112.14);
     expect(trail).toBe('bright_angel_trail_to_plateau_point');
+  });
+});
+
+describe('parseCoordinates', () => {
+  it('parses "41.636S 145.949E"', () => {
+    expect(parseCoordinates('41.636S 145.949E')).toEqual({ lat: -41.636, lng: 145.949 });
+  });
+
+  it('parses "41.636 S, 145.949 E"', () => {
+    expect(parseCoordinates('41.636 S, 145.949 E')).toEqual({ lat: -41.636, lng: 145.949 });
+  });
+
+  it('parses "28.531N 83.878E" (Nepal)', () => {
+    expect(parseCoordinates('28.531N 83.878E')).toEqual({ lat: 28.531, lng: 83.878 });
+  });
+
+  it('parses "49.063N 120.788W" (western hemisphere)', () => {
+    expect(parseCoordinates('49.063N 120.788W')).toEqual({ lat: 49.063, lng: -120.788 });
+  });
+
+  it('parses plain decimal "-41.636, 145.949"', () => {
+    expect(parseCoordinates('-41.636, 145.949')).toEqual({ lat: -41.636, lng: 145.949 });
+  });
+
+  it('parses plain decimal "37.75 -119.59"', () => {
+    expect(parseCoordinates('37.75 -119.59')).toEqual({ lat: 37.75, lng: -119.59 });
+  });
+
+  it('returns null for place names', () => {
+    expect(parseCoordinates('Cradle Mountain')).toBeNull();
+    expect(parseCoordinates('Perth')).toBeNull();
+  });
+
+  it('returns null for out-of-range coordinates', () => {
+    expect(parseCoordinates('91.0N 0E')).toBeNull();
+    expect(parseCoordinates('0N 181E')).toBeNull();
   });
 });
 
