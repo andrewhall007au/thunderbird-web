@@ -191,6 +191,10 @@ class CommandParser:
     def sanitize(self, message: str) -> str:
         """Sanitize incoming SMS message."""
         cleaned = message.strip()
+        # Normalize Unicode DMS characters to ASCII (Apple Compass uses U+2032/U+2033)
+        cleaned = cleaned.replace('\u2032', "'").replace('\u2033', '"')  # ′ → ' and ″ → "
+        cleaned = cleaned.replace('\u00b4', "'").replace('\u02b9', "'")  # ´ and ʹ → '
+        cleaned = cleaned.replace('\u02ba', '"')  # ʺ → "
         # Allow alphanumeric, @, +, space, GPS coordinate chars (-, ., ,), and DMS chars (°, ', ")
         cleaned = re.sub(r"[^A-Za-z0-9@ +\-.,°'\"]", '', cleaned)
         return cleaned
