@@ -7,6 +7,7 @@ import ForecastPanel from './components/ForecastPanel';
 import TimeScrubber from './components/TimeScrubber';
 import { Pin } from './lib/types';
 import { fetchMultiPinWeather } from './lib/openmeteo';
+import { calculateSeverity, getSeveritySummary } from './lib/severity';
 
 // Dynamic import to avoid SSR with MapLibre
 const PrototypeMap = dynamic(() => import('./components/PrototypeMap'), { ssr: false });
@@ -117,6 +118,15 @@ export default function PrototypePage() {
     }
   };
 
+  // Calculate severity summary for all pins at current hour
+  const severitySummary = pins
+    .filter(p => p.forecast && !p.loading)
+    .map(p => {
+      const hourlyData = p.forecast!.hourly[currentHour] || p.forecast!.hourly[0];
+      return calculateSeverity(hourlyData);
+    });
+  const summary = severitySummary.length > 0 ? getSeveritySummary(severitySummary) : null;
+
   return (
     <div className="h-screen flex flex-col bg-zinc-900 text-zinc-100">
       {/* Header */}
@@ -145,6 +155,7 @@ export default function PrototypePage() {
           <PrototypeMap
             trailGeojson={trailGeojson}
             pins={pins}
+            currentHour={currentHour}
             onMapClick={addPin}
             onPinRemove={removePin}
             gridVisible={gridVisible}
@@ -152,6 +163,21 @@ export default function PrototypePage() {
           />
         </Suspense>
       </div>
+
+      {/* Severity Summary Bar */}
+      {summary && (
+        <div className={`
+          flex-shrink-0 px-4 py-2 text-center text-sm font-medium border-t border-zinc-700
+          ${summary.allSafe
+            ? 'bg-green-900/30 text-green-300'
+            : summary.dangerCount > 0
+            ? 'bg-red-900/30 text-red-300'
+            : 'bg-amber-900/30 text-amber-300'
+          }
+        `}>
+          {summary.message}
+        </div>
+      )}
 
       {/* Time Scrubber */}
       <div className="flex-shrink-0">

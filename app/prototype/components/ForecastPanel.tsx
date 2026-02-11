@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Pin } from '../lib/types';
 import { Copy, X, Trash2, ChevronUp } from 'lucide-react';
 import { getWeatherEmoji, getWindBearing } from '../lib/openmeteo';
+import { calculateSeverity, SEVERITY_COLORS } from '../lib/severity';
 
 interface ForecastPanelProps {
   pins: Pin[];
@@ -184,25 +185,39 @@ function ForecastCard({
 
   const weatherEmoji = getWeatherEmoji(hourlyData.weatherCode);
   const windBearing = getWindBearing(hourlyData.windDirection);
+  const severity = calculateSeverity(hourlyData);
+  const severityColor = SEVERITY_COLORS[severity.level];
 
   return (
-    <div className="w-44 flex-shrink-0 bg-zinc-700 rounded-lg p-4 border border-zinc-600 relative">
+    <div className={`w-44 flex-shrink-0 bg-zinc-700 rounded-lg p-4 border-l-4 ${severityColor.border} relative`}>
       {/* Remove button */}
       <button
         onClick={onRemove}
-        className="absolute top-2 right-2 p-1 hover:bg-zinc-600 rounded transition-colors"
+        className="absolute top-2 right-2 p-1 hover:bg-zinc-600 rounded transition-colors z-10"
         title="Remove pin"
       >
         <X className="w-4 h-4 text-zinc-400" />
       </button>
 
-      {/* Pin label */}
-      <div className="flex items-center gap-2 mb-1">
-        <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
-          {pin.label}
-        </div>
-        <div className="font-bold text-sm">{pin.label}</div>
+      {/* Severity badge */}
+      <div className={`
+        px-2 py-1 rounded text-xs font-bold mb-2 flex items-center gap-1.5
+        ${severityColor.bgClass} ${severityColor.textClass}
+      `}>
+        {severity.level === 'green' && '🟢'}
+        {severity.level === 'amber' && '🟡'}
+        {severity.level === 'red' && '🔴'}
+        {severityColor.label.toUpperCase()} [{pin.label}]
       </div>
+
+      {/* Severity reasons (only for amber/red) */}
+      {severity.reasons.length > 0 && (
+        <div className="text-xs text-zinc-300 mb-2 space-y-0.5">
+          {severity.reasons.map((reason, idx) => (
+            <div key={idx}>• {reason}</div>
+          ))}
+        </div>
+      )}
 
       {/* Coordinates */}
       <div className="text-xs text-zinc-400 font-mono mb-1">

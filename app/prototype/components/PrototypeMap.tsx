@@ -6,10 +6,12 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Grid } from 'lucide-react';
 import type { Pin } from '../lib/types';
 import WeatherGrid from './WeatherGrid';
+import { calculateSeverity, SEVERITY_COLORS, type SeverityLevel } from '../lib/severity';
 
 interface PrototypeMapProps {
   trailGeojson: GeoJSON.Feature | null;
   pins: Pin[];
+  currentHour: number;
   onMapClick: (lat: number, lng: number) => void;
   onPinRemove: (id: string) => void;
   gridVisible: boolean;
@@ -82,6 +84,7 @@ function getGridResolution(center: { lat: number; lng: number }): number {
 export default function PrototypeMap({
   trailGeojson,
   pins,
+  currentHour,
   onMapClick,
   onPinRemove,
   gridVisible,
@@ -221,45 +224,81 @@ export default function PrototypeMap({
       )}
 
       {/* Pin markers */}
-      {pins.map(pin => (
-        <Marker
-          key={pin.id}
-          latitude={pin.lat}
-          longitude={pin.lng}
-          anchor="bottom"
-        >
-          <div
-            className="pin-marker cursor-pointer relative"
-            onClick={() => handlePinClick(pin.id)}
-            title={`${pin.lat.toFixed(3)}°, ${pin.lng.toFixed(3)}°`}
+      {pins.map(pin => {
+        // Calculate severity color for this pin at current hour
+        let severityLevel: SeverityLevel = 'green';
+        let bgColor = '#3b82f6'; // Default blue for loading/no data
+
+        if (pin.forecast && !pin.loading) {
+          const hourlyData = pin.forecast.hourly[currentHour] || pin.forecast.hourly[0];
+          if (hourlyData) {
+            const severity = calculateSeverity(hourlyData);
+            severityLevel = severity.level;
+            bgColor = SEVERITY_COLORS[severityLevel].bg;
+          }
+        }
+
+        const isSelected = selectedPinId === pin.id;
+        const isRed = severityLevel === 'red';
+
+        return (
+          <Marker
+            key={pin.id}
+            latitude={pin.lat}
+            longitude={pin.lng}
+            anchor="bottom"
           >
-            {/* Pin circle with stem */}
-            <div className="relative">
-              <div
-                className={`
-                  w-8 h-8 rounded-full flex items-center justify-center
-                  text-white font-bold text-sm shadow-lg
-                  transition-all
-                  ${selectedPinId === pin.id
-                    ? 'bg-yellow-500 ring-4 ring-yellow-300 scale-110'
-                    : 'bg-blue-500 hover:bg-blue-600'
-                  }
-                `}
-              >
-                {pin.label}
+            <div
+              className="pin-marker cursor-pointer relative"
+              onClick={() => handlePinClick(pin.id)}
+              title={`${pin.lat.toFixed(3)}°, ${pin.lng.toFixed(3)}°`}
+            >
+              {/* Pin circle with stem */}
+              <div className="relative">
+                <div
+                  className={`
+                    w-8 h-8 rounded-full flex items-center justify-center
+                    text-white font-bold text-sm shadow-lg
+                    transition-all
+                    ${isSelected
+                      ? 'ring-4 ring-yellow-300 scale-110'
+                      : ''
+                    }
+                    ${isRed ? 'animate-pulse-glow' : ''}
+                  `}
+                  style={{
+                    backgroundColor: isSelected ? '#eab308' : bgColor
+                  }}
+                >
+                  {pin.label}
+                </div>
+                {/* Stem pointing down */}
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 top-full w-1 h-2"
+                  style={{
+                    backgroundColor: isSelected ? '#eab308' : bgColor
+                  }}
+                />
               </div>
-              {/* Stem pointing down */}
-              <div
-                className={`
-                  absolute left-1/2 -translate-x-1/2 top-full
-                  w-1 h-2
-                  ${selectedPinId === pin.id ? 'bg-yellow-500' : 'bg-blue-500'}
-                `}
-              />
             </div>
-          </div>
-        </Marker>
-      ))}
+          </Marker>
+        );
+      })}
+
+      {/* CSS for red pin pulse animation */}
+      <style jsx global>{`
+        @keyframes pulse-glow {
+          0%, 100% {
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.6), 0 0 16px rgba(239, 68, 68, 0.4);
+          }
+          50% {
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.8), 0 0 24px rgba(239, 68, 68, 0.6);
+          }
+        }
+        .animate-pulse-glow {
+          animation: pulse-glow 2s ease-in-out infinite;
+        }
+      `}</style>
     </Map>
   );
 }
