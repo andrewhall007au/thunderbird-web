@@ -537,6 +537,11 @@ class CommandParser:
                 combined = f"{parts[1]} {parts[2]}"
                 gps = self._parse_gps_coordinates(combined)
 
+            # Try "41.636 S 145.949 E" (direction letters as separate tokens)
+            if not gps and len(parts) >= 5:
+                combined = f"{parts[1]}{parts[2]} {parts[3]}{parts[4]}"
+                gps = self._parse_gps_coordinates(combined)
+
             if gps:
                 lat, lon = gps
                 return ParsedCommand(
@@ -583,6 +588,11 @@ class CommandParser:
             # Try joining parts for space-separated GPS (e.g., "-41.8921 146.0820")
             if not gps and len(parts) >= 3:
                 combined = f"{parts[1]} {parts[2]}"
+                gps = self._parse_gps_coordinates(combined)
+
+            # Try "41.636 S 145.949 E" (direction letters as separate tokens)
+            if not gps and len(parts) >= 5:
+                combined = f"{parts[1]}{parts[2]} {parts[3]}{parts[4]}"
                 gps = self._parse_gps_coordinates(combined)
 
             if gps:
