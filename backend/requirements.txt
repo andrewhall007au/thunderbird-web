@@ -32,6 +32,9 @@ twilio==8.10.3
 # Astronomy (sunrise/sunset)
 astral==3.2
 
+# Timezone lookup from GPS coordinates
+timezonefinder==6.2.0
+
 # Date/Time
 python-dateutil==2.8.2
 

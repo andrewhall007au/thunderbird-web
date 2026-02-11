@@ -10,8 +10,26 @@ from zoneinfo import ZoneInfo
 
 from astral import LocationInfo
 from astral.sun import sun
+from timezonefinder import TimezoneFinder
 
 from config.settings import settings, DangerThresholds, TZ_HOBART
+
+# Singleton TimezoneFinder instance (expensive to create, reuse across calls)
+_tf = TimezoneFinder()
+
+
+def get_timezone_for_coordinates(lat: float, lon: float) -> ZoneInfo:
+    """
+    Get the local timezone for a given lat/lon.
+    Falls back to TZ_HOBART if lookup fails.
+    """
+    try:
+        tz_name = _tf.timezone_at(lat=lat, lng=lon)
+        if tz_name:
+            return ZoneInfo(tz_name)
+    except Exception:
+        pass
+    return TZ_HOBART
 from app.services.bom import ForecastPeriod, CellForecast
 
 
@@ -127,20 +145,22 @@ class LightCalculator:
     def get_light_hours(lat: float, lon: float, for_date: date) -> str:
         """
         Calculate light hours for a location.
-        
+
         Returns: "Light HH:MM-HH:MM (Xh Ym)"
         Uses colons in time to prevent iOS auto-linking as phone number.
+        Timezone is determined from coordinates so Perth gets AWST, etc.
         """
+        local_tz = get_timezone_for_coordinates(lat, lon)
         location = LocationInfo(
             latitude=lat,
             longitude=lon,
-            timezone="Australia/Hobart"
+            timezone=str(local_tz)
         )
-        
+
         try:
             s = sun(location.observer, date=for_date)
-            sunrise = s["sunrise"].astimezone(TZ_HOBART)
-            sunset = s["sunset"].astimezone(TZ_HOBART)
+            sunrise = s["sunrise"].astimezone(local_tz)
+            sunset = s["sunset"].astimezone(local_tz)
             
             # Use colons to prevent iOS auto-linking
             sunrise_str = sunrise.strftime("%H:%M")
@@ -523,16 +543,19 @@ class ForecastFormatter:
         lines.append(f"CAST {waypoint_code}")
         lines.append(f"{waypoint_name} ({waypoint_elevation}m)")
 
-        # Light hours
-        now = datetime.now(TZ_HOBART)
-        light_str = LightCalculator.get_light_hours(forecast.lat, forecast.lon, now.date())
+        # Light hours — use local timezone for the forecast location
+        local_tz = get_timezone_for_coordinates(forecast.lat, forecast.lon)
+        local_now = datetime.now(local_tz)
+        light_str = LightCalculator.get_light_hours(forecast.lat, forecast.lon, local_now.date())
         lines.append(light_str)
         lines.append("")
 
         # Column headers - v3.1 format with Prec, Wd, CB
         lines.append(get_forecast_header())
 
-        # Get next N hours of forecast data
+        # Get next N hours of forecast data (use TZ_HOBART for period comparison
+        # since BOM periods are in AEDT)
+        now = datetime.now(TZ_HOBART)
         current_hour = now.replace(minute=0, second=0, microsecond=0)
         end_time = current_hour + timedelta(hours=hours)
 
@@ -1720,9 +1743,10 @@ class FormatCastLabeled:
 
         lines.append(f"CAST {waypoint_code} {display_elevation}{elev_unit}")
 
-        # Light hours
-        now = datetime.now(TZ_HOBART)
-        light_str = LightCalculator.get_light_hours(forecast.lat, forecast.lon, now.date())
+        # Light hours — use local timezone for the forecast location
+        local_tz = get_timezone_for_coordinates(forecast.lat, forecast.lon)
+        local_now = datetime.now(local_tz)
+        light_str = LightCalculator.get_light_hours(forecast.lat, forecast.lon, local_now.date())
         lines.append(light_str)
         lines.append("")  # Blank line after header
 
@@ -1731,7 +1755,9 @@ class FormatCastLabeled:
         elevation_diff = waypoint_elevation - base_elevation
         temp_adjustment = (elevation_diff / 100) * 0.65
 
-        # Get forecast periods
+        # Get forecast periods (use TZ_HOBART for period comparison
+        # since BOM periods are in AEDT)
+        now = datetime.now(TZ_HOBART)
         current_hour = now.replace(minute=0, second=0, microsecond=0)
         end_time = current_hour + timedelta(hours=hours)
 

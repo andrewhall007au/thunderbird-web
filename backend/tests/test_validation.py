@@ -16,7 +16,7 @@ from app.services.routes import RouteLoader, get_route
 from app.services.commands import CommandParser, CommandType, ResponseGenerator
 from app.services.sms import PhoneUtils, SMSCostCalculator, InputSanitizer
 from app.services.bom import BOMService
-from app.services.formatter import ForecastFormatter, DangerCalculator, LightCalculator
+from app.services.formatter import ForecastFormatter, DangerCalculator, LightCalculator, get_timezone_for_coordinates
 
 
 ROUTES_DIR = Path(__file__).parent.parent / "config" / "routes"
@@ -540,6 +540,147 @@ class TestLightCalculator:
         if match:
             hours = int(match.group(1))
             assert 9 <= hours <= 11, f"Winter light hours {hours} unexpected"
+
+
+    def test_perth_uses_local_timezone(self):
+        """Perth GPS point should show AWST light hours, not AEDT."""
+        from datetime import date
+
+        # Perth coordinates: -31.95, 115.86
+        # Summer date where timezone difference is obvious
+        summer_date = date(2026, 1, 15)
+        light_str = LightCalculator.get_light_hours(-31.95, 115.86, summer_date)
+
+        assert "Light" in light_str
+
+        # Extract sunrise hour — Perth sunrise in Jan is ~5:00-5:30 AWST
+        # If incorrectly using AEDT, it would show ~8:00-8:30
+        import re
+        match = re.search(r'Light (\d{2}):', light_str)
+        assert match, f"Could not parse sunrise from: {light_str}"
+        sunrise_hour = int(match.group(1))
+        assert sunrise_hour < 7, (
+            f"Perth sunrise hour {sunrise_hour} looks like AEDT not AWST. "
+            f"Full string: {light_str}"
+        )
+
+    def test_new_zealand_uses_local_timezone(self):
+        """NZ coordinates should show NZST/NZDT light hours."""
+        from datetime import date
+
+        # Wellington: -41.29, 174.78
+        summer_date = date(2026, 1, 15)
+        light_str = LightCalculator.get_light_hours(-41.29, 174.78, summer_date)
+
+        assert "Light" in light_str
+
+        # NZ sunrise in Jan is ~6:00 NZDT
+        # If incorrectly using AEDT, it would show ~4:00
+        import re
+        match = re.search(r'Light (\d{2}):', light_str)
+        assert match, f"Could not parse sunrise from: {light_str}"
+        sunrise_hour = int(match.group(1))
+        assert 5 <= sunrise_hour <= 7, (
+            f"NZ sunrise hour {sunrise_hour} unexpected. "
+            f"Full string: {light_str}"
+        )
+
+    def test_perth_sunset_local_timezone(self):
+        """Perth sunset should be ~19:00-19:30 AWST, not ~22:00 AEDT."""
+        from datetime import date
+
+        summer_date = date(2026, 1, 15)
+        light_str = LightCalculator.get_light_hours(-31.95, 115.86, summer_date)
+
+        import re
+        match = re.search(r'Light \d{2}:\d{2}-(\d{2}):', light_str)
+        assert match, f"Could not parse sunset from: {light_str}"
+        sunset_hour = int(match.group(1))
+        assert 19 <= sunset_hour <= 20, (
+            f"Perth sunset hour {sunset_hour} looks wrong (expected ~19 AWST). "
+            f"Full string: {light_str}"
+        )
+
+    def test_northern_hemisphere_us(self):
+        """US coordinates (Colorado) should use America/Denver timezone."""
+        from datetime import date
+
+        # Rocky Mountain NP: 40.34, -105.68
+        summer_date = date(2026, 7, 15)
+        light_str = LightCalculator.get_light_hours(40.34, -105.68, summer_date)
+
+        assert "Light" in light_str
+
+        # Colorado sunrise in July is ~5:40 MDT, sunset ~20:30 MDT
+        import re
+        match = re.search(r'Light (\d{2}):\d{2}-(\d{2}):', light_str)
+        assert match, f"Could not parse light hours from: {light_str}"
+        sunrise_hour = int(match.group(1))
+        sunset_hour = int(match.group(2))
+        assert 5 <= sunrise_hour <= 6, (
+            f"Colorado sunrise hour {sunrise_hour} unexpected. Full: {light_str}"
+        )
+        assert 20 <= sunset_hour <= 21, (
+            f"Colorado sunset hour {sunset_hour} unexpected. Full: {light_str}"
+        )
+
+    def test_northern_hemisphere_uk(self):
+        """UK coordinates should use Europe/London timezone."""
+        from datetime import date
+
+        # Lake District: 54.45, -3.07
+        summer_date = date(2026, 6, 21)  # Summer solstice
+        light_str = LightCalculator.get_light_hours(54.45, -3.07, summer_date)
+
+        assert "Light" in light_str
+
+        # Lake District summer solstice: sunrise ~4:30 BST, sunset ~21:40 BST
+        import re
+        hours_match = re.search(r'\((\d+)h', light_str)
+        assert hours_match, f"Could not parse duration from: {light_str}"
+        duration_hours = int(hours_match.group(1))
+        assert duration_hours >= 16, (
+            f"UK summer solstice should have 17+ hours of light, got {duration_hours}h. "
+            f"Full: {light_str}"
+        )
+
+
+class TestTimezoneHelper:
+    """Test get_timezone_for_coordinates helper."""
+
+    def test_perth_timezone(self):
+        """Perth should resolve to Australia/Perth."""
+        from zoneinfo import ZoneInfo
+        tz = get_timezone_for_coordinates(-31.95, 115.86)
+        assert str(tz) == "Australia/Perth"
+
+    def test_hobart_timezone(self):
+        """Hobart should resolve to Australia/Hobart."""
+        tz = get_timezone_for_coordinates(-42.88, 147.33)
+        assert str(tz) == "Australia/Hobart"
+
+    def test_new_york_timezone(self):
+        """New York should resolve to America/New_York."""
+        tz = get_timezone_for_coordinates(40.71, -74.01)
+        assert str(tz) == "America/New_York"
+
+    def test_london_timezone(self):
+        """London should resolve to Europe/London."""
+        tz = get_timezone_for_coordinates(51.51, -0.13)
+        assert str(tz) == "Europe/London"
+
+    def test_ocean_fallback(self):
+        """Middle of Pacific Ocean should fall back to TZ_HOBART."""
+        from config.settings import TZ_HOBART
+        tz = get_timezone_for_coordinates(0.0, -170.0)
+        # Should either find Etc/GMT+11 or fall back to TZ_HOBART
+        # Either way, should not crash
+        assert tz is not None
+
+    def test_nepal_timezone(self):
+        """Nepal (UTC+5:45) — tests non-standard offset."""
+        tz = get_timezone_for_coordinates(27.99, 86.93)  # Everest region
+        assert "Asia" in str(tz)
 
 
 class TestEndToEnd:
