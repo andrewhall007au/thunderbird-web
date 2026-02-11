@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import TrailPicker from './components/TrailPicker';
 import ForecastPanel from './components/ForecastPanel';
 import TimeScrubber from './components/TimeScrubber';
+import SatelliteSimulator from './components/SatelliteSimulator';
+import PayloadInspector, { type PayloadMetrics } from './components/PayloadInspector';
 import { Pin } from './lib/types';
 import { fetchMultiPinWeather } from './lib/openmeteo';
 import { calculateSeverity, getSeveritySummary } from './lib/severity';
@@ -23,6 +25,10 @@ export default function PrototypePage() {
   const [currentHour, setCurrentHour] = useState(0);
   const [gridVisible, setGridVisible] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+  const [satelliteMode, setSatelliteMode] = useState(false);
+  const [satelliteLatencyMs, setSatelliteLatencyMs] = useState(5000);
+  const [lastPayloadMetrics, setLastPayloadMetrics] = useState<PayloadMetrics | null>(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
 
   // Add a new pin at the specified location
   const addPin = async (lat: number, lng: number) => {
@@ -41,10 +47,17 @@ export default function PrototypePage() {
 
     // Add pin to state immediately with loading state
     setPins(prev => [...prev, newPin]);
+    setIsLoadingWeather(true);
 
     // Fetch weather for the new pin
     try {
-      const forecasts = await fetchMultiPinWeather([{ lat, lng }]);
+      const forecasts = await fetchMultiPinWeather(
+        [{ lat, lng }],
+        {
+          simulatedLatencyMs: satelliteMode ? satelliteLatencyMs : undefined,
+          onMetrics: setLastPayloadMetrics
+        }
+      );
       const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
       const forecast = forecasts.get(key);
 
@@ -62,6 +75,8 @@ export default function PrototypePage() {
           ? { ...p, loading: false }
           : p
       ));
+    } finally {
+      setIsLoadingWeather(false);
     }
   };
 
@@ -137,6 +152,14 @@ export default function PrototypePage() {
         </p>
       </div>
 
+      {/* Satellite mode banner */}
+      {satelliteMode && (
+        <div className="bg-blue-900/30 border-b border-blue-700/50 px-4 py-2 flex items-center justify-center gap-2 text-sm text-blue-300">
+          <span className="animate-pulse">📡</span>
+          <span>Satellite mode — {(satelliteLatencyMs / 1000).toFixed(1)}s latency</span>
+        </div>
+      )}
+
       {/* Trail Picker */}
       <div className="flex-shrink-0">
         <TrailPicker
@@ -199,12 +222,61 @@ export default function PrototypePage() {
         />
       </div>
 
+      {/* Developer Tools */}
+      <div className="flex-shrink-0">
+        <SatelliteSimulator
+          enabled={satelliteMode}
+          onEnabledChange={setSatelliteMode}
+          latencyMs={satelliteLatencyMs}
+          onLatencyChange={setSatelliteLatencyMs}
+        />
+        <PayloadInspector metrics={lastPayloadMetrics} />
+      </div>
+
       {/* Copy feedback toast */}
       {copyFeedback && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 bg-green-600 text-white rounded shadow-lg text-sm font-medium animate-fade-in z-50">
           {copyFeedback}
         </div>
       )}
+
+      {/* Satellite loading overlay */}
+      {satelliteMode && isLoadingWeather && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-zinc-800 rounded-lg p-6 max-w-sm mx-4 border border-zinc-700">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div className="animate-spin">📡</div>
+              <div className="text-lg font-medium">Fetching via satellite...</div>
+            </div>
+            <div className="text-sm text-zinc-400 text-center mb-4">
+              Simulating {(satelliteLatencyMs / 1000).toFixed(1)}s latency
+            </div>
+            <div className="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-blue-500 h-full animate-loading-bar"
+                style={{
+                  animationDuration: `${satelliteLatencyMs}ms`
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading bar animation */}
+      <style jsx global>{`
+        @keyframes loading-bar {
+          from {
+            width: 0%;
+          }
+          to {
+            width: 100%;
+          }
+        }
+        .animate-loading-bar {
+          animation: loading-bar linear forwards;
+        }
+      `}</style>
     </div>
   );
 }

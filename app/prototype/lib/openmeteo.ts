@@ -4,6 +4,7 @@
  */
 
 import { PinForecast, HourlyData } from './types';
+import type { PayloadMetrics } from '../components/PayloadInspector';
 
 // WMO weather code to human-readable condition
 export const WMO_CODES: Record<number, string> = {
@@ -98,10 +99,15 @@ function parseHourlyData(hourly: any, now: Date): HourlyData[] {
  * Fetch weather forecasts for multiple pins in a single batch call
  *
  * @param pins Array of {lat, lng} coordinates
- * @returns Map of lat,lng key to PinForecast
+ * @param options Optional settings for simulation and metrics
+ * @returns Map of lat,lng key to PinForecast, plus payload metrics
  */
 export async function fetchMultiPinWeather(
-  pins: { lat: number; lng: number }[]
+  pins: { lat: number; lng: number }[],
+  options?: {
+    simulatedLatencyMs?: number;
+    onMetrics?: (metrics: PayloadMetrics) => void;
+  }
 ): Promise<Map<string, PinForecast>> {
   if (pins.length === 0) {
     return new Map();
@@ -132,12 +138,41 @@ export async function fetchMultiPinWeather(
   const url = `https://api.open-meteo.com/v1/forecast?${params}`;
 
   try {
+    // Start timing
+    const startTime = performance.now();
+
+    // Simulate satellite latency if requested
+    if (options?.simulatedLatencyMs) {
+      await new Promise(resolve => setTimeout(resolve, options.simulatedLatencyMs));
+    }
+
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Open-Meteo API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    // Clone response to measure size
+    const responseClone = response.clone();
+    const responseText = await responseClone.text();
+    const data = JSON.parse(responseText);
+
+    // End timing
+    const endTime = performance.now();
+    const apiTime = Math.round(endTime - startTime - (options?.simulatedLatencyMs || 0));
+    const totalTime = Math.round(endTime - startTime);
+
+    // Calculate payload metrics
+    if (options?.onMetrics) {
+      const metrics: PayloadMetrics = {
+        requestUrl: url,
+        requestSizeBytes: url.length + 200, // URL + approximate headers
+        responseSizeBytes: responseText.length,
+        responseTimeMs: apiTime,
+        totalTimeMs: totalTime,
+        pinCount: pins.length
+      };
+      options.onMetrics(metrics);
+    }
     const now = new Date();
     const results = new Map<string, PinForecast>();
 
