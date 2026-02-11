@@ -191,8 +191,8 @@ class CommandParser:
     def sanitize(self, message: str) -> str:
         """Sanitize incoming SMS message."""
         cleaned = message.strip()
-        # Allow alphanumeric, @, +, space, and GPS coordinate chars (-, ., ,)
-        cleaned = re.sub(r'[^A-Za-z0-9@ +\-.,]', '', cleaned)
+        # Allow alphanumeric, @, +, space, GPS coordinate chars (-, ., ,), and DMS chars (°, ', ")
+        cleaned = re.sub(r"[^A-Za-z0-9@ +\-.,°'\"]", '', cleaned)
         return cleaned
     
     def parse(self, message: str) -> ParsedCommand:
@@ -478,8 +478,44 @@ class CommandParser:
         - "-41.8921,146.0820" (comma separated)
         - "-41.8921 146.0820" (space separated)
         - "41.8921S,146.0820E" (with cardinal directions)
+        - "31°55'4\"S 115°51'36\"E" (DMS - Apple Compass format)
         Returns (lat, lon) tuple or None if not valid GPS.
         """
+        # Try DMS (Degrees/Minutes/Seconds) format first — Apple Compass etc.
+        # Handles: 31°55'4"S 115°51'36"E, 37°47'29.5"N 122°25'10"W
+        dms_pattern = (
+            r"""^(\d{1,3})°(\d{1,2})'(\d{1,2}(?:\.\d+)?)"?\s*([NS])"""
+            r"""\s*[,\s]\s*"""
+            r"""(\d{1,3})°(\d{1,2})'(\d{1,2}(?:\.\d+)?)"?\s*([EW])$"""
+        )
+        match = re.match(dms_pattern, text, re.IGNORECASE)
+        if match:
+            lat = int(match.group(1)) + int(match.group(2)) / 60 + float(match.group(3)) / 3600
+            lon = int(match.group(5)) + int(match.group(6)) / 60 + float(match.group(7)) / 3600
+            if match.group(4).upper() == 'S':
+                lat = -lat
+            if match.group(8).upper() == 'W':
+                lon = -lon
+            if -90 <= lat <= 90 and -180 <= lon <= 180:
+                return (lat, lon)
+
+        # DMS without seconds: 31°55'S 115°51'E
+        dm_pattern = (
+            r"""^(\d{1,3})°(\d{1,2})'\s*([NS])"""
+            r"""\s*[,\s]\s*"""
+            r"""(\d{1,3})°(\d{1,2})'\s*([EW])$"""
+        )
+        match = re.match(dm_pattern, text, re.IGNORECASE)
+        if match:
+            lat = int(match.group(1)) + int(match.group(2)) / 60
+            lon = int(match.group(4)) + int(match.group(5)) / 60
+            if match.group(3).upper() == 'S':
+                lat = -lat
+            if match.group(6).upper() == 'W':
+                lon = -lon
+            if -90 <= lat <= 90 and -180 <= lon <= 180:
+                return (lat, lon)
+
         # Pattern for decimal degrees with optional cardinal directions
         patterns = [
             # Format: -41.8921,146.0820 or -41.8921, 146.0820
