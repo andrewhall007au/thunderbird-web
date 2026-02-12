@@ -150,6 +150,7 @@ function TabletFrame({ width, height, scale, src, iframeRef }: { width: number; 
           style={{ width, height }}
         >
           <iframe
+            ref={iframeRef}
             src={src}
             className="w-full h-full border-0"
             style={{ width, height }}
@@ -181,6 +182,7 @@ function DesktopFrame({ width, height, scale, src, iframeRef }: { width: number;
           style={{ width, height }}
         >
           <iframe
+            ref={iframeRef}
             src={src}
             className="w-full h-full border-0"
             style={{ width, height }}
