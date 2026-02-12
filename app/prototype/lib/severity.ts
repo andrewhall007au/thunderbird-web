@@ -1,6 +1,9 @@
 /**
- * Severity calculation for weather conditions
- * Determines risk level (green/amber/red) based on weather thresholds
+ * CAST-aligned danger calculation for weather conditions.
+ * Matches backend DangerCalculator in formatter.py (Section 6.3).
+ *
+ * Uses hazard counting: ice + blind + wind + precip → !/!!/!!!
+ * Plus thunderstorm detection via CAPE.
  */
 
 import type { HourlyData } from './types';
@@ -9,31 +12,30 @@ export type SeverityLevel = 'green' | 'amber' | 'red';
 
 export interface SeverityResult {
   level: SeverityLevel;
-  reasons: string[];     // e.g., ["High wind: 55 km/h", "Hypothermia risk: -3°C wind chill"]
-  windChill: number;     // Calculated wind chill in °C
+  danger: string;          // "", "!", "!!", "!!!"
+  thunder: string;         // "", "TS?", "TS!"
+  reasons: string[];
+  windChill: number;
 }
 
 /**
- * Default thresholds based on alpine hiking risk assessment
- * From PROPOSAL.md risk table
+ * CAST danger thresholds — matches backend/config/settings.py DangerThresholds
  */
-export const DEFAULT_THRESHOLDS = {
-  wind: { amber: 30, red: 50 },           // km/h
-  windChill: { amber: 5, red: 0 },         // °C (below these values)
-  rainProbability: { amber: 40, red: 70 },  // %
-  precipitation: { red: 5 },                // mm (only triggers red when combined with high rain%)
-  visibility: { amber: 5, red: 1 },         // km (not available from Open-Meteo basic, future use)
+const CAST_THRESHOLDS = {
+  WIND_MODERATE: 50,     // km/h (default user profile)
+  WIND_EXTREME: 70,      // km/h — auto !!!
+  PRECIP_SIGNIFICANT: 5, // mm
+  SNOW_SIGNIFICANT: 2,   // cm
+  CLOUD_BLIND: 90,       // %
+  CAPE_MODERATE: 200,    // J/kg → TS?
+  CAPE_HIGH: 400,        // J/kg → TS!
 };
 
 /**
- * Calculate wind chill using the standard North American formula
- * Only applies when temp <= 10°C and wind > 4.8 km/h
- *
- * Formula: WC = 13.12 + 0.6215×T - 11.37×V^0.16 + 0.3965×T×V^0.16
- * where T = air temperature (°C), V = wind speed (km/h)
+ * Calculate wind chill using the standard North American formula.
+ * Only applies when temp <= 10°C and wind > 4.8 km/h.
  */
 export function calculateWindChill(tempC: number, windKmh: number): number {
-  // Wind chill only applies in cold conditions with wind
   if (tempC > 10 || windKmh <= 4.8) {
     return tempC;
   }
@@ -43,87 +45,102 @@ export function calculateWindChill(tempC: number, windKmh: number): number {
              11.37 * Math.pow(windKmh, 0.16) +
              0.3965 * tempC * Math.pow(windKmh, 0.16);
 
-  return Math.round(wc * 10) / 10; // Round to 1 decimal
+  return Math.round(wc * 10) / 10;
 }
 
 /**
- * Calculate severity level for a single hour of weather data
+ * Calculate CAST-aligned danger for a single hour.
  *
- * Logic:
- * - Start at green (safe)
- * - Check each threshold
- * - If ANY condition is red → overall red
- * - If ANY is amber (and none red) → overall amber
- * - Collect all triggered reasons
+ * @param hourData - weather data for this hour
+ * @param pinElevation - model elevation of the pin (meters ASL)
  */
 export function calculateSeverity(
   hourData: HourlyData,
-  thresholds = DEFAULT_THRESHOLDS
+  pinElevation?: number
 ): SeverityResult {
-  let level = 'green' as SeverityLevel;
   const reasons: string[] = [];
+  let hazards = 0;
+  let thunder = '';
+  const elevation = pinElevation ?? 0;
 
-  // Calculate wind chill
   const windChill = calculateWindChill(hourData.temperature, hourData.windSpeed);
 
-  // Check sustained wind
-  if (hourData.windSpeed >= thresholds.wind.red) {
-    level = 'red';
-    reasons.push(`High wind: ${Math.round(hourData.windSpeed)} km/h`);
-  } else if (hourData.windSpeed >= thresholds.wind.amber) {
-    if (level !== 'red') level = 'amber';
-    reasons.push(`Strong wind: ${Math.round(hourData.windSpeed)} km/h`);
+  // --- Hazard: Ice (peak above freezing level) ---
+  if (elevation > hourData.freezingLevel && hourData.freezingLevel > 0) {
+    hazards++;
+    reasons.push(`Ice: above freezing level (FL ${Math.round(hourData.freezingLevel)}m)`);
   }
 
-  // Check wind gusts (use 1.2x multiplier for gust thresholds)
-  if (hourData.windGusts >= thresholds.wind.red * 1.2) {
-    level = 'red';
-    reasons.push(`Dangerous gusts: ${Math.round(hourData.windGusts)} km/h`);
-  } else if (hourData.windGusts >= thresholds.wind.amber * 1.2) {
-    if (level !== 'red') level = 'amber';
-    reasons.push(`Strong gusts: ${Math.round(hourData.windGusts)} km/h`);
+  // --- Hazard: Blind (peak in cloud with high coverage) ---
+  if (elevation > hourData.cloudBase && hourData.cloudCover >= CAST_THRESHOLDS.CLOUD_BLIND) {
+    hazards++;
+    reasons.push(`Blind: in cloud (CB ${Math.round(hourData.cloudBase)}m, ${Math.round(hourData.cloudCover)}%)`);
   }
 
-  // Check wind chill (hypothermia risk)
-  if (windChill < thresholds.windChill.red) {
-    level = 'red';
-    reasons.push(`Hypothermia risk: ${windChill}°C wind chill`);
-  } else if (windChill < thresholds.windChill.amber) {
-    if (level !== 'red') level = 'amber';
-    reasons.push(`Cold exposure: ${windChill}°C wind chill`);
+  // --- Hazard: Wind (dangerous gusts) ---
+  if (hourData.windGusts >= CAST_THRESHOLDS.WIND_MODERATE) {
+    hazards++;
+    reasons.push(`Wind: gusts ${Math.round(hourData.windGusts)} km/h`);
   }
 
-  // Check rain probability + precipitation amount
-  if (hourData.rainProbability >= thresholds.rainProbability.red &&
-      hourData.precipitation >= thresholds.precipitation.red) {
-    level = 'red';
-    reasons.push(`Heavy rain: ${Math.round(hourData.rainProbability)}% (${hourData.precipitation.toFixed(1)}mm)`);
-  } else if (hourData.rainProbability >= thresholds.rainProbability.amber) {
-    if (level !== 'red') level = 'amber';
-    reasons.push(`Rain likely: ${Math.round(hourData.rainProbability)}%`);
+  // --- Hazard: Precip (significant wet + snow) ---
+  if (hourData.precipitation >= CAST_THRESHOLDS.PRECIP_SIGNIFICANT &&
+      hourData.snowfall >= CAST_THRESHOLDS.SNOW_SIGNIFICANT) {
+    hazards++;
+    reasons.push(`Precip: ${hourData.precipitation.toFixed(1)}mm rain + ${hourData.snowfall.toFixed(1)}cm snow`);
   }
 
-  return {
-    level,
-    reasons,
-    windChill
-  };
+  // --- Thunderstorm indicator ---
+  if (hourData.cape >= CAST_THRESHOLDS.CAPE_HIGH) {
+    thunder = 'TS!';
+    reasons.push(`Thunderstorm likely: CAPE ${Math.round(hourData.cape)} J/kg`);
+  } else if (hourData.cape >= CAST_THRESHOLDS.CAPE_MODERATE) {
+    thunder = 'TS?';
+    reasons.push(`Thunderstorm possible: CAPE ${Math.round(hourData.cape)} J/kg`);
+  }
+
+  // --- Extreme wind override → !!! ---
+  let danger: string;
+  if (hourData.windGusts >= CAST_THRESHOLDS.WIND_EXTREME) {
+    danger = '!!!';
+    if (!reasons.some(r => r.startsWith('Wind:'))) {
+      reasons.push(`Extreme wind: gusts ${Math.round(hourData.windGusts)} km/h`);
+    }
+  } else if (hazards >= 3) {
+    danger = '!!!';
+  } else if (hazards === 2) {
+    danger = '!!';
+  } else if (hazards === 1) {
+    danger = '!';
+  } else {
+    danger = '';
+  }
+
+  // Map danger to color level
+  let level: SeverityLevel;
+  if (danger === '!!!' || danger === '!!') {
+    level = 'red';
+  } else if (danger === '!' || thunder !== '') {
+    level = 'amber';
+  } else {
+    level = 'green';
+  }
+
+  return { level, danger, thunder, reasons, windChill };
 }
 
 /**
- * Calculate severity for a full hourly forecast array
- * Returns severity result for each hour
+ * Calculate severity for a full hourly forecast array.
  */
 export function calculateHourlySeverities(
   hourlyData: HourlyData[],
-  thresholds = DEFAULT_THRESHOLDS
+  pinElevation?: number
 ): SeverityResult[] {
-  return hourlyData.map(hour => calculateSeverity(hour, thresholds));
+  return hourlyData.map(hour => calculateSeverity(hour, pinElevation));
 }
 
 /**
- * Color mapping for severity levels
- * Tailwind-compatible color values
+ * Color mapping for severity levels.
  */
 export const SEVERITY_COLORS = {
   green: {
@@ -153,8 +170,7 @@ export const SEVERITY_COLORS = {
 };
 
 /**
- * Get severity summary across multiple pins
- * Used for summary bar in UI
+ * Get severity summary across multiple pins.
  */
 export function getSeveritySummary(severities: SeverityResult[]): {
   allSafe: boolean;
@@ -168,19 +184,14 @@ export function getSeveritySummary(severities: SeverityResult[]): {
 
   let message = '';
   if (allSafe) {
-    message = 'All pins safe ✓';
+    message = 'All pins safe';
   } else if (dangerCount > 0 && cautionCount > 0) {
-    message = `${cautionCount} caution, ${dangerCount} danger ⚠`;
+    message = `${cautionCount} caution, ${dangerCount} danger`;
   } else if (dangerCount > 0) {
-    message = `${dangerCount} danger ⚠ — check conditions`;
+    message = `${dangerCount} danger — check conditions`;
   } else {
-    message = `${cautionCount} caution ⚠`;
+    message = `${cautionCount} caution`;
   }
 
-  return {
-    allSafe,
-    dangerCount,
-    cautionCount,
-    message
-  };
+  return { allSafe, dangerCount, cautionCount, message };
 }

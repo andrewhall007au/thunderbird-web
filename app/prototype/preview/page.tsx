@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Smartphone, Tablet, Monitor } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Smartphone, Tablet, Monitor, Wifi, WifiOff } from 'lucide-react';
 
 type Device = 'iphone' | 'ipad' | 'desktop';
+type PreviewMode = 'online' | 'offline';
 
 const DEVICES: Record<Device, { label: string; width: number; height: number; scale: number; icon: typeof Smartphone }> = {
   iphone: { label: 'iPhone 15', width: 393, height: 852, scale: 0.7, icon: Smartphone },
@@ -13,12 +14,19 @@ const DEVICES: Record<Device, { label: string; width: number; height: number; sc
 
 export default function PreviewPage() {
   const [device, setDevice] = useState<Device>('iphone');
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('online');
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const d = DEVICES[device];
+
+  // Send mode changes to iframe via postMessage (preserves trail state)
+  useEffect(() => {
+    iframeRef.current?.contentWindow?.postMessage({ type: 'setMode', mode: previewMode }, '*');
+  }, [previewMode]);
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center">
       {/* Device selector */}
-      <div className="flex items-center gap-3 py-6">
+      <div className="flex items-center gap-3 py-4">
         {(Object.entries(DEVICES) as [Device, typeof DEVICES[Device]][]).map(([key, dev]) => {
           const Icon = dev.icon;
           return (
@@ -41,23 +49,53 @@ export default function PreviewPage() {
         })}
       </div>
 
+      {/* Mode toggle */}
+      <div className="flex items-center gap-2 pb-4">
+        <button
+          onClick={() => setPreviewMode('online')}
+          className={`
+            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all
+            ${previewMode === 'online'
+              ? 'bg-green-700 text-green-100 border border-green-500/50'
+              : 'bg-zinc-800 text-zinc-500 hover:text-zinc-300'
+            }
+          `}
+        >
+          <Wifi className="w-3 h-3" />
+          Data
+        </button>
+        <button
+          onClick={() => setPreviewMode('offline')}
+          className={`
+            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all
+            ${previewMode === 'offline'
+              ? 'bg-amber-700 text-amber-100 border border-amber-500/50'
+              : 'bg-zinc-800 text-zinc-500 hover:text-zinc-300'
+            }
+          `}
+        >
+          <WifiOff className="w-3 h-3" />
+          SMS only
+        </button>
+      </div>
+
       {/* Device frame */}
       <div className="flex-1 flex items-start justify-center pb-10">
         {device === 'iphone' && (
-          <PhoneFrame width={d.width} height={d.height} scale={d.scale} />
+          <PhoneFrame width={d.width} height={d.height} scale={d.scale} src="/prototype" iframeRef={iframeRef} />
         )}
         {device === 'ipad' && (
-          <TabletFrame width={d.width} height={d.height} scale={d.scale} />
+          <TabletFrame width={d.width} height={d.height} scale={d.scale} src="/prototype" iframeRef={iframeRef} />
         )}
         {device === 'desktop' && (
-          <DesktopFrame width={d.width} height={d.height} scale={d.scale} />
+          <DesktopFrame width={d.width} height={d.height} scale={d.scale} src="/prototype" iframeRef={iframeRef} />
         )}
       </div>
     </div>
   );
 }
 
-function PhoneFrame({ width, height, scale }: { width: number; height: number; scale: number }) {
+function PhoneFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement | null> }) {
   return (
     <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
       <div
@@ -72,13 +110,16 @@ function PhoneFrame({ width, height, scale }: { width: number; height: number; s
 
         {/* Screen */}
         <div
-          className="rounded-[46px] overflow-hidden bg-black relative"
+          className="rounded-[46px] overflow-hidden bg-zinc-800 relative flex flex-col"
           style={{ width, height }}
         >
+          {/* Status bar safe area (behind Dynamic Island) */}
+          <div className="flex-shrink-0 h-[59px]" />
+          {/* App content */}
           <iframe
-            src="/prototype"
-            className="w-full h-full border-0"
-            style={{ width, height }}
+            src={src}
+            className="w-full flex-1 border-0"
+            style={{ width }}
           />
         </div>
 
@@ -89,7 +130,7 @@ function PhoneFrame({ width, height, scale }: { width: number; height: number; s
   );
 }
 
-function TabletFrame({ width, height, scale }: { width: number; height: number; scale: number }) {
+function TabletFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement | null> }) {
   return (
     <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
       <div
@@ -108,7 +149,7 @@ function TabletFrame({ width, height, scale }: { width: number; height: number; 
           style={{ width, height }}
         >
           <iframe
-            src="/prototype"
+            src={src}
             className="w-full h-full border-0"
             style={{ width, height }}
           />
@@ -118,7 +159,7 @@ function TabletFrame({ width, height, scale }: { width: number; height: number; 
   );
 }
 
-function DesktopFrame({ width, height, scale }: { width: number; height: number; scale: number }) {
+function DesktopFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement | null> }) {
   return (
     <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
       {/* Monitor */}
@@ -139,7 +180,7 @@ function DesktopFrame({ width, height, scale }: { width: number; height: number;
           style={{ width, height }}
         >
           <iframe
-            src="/prototype"
+            src={src}
             className="w-full h-full border-0"
             style={{ width, height }}
           />

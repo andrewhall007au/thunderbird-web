@@ -60,7 +60,7 @@ function inferModelResolution(lat: number, lng: number): string {
 /**
  * Parse Open-Meteo hourly response into HourlyData array
  */
-function parseHourlyData(hourly: any, now: Date): HourlyData[] {
+function parseHourlyData(hourly: any, now: Date, elevation: number): HourlyData[] {
   const times = hourly.time || [];
   const temperatures = hourly.temperature_2m || [];
   const windSpeeds = hourly.wind_speed_10m || [];
@@ -70,6 +70,10 @@ function parseHourlyData(hourly: any, now: Date): HourlyData[] {
   const precip = hourly.precipitation || [];
   const weatherCodes = hourly.weather_code || [];
   const cloudCover = hourly.cloud_cover || [];
+  const dewpoints = hourly.dew_point_2m || [];
+  const freezingLevels = hourly.freezing_level_height || [];
+  const snowfalls = hourly.snowfall || [];
+  const capes = hourly.cape || [];
 
   const result: HourlyData[] = [];
 
@@ -78,17 +82,27 @@ function parseHourlyData(hourly: any, now: Date): HourlyData[] {
     const time = new Date(timeStr);
     const hoursFromNow = Math.round((time.getTime() - now.getTime()) / (1000 * 60 * 60));
 
+    const temp = temperatures[i] ?? 0;
+    const dewpoint = dewpoints[i] ?? 0;
+    // Cloud base via LCL formula: (temp - dewpoint) * 125 + elevation
+    const cloudBase = (temp - dewpoint) * 125 + elevation;
+
     result.push({
       time: timeStr,
       hoursFromNow,
-      temperature: temperatures[i] ?? 0,
+      temperature: temp,
       windSpeed: windSpeeds[i] ?? 0,
       windGusts: windGusts[i] ?? 0,
       windDirection: windDirections[i] ?? 0,
       rainProbability: rainProbs[i] ?? 0,
       precipitation: precip[i] ?? 0,
       weatherCode: weatherCodes[i] ?? 0,
-      cloudCover: cloudCover[i] ?? 0
+      cloudCover: cloudCover[i] ?? 0,
+      dewpoint,
+      freezingLevel: freezingLevels[i] ?? 0,
+      snowfall: snowfalls[i] ?? 0,
+      cape: capes[i] ?? 0,
+      cloudBase
     });
   }
 
@@ -129,7 +143,11 @@ export async function fetchMultiPinWeather(
       'precipitation_probability',
       'precipitation',
       'weather_code',
-      'cloud_cover'
+      'cloud_cover',
+      'dew_point_2m',
+      'freezing_level_height',
+      'snowfall',
+      'cape'
     ].join(','),
     forecast_hours: '72',
     timezone: 'auto'
@@ -185,11 +203,11 @@ export async function fetchMultiPinWeather(
       const pin = pins[i];
       const key = `${pin.lat.toFixed(3)},${pin.lng.toFixed(3)}`;
 
-      // Parse hourly data
-      const hourly = parseHourlyData(location.hourly || {}, now);
-
       // Extract elevation
       const elevation = location.elevation || 0;
+
+      // Parse hourly data (elevation needed for cloud base calculation)
+      const hourly = parseHourlyData(location.hourly || {}, now, elevation);
 
       // Infer model resolution
       const modelResolution = inferModelResolution(pin.lat, pin.lng);

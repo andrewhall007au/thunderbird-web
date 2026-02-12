@@ -57,12 +57,12 @@ interface BomGridProps {
 export default function BomGrid({ zoom, bounds }: BomGridProps) {
   const visible = zoom >= 8 && bounds !== null;
 
-  const gridData = useMemo(() => {
-    if (!visible || !bounds) return null;
+  const gridData = useMemo<GeoJSON.FeatureCollection>(() => {
+    if (!visible || !bounds) {
+      return { type: 'FeatureCollection', features: [] };
+    }
     return generateGridLines(bounds.west, bounds.south, bounds.east, bounds.north);
-  }, [visible, bounds]);
-
-  if (!visible || !gridData) return null;
+  }, [visible, bounds?.west, bounds?.south, bounds?.east, bounds?.north]);
 
   return (
     <Source id="bom-grid" type="geojson" data={gridData}>
@@ -71,8 +71,8 @@ export default function BomGrid({ zoom, bounds }: BomGridProps) {
         type="line"
         paint={{
           'line-color': '#64748b',
-          'line-width': 0.8,
-          'line-opacity': 0.4,
+          'line-width': 1,
+          'line-opacity': visible ? 0.5 : 0,
         }}
       />
     </Source>

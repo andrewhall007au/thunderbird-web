@@ -16,6 +16,7 @@ interface PrototypeMapProps {
   currentHour: number;
   onMapClick: (lat: number, lng: number) => void;
   onPinRemove: (id: string) => void;
+  onPinSelect?: (id: string) => void;
   gridVisible: boolean;
   onGridToggle: () => void;
   mode?: 'online' | 'offline';
@@ -88,6 +89,7 @@ export default function PrototypeMap({
   currentHour,
   onMapClick,
   onPinRemove,
+  onPinSelect,
   gridVisible,
   onGridToggle,
   mode = 'online'
@@ -100,6 +102,7 @@ export default function PrototypeMap({
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<{ west: number; south: number; east: number; north: number } | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
   const mapRef = useRef<MapRef>(null);
   const hasGeolocated = useRef(false);
 
@@ -113,9 +116,9 @@ export default function PrototypeMap({
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserLocation(loc);
-        // Only fly to user location if no trail is selected
-        if (!trailGeojson && mapRef.current) {
-          mapRef.current.flyTo({ center: [loc.lng, loc.lat], zoom: 10, duration: 1500 });
+        // Only move to user location if no trail is selected
+        if (!trailGeojson) {
+          setViewState(prev => ({ ...prev, latitude: loc.lat, longitude: loc.lng, zoom: 10 }));
         }
       },
       () => { /* permission denied or error — ignore silently */ },
@@ -123,16 +126,18 @@ export default function PrototypeMap({
     );
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fly to user location on button press
+  // Move to user location on button press
   const handleLocateMe = useCallback(() => {
     if (!navigator.geolocation) return;
+    setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserLocation(loc);
-        mapRef.current?.flyTo({ center: [loc.lng, loc.lat], zoom: 12, duration: 1000 });
+        setViewState(prev => ({ ...prev, latitude: loc.lat, longitude: loc.lng, zoom: 12 }));
+        setLocating(false);
       },
-      () => { /* ignore */ },
+      () => { setLocating(false); },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }, []);
@@ -191,6 +196,7 @@ export default function PrototypeMap({
       setSelectedPinId(null);
     } else {
       setSelectedPinId(pinId);
+      onPinSelect?.(pinId);
     }
   };
 
@@ -228,11 +234,15 @@ export default function PrototypeMap({
       {/* Locate me button */}
       <div className="absolute top-4 left-4 z-10">
         <button
-          onClick={handleLocateMe}
-          className="p-2 rounded shadow-lg bg-white text-zinc-900 hover:bg-zinc-100 transition-colors"
+          onClick={(e) => { e.stopPropagation(); handleLocateMe(); }}
+          className={`p-2 rounded shadow-lg transition-colors ${
+            locating
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-zinc-900 hover:bg-zinc-100'
+          }`}
           title="Go to my location"
         >
-          <LocateFixed className="w-5 h-5" />
+          <LocateFixed className={`w-5 h-5 ${locating ? 'animate-spin' : ''}`} />
         </button>
       </div>
 

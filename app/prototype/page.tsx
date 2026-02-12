@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, Suspense, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Smartphone, Tablet, Monitor, Wifi, WifiOff, FlaskConical } from 'lucide-react';
 import TrailMenu from './components/TrailMenu';
@@ -22,19 +23,25 @@ const MAX_PINS = 8;
 type AppMode = 'online' | 'offline';
 type Viewport = 'mobile' | 'tablet' | 'desktop';
 
-export default function PrototypePage() {
+function PrototypePageInner() {
+  const searchParams = useSearchParams();
+  const urlMode = searchParams.get('mode');
+
   const [selectedTrailId, setSelectedTrailId] = useState<string | null>(null);
   const [trailGeojson, setTrailGeojson] = useState<GeoJSON.Feature | null>(null);
   const [pins, setPins] = useState<Pin[]>([]);
   const [currentHour, setCurrentHour] = useState(0);
   const [gridVisible, setGridVisible] = useState(false);
+  const [forecastExpanded, setForecastExpanded] = useState(false);
 
   const [satelliteMode, setSatelliteMode] = useState(false);
   const [satelliteLatencyMs, setSatelliteLatencyMs] = useState(5000);
   const [lastPayloadMetrics, setLastPayloadMetrics] = useState<PayloadMetrics | null>(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [detectedMode, setDetectedMode] = useState<AppMode>('online');
-  const [simulatedMode, setSimulatedMode] = useState<AppMode | null>(null); // null = use detected
+  const [simulatedMode, setSimulatedMode] = useState<AppMode | null>(
+    urlMode === 'offline' ? 'offline' : urlMode === 'online' ? 'online' : null
+  ); // null = use detected
   const [showModeAlert, setShowModeAlert] = useState(false);
   const [viewport, setViewport] = useState<Viewport>('mobile');
 
@@ -129,6 +136,7 @@ export default function PrototypePage() {
   // Add a new pin at the specified location
   const addPin = async (lat: number, lng: number) => {
     if (pins.length >= MAX_PINS) return;
+    setForecastExpanded(true);
 
     const nextLabel = PIN_LABELS[pins.length];
     const elevation = findNearestElevation(lat, lng);
@@ -210,12 +218,12 @@ export default function PrototypePage() {
       if (elev < lowElev) { lowElev = elev; lowIdx = i; }
     }
 
-    // Create auto pins A (highest) and B (lowest)
+    // Create auto pins H (highest) and L (lowest)
     const autoA: Pin = {
       id: `pin-auto-high-${Date.now()}`,
       lat: coords[highIdx][1],
       lng: coords[highIdx][0],
-      label: 'A',
+      label: 'H',
       elevation: Math.round(highElev),
       loading: mode === 'online',
     };
@@ -223,12 +231,13 @@ export default function PrototypePage() {
       id: `pin-auto-low-${Date.now() + 1}`,
       lat: coords[lowIdx][1],
       lng: coords[lowIdx][0],
-      label: 'B',
+      label: 'L',
       elevation: Math.round(lowElev),
       loading: mode === 'online',
     };
 
     setPins([autoA, autoB]);
+    setForecastExpanded(true);
 
     if (mode === 'online') {
       fetchWeatherForPins([autoA, autoB]);
@@ -385,6 +394,7 @@ export default function PrototypePage() {
                 currentHour={currentHour}
                 onMapClick={addPin}
                 onPinRemove={removePin}
+                onPinSelect={() => setForecastExpanded(true)}
                 gridVisible={gridVisible}
                 onGridToggle={() => setGridVisible(!gridVisible)}
                 mode={mode}
@@ -420,7 +430,8 @@ export default function PrototypePage() {
                 onRemovePin={removePin}
                 onRenamePin={renamePin}
                 onClearPins={clearPins}
-
+                expanded={forecastExpanded}
+                onExpandedChange={setForecastExpanded}
                 viewport="desktop"
               />
             ) : (
@@ -461,6 +472,7 @@ export default function PrototypePage() {
                 currentHour={currentHour}
                 onMapClick={addPin}
                 onPinRemove={removePin}
+                onPinSelect={() => setForecastExpanded(true)}
                 gridVisible={gridVisible}
                 onGridToggle={() => setGridVisible(!gridVisible)}
                 mode={mode}
@@ -503,7 +515,8 @@ export default function PrototypePage() {
                 onRemovePin={removePin}
                 onRenamePin={renamePin}
                 onClearPins={clearPins}
-
+                expanded={forecastExpanded}
+                onExpandedChange={setForecastExpanded}
                 viewport={viewport}
               />
             ) : (
@@ -572,10 +585,23 @@ export default function PrototypePage() {
         /* Safe area insets for notched devices */
         @supports (padding: env(safe-area-inset-bottom)) {
           body {
+            padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
           }
         }
       `}</style>
     </div>
+  );
+}
+
+export default function PrototypePage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen flex items-center justify-center bg-zinc-900 text-zinc-400">
+        Loading...
+      </div>
+    }>
+      <PrototypePageInner />
+    </Suspense>
   );
 }

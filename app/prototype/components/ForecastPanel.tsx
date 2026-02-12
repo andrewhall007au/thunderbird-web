@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import type { Pin } from '../lib/types';
 import { Copy, X, Trash2, ChevronUp, Pencil } from 'lucide-react';
 import { getWeatherEmoji, getWindBearing } from '../lib/openmeteo';
@@ -15,6 +15,8 @@ interface ForecastPanelProps {
   onRemovePin: (id: string) => void;
   onRenamePin: (id: string, newLabel: string) => void;
   onClearPins: () => void;
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
   viewport?: Viewport;
 }
 
@@ -26,10 +28,24 @@ export default function ForecastPanel({
   onRemovePin,
   onRenamePin,
   onClearPins,
+  expanded: isExpanded,
+  onExpandedChange: setIsExpanded,
   viewport = 'mobile'
 }: ForecastPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
   const [clearConfirm, setClearConfirm] = useState(false);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const delta = e.changedTouches[0].clientY - touchStartY.current;
+    if (delta > 40) setIsExpanded(false);   // swipe down → collapse
+    if (delta < -40) setIsExpanded(true);   // swipe up → expand
+    touchStartY.current = null;
+  }, []);
 
   const handleClearPins = () => {
     if (!clearConfirm) {
@@ -42,18 +58,26 @@ export default function ForecastPanel({
   };
 
   return (
-    <div className="bg-zinc-800 border-t border-zinc-700">
-      {/* Collapsed header */}
+    <div
+      className="bg-zinc-800 border-t border-zinc-700"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Drag handle + header */}
       <div
-        className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-zinc-750 transition-colors"
+        className="cursor-pointer hover:bg-zinc-750 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center gap-3">
+        {/* Visible drag handle */}
+        <div className="flex justify-center pt-2">
+          <div className="w-10 h-1 rounded-full bg-zinc-600" />
+        </div>
+        <div className="px-4 py-2 flex items-center justify-between">
           <div className="text-sm font-medium">
             {pins.length}/{MAX_PINS} pins
           </div>
+          <ChevronUp className={`w-5 h-5 text-zinc-400 transition-transform ${isExpanded ? '' : 'rotate-180'}`} />
         </div>
-        <ChevronUp className={`w-5 h-5 text-zinc-400 transition-transform ${isExpanded ? '' : 'rotate-180'}`} />
       </div>
 
       {/* Expanded content */}
@@ -250,16 +274,14 @@ function ForecastCard({
   // Loading state
   if (pin.loading) {
     return (
-      <div className={`${sizeClass} bg-zinc-700 rounded-lg p-4 border border-zinc-600`}>
-        <div className="animate-pulse space-y-3">
-          <div className="h-5 bg-zinc-600 rounded w-16"></div>
-          <div className="h-4 bg-zinc-600 rounded w-20"></div>
-          <div className="h-8 bg-zinc-600 rounded w-24 mt-4"></div>
-          <div className="space-y-2">
-            <div className="h-3 bg-zinc-600 rounded"></div>
-            <div className="h-3 bg-zinc-600 rounded"></div>
-            <div className="h-3 bg-zinc-600 rounded"></div>
+      <div className={`${sizeClass} bg-zinc-700 rounded-lg px-3 py-2 border border-zinc-600`}>
+        <div className="animate-pulse space-y-1.5">
+          <div className="flex gap-2">
+            <div className="h-4 bg-zinc-600 rounded w-10"></div>
+            <div className="h-4 bg-zinc-600 rounded w-20 ml-auto"></div>
           </div>
+          <div className="h-3 bg-zinc-600 rounded w-32"></div>
+          <div className="h-3 bg-zinc-600 rounded w-full"></div>
         </div>
       </div>
     );
@@ -319,100 +341,68 @@ function ForecastCard({
   const dangerDisplay = [severity.danger, severity.thunder].filter(Boolean).join(' ');
 
   return (
-    <div className={`${sizeClass} bg-zinc-700 rounded-lg p-3 border-l-4 ${severityColor.border} relative`}>
-      {/* Remove button */}
-      <button
-        onClick={onRemove}
-        className="absolute top-2 right-2 p-1 hover:bg-zinc-600 rounded transition-colors z-10"
-        title="Remove pin"
-      >
-        <X className="w-4 h-4 text-zinc-400" />
-      </button>
-
-      {/* Header: Pin label + danger + elevation */}
-      <div className="flex items-center gap-2 mb-1">
+    <div className={`${sizeClass} bg-zinc-700 rounded-lg px-3 py-2 border-l-4 ${severityColor.border} relative`}>
+      {/* Row 1: Label + danger, temp, actions */}
+      <div className="flex items-center justify-between gap-1">
         <span className={`
-          px-2 py-0.5 rounded text-xs font-bold
+          px-1.5 py-0.5 rounded text-xs font-bold
           ${severityColor.bgClass} ${severityColor.textClass}
         `}>
           <EditableLabel label={pin.label} onRename={onRename} />
           {dangerDisplay ? ` ${dangerDisplay}` : ''}
         </span>
+        <span className="flex items-center gap-1 text-sm font-bold flex-shrink-0">
+          {weatherEmoji} {tempRange.min === tempRange.max
+            ? `${tempRange.min}°C`
+            : `${tempRange.min}-${tempRange.max}°C`
+          }
+        </span>
+        <div className="flex items-center gap-0.5 flex-shrink-0">
+          <button
+            disabled
+            className="p-1 rounded opacity-30 cursor-not-allowed"
+            title="Copy GPS — available in SMS-only mode"
+          >
+            <Copy className="w-3.5 h-3.5 text-zinc-400" />
+          </button>
+          <button
+            onClick={onRemove}
+            className="p-1 hover:bg-zinc-600 rounded transition-colors"
+            title="Remove pin"
+          >
+            <X className="w-3.5 h-3.5 text-zinc-400" />
+          </button>
+        </div>
       </div>
 
-      {/* Elevation */}
-      <div className="text-sm font-mono text-zinc-300 mb-1">
-        Elevation {pin.elevation != null ? pin.elevation : Math.round(elevation)}m
-      </div>
-
-      {/* Light hours */}
-      <div className="text-xs text-zinc-400 mb-2 font-mono">
-        Light {light.sunrise}-{light.sunset} ({light.duration})
+      {/* Row 2: Elevation + light */}
+      <div className="text-[11px] font-mono text-zinc-400 mt-1">
+        {pin.elevation != null ? pin.elevation : Math.round(elevation)}m · {light.sunrise}-{light.sunset} ({light.duration})
       </div>
 
       {/* Danger reasons (only when present) */}
       {severity.reasons.length > 0 && (
-        <div className="text-xs text-zinc-300 mb-2 space-y-0.5">
+        <div className="text-[11px] text-zinc-300 mt-1">
           {severity.reasons.map((reason, idx) => (
-            <div key={idx}>• {reason}</div>
+            <span key={idx}>{idx > 0 ? ' · ' : ''}{reason}</span>
           ))}
         </div>
       )}
 
-      {/* Main weather: emoji + temp range */}
-      <div className="flex items-center gap-2 mb-2">
-        <div className="text-2xl">{weatherEmoji}</div>
-        <div className="text-lg font-bold">
-          {tempRange.min === tempRange.max
-            ? `${tempRange.min}°C`
-            : `${tempRange.min}-${tempRange.max}°C`
-          }
+      {/* CAST metrics — compact two-line layout */}
+      <div className="text-[11px] font-mono mt-1 space-y-0.5">
+        <div className="flex gap-3">
+          <span><span className="text-zinc-500">Rn</span> {Math.round(hourlyData.rainProbability)}% {hourlyData.precipitation.toFixed(1)}mm</span>
+          <span><span className="text-zinc-500">W</span> {Math.round(hourlyData.windSpeed)}-{Math.round(hourlyData.windGusts)} {windBearing}</span>
+          {hourlyData.snowfall > 0 && (
+            <span><span className="text-zinc-500">S</span> {hourlyData.snowfall.toFixed(1)}cm</span>
+          )}
+        </div>
+        <div className="flex gap-3">
+          <span><span className="text-zinc-500">Cld</span> {Math.round(hourlyData.cloudCover)}% CB{cbHundreds} FL{flHundreds}</span>
+          <span className="text-zinc-500 ml-auto">{hourlyData.hoursFromNow === 0 ? 'Now' : `+${hourlyData.hoursFromNow}h`} · {pin.forecast.modelResolution}</span>
         </div>
       </div>
-
-      {/* CAST-format metrics */}
-      <div className="space-y-1 text-xs font-mono">
-        {/* Rain */}
-        <div className="flex justify-between">
-          <span className="text-zinc-400">Rn</span>
-          <span>{Math.round(hourlyData.rainProbability)}%  {hourlyData.precipitation.toFixed(1)}mm</span>
-        </div>
-
-        {/* Snow (only when > 0) */}
-        {hourlyData.snowfall > 0 && (
-          <div className="flex justify-between">
-            <span className="text-zinc-400">S</span>
-            <span>{hourlyData.snowfall.toFixed(1)}cm</span>
-          </div>
-        )}
-
-        {/* Wind */}
-        <div className="flex justify-between">
-          <span className="text-zinc-400">W</span>
-          <span>{Math.round(hourlyData.windSpeed)}-{Math.round(hourlyData.windGusts)} {windBearing}</span>
-        </div>
-
-        {/* Cloud, cloud base, freezing level */}
-        <div className="flex justify-between">
-          <span className="text-zinc-400">Cld</span>
-          <span>{Math.round(hourlyData.cloudCover)}%  CB{cbHundreds}  FL{flHundreds}</span>
-        </div>
-      </div>
-
-      {/* Footer: time offset + model */}
-      <div className="mt-2 pt-2 border-t border-zinc-600 flex justify-between text-xs text-zinc-500">
-        <span>{hourlyData.hoursFromNow === 0 ? 'Now' : `+${hourlyData.hoursFromNow}h`}</span>
-        <span>{pin.forecast.modelResolution}</span>
-      </div>
-
-      {/* Per-pin copy button */}
-      <button
-        onClick={handleCopyPin}
-        className="w-full mt-2 px-2 py-1.5 bg-zinc-600 hover:bg-zinc-500 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
-      >
-        <Copy className="w-3 h-3" />
-        {copyFeedback ? 'Copied!' : 'Copy GPS point for SMS'}
-      </button>
     </div>
   );
 }
