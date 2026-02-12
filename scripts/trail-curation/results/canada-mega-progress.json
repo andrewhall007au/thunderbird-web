@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "id": "sentier_international_des_appalaches",
+      "name": "Sentier International des Appalaches",
+      "calcKm": 890.1,
+      "pts": 19404,
+      "source": "osm_overpass_ordered",
+      "off": 36.9,
+      "status": "HIGH"
+    },
+    {
+      "id": "great_divide_trail",
+      "name": "Great Divide Trail",
+      "calcKm": 1514.2,
+      "pts": 66549,
+      "source": "osm_overpass_ordered",
+      "off": 26.2,
+      "status": "HIGH"
+    }
+  ],
+  "failures": [],
+  "timestamp": "2026-02-10T00:18:00.224Z"
+}

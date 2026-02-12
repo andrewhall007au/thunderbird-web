@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Hartz Peak",
+    "searchName": "Hartz Peak",
+    "region": "Hartz Mountains NP, TAS",
+    "country": "AU",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [-43.25, 146.72, -43.19, 146.80],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/hartz-peak-89930644"
+  },
+  {
+    "name": "Mount Rufus",
+    "searchName": "Mount Rufus|Mt Rufus",
+    "region": "Lake St Clair, TAS",
+    "country": "AU",
+    "officialDistanceKm": 17,
+    "typicalDays": "1",
+    "bbox": [-42.20, 146.05, -42.10, 146.20],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/mt-rufus-tas-5242177"
+  },
+  {
+    "name": "Cradle Mountain Summit",
+    "searchName": "Cradle Mountain Summit|Cradle Mountain",
+    "region": "Cradle Mountain, TAS",
+    "country": "AU",
+    "officialDistanceKm": 13,
+    "typicalDays": "1",
+    "bbox": [-41.68, 145.90, -41.62, 146.00],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/cradle-mountain-summit-58140513"
+  },
+  {
+    "name": "Mount Murchison",
+    "searchName": "Mount Murchison|Mt Murchison",
+    "region": "West Coast Range, TAS",
+    "country": "AU",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [-41.82, 145.54, -41.76, 145.64],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/mount-murchison-113483324"
+  },
+  {
+    "name": "Mount Roland",
+    "searchName": "Mount Roland|Mt Roland",
+    "region": "Sheffield, TAS",
+    "country": "AU",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [-41.55, 146.20, -41.48, 146.30],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/mount-roland-1234-m-41914029"
+  },
+  {
+    "name": "Legges Tor Ben Lomond",
+    "searchName": "Legges Tor|Ben Lomond|Legge Tor",
+    "region": "Ben Lomond NP, TAS",
+    "country": "AU",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [-41.58, 147.56, -41.50, 147.66],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/legge-tor-summit-ben-lomond-np-122747339"
+  },
+  {
+    "name": "Tarn Shelf Circuit",
+    "searchName": "Tarn Shelf|Mt Field",
+    "region": "Mount Field NP, TAS",
+    "country": "AU",
+    "officialDistanceKm": 16,
+    "typicalDays": "1",
+    "bbox": [-42.70, 146.54, -42.62, 146.68],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/tarn-shelf-circuit-mount-field-national-park-87079681"
+  },
+  {
+    "name": "Cape Raoul",
+    "searchName": "Cape Raoul",
+    "region": "Tasman NP, TAS",
+    "country": "AU",
+    "officialDistanceKm": 14,
+    "typicalDays": "1",
+    "bbox": [-43.22, 147.72, -43.15, 147.82],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/tasmania-cape-raoul-tasman-peninsula-22130015"
+  },
+  {
+    "name": "Mount Amos",
+    "searchName": "Mount Amos|Mt Amos",
+    "region": "Freycinet NP, TAS",
+    "country": "AU",
+    "officialDistanceKm": 4,
+    "typicalDays": "1",
+    "bbox": [-42.16, 148.28, -42.12, 148.34],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/mt-amos-17343947"
+  },
+  {
+    "name": "Bishop and Clerk Maria Island",
+    "searchName": "Bishop and Clerk|Maria Island",
+    "region": "Maria Island NP, TAS",
+    "country": "AU",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [-42.66, 148.05, -42.58, 148.12],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/maria-island-bishop-and-clerk-193236577"
+  },
+  {
+    "name": "The Acropolis and Labyrinth",
+    "searchName": "The Acropolis|Mt Geryon|Labyrinth",
+    "region": "Cradle Mountain-Lake St Clair NP, TAS",
+    "country": "AU",
+    "officialDistanceKm": 20,
+    "typicalDays": "1",
+    "bbox": [-41.80, 145.94, -41.70, 146.10],
+    "wikiloc": "https://www.wikiloc.com/mountaineering-trails/mt-geryon-traverse-including-a-visit-to-the-acropolis-and-the-labyrinth-6328425"
+  },
+  {
+    "name": "Frenchmans Cap",
+    "searchName": "Frenchmans Cap|Frenchman's Cap",
+    "region": "Franklin-Gordon Wild Rivers NP, TAS",
+    "country": "AU",
+    "officialDistanceKm": 46,
+    "typicalDays": "3",
+    "bbox": [-42.32, 145.72, -42.20, 145.92],
+    "wikiloc": "https://www.wikiloc.com/hiking-trails/frenchmans-cap-suspension-bridge-178748399"
+  }
+]

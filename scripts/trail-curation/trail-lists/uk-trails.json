@@ -1,0 +1,407 @@
+[
+  {
+    "name": "West Highland Way",
+    "searchName": "West Highland Way",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 154,
+    "typicalDays": "6-8",
+    "bbox": [55.8, -5.5, 56.9, -4.3]
+  },
+  {
+    "name": "Pennine Way",
+    "searchName": "Pennine Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 430,
+    "typicalDays": "16-19",
+    "bbox": [53.0, -3.0, 55.8, -1.5]
+  },
+  {
+    "name": "Coast to Coast Walk",
+    "searchName": "Coast to Coast",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 309,
+    "typicalDays": "12-14",
+    "bbox": [54.2, -3.7, 54.7, -0.8]
+  },
+  {
+    "name": "South West Coast Path",
+    "searchName": "South West Coast Path",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 1014,
+    "typicalDays": "50-60",
+    "bbox": [50.0, -5.8, 51.5, -1.5]
+  },
+  {
+    "name": "Hadrian's Wall Path",
+    "searchName": "Hadrian's Wall Path",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 135,
+    "typicalDays": "6-7",
+    "bbox": [54.8, -3.5, 55.2, -1.4]
+  },
+  {
+    "name": "Offa's Dyke Path",
+    "searchName": "Offa's Dyke Path",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 285,
+    "typicalDays": "12",
+    "bbox": [51.5, -3.5, 53.3, -2.5]
+  },
+  {
+    "name": "Pembrokeshire Coast Path",
+    "searchName": "Pembrokeshire Coast Path",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 300,
+    "typicalDays": "10-15",
+    "bbox": [51.5, -5.4, 52.1, -4.6]
+  },
+  {
+    "name": "Cleveland Way",
+    "searchName": "Cleveland Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 175,
+    "typicalDays": "9",
+    "bbox": [54.1, -1.7, 54.6, -0.6]
+  },
+  {
+    "name": "South Downs Way",
+    "searchName": "South Downs Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 160,
+    "typicalDays": "7",
+    "bbox": [50.7, -1.2, 51.2, 0.3]
+  },
+  {
+    "name": "Cotswold Way",
+    "searchName": "Cotswold Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 164,
+    "typicalDays": "7",
+    "bbox": [51.3, -2.4, 52.1, -1.6]
+  },
+  {
+    "name": "Cape Wrath Trail",
+    "searchName": "Cape Wrath Trail",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 370,
+    "typicalDays": "14-20",
+    "bbox": [56.8, -5.8, 58.7, -4.5]
+  },
+  {
+    "name": "Great Glen Way",
+    "searchName": "Great Glen Way",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 127,
+    "typicalDays": "5-6",
+    "bbox": [56.8, -5.2, 57.5, -4.2]
+  },
+  {
+    "name": "Skye Trail",
+    "searchName": "Skye Trail",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 128,
+    "typicalDays": "6-7",
+    "bbox": [57.0, -6.8, 57.7, -5.8]
+  },
+  {
+    "name": "Southern Upland Way",
+    "searchName": "Southern Upland Way",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 344,
+    "typicalDays": "12-14",
+    "bbox": [54.8, -5.2, 55.7, -2.2]
+  },
+  {
+    "name": "Speyside Way",
+    "searchName": "Speyside Way",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 105,
+    "typicalDays": "4-5",
+    "bbox": [57.1, -3.7, 57.7, -3.0]
+  },
+  {
+    "name": "Cumbria Way",
+    "searchName": "Cumbria Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 113,
+    "typicalDays": "5-6",
+    "bbox": [54.2, -3.4, 54.7, -2.6]
+  },
+  {
+    "name": "Dales Way",
+    "searchName": "Dales Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 127,
+    "typicalDays": "5-6",
+    "bbox": [53.8, -3.0, 54.3, -1.6]
+  },
+  {
+    "name": "North Downs Way",
+    "searchName": "North Downs Way",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 246,
+    "typicalDays": "10",
+    "bbox": [51.1, -0.9, 51.4, 1.4]
+  },
+  {
+    "name": "The Ridgeway",
+    "searchName": "The Ridgeway",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 139,
+    "typicalDays": "5-6",
+    "bbox": [51.3, -1.9, 51.8, -0.7]
+  },
+  {
+    "name": "Glyndwr's Way",
+    "searchName": "Glyndwr's Way",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 217,
+    "typicalDays": "9",
+    "bbox": [52.1, -3.9, 52.7, -3.1]
+  },
+  {
+    "name": "Rob Roy Way",
+    "searchName": "Rob Roy Way",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 127,
+    "typicalDays": "6-7",
+    "bbox": [56.1, -4.7, 56.7, -3.7]
+  },
+  {
+    "name": "Affric Kintail Way",
+    "searchName": "Affric Kintail Way",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 72,
+    "typicalDays": "3-4",
+    "bbox": [57.1, -5.6, 57.4, -4.8]
+  },
+  {
+    "name": "St Cuthbert's Way",
+    "searchName": "St Cuthbert's Way",
+    "region": "Scotland / England",
+    "country": "GB",
+    "officialDistanceKm": 100,
+    "typicalDays": "4-5",
+    "bbox": [55.4, -2.8, 55.7, -1.8]
+  },
+  {
+    "name": "Cateran Trail",
+    "searchName": "Cateran Trail",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 103,
+    "typicalDays": "4-5",
+    "bbox": [56.5, -3.6, 56.9, -3.1]
+  },
+  {
+    "name": "Snowdonia Way",
+    "searchName": "Snowdonia Way",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 187,
+    "typicalDays": "8-9",
+    "bbox": [52.5, -4.2, 53.2, -3.5]
+  },
+  {
+    "name": "Ben Nevis via Mountain Track",
+    "searchName": "Ben Nevis",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 16,
+    "typicalDays": "1",
+    "bbox": [56.76, -5.1, 56.82, -4.95]
+  },
+  {
+    "name": "Snowdon Horseshoe",
+    "searchName": "Snowdon",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [53.04, -4.12, 53.09, -4.04]
+  },
+  {
+    "name": "Scafell Pike via Corridor Route",
+    "searchName": "Scafell Pike",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 14,
+    "typicalDays": "1",
+    "bbox": [54.42, -3.25, 54.50, -3.15]
+  },
+  {
+    "name": "Helvellyn via Striding Edge",
+    "searchName": "Helvellyn",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 14,
+    "typicalDays": "1",
+    "bbox": [54.48, -3.06, 54.56, -2.95]
+  },
+  {
+    "name": "Crib Goch",
+    "searchName": "Crib Goch",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [53.05, -4.10, 53.09, -4.04]
+  },
+  {
+    "name": "Ben Macdui from Cairn Gorm",
+    "searchName": "Ben Macdui",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 18,
+    "typicalDays": "1",
+    "bbox": [57.04, -3.72, 57.14, -3.55]
+  },
+  {
+    "name": "Tryfan and Bristly Ridge",
+    "searchName": "Tryfan",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 5,
+    "typicalDays": "1",
+    "bbox": [53.09, -4.04, 53.13, -3.97]
+  },
+  {
+    "name": "Aonach Eagach Ridge",
+    "searchName": "Aonach Eagach",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [56.66, -5.15, 56.70, -5.00]
+  },
+  {
+    "name": "Buachaille Etive Mor",
+    "searchName": "Buachaille Etive",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 9,
+    "typicalDays": "1",
+    "bbox": [56.60, -5.00, 56.66, -4.88]
+  },
+  {
+    "name": "Ben Lomond",
+    "searchName": "Ben Lomond",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [56.15, -4.68, 56.22, -4.58]
+  },
+  {
+    "name": "Blencathra via Sharp Edge",
+    "searchName": "Blencathra",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 11,
+    "typicalDays": "1",
+    "bbox": [54.61, -3.10, 54.67, -2.98]
+  },
+  {
+    "name": "Great Gable",
+    "searchName": "Great Gable",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 11,
+    "typicalDays": "1",
+    "bbox": [54.46, -3.24, 54.50, -3.16]
+  },
+  {
+    "name": "Pen y Fan Horseshoe",
+    "searchName": "Pen y Fan",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 6,
+    "typicalDays": "1",
+    "bbox": [51.86, -3.47, 51.90, -3.40]
+  },
+  {
+    "name": "Cadair Idris",
+    "searchName": "Cadair Idris",
+    "region": "Wales",
+    "country": "GB",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [52.68, -3.95, 52.72, -3.85]
+  },
+  {
+    "name": "Liathach Traverse",
+    "searchName": "Liathach",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 11,
+    "typicalDays": "1",
+    "bbox": [57.56, -5.55, 57.60, -5.38]
+  },
+  {
+    "name": "An Teallach Traverse",
+    "searchName": "An Teallach",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [57.78, -5.40, 57.84, -5.28]
+  },
+  {
+    "name": "Old Man of Coniston",
+    "searchName": "Old Man of Coniston",
+    "region": "England",
+    "country": "GB",
+    "officialDistanceKm": 11,
+    "typicalDays": "1",
+    "bbox": [54.34, -3.12, 54.40, -3.04]
+  },
+  {
+    "name": "Suilven",
+    "searchName": "Suilven",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 13,
+    "typicalDays": "1",
+    "bbox": [58.06, -5.22, 58.12, -5.10]
+  },
+  {
+    "name": "Stac Pollaidh",
+    "searchName": "Stac Pollaidh",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 4,
+    "typicalDays": "1",
+    "bbox": [58.02, -5.22, 58.06, -5.16]
+  },
+  {
+    "name": "The Cobbler",
+    "searchName": "The Cobbler",
+    "region": "Scotland",
+    "country": "GB",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [56.21, -4.84, 56.26, -4.76]
+  }
+]

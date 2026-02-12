@@ -1,0 +1,84 @@
+{
+  "results": [
+    {
+      "id": "kumano_kodo_nakahechi",
+      "name": "Kumano Kodo Nakahechi",
+      "calcKm": 41.47502002845228,
+      "pts": 1726,
+      "source": "osm_overpass_ordered",
+      "off": 36.19227687930419,
+      "status": "HIGH",
+      "country": "JP"
+    },
+    {
+      "id": "nakasendo_trail_magome_to_tsumago",
+      "name": "Nakasendo Trail (Magome to Tsumago)",
+      "calcKm": 100.4100233552248,
+      "pts": 4877,
+      "source": "osm_overpass_ordered",
+      "off": 1155.12529194031,
+      "status": "HIGH",
+      "country": "JP"
+    },
+    {
+      "id": "mount_fuji_yoshida_trail",
+      "name": "Mount Fuji Yoshida Trail",
+      "calcKm": 0.13747219889395115,
+      "pts": 14,
+      "source": "osm_ways",
+      "off": 99.01805572218606,
+      "status": "HIGH",
+      "country": "JP"
+    },
+    {
+      "id": "mount_hakusan",
+      "name": "Mount Hakusan",
+      "calcKm": 17.191004811805993,
+      "pts": 473,
+      "source": "osm_ways_mirrored",
+      "off": 1.1235577165058388,
+      "status": "OK",
+      "country": "JP"
+    },
+    {
+      "id": "tateyama_alpine_route",
+      "name": "Tateyama Alpine Route",
+      "calcKm": 3.9526229670424544,
+      "pts": 285,
+      "source": "osm_overpass_ordered",
+      "off": 89.3172352242096,
+      "status": "HIGH",
+      "country": "JP"
+    },
+    {
+      "id": "southern_alps_traverse",
+      "name": "Southern Alps Traverse",
+      "calcKm": 33.850950279222104,
+      "pts": 975,
+      "source": "osm_ways",
+      "off": 63.988350766785,
+      "status": "HIGH",
+      "country": "JP"
+    },
+    {
+      "id": "mount_rishiri",
+      "name": "Mount Rishiri",
+      "calcKm": 12.495568916064489,
+      "pts": 385,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 3.8802391071962408,
+      "status": "OK",
+      "country": "JP"
+    }
+  ],
+  "failures": [
+    "Daisetsuzan Grand Traverse",
+    "Kamikochi to Yarigatake",
+    "Mount Kitadake",
+    "Yakushima Jomon Sugi Trail",
+    "Mount Takao"
+  ],
+  "skipped": [],
+  "lastIndex": 11,
+  "timestamp": "2026-02-10T22:55:29.891Z"
+}

@@ -1,0 +1,137 @@
+[
+  {
+    "name": "Markha Valley Trek",
+    "searchName": "Markha Valley|Markha Valley Trek",
+    "region": "Ladakh, Jammu & Kashmir",
+    "country": "IN",
+    "officialDistanceKm": 65,
+    "typicalDays": "6-8",
+    "bbox": [33.80, 77.20, 34.10, 77.65]
+  },
+  {
+    "name": "Chadar Frozen River Trek",
+    "searchName": "Chadar Trek|Chadar Frozen River|Zanskar River Trek",
+    "region": "Zanskar, Ladakh",
+    "country": "IN",
+    "officialDistanceKm": 105,
+    "typicalDays": "9",
+    "bbox": [33.30, 76.70, 33.80, 77.20]
+  },
+  {
+    "name": "Hampta Pass Trek",
+    "searchName": "Hampta Pass",
+    "region": "Kullu-Spiti, Himachal Pradesh",
+    "country": "IN",
+    "officialDistanceKm": 35,
+    "typicalDays": "4-5",
+    "bbox": [32.10, 77.05, 32.40, 77.30]
+  },
+  {
+    "name": "Pin Parvati Pass Trek",
+    "searchName": "Pin Parvati Pass|Pin Parvati",
+    "region": "Kullu-Spiti, Himachal Pradesh",
+    "country": "IN",
+    "officialDistanceKm": 110,
+    "typicalDays": "10-11",
+    "bbox": [31.70, 77.00, 32.10, 77.80]
+  },
+  {
+    "name": "Valley of Flowers Trek",
+    "searchName": "Valley of Flowers|Phullon ki Ghati",
+    "region": "Chamoli, Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 25,
+    "typicalDays": "3-4",
+    "bbox": [30.65, 79.55, 30.80, 79.70]
+  },
+  {
+    "name": "Roopkund Trek",
+    "searchName": "Roopkund|Roopkund Lake",
+    "region": "Chamoli, Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 53,
+    "typicalDays": "7-8",
+    "bbox": [30.10, 79.60, 30.40, 79.90]
+  },
+  {
+    "name": "Stok Kangri Trek",
+    "searchName": "Stok Kangri",
+    "region": "Ladakh, Jammu & Kashmir",
+    "country": "IN",
+    "officialDistanceKm": 36,
+    "typicalDays": "4-5",
+    "bbox": [33.90, 77.35, 34.10, 77.55]
+  },
+  {
+    "name": "Goechala Trek",
+    "searchName": "Goechala|Goecha La",
+    "region": "West Sikkim",
+    "country": "IN",
+    "officialDistanceKm": 90,
+    "typicalDays": "10-11",
+    "bbox": [27.45, 88.00, 27.80, 88.30]
+  },
+  {
+    "name": "Har Ki Dun Trek",
+    "searchName": "Har Ki Dun|Har ki Doon",
+    "region": "Uttarkashi, Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 47,
+    "typicalDays": "6-7",
+    "bbox": [31.00, 78.30, 31.30, 78.55]
+  },
+  {
+    "name": "Kedarkantha Trek",
+    "searchName": "Kedarkantha",
+    "region": "Uttarkashi, Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 20,
+    "typicalDays": "4-5",
+    "bbox": [31.00, 78.15, 31.15, 78.30]
+  },
+  {
+    "name": "Kuari Pass Trek",
+    "searchName": "Kuari Pass|Lord Curzon Trail|Curzon Trail",
+    "region": "Chamoli, Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 35,
+    "typicalDays": "5-6",
+    "bbox": [30.30, 79.40, 30.60, 79.70]
+  },
+  {
+    "name": "Rupin Pass Trek",
+    "searchName": "Rupin Pass",
+    "region": "Shimla/Uttarkashi, Himachal-Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 52,
+    "typicalDays": "7-8",
+    "bbox": [31.05, 77.85, 31.50, 78.35]
+  },
+  {
+    "name": "Sandakphu Trek",
+    "searchName": "Sandakphu|Sandakphu Trek",
+    "region": "Darjeeling, West Bengal",
+    "country": "IN",
+    "officialDistanceKm": 51,
+    "typicalDays": "4-5",
+    "bbox": [26.90, 87.85, 27.15, 88.10]
+  },
+  {
+    "name": "Nanda Devi Base Camp Trek",
+    "searchName": "Nanda Devi|Nanda Devi Base Camp",
+    "region": "Chamoli, Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 50,
+    "typicalDays": "7-8",
+    "bbox": [30.20, 79.80, 30.50, 80.10]
+  },
+  {
+    "name": "Brahmatal Trek",
+    "searchName": "Brahmatal|Brahma Tal",
+    "region": "Chamoli, Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 22,
+    "typicalDays": "5-6",
+    "bbox": [30.10, 79.60, 30.30, 79.80]
+  }
+]

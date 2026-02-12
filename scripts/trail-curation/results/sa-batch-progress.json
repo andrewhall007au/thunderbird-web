@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "id": "drakensberg_grand_traverse",
+      "name": "Drakensberg Grand Traverse",
+      "calcKm": 290.87524898491256,
+      "pts": 5551,
+      "source": "osm_overpass_combined",
+      "off": 26.467499558657636,
+      "status": "HIGH"
+    }
+  ],
+  "failures": [],
+  "skipped": [],
+  "timestamp": "2026-02-10T04:42:53.783Z"
+}

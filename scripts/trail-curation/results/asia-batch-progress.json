@@ -1,0 +1,101 @@
+{
+  "results": [
+    {
+      "id": "mount_rinjani",
+      "name": "Mount Rinjani",
+      "calcKm": 39.156422131724376,
+      "pts": 1658,
+      "source": "osm_overpass_ordered",
+      "off": 6.770423495894343,
+      "status": "FAIR",
+      "country": "ID"
+    },
+    {
+      "id": "mount_semeru",
+      "name": "Mount Semeru",
+      "calcKm": 27.70049493899344,
+      "pts": 333,
+      "source": "osm_overpass_ordered",
+      "off": 34.04644062144419,
+      "status": "HIGH",
+      "country": "ID"
+    },
+    {
+      "id": "mount_pulag",
+      "name": "Mount Pulag",
+      "calcKm": 18.304584905368078,
+      "pts": 739,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 3.6600794454311707,
+      "status": "OK",
+      "country": "PH"
+    },
+    {
+      "id": "yushan_jade_mountain",
+      "name": "Yushan (Jade Mountain)",
+      "calcKm": 1.033923718313384,
+      "pts": 173,
+      "source": "osm_overpass_ordered",
+      "off": 95.30034673493915,
+      "status": "HIGH",
+      "country": "TW"
+    },
+    {
+      "id": "xueshan_snow_mountain",
+      "name": "Xueshan (Snow Mountain)",
+      "calcKm": 1.6855670128496587,
+      "pts": 105,
+      "source": "osm_overpass_ordered",
+      "off": 92.33833175977428,
+      "status": "HIGH",
+      "country": "TW"
+    },
+    {
+      "id": "zhuilu_old_trail",
+      "name": "Zhuilu Old Trail",
+      "calcKm": 9.716673195328319,
+      "pts": 472,
+      "source": "osm_overpass_ordered",
+      "off": 2.8332680467168103,
+      "status": "OK",
+      "country": "TW"
+    },
+    {
+      "id": "jeju_olle_trail",
+      "name": "Jeju Olle Trail",
+      "calcKm": 32.33816506993738,
+      "pts": 668,
+      "source": "osm_overpass_ordered",
+      "off": 92.59996222655896,
+      "status": "HIGH",
+      "country": "KR"
+    },
+    {
+      "id": "jirisan_ridge",
+      "name": "Jirisan Ridge",
+      "calcKm": 41.78579456199467,
+      "pts": 795,
+      "source": "osm_overpass_ordered",
+      "off": 26.623619884832333,
+      "status": "HIGH",
+      "country": "KR"
+    },
+    {
+      "id": "seoraksan_dinosaur_ridge",
+      "name": "Seoraksan Dinosaur Ridge",
+      "calcKm": 3.75796069177047,
+      "pts": 218,
+      "source": "osm_ways",
+      "off": 73.15742363021093,
+      "status": "HIGH",
+      "country": "KR"
+    }
+  ],
+  "failures": [
+    "Mount Kinabalu",
+    "Fansipan"
+  ],
+  "skipped": [],
+  "lastIndex": 10,
+  "timestamp": "2026-02-11T15:18:12.464Z"
+}

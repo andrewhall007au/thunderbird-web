@@ -1,0 +1,253 @@
+{
+  "results": [
+    {
+      "id": "tour_du_mont_blanc",
+      "name": "Tour du Mont Blanc",
+      "calcKm": 20.150138049697304,
+      "pts": 2031,
+      "source": "osm_overpass_ordered",
+      "off": 88.1469776178251,
+      "status": "HIGH",
+      "country": "FR"
+    },
+    {
+      "id": "gr20_corsica",
+      "name": "GR20 Corsica",
+      "calcKm": 9.63525346418363,
+      "pts": 520,
+      "source": "osm_overpass_ordered",
+      "off": 94.64708140878687,
+      "status": "HIGH",
+      "country": "FR"
+    },
+    {
+      "id": "alta_via_1_dolomites",
+      "name": "Alta Via 1 Dolomites",
+      "calcKm": 191.99849151384424,
+      "pts": 7639,
+      "source": "osm_overpass_ordered",
+      "off": 59.99874292820354,
+      "status": "HIGH",
+      "country": "IT"
+    },
+    {
+      "id": "alta_via_2_dolomites",
+      "name": "Alta Via 2 Dolomites",
+      "calcKm": 191.99849151384424,
+      "pts": 7639,
+      "source": "osm_overpass_ordered",
+      "off": 19.999057196152652,
+      "status": "FAIR",
+      "country": "IT"
+    },
+    {
+      "id": "kungsleden",
+      "name": "Kungsleden",
+      "calcKm": 24.613550342485347,
+      "pts": 429,
+      "source": "osm_overpass_ordered",
+      "off": 94.40601128579878,
+      "status": "HIGH",
+      "country": "SE"
+    },
+    {
+      "id": "laugavegur_trail",
+      "name": "Laugavegur Trail",
+      "calcKm": 82.91107116812506,
+      "pts": 2102,
+      "source": "osm_overpass_ordered",
+      "off": 50.74740212386375,
+      "status": "HIGH",
+      "country": "IS"
+    },
+    {
+      "id": "rota_vicentina_fishermans_trail",
+      "name": "Rota Vicentina Fishermans Trail",
+      "calcKm": 322.9784678713039,
+      "pts": 10723,
+      "source": "osm_overpass_ordered",
+      "off": 28.227007139710242,
+      "status": "HIGH",
+      "country": "PT"
+    },
+    {
+      "id": "adlerweg_eagle_walk",
+      "name": "Adlerweg Eagle Walk",
+      "calcKm": 9.701445442177553,
+      "pts": 381,
+      "source": "osm_overpass_ordered",
+      "off": 97.65098173312893,
+      "status": "HIGH",
+      "country": "AT"
+    },
+    {
+      "id": "tour_of_monte_rosa",
+      "name": "Tour of Monte Rosa",
+      "calcKm": 145.31361995860925,
+      "pts": 5781,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 3.124253360927166,
+      "status": "OK",
+      "country": "IT"
+    },
+    {
+      "id": "lechweg",
+      "name": "Lechweg",
+      "calcKm": 124.04790939892317,
+      "pts": 7731,
+      "source": "osm_overpass_ordered",
+      "off": 0.7616724808614663,
+      "status": "OK",
+      "country": "AT"
+    },
+    {
+      "id": "stubaier_hohenweg",
+      "name": "Stubaier Hohenweg",
+      "calcKm": 81.18545210592919,
+      "pts": 9008,
+      "source": "osm_overpass_ordered",
+      "off": 1.4818151324114837,
+      "status": "OK",
+      "country": "AT"
+    },
+    {
+      "id": "meraner_hohenweg",
+      "name": "Meraner Hohenweg",
+      "calcKm": 91.73096950860116,
+      "pts": 6297,
+      "source": "osm_overpass_ordered",
+      "off": 8.269030491398837,
+      "status": "FAIR",
+      "country": "IT"
+    },
+    {
+      "id": "selvaggio_blu",
+      "name": "Selvaggio Blu",
+      "calcKm": 14.930633294557756,
+      "pts": 789,
+      "source": "osm_overpass_ordered",
+      "off": 62.6734167636056,
+      "status": "HIGH",
+      "country": "IT"
+    },
+    {
+      "id": "e5_alps_crossing",
+      "name": "E5 Alps Crossing",
+      "calcKm": 76.93891803426772,
+      "pts": 3708,
+      "source": "osm_overpass_ordered",
+      "off": 61.53054098286614,
+      "status": "HIGH",
+      "country": "DE"
+    },
+    {
+      "id": "fimmvorduhals_trail",
+      "name": "Fimmvorduhals Trail",
+      "calcKm": 34.559381417001404,
+      "pts": 1140,
+      "source": "osm_overpass_ordered",
+      "off": 38.23752566800562,
+      "status": "HIGH",
+      "country": "IS"
+    },
+    {
+      "id": "trolltunga",
+      "name": "Trolltunga",
+      "calcKm": 11.296929910417603,
+      "pts": 1271,
+      "source": "osm_overpass_ordered",
+      "off": 59.65382174850856,
+      "status": "HIGH",
+      "country": "NO"
+    },
+    {
+      "id": "besseggen_ridge",
+      "name": "Besseggen Ridge",
+      "calcKm": 23.852254241781466,
+      "pts": 1101,
+      "source": "osm_overpass_ordered",
+      "off": 70.37324458415333,
+      "status": "HIGH",
+      "country": "NO"
+    },
+    {
+      "id": "preikestolen_pulpit_rock",
+      "name": "Preikestolen Pulpit Rock",
+      "calcKm": 5.726571808193819,
+      "pts": 787,
+      "source": "osm_overpass_ordered",
+      "off": 28.41785239757726,
+      "status": "HIGH",
+      "country": "NO"
+    },
+    {
+      "id": "sentiero_degli_dei",
+      "name": "Sentiero degli Dei",
+      "calcKm": 5.18915893125888,
+      "pts": 567,
+      "source": "osm_overpass_ordered",
+      "off": 35.135513359264,
+      "status": "HIGH",
+      "country": "IT"
+    },
+    {
+      "id": "samaria_gorge",
+      "name": "Samaria Gorge",
+      "calcKm": 14.491147084791058,
+      "pts": 861,
+      "source": "osm_overpass_ordered",
+      "off": 9.43033072005589,
+      "status": "FAIR",
+      "country": "GR"
+    },
+    {
+      "id": "caminito_del_rey",
+      "name": "Caminito del Rey",
+      "calcKm": 7.430245737904682,
+      "pts": 617,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 7.121928276191481,
+      "status": "FAIR",
+      "country": "ES"
+    },
+    {
+      "id": "vikos_gorge",
+      "name": "Vikos Gorge",
+      "calcKm": 4.120926218599075,
+      "pts": 216,
+      "source": "osm_overpass_ordered",
+      "off": 65.65894817834105,
+      "status": "HIGH",
+      "country": "GR"
+    },
+    {
+      "id": "ruta_del_cares",
+      "name": "Ruta del Cares",
+      "calcKm": 32.34053201554913,
+      "pts": 1864,
+      "source": "osm_overpass_ordered",
+      "off": 47.00241825249604,
+      "status": "HIGH",
+      "country": "ES"
+    }
+  ],
+  "failures": [
+    "Haute Route Chamonix-Zermatt",
+    "Bernese Oberland Trek",
+    "Picos de Europa Traverse",
+    "Hornstrandir Traverse",
+    "Romsdalseggen Ridge",
+    "Galdhopiggen",
+    "Jotunheimen Traverse",
+    "Tre Cime di Lavaredo Circuit",
+    "Zugspitze via Hollental"
+  ],
+  "skipped": [
+    "Camino de Santiago Frances (780km > 500km)",
+    "GR11 Pyrenean Traverse (820km > 500km)",
+    "GR10 French Pyrenees (870km > 500km)",
+    "Lycian Way (540km > 500km)"
+  ],
+  "lastIndex": 37,
+  "timestamp": "2026-02-10T09:08:47.488Z"
+}

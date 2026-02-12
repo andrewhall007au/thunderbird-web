@@ -1,0 +1,73 @@
+{
+  "results": [
+    {
+      "id": "torres_del_paine_o_circuit",
+      "name": "Torres del Paine O Circuit",
+      "calcKm": 117.30608537154401,
+      "pts": 6622,
+      "source": "osm_overpass_ordered",
+      "off": 9.764549714196912,
+      "status": "FAIR",
+      "country": "CL"
+    },
+    {
+      "id": "laguna_de_los_tres_fitz_roy",
+      "name": "Laguna de los Tres (Fitz Roy)",
+      "calcKm": 26.201549806620427,
+      "pts": 1801,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 9.17312419425178,
+      "status": "FAIR",
+      "country": "AR"
+    },
+    {
+      "id": "laguna_torre",
+      "name": "Laguna Torre",
+      "calcKm": 15.439921537922732,
+      "pts": 577,
+      "source": "osm_overpass_ordered",
+      "off": 14.222658122651488,
+      "status": "FAIR",
+      "country": "AR"
+    },
+    {
+      "id": "cerro_castillo_circuit",
+      "name": "Cerro Castillo Circuit",
+      "calcKm": 106.9702901767818,
+      "pts": 2165,
+      "source": "osm_overpass_ordered",
+      "off": 98.09312995700333,
+      "status": "HIGH",
+      "country": "CL"
+    },
+    {
+      "id": "nahuel_huapi_traverse",
+      "name": "Nahuel Huapi Traverse",
+      "calcKm": 47.99915925438541,
+      "pts": 1976,
+      "source": "osm_overpass_ordered",
+      "off": 14.283712510441454,
+      "status": "FAIR",
+      "country": "AR"
+    },
+    {
+      "id": "cochamo_valley",
+      "name": "Cochamo Valley",
+      "calcKm": 195.3591135082318,
+      "pts": 8023,
+      "source": "osm_overpass_ordered",
+      "off": 787.9959704919627,
+      "status": "HIGH",
+      "country": "CL"
+    }
+  ],
+  "failures": [
+    "Torres del Paine W Trek",
+    "Huemul Circuit",
+    "Dientes de Navarino Circuit",
+    "Laguna Esmeralda"
+  ],
+  "skipped": [],
+  "lastIndex": 9,
+  "timestamp": "2026-02-10T23:47:32.595Z"
+}

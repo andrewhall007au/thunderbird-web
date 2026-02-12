@@ -1,0 +1,105 @@
+{
+  "results": [
+    {
+      "id": "hampta_pass_trek",
+      "name": "Hampta Pass Trek",
+      "calcKm": 35.965276484838945,
+      "pts": 373,
+      "source": "osm_overpass_ordered",
+      "off": 2.757932813825558,
+      "status": "OK",
+      "country": "IN"
+    },
+    {
+      "id": "valley_of_flowers_trek",
+      "name": "Valley of Flowers Trek",
+      "calcKm": 22.73600476574155,
+      "pts": 636,
+      "source": "osm_overpass_ordered",
+      "off": 9.055980937033794,
+      "status": "FAIR",
+      "country": "IN"
+    },
+    {
+      "id": "roopkund_trek",
+      "name": "Roopkund Trek",
+      "calcKm": 33.133604206140454,
+      "pts": 1703,
+      "source": "osm_overpass_ordered",
+      "off": 37.4837656487916,
+      "status": "HIGH",
+      "country": "IN"
+    },
+    {
+      "id": "stok_kangri_trek",
+      "name": "Stok Kangri Trek",
+      "calcKm": 34.22636604894477,
+      "pts": 1163,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 4.92676097515342,
+      "status": "OK",
+      "country": "IN"
+    },
+    {
+      "id": "goechala_trek",
+      "name": "Goechala Trek",
+      "calcKm": 67.43440656828021,
+      "pts": 1331,
+      "source": "osm_overpass_ordered",
+      "off": 25.072881590799767,
+      "status": "HIGH",
+      "country": "IN"
+    },
+    {
+      "id": "kedarkantha_trek",
+      "name": "Kedarkantha Trek",
+      "calcKm": 17.054473214228054,
+      "pts": 630,
+      "source": "osm_overpass_ordered",
+      "off": 14.727633928859731,
+      "status": "FAIR",
+      "country": "IN"
+    },
+    {
+      "id": "kuari_pass_trek",
+      "name": "Kuari Pass Trek",
+      "calcKm": 3.896319810048043,
+      "pts": 131,
+      "source": "osm_ways",
+      "off": 88.86765768557703,
+      "status": "HIGH",
+      "country": "IN"
+    },
+    {
+      "id": "rupin_pass_trek",
+      "name": "Rupin Pass Trek",
+      "calcKm": 38.56629582214846,
+      "pts": 513,
+      "source": "osm_overpass_ordered",
+      "off": 25.834046495868346,
+      "status": "HIGH",
+      "country": "IN"
+    },
+    {
+      "id": "brahmatal_trek",
+      "name": "Brahmatal Trek",
+      "calcKm": 35.81309541553463,
+      "pts": 1686,
+      "source": "osm_overpass_ordered",
+      "off": 62.78679734333924,
+      "status": "HIGH",
+      "country": "IN"
+    }
+  ],
+  "failures": [
+    "Markha Valley Trek",
+    "Chadar Frozen River Trek",
+    "Pin Parvati Pass Trek",
+    "Har Ki Dun Trek",
+    "Sandakphu Trek",
+    "Nanda Devi Base Camp Trek"
+  ],
+  "skipped": [],
+  "lastIndex": 14,
+  "timestamp": "2026-02-11T08:24:59.712Z"
+}

@@ -1,0 +1,113 @@
+trail_id,name,region,status,data_source,official_km,calculated_km,pct_off,elevation_low,elevation_high,point_count
+john_muir_trail,"John Muir Trail",CA,OK,osm,339,337.2,0.5%,1233,4409,26766
+four_mile_trail_to_glacier_point,"Four Mile Trail to Glacier Point",CA,OK,osm,7.7,7.7,0.1%,1216,2207,693
+skyline_trail_mount_rainier,"Skyline Trail (Mount Rainier)",WA,OK,osm,9,9.0,0.1%,1658,2144,714
+pacific_crest_trail,"Pacific Crest Trail",CA-OR-WA,OK,osm+elevation,4265,4214.1,1.2%,18,4007,247847
+clouds_rest_trail,"Clouds Rest Trail",CA,OK,osm,23.3,22.6,2.9%,2209,2988,974
+tahoe_rim_trail,"Tahoe Rim Trail",CA-NV,OK,osm,274,269.7,1.6%,1899,3129,15995
+high_sierra_trail_to_mount_whitney,"High Sierra Trail to Mount Whitney",CA,OK,osm,113,111.2,1.6%,2056,3265,4733
+timberline_trail,"Timberline Trail",OR,OK,osm,66.1,67.3,1.8%,1001,2236,3953
+pinhoti_trail,"Pinhoti Trail",AL-GA,OK,osm,530,518.0,2.3%,172,974,17734
+colorado_trail,"Colorado Trail",CO,OK,osm,788,764.6,3.0%,1676,4045,38644
+arizona_trail,"Arizona Trail",AZ,OK,osm,1290,1251.4,3.0%,501,2624,79676
+appalachian_trail,"Appalachian Trail",GA-ME,OK,osm+elevation,3524,3389.4,3.8%,25,2020,193065
+enchantments_thru_hike,"Enchantments Thru-Hike",WA,OK,fkt_gpx,29.8,30.2,1.4%,431,2383,5735
+humphreys_peak_trail,"Humphreys Peak Trail",AZ,OK,fkt_gpx,15.4,15.9,3.4%,2823,3848,1084
+emory_peak_trail,"Emory Peak Trail",TX,OK,fkt_gpx,16,15.4,3.5%,1632,2376,987
+quandary_peak_east_ridge,"Quandary Peak East Ridge",CO,OK,fkt_gpx,10.5,10.9,3.5%,3314,4346,6982
+teton_crest_trail,"Teton Crest Trail",WY,FAIR,osm,64.4,60.0,6.8%,2097,3271,2778
+south_kaibab_to_phantom_ranch,"South Kaibab to Phantom Ranch",AZ,FAIR,osm,11.3,10.4,7.5%,757,2205,1492
+three_sisters_loop,"Three Sisters Loop",OR,FAIR,osm,76,70.2,7.6%,1611,2142,3639
+maple_pass_loop,"Maple Pass Loop",WA,FAIR,osm,11.7,10.8,7.7%,1484,2109,717
+long_trail,"Long Trail",VT,FAIR,osm,437,400.9,8.3%,98,1329,19893
+wonderland_trail,"Wonderland Trail",WA,FAIR,osm,150,137.5,8.3%,769,2064,5644
+south_sister_via_green_lakes,"South Sister via Green Lakes",OR,FAIR,osm,18.5,16.9,8.9%,1665,3135,725
+pacific_northwest_trail,"Pacific Northwest Trail",MT-ID-WA,FAIR,osm,1930,2116.6,9.7%,276,2309,62437
+granite_peak_montana,"Granite Peak Montana",MT,FAIR,fkt_gpx,32.2,28.5,11.6%,2003,3891,6723
+chain_lakes_loop,"Chain Lakes Loop",WA,FAIR,osm,11.3,9.9,12.7%,1303,1672,663
+continental_divide_trail,"Continental Divide Trail",NM-CO-WY-MT,FAIR,osm+elevation,5000,4359.5,12.8%,1282,4339,130498
+rae_lakes_loop,"Rae Lakes Loop",CA,FAIR,osm,66.8,57.6,13.7%,1564,3648,4426
+old_rag_mountain_loop,"Old Rag Mountain Loop",VA,FAIR,fkt_gpx,14.5,12.1,16.9%,339,993,1424
+presidential_traverse,"Presidential Traverse",NH,FAIR,fkt_gpx,37,30.1,18.7%,400,1914,7366
+the_narrows,"The Narrows",UT,FAIR,fkt_gpx,16,19.0,18.7%,287,690,9402
+superior_hiking_trail,"Superior Hiking Trail",MN,FAIR,osm,499,598.2,19.9%,179,561,45098
+ice_age_trail,"Ice Age Trail",WI,FAIR,osm,1900,2323.4,22.3%,174,598,38275
+mailbox_peak_trail,"Mailbox Peak Trail",WA,FAIR,osm,10.5,8.1,22.5%,254,1454,564
+eagle_creek_trail,"Eagle Creek Trail",OR,HIGH,osm,20.9,15.3,26.7%,37,766,873
+mount_hood_via_south_side_route,"Mount Hood via South Side Route",OR,HIGH,fkt_gpx,14.5,10.6,26.8%,1795,3426,587
+rim_to_rim_grand_canyon,"Rim to Rim Grand Canyon",AZ,HIGH,osm,33.8,24.5,27.5%,756,2521,3720
+enchanted_valley_via_graves_creek,"Enchanted Valley via Graves Creek",WA,HIGH,fkt_gpx,43.5,58.0,33.4%,,,,2357
+mist_trail_to_vernal_fall,"Mist Trail to Vernal Fall",CA,HIGH,osm,8.9,5.8,34.6%,1233,1858,445
+bright_angel_trail_to_plateau_point,"Bright Angel Trail to Plateau Point",AZ,HIGH,osm,19.3,12.6,35.0%,758,2088,2108
+mount_whitney_trail,"Mount Whitney Trail",CA,HIGH,osm,35.4,22.5,36.4%,2557,4409,1838
+hoh_river_to_blue_glacier,"Hoh River to Blue Glacier",WA,HIGH,fkt_gpx,43.5,59.4,36.5%,186,1548,30464
+mount_baldy_via_devil_s_backbone,"Mount Baldy via Devil's Backbone",CA,HIGH,fkt_gpx,17.7,10.4,41.4%,1300,3066,1548
+dipsea_trail,"Dipsea Trail",CA,HIGH,osm,11.3,6.6,41.9%,22,420,472
+ozark_highlands_trail,"Ozark Highlands Trail",AR,HIGH,osm,270,388.5,43.9%,129,720,21831
+franconia_ridge_loop,"Franconia Ridge Loop",NH,HIGH,osm,14.1,7.2,48.7%,1181,1581,426
+mount_si_trail,"Mount Si Trail",WA,HIGH,osm,12.9,6.3,51.0%,216,1233,413
+alum_cave_trail_to_mt_leconte,"Alum Cave Trail to Mt LeConte",TN,HIGH,osm,16.6,8.1,51.3%,1182,1952,843
+navajo_loop_and_queens_garden,"Navajo Loop and Queens Garden",UT,HIGH,osm,4.6,2.2,52.1%,2295,2423,581
+ryan_mountain_trail,"Ryan Mountain Trail",CA,HIGH,osm,4.8,2.3,52.2%,1342,1658,173
+mount_washburn_trail,"Mount Washburn Trail",WY,HIGH,osm,10,4.7,52.9%,2662,3107,168
+lakes_trail_to_pear_lake,"Lakes Trail to Pear Lake",CA,HIGH,osm,21,9.6,54.1%,2230,2915,581
+longs_peak_via_keyhole_route,"Longs Peak via Keyhole Route",CO,HIGH,osm,24.1,11.0,54.4%,2869,4305,966
+kalalau_trail,"Kalalau Trail",HI,HIGH,osm,35.4,15.9,55.1%,-54,227,918
+observation_point_via_east_mesa,"Observation Point via East Mesa",UT,HIGH,fkt_gpx,12.9,5.5,57.4%,1341,2003,210
+angels_landing,"Angels Landing",UT,HIGH,osm,8.7,3.6,58.9%,1316,1673,631
+devil_s_postpile_to_rainbow_falls,"Devil's Postpile to Rainbow Falls",CA,HIGH,osm,8.4,2.9,65.7%,2209,2344,154
+precipice_trail_acadia,"Precipice Trail Acadia",ME,HIGH,osm,3.2,1.1,66.3%,40,312,76
+mount_shasta_via_avalanche_gulch,"Mount Shasta via Avalanche Gulch",CA,HIGH,fkt_gpx,18.5,5.6,69.7%,2376,4248,1092
+mount_washington_via_tuckerman_ravine,"Mount Washington via Tuckerman Ravine",NH,HIGH,osm,13.6,2.4,82.2%,624,1012,100
+half_dome_via_mist_trail,"Half Dome via Mist Trail",CA,HIGH,osm,22.5,3.2,85.7%,2149,2569,236
+telescope_peak_trail,"Telescope Peak Trail",CA,HIGH,fkt_gpx,22.5,47.7,112.1%,-78,3369,4931
+highline_trail_glacier_np,"Highline Trail (Glacier NP)",MT,HIGH,fkt_gpx,19.2,49.5,157.8%,1292,2267,10587
+buckskin_gulch,"Buckskin Gulch",UT,HIGH,fkt_gpx,32.2,90.1,180.0%,964,1484,36380
+yosemite_valley_loop_trail,"Yosemite Valley Loop Trail",CA,HIGH,osm,11.5,32.6,183.8%,1196,1289,1321
+mount_adams_south_climb,"Mount Adams South Climb",WA,HIGH,fkt_gpx,16.1,51.5,219.7%,1401,3751,11948
+lost_coast_trail,"Lost Coast Trail",CA,HIGH,osm,40.2,136.7,240.1%,1,784,2998
+mount_san_jacinto_via_marion_mountain,"Mount San Jacinto via Marion Mountain",CA,HIGH,fkt_gpx,20.9,72.7,247.8%,146,3275,3304
+delicate_arch_trail,"Delicate Arch Trail",UT,MISSING,,4.8,,,,,,
+wave_via_wire_pass,"Wave via Wire Pass",AZ,MISSING,,9.7,,,,,,
+peek_a_boo_loop_bryce,"Peek-a-Boo Loop Bryce",UT,MISSING,,8.9,,,,,,
+kings_peak_via_henrys_fork,"Kings Peak via Henrys Fork",UT,MISSING,,44.3,,,,,,
+mesa_arch_trail,"Mesa Arch Trail",UT,MISSING,,0.8,,,,,,
+havasu_falls,"Havasu Falls",AZ,MISSING,,16.1,,,,,,
+west_fork_oak_creek,"West Fork Oak Creek",AZ,MISSING,,11.3,,,,,,
+cathedral_rock_trail,"Cathedral Rock Trail",AZ,MISSING,,2.4,,,,,,
+kalepa_ridge_trail,"Kalepa Ridge Trail",HI,MISSING,,3.2,,,,,,
+haleakala_sliding_sands_trail,"Haleakala Sliding Sands Trail",HI,MISSING,,17.7,,,,,,
+koko_crater_trail,"Koko Crater Trail",HI,MISSING,,2.7,,,,,,
+mount_katahdin_via_hunt_trail,"Mount Katahdin via Hunt Trail",ME,MISSING,,16.7,,,,,,
+the_subway_at_zion,"The Subway at Zion",UT,MISSING,,15.4,,,,,,
+cascade_canyon_to_lake_solitude,"Cascade Canyon to Lake Solitude",WY,MISSING,,30.6,,,,,,
+gothic_basin_trail,"Gothic Basin Trail",WA,MISSING,,15.3,,,,,,
+grinnell_glacier_trail,"Grinnell Glacier Trail",MT,MISSING,,18.5,,,,,,
+iceberg_lake_trail,"Iceberg Lake Trail",MT,MISSING,,15.4,,,,,,
+scenic_point_trail,"Scenic Point Trail",MT,MISSING,,11.7,,,,,,
+four_pass_loop,"Four Pass Loop",CO,MISSING,,45.1,,,,,,
+maroon_bells_crater_lake,"Maroon Bells Crater Lake",CO,MISSING,,6.1,,,,,,
+chicago_basin_14ers_loop,"Chicago Basin 14ers Loop",CO,MISSING,,50,,,,,,
+ice_lakes_basin,"Ice Lakes Basin",CO,MISSING,,11.3,,,,,,
+sky_pond_via_glacier_gorge,"Sky Pond via Glacier Gorge",CO,MISSING,,14.5,,,,,,
+conundrum_hot_springs,"Conundrum Hot Springs",CO,MISSING,,27.4,,,,,,
+hanging_lake_trail,"Hanging Lake Trail",CO,MISSING,,4.8,,,,,,
+mount_elbert_via_northeast_ridge,"Mount Elbert via Northeast Ridge",CO,MISSING,,14.5,,,,,,
+devil_s_causeway,"Devils Causeway",CO,MISSING,,28.2,,,,,,
+capitol_peak_northeast_ridge,"Capitol Peak Northeast Ridge",CO,MISSING,,27.4,,,,,,
+blue_lakes_trail,"Blue Lakes Trail",CO,MISSING,,11.3,,,,,,
+lassen_peak_trail,"Lassen Peak Trail",CA,MISSING,,8,,,,,,
+mount_tallac_trail,"Mount Tallac Trail",CA,MISSING,,15.8,,,,,,
+alamere_falls_via_coast_trail,"Alamere Falls via Coast Trail",CA,MISSING,,21.9,,,,,,
+cucamonga_peak_trail,"Cucamonga Peak Trail",CA,MISSING,,19.3,,,,,,
+horsetail_falls_trail,"Horsetail Falls Trail",CA,MISSING,,3.2,,,,,,
+mount_dana_trail,"Mount Dana Trail",CA,MISSING,,9.7,,,,,,
+mono_pass_trail_yosemite,"Mono Pass Trail Yosemite",CA,MISSING,,12.9,,,,,,
+moro_rock_trail,"Moro Rock Trail",CA,MISSING,,0.6,,,,,,
+big_baldy_trail,"Big Baldy Trail",CA,MISSING,,6.9,,,,,,
+mount_san_gorgonio_via_vivian_creek,"Mount San Gorgonio via Vivian Creek",CA,MISSING,,26,,,,,,
+cactus_to_clouds_trail,"Cactus to Clouds Trail",CA,MISSING,,33.8,,,,,,
+north_dome_via_indian_rock,"North Dome via Indian Rock",CA,MISSING,,14.5,,,,,,
+sentinel_dome_and_taft_point,"Sentinel Dome and Taft Point",CA,MISSING,,8,,,,,,
+beartooth_traverse,"Beartooth Traverse",MT-WY,MISSING,,48.3,,,,,,
+garfield_peak_trail,"Garfield Peak Trail",OR,MISSING,,5.6,,,,,,

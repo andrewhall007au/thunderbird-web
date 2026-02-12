@@ -1,0 +1,344 @@
+[
+  {
+    "name": "Tour du Mont Blanc",
+    "searchName": "Tour du Mont Blanc",
+    "region": "France / Italy / Switzerland",
+    "country": "FR",
+    "officialDistanceKm": 170,
+    "typicalDays": "10-12",
+    "bbox": [45.7, 6.7, 46.1, 7.2]
+  },
+  {
+    "name": "GR20 Corsica",
+    "searchName": "GR 20",
+    "region": "Corsica, France",
+    "country": "FR",
+    "officialDistanceKm": 180,
+    "typicalDays": "15",
+    "bbox": [41.8, 8.8, 42.5, 9.4]
+  },
+  {
+    "name": "Haute Route Chamonix-Zermatt",
+    "searchName": "Haute Route",
+    "region": "France / Switzerland",
+    "country": "CH",
+    "officialDistanceKm": 180,
+    "typicalDays": "12-14",
+    "bbox": [45.8, 6.8, 46.2, 7.9]
+  },
+  {
+    "name": "Alta Via 1 Dolomites",
+    "searchName": "Alta Via 1",
+    "region": "Dolomites, Italy",
+    "country": "IT",
+    "officialDistanceKm": 120,
+    "typicalDays": "10-12",
+    "bbox": [46.3, 11.7, 46.7, 12.2]
+  },
+  {
+    "name": "Alta Via 2 Dolomites",
+    "searchName": "Alta Via 2",
+    "region": "Dolomites, Italy",
+    "country": "IT",
+    "officialDistanceKm": 160,
+    "typicalDays": "13",
+    "bbox": [46.2, 11.5, 46.7, 12.1]
+  },
+  {
+    "name": "Kungsleden",
+    "searchName": "Kungsleden",
+    "region": "Lapland, Sweden",
+    "country": "SE",
+    "officialDistanceKm": 440,
+    "typicalDays": "20-25",
+    "bbox": [67.0, 17.5, 68.5, 19.5]
+  },
+  {
+    "name": "Laugavegur Trail",
+    "searchName": "Laugavegur",
+    "region": "Iceland",
+    "country": "IS",
+    "officialDistanceKm": 55,
+    "typicalDays": "3-4",
+    "bbox": [63.6, -19.6, 63.9, -19.0]
+  },
+  {
+    "name": "Camino de Santiago Frances",
+    "searchName": "Camino de Santiago",
+    "region": "Spain",
+    "country": "ES",
+    "officialDistanceKm": 780,
+    "typicalDays": "30-35",
+    "bbox": [42.0, -8.7, 43.4, -1.0]
+  },
+  {
+    "name": "GR11 Pyrenean Traverse",
+    "searchName": "GR 11",
+    "region": "Pyrenees, Spain",
+    "country": "ES",
+    "officialDistanceKm": 820,
+    "typicalDays": "45-50",
+    "bbox": [42.3, -1.8, 42.9, 3.2]
+  },
+  {
+    "name": "GR10 French Pyrenees",
+    "searchName": "GR 10",
+    "region": "Pyrenees, France",
+    "country": "FR",
+    "officialDistanceKm": 870,
+    "typicalDays": "50-55",
+    "bbox": [42.4, -1.8, 43.1, 3.1]
+  },
+  {
+    "name": "Rota Vicentina Fishermans Trail",
+    "searchName": "Rota Vicentina",
+    "region": "Alentejo, Portugal",
+    "country": "PT",
+    "officialDistanceKm": 450,
+    "typicalDays": "20-25",
+    "bbox": [37.0, -9.0, 37.9, -8.4]
+  },
+  {
+    "name": "Adlerweg Eagle Walk",
+    "searchName": "Adlerweg",
+    "region": "Tyrol, Austria",
+    "country": "AT",
+    "officialDistanceKm": 413,
+    "typicalDays": "24",
+    "bbox": [46.8, 10.1, 47.6, 12.8]
+  },
+  {
+    "name": "Bernese Oberland Trek",
+    "searchName": "Bernese Oberland",
+    "region": "Bern, Switzerland",
+    "country": "CH",
+    "officialDistanceKm": 80,
+    "typicalDays": "5-7",
+    "bbox": [46.4, 7.6, 46.7, 8.1]
+  },
+  {
+    "name": "Tour of Monte Rosa",
+    "searchName": "Tour Monte Rosa",
+    "region": "Italy / Switzerland",
+    "country": "IT",
+    "officialDistanceKm": 150,
+    "typicalDays": "8-10",
+    "bbox": [45.8, 7.5, 46.1, 8.0]
+  },
+  {
+    "name": "Lycian Way",
+    "searchName": "Lycian Way",
+    "region": "Antalya, Turkey",
+    "country": "TR",
+    "officialDistanceKm": 540,
+    "typicalDays": "25-30",
+    "bbox": [36.2, 29.0, 36.9, 30.8]
+  },
+  {
+    "name": "Lechweg",
+    "searchName": "Lechweg",
+    "region": "Tyrol, Austria",
+    "country": "AT",
+    "officialDistanceKm": 125,
+    "typicalDays": "7-8",
+    "bbox": [47.0, 10.1, 47.5, 10.9]
+  },
+  {
+    "name": "Stubaier Hohenweg",
+    "searchName": "Stubaier Höhenweg",
+    "region": "Tyrol, Austria",
+    "country": "AT",
+    "officialDistanceKm": 80,
+    "typicalDays": "5-7",
+    "bbox": [46.95, 11.0, 47.15, 11.4]
+  },
+  {
+    "name": "Meraner Hohenweg",
+    "searchName": "Meraner Höhenweg",
+    "region": "South Tyrol, Italy",
+    "country": "IT",
+    "officialDistanceKm": 100,
+    "typicalDays": "5-8",
+    "bbox": [46.55, 11.0, 46.8, 11.4]
+  },
+  {
+    "name": "Selvaggio Blu",
+    "searchName": "Selvaggio Blu",
+    "region": "Sardinia, Italy",
+    "country": "IT",
+    "officialDistanceKm": 40,
+    "typicalDays": "5-7",
+    "bbox": [39.9, 9.5, 40.2, 9.8]
+  },
+  {
+    "name": "E5 Alps Crossing",
+    "searchName": "E5",
+    "region": "Germany / Austria / Italy",
+    "country": "DE",
+    "officialDistanceKm": 200,
+    "typicalDays": "10-12",
+    "bbox": [46.6, 10.3, 47.5, 11.5]
+  },
+  {
+    "name": "Picos de Europa Traverse",
+    "searchName": "Picos de Europa",
+    "region": "Asturias, Spain",
+    "country": "ES",
+    "officialDistanceKm": 65,
+    "typicalDays": "4-5",
+    "bbox": [43.1, -5.1, 43.3, -4.5]
+  },
+  {
+    "name": "Fimmvorduhals Trail",
+    "searchName": "Fimmvörðuháls",
+    "region": "Iceland",
+    "country": "IS",
+    "officialDistanceKm": 25,
+    "typicalDays": "1-2",
+    "bbox": [63.5, -19.6, 63.7, -19.3]
+  },
+  {
+    "name": "Hornstrandir Traverse",
+    "searchName": "Hornstrandir",
+    "region": "Westfjords, Iceland",
+    "country": "IS",
+    "officialDistanceKm": 75,
+    "typicalDays": "4-6",
+    "bbox": [66.2, -22.5, 66.5, -21.5]
+  },
+  {
+    "name": "Trolltunga",
+    "searchName": "Trolltunga",
+    "region": "Hordaland, Norway",
+    "country": "NO",
+    "officialDistanceKm": 28,
+    "typicalDays": "1",
+    "bbox": [60.08, 6.68, 60.16, 6.78]
+  },
+  {
+    "name": "Besseggen Ridge",
+    "searchName": "Besseggen",
+    "region": "Jotunheimen, Norway",
+    "country": "NO",
+    "officialDistanceKm": 14,
+    "typicalDays": "1",
+    "bbox": [61.45, 8.70, 61.55, 8.90]
+  },
+  {
+    "name": "Preikestolen Pulpit Rock",
+    "searchName": "Preikestolen",
+    "region": "Rogaland, Norway",
+    "country": "NO",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [58.96, 6.14, 59.00, 6.22]
+  },
+  {
+    "name": "Romsdalseggen Ridge",
+    "searchName": "Romsdalseggen",
+    "region": "More og Romsdal, Norway",
+    "country": "NO",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [62.40, 7.00, 62.50, 7.20]
+  },
+  {
+    "name": "Galdhopiggen",
+    "searchName": "Galdhøpiggen",
+    "region": "Jotunheimen, Norway",
+    "country": "NO",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [61.60, 8.20, 61.66, 8.35]
+  },
+  {
+    "name": "Jotunheimen Traverse",
+    "searchName": "Jotunheimen",
+    "region": "Jotunheimen, Norway",
+    "country": "NO",
+    "officialDistanceKm": 60,
+    "typicalDays": "4-5",
+    "bbox": [61.3, 7.8, 61.7, 8.8]
+  },
+  {
+    "name": "Hardangervidda Crossing",
+    "searchName": "Hardangervidda",
+    "region": "Hordaland, Norway",
+    "country": "NO",
+    "officialDistanceKm": 70,
+    "typicalDays": "4-5",
+    "bbox": [59.8, 7.0, 60.4, 8.0]
+  },
+  {
+    "name": "Tre Cime di Lavaredo Circuit",
+    "searchName": "Tre Cime",
+    "region": "Dolomites, Italy",
+    "country": "IT",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [46.60, 12.28, 46.64, 12.34]
+  },
+  {
+    "name": "Sentiero degli Dei",
+    "searchName": "Sentiero degli Dei",
+    "region": "Amalfi Coast, Italy",
+    "country": "IT",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [40.62, 14.48, 40.66, 14.56]
+  },
+  {
+    "name": "Samaria Gorge",
+    "searchName": "Samaria",
+    "region": "Crete, Greece",
+    "country": "GR",
+    "officialDistanceKm": 16,
+    "typicalDays": "1",
+    "bbox": [35.22, 23.90, 35.36, 24.08]
+  },
+  {
+    "name": "Caminito del Rey",
+    "searchName": "Caminito del Rey",
+    "region": "Malaga, Spain",
+    "country": "ES",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [36.90, -4.80, 36.96, -4.72]
+  },
+  {
+    "name": "Vikos Gorge",
+    "searchName": "Vikos",
+    "region": "Epirus, Greece",
+    "country": "GR",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [39.88, 20.68, 39.96, 20.80]
+  },
+  {
+    "name": "Zugspitze via Hollental",
+    "searchName": "Zugspitze",
+    "region": "Bavaria, Germany",
+    "country": "DE",
+    "officialDistanceKm": 21,
+    "typicalDays": "1-2",
+    "bbox": [47.38, 10.95, 47.44, 11.10]
+  },
+  {
+    "name": "Ruta del Cares",
+    "searchName": "Ruta del Cares",
+    "region": "Picos de Europa, Spain",
+    "country": "ES",
+    "officialDistanceKm": 22,
+    "typicalDays": "1",
+    "bbox": [43.18, -4.95, 43.28, -4.80]
+  },
+  {
+    "name": "Cinque Terre Trail",
+    "searchName": "Sentiero Azzurro",
+    "region": "Liguria, Italy",
+    "country": "IT",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [44.08, 9.68, 44.14, 9.84]
+  }
+]

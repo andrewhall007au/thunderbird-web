@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Torres del Paine W Trek",
+    "searchName": "Torres del Paine|Sendero W",
+    "region": "Magallanes, Chilean Patagonia",
+    "country": "CL",
+    "officialDistanceKm": 80,
+    "typicalDays": "4-5",
+    "bbox": [-51.10, -73.15, -50.85, -72.80]
+  },
+  {
+    "name": "Torres del Paine O Circuit",
+    "searchName": "Torres del Paine|Circuito O",
+    "region": "Magallanes, Chilean Patagonia",
+    "country": "CL",
+    "officialDistanceKm": 130,
+    "typicalDays": "7-9",
+    "bbox": [-51.10, -73.15, -50.85, -72.80]
+  },
+  {
+    "name": "Laguna de los Tres (Fitz Roy)",
+    "searchName": "Laguna de los Tres|Fitz Roy",
+    "region": "El Chaltén, Santa Cruz",
+    "country": "AR",
+    "officialDistanceKm": 24,
+    "typicalDays": "1",
+    "bbox": [-49.35, -73.10, -49.25, -72.88]
+  },
+  {
+    "name": "Laguna Torre",
+    "searchName": "Laguna Torre|Cerro Torre",
+    "region": "El Chaltén, Santa Cruz",
+    "country": "AR",
+    "officialDistanceKm": 18,
+    "typicalDays": "1",
+    "bbox": [-49.38, -73.10, -49.30, -72.95]
+  },
+  {
+    "name": "Huemul Circuit",
+    "searchName": "Huemul Circuit|Circuito Huemul",
+    "region": "El Chaltén, Santa Cruz",
+    "country": "AR",
+    "officialDistanceKm": 64,
+    "typicalDays": "4",
+    "bbox": [-49.40, -73.10, -49.25, -72.85]
+  },
+  {
+    "name": "Dientes de Navarino Circuit",
+    "searchName": "Dientes de Navarino",
+    "region": "Tierra del Fuego",
+    "country": "CL",
+    "officialDistanceKm": 53,
+    "typicalDays": "4-5",
+    "bbox": [-55.10, -67.70, -54.90, -67.50]
+  },
+  {
+    "name": "Cerro Castillo Circuit",
+    "searchName": "Cerro Castillo",
+    "region": "Aysén, Northern Patagonia",
+    "country": "CL",
+    "officialDistanceKm": 54,
+    "typicalDays": "4-5",
+    "bbox": [-46.15, -72.35, -45.95, -72.10]
+  },
+  {
+    "name": "Nahuel Huapi Traverse",
+    "searchName": "Nahuel Huapi|Refugio Frey|Refugio Jakob",
+    "region": "Lake District, Río Negro",
+    "country": "AR",
+    "officialDistanceKm": 42,
+    "typicalDays": "4-5",
+    "bbox": [-41.25, -71.50, -41.05, -71.25]
+  },
+  {
+    "name": "Cochamo Valley",
+    "searchName": "Cochamó|La Junta",
+    "region": "Lake District, Los Lagos",
+    "country": "CL",
+    "officialDistanceKm": 22,
+    "typicalDays": "2-3",
+    "bbox": [-41.60, -72.40, -41.45, -72.25]
+  },
+  {
+    "name": "Laguna Esmeralda",
+    "searchName": "Laguna Esmeralda",
+    "region": "Tierra del Fuego",
+    "country": "AR",
+    "officialDistanceKm": 9,
+    "typicalDays": "1",
+    "bbox": [-54.75, -68.05, -54.70, -67.95]
+  }
+]

@@ -1,0 +1,101 @@
+[
+  {
+    "name": "Mount Rinjani",
+    "searchName": "Gunung Rinjani|Mount Rinjani",
+    "region": "Lombok, West Nusa Tenggara",
+    "country": "ID",
+    "officialDistanceKm": 42,
+    "typicalDays": "3-4",
+    "bbox": [-8.50, 116.30, -8.30, 116.55]
+  },
+  {
+    "name": "Mount Semeru",
+    "searchName": "Gunung Semeru|Mount Semeru",
+    "region": "East Java",
+    "country": "ID",
+    "officialDistanceKm": 42,
+    "typicalDays": "3",
+    "bbox": [-8.15, 112.85, -7.95, 113.00]
+  },
+  {
+    "name": "Mount Kinabalu",
+    "searchName": "Mount Kinabalu|Gunung Kinabalu",
+    "region": "Sabah, Borneo",
+    "country": "MY",
+    "officialDistanceKm": 17,
+    "typicalDays": "2",
+    "bbox": [6.00, 116.50, 6.12, 116.62]
+  },
+  {
+    "name": "Mount Pulag",
+    "searchName": "Mount Pulag|Pulag",
+    "region": "Benguet, Luzon",
+    "country": "PH",
+    "officialDistanceKm": 19,
+    "typicalDays": "2-3",
+    "bbox": [16.55, 120.85, 16.65, 120.95]
+  },
+  {
+    "name": "Fansipan",
+    "searchName": "Fansipan|Phan Xi Păng",
+    "region": "Lào Cai",
+    "country": "VN",
+    "officialDistanceKm": 24,
+    "typicalDays": "2-3",
+    "bbox": [22.28, 103.72, 22.38, 103.82]
+  },
+  {
+    "name": "Yushan (Jade Mountain)",
+    "searchName": "玉山|Yushan|Jade Mountain",
+    "region": "Nantou/Chiayi",
+    "country": "TW",
+    "officialDistanceKm": 22,
+    "typicalDays": "2",
+    "bbox": [23.42, 120.92, 23.52, 121.02]
+  },
+  {
+    "name": "Xueshan (Snow Mountain)",
+    "searchName": "雪山|Xueshan|Snow Mountain",
+    "region": "Taichung/Miaoli",
+    "country": "TW",
+    "officialDistanceKm": 22,
+    "typicalDays": "2",
+    "bbox": [24.35, 121.18, 24.42, 121.28]
+  },
+  {
+    "name": "Zhuilu Old Trail",
+    "searchName": "錐麓古道|Zhuilu",
+    "region": "Hualien, Taroko",
+    "country": "TW",
+    "officialDistanceKm": 10,
+    "typicalDays": "1",
+    "bbox": [24.16, 121.50, 24.20, 121.57]
+  },
+  {
+    "name": "Jeju Olle Trail",
+    "searchName": "제주올레|Jeju Olle",
+    "region": "Jeju Island",
+    "country": "KR",
+    "officialDistanceKm": 437,
+    "typicalDays": "25-30",
+    "bbox": [33.15, 126.15, 33.55, 126.95]
+  },
+  {
+    "name": "Jirisan Ridge",
+    "searchName": "지리산|Jirisan|Cheonwangbong",
+    "region": "Gyeongsang/Jeolla",
+    "country": "KR",
+    "officialDistanceKm": 33,
+    "typicalDays": "2-3",
+    "bbox": [35.25, 127.50, 35.40, 127.75]
+  },
+  {
+    "name": "Seoraksan Dinosaur Ridge",
+    "searchName": "설악산|Seoraksan|공룡능선",
+    "region": "Gangwon-do",
+    "country": "KR",
+    "officialDistanceKm": 14,
+    "typicalDays": "1-2",
+    "bbox": [38.10, 128.42, 38.20, 128.52]
+  }
+]

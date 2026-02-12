@@ -1,0 +1,192 @@
+{
+  "results": [
+    {
+      "id": "yosemite_valley_loop_trail",
+      "name": "Yosemite Valley Loop Trail",
+      "calculatedKm": 32.632730928026696,
+      "pts": 1321,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "dipsea_trail",
+      "name": "Dipsea Trail",
+      "calculatedKm": 6.559795922049171,
+      "pts": 472,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "three_sisters_loop",
+      "name": "Three Sisters Loop",
+      "calculatedKm": 70.23928681510745,
+      "pts": 3639,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "timberline_trail",
+      "name": "Timberline Trail",
+      "calculatedKm": 67.31594154344027,
+      "pts": 3953,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "eagle_creek_trail",
+      "name": "Eagle Creek Trail",
+      "calculatedKm": 15.324256413400978,
+      "pts": 873,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "south_sister_via_green_lakes",
+      "name": "South Sister via Green Lakes",
+      "calculatedKm": 14.634820478808377,
+      "pts": 725,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "maple_pass_loop",
+      "name": "Maple Pass Loop",
+      "calculatedKm": 10.804281098011515,
+      "pts": 717,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "chain_lakes_loop",
+      "name": "Chain Lakes Loop",
+      "calculatedKm": 9.867117783750857,
+      "pts": 663,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "mount_si_trail",
+      "name": "Mount Si Trail",
+      "calculatedKm": 6.316862266240485,
+      "pts": 413,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "mailbox_peak_trail",
+      "name": "Mailbox Peak Trail",
+      "calculatedKm": 8.13354347725689,
+      "pts": 564,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "navajo_loop_and_queens_garden",
+      "name": "Navajo Loop and Queens Garden",
+      "calculatedKm": 2.205174380670361,
+      "pts": 581,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "south_kaibab_to_phantom_ranch",
+      "name": "South Kaibab to Phantom Ranch",
+      "calculatedKm": 15.866808644487094,
+      "pts": 1492,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "lakes_trail_to_pear_lake",
+      "name": "Lakes Trail to Pear Lake",
+      "calculatedKm": 9.634189013783418,
+      "pts": 581,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "precipice_trail_acadia",
+      "name": "Precipice Trail Acadia",
+      "calculatedKm": 1.0780168860240773,
+      "pts": 76,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "long_trail",
+      "name": "Long Trail",
+      "calculatedKm": 628.9246179245233,
+      "pts": 19893,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "superior_hiking_trail",
+      "name": "Superior Hiking Trail",
+      "calculatedKm": 598.2289809847542,
+      "pts": 45098,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "ozark_highlands_trail",
+      "name": "Ozark Highlands Trail",
+      "calculatedKm": 524.9841676343462,
+      "pts": 21833,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "alum_cave_trail_to_mt_leconte",
+      "name": "Alum Cave Trail to Mt LeConte",
+      "calculatedKm": 8.080627872547721,
+      "pts": 843,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "mount_washburn_trail",
+      "name": "Mount Washburn Trail",
+      "calculatedKm": 4.713280919375646,
+      "pts": 168,
+      "source": "osm_overpass_ordered"
+    },
+    {
+      "id": "ryan_mountain_trail",
+      "name": "Ryan Mountain Trail",
+      "calculatedKm": 2.293287168914525,
+      "pts": 173,
+      "source": "osm_overpass_ordered"
+    }
+  ],
+  "failures": [
+    "Mount Tallac Trail",
+    "Alamere Falls via Coast Trail",
+    "Mount Baldy via Devil's Backbone",
+    "Mount San Jacinto via Marion Mountain",
+    "Cucamonga Peak Trail",
+    "Mount Hood via South Side Route",
+    "Enchanted Valley via Graves Creek",
+    "Gothic Basin Trail",
+    "Mount Adams South Climb",
+    "Iceberg Lake Trail",
+    "Scenic Point Trail",
+    "Granite Peak Montana",
+    "Sky Pond via Glacier Gorge",
+    "Conundrum Hot Springs",
+    "Hanging Lake Trail",
+    "Mount Elbert via Northeast Ridge",
+    "Quandary Peak East Ridge",
+    "Devil's Causeway",
+    "Capitol Peak Northeast Ridge",
+    "Blue Lakes Trail",
+    "Mesa Arch Trail",
+    "Peek-a-Boo Loop Bryce",
+    "Kings Peak via Henrys Fork",
+    "Buckskin Gulch",
+    "Humphreys Peak Trail",
+    "Horsetail Falls Trail",
+    "Mount Dana Trail",
+    "Mono Pass Trail Yosemite",
+    "Moro Rock Trail",
+    "Big Baldy Trail",
+    "Mount San Gorgonio via Vivian Creek",
+    "Cactus to Clouds Trail",
+    "Telescope Peak Trail",
+    "North Dome via Indian Rock",
+    "Sentinel Dome and Taft Point",
+    "Beartooth Traverse",
+    "Garfield Peak Trail",
+    "Emory Peak Trail"
+  ],
+  "skipped": [
+    "Arizona Trail (1290km > 500km)",
+    "Pacific Northwest Trail (1930km > 500km)",
+    "Ice Age Trail (1900km > 500km)",
+    "Pinhoti Trail (530km > 500km)"
+  ],
+  "lastGlobalIndex": 111,
+  "timestamp": "2026-02-09T01:52:16.150Z"
+}

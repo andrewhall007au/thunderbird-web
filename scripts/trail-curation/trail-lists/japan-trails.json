@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Kumano Kodo Nakahechi",
+    "searchName": "熊野古道|Kumano Kodo",
+    "region": "Kii Peninsula, Wakayama",
+    "country": "JP",
+    "officialDistanceKm": 65,
+    "typicalDays": "4",
+    "bbox": [33.65, 135.65, 33.95, 135.95]
+  },
+  {
+    "name": "Nakasendo Trail (Magome to Tsumago)",
+    "searchName": "中山道|Nakasendo",
+    "region": "Kiso Valley, Nagano",
+    "country": "JP",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [35.53, 137.55, 35.60, 137.62]
+  },
+  {
+    "name": "Mount Fuji Yoshida Trail",
+    "searchName": "富士山|Mount Fuji|Yoshida",
+    "region": "Yamanashi/Shizuoka",
+    "country": "JP",
+    "officialDistanceKm": 14,
+    "typicalDays": "2",
+    "bbox": [35.30, 138.68, 35.40, 138.78]
+  },
+  {
+    "name": "Daisetsuzan Grand Traverse",
+    "searchName": "大雪山|Daisetsuzan",
+    "region": "Hokkaido",
+    "country": "JP",
+    "officialDistanceKm": 70,
+    "typicalDays": "5-6",
+    "bbox": [43.50, 142.75, 43.75, 143.15]
+  },
+  {
+    "name": "Kamikochi to Yarigatake",
+    "searchName": "槍ヶ岳|Yarigatake",
+    "region": "Northern Alps, Nagano",
+    "country": "JP",
+    "officialDistanceKm": 36,
+    "typicalDays": "3",
+    "bbox": [36.15, 137.58, 36.35, 137.65]
+  },
+  {
+    "name": "Mount Kitadake",
+    "searchName": "北岳|Kitadake",
+    "region": "Southern Alps, Yamanashi",
+    "country": "JP",
+    "officialDistanceKm": 11,
+    "typicalDays": "2",
+    "bbox": [35.63, 138.20, 35.70, 138.28]
+  },
+  {
+    "name": "Yakushima Jomon Sugi Trail",
+    "searchName": "縄文杉|Jomon Sugi",
+    "region": "Yakushima Island, Kagoshima",
+    "country": "JP",
+    "officialDistanceKm": 22,
+    "typicalDays": "1",
+    "bbox": [30.28, 130.47, 30.38, 130.56]
+  },
+  {
+    "name": "Mount Hakusan",
+    "searchName": "白山|Hakusan",
+    "region": "Ishikawa/Gifu",
+    "country": "JP",
+    "officialDistanceKm": 17,
+    "typicalDays": "2",
+    "bbox": [36.12, 136.73, 36.18, 136.78]
+  },
+  {
+    "name": "Tateyama Alpine Route",
+    "searchName": "立山|Tateyama",
+    "region": "Northern Alps, Toyama",
+    "country": "JP",
+    "officialDistanceKm": 37,
+    "typicalDays": "2",
+    "bbox": [36.50, 137.52, 36.62, 137.70]
+  },
+  {
+    "name": "Mount Takao",
+    "searchName": "高尾山|Takao",
+    "region": "Tokyo",
+    "country": "JP",
+    "officialDistanceKm": 18,
+    "typicalDays": "1",
+    "bbox": [35.62, 139.24, 35.65, 139.28]
+  },
+  {
+    "name": "Southern Alps Traverse",
+    "searchName": "南アルプス|Southern Alps",
+    "region": "Yamanashi/Nagano/Shizuoka",
+    "country": "JP",
+    "officialDistanceKm": 94,
+    "typicalDays": "7",
+    "bbox": [35.50, 138.15, 35.75, 138.35]
+  },
+  {
+    "name": "Mount Rishiri",
+    "searchName": "利尻山|Rishiri",
+    "region": "Rishiri Island, Hokkaido",
+    "country": "JP",
+    "officialDistanceKm": 13,
+    "typicalDays": "1",
+    "bbox": [45.15, 141.20, 45.25, 141.28]
+  }
+]

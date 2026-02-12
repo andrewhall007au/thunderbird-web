@@ -1,0 +1,26 @@
+{
+  "results": [
+    {
+      "id": "mount_kenya_sirimon_chogoria",
+      "name": "Mount Kenya Sirimon-Chogoria",
+      "calcKm": 22.2341039615736,
+      "pts": 904,
+      "source": "osm_overpass_ordered",
+      "off": 59.57435643350255,
+      "status": "HIGH",
+      "country": "KE"
+    }
+  ],
+  "failures": [
+    "Kilimanjaro Machame Route",
+    "Kilimanjaro Lemosho Route",
+    "Mount Meru",
+    "Simien Mountains Trek",
+    "Mount Toubkal Circuit",
+    "Rwenzori Mountains Central Circuit",
+    "GR R2 Reunion Island"
+  ],
+  "skipped": [],
+  "lastIndex": 7,
+  "timestamp": "2026-02-11T01:45:32.669Z"
+}

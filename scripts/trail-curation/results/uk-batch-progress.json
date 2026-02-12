@@ -1,0 +1,327 @@
+{
+  "results": [
+    {
+      "id": "west_highland_way",
+      "name": "West Highland Way",
+      "calcKm": 22.27984599231715,
+      "pts": 211,
+      "source": "osm_overpass_ordered",
+      "off": 85.5325675374564,
+      "status": "HIGH"
+    },
+    {
+      "id": "pennine_way",
+      "name": "Pennine Way",
+      "calcKm": 469.4976238390557,
+      "pts": 12861,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 9.18549391605946,
+      "status": "FAIR"
+    },
+    {
+      "id": "coast_to_coast_walk",
+      "name": "Coast to Coast Walk",
+      "calcKm": 191.47729235037008,
+      "pts": 4954,
+      "source": "osm_overpass_ordered",
+      "off": 38.03323872156309,
+      "status": "HIGH"
+    },
+    {
+      "id": "hadrian_s_wall_path",
+      "name": "Hadrian's Wall Path",
+      "calcKm": 144.54633799612859,
+      "pts": 4295,
+      "source": "osm_overpass_ordered",
+      "off": 7.071361478613766,
+      "status": "FAIR"
+    },
+    {
+      "id": "offa_s_dyke_path",
+      "name": "Offa's Dyke Path",
+      "calcKm": 490.0614149114801,
+      "pts": 10732,
+      "source": "osm_overpass_ordered",
+      "off": 71.95137365315091,
+      "status": "HIGH"
+    },
+    {
+      "id": "pembrokeshire_coast_path",
+      "name": "Pembrokeshire Coast Path",
+      "calcKm": 428.4409723414047,
+      "pts": 19607,
+      "source": "osm_overpass_ordered",
+      "off": 42.813657447134894,
+      "status": "HIGH"
+    },
+    {
+      "id": "cleveland_way",
+      "name": "Cleveland Way",
+      "calcKm": 197.25205157122153,
+      "pts": 8077,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 12.715458040698016,
+      "status": "FAIR"
+    },
+    {
+      "id": "south_downs_way",
+      "name": "South Downs Way",
+      "calcKm": 236.11291061808407,
+      "pts": 4559,
+      "source": "osm_overpass_ordered",
+      "off": 47.570569136302545,
+      "status": "HIGH"
+    },
+    {
+      "id": "cotswold_way",
+      "name": "Cotswold Way",
+      "calcKm": 181.31477918312842,
+      "pts": 6753,
+      "source": "osm_overpass_ordered",
+      "off": 10.557792184834405,
+      "status": "FAIR"
+    },
+    {
+      "id": "cape_wrath_trail",
+      "name": "Cape Wrath Trail",
+      "calcKm": 349.09663918866903,
+      "pts": 8867,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 5.649556976035397,
+      "status": "FAIR"
+    },
+    {
+      "id": "great_glen_way",
+      "name": "Great Glen Way",
+      "calcKm": 214.81273139108615,
+      "pts": 4516,
+      "source": "osm_overpass_ordered",
+      "off": 69.1438829851072,
+      "status": "HIGH"
+    },
+    {
+      "id": "skye_trail",
+      "name": "Skye Trail",
+      "calcKm": 6.733930757447502,
+      "pts": 198,
+      "source": "osm_overpass_ordered",
+      "off": 94.73911659574415,
+      "status": "HIGH"
+    },
+    {
+      "id": "southern_upland_way",
+      "name": "Southern Upland Way",
+      "calcKm": 412.2312746714943,
+      "pts": 9926,
+      "source": "osm_overpass_ordered",
+      "off": 19.834672869620437,
+      "status": "FAIR"
+    },
+    {
+      "id": "speyside_way",
+      "name": "Speyside Way",
+      "calcKm": 303.17805230667204,
+      "pts": 5325,
+      "source": "osm_overpass_ordered",
+      "off": 188.74100219683052,
+      "status": "HIGH"
+    },
+    {
+      "id": "cumbria_way",
+      "name": "Cumbria Way",
+      "calcKm": 146.41003128329385,
+      "pts": 6823,
+      "source": "osm_overpass_ordered",
+      "off": 29.566399365746765,
+      "status": "HIGH"
+    },
+    {
+      "id": "dales_way",
+      "name": "Dales Way",
+      "calcKm": 209.6391588424498,
+      "pts": 5841,
+      "source": "osm_overpass_ordered",
+      "off": 65.0702038129526,
+      "status": "HIGH"
+    },
+    {
+      "id": "north_downs_way",
+      "name": "North Downs Way",
+      "calcKm": 300.1362415585673,
+      "pts": 6482,
+      "source": "osm_overpass_ordered",
+      "off": 22.006602259580198,
+      "status": "FAIR"
+    },
+    {
+      "id": "the_ridgeway",
+      "name": "The Ridgeway",
+      "calcKm": 214.77880934553534,
+      "pts": 4821,
+      "source": "osm_overpass_ordered",
+      "off": 54.51712902556499,
+      "status": "HIGH"
+    },
+    {
+      "id": "glyndwr_s_way",
+      "name": "Glyndwr's Way",
+      "calcKm": 1.663001096893404,
+      "pts": 54,
+      "source": "osm_ways",
+      "off": 99.23364004751456,
+      "status": "HIGH"
+    },
+    {
+      "id": "rob_roy_way",
+      "name": "Rob Roy Way",
+      "calcKm": 219.53322188418545,
+      "pts": 6512,
+      "source": "osm_overpass_ordered",
+      "off": 72.86080463321689,
+      "status": "HIGH"
+    },
+    {
+      "id": "affric_kintail_way",
+      "name": "Affric Kintail Way",
+      "calcKm": 130.9766236018305,
+      "pts": 2929,
+      "source": "osm_overpass_ordered",
+      "off": 81.9119772247646,
+      "status": "HIGH"
+    },
+    {
+      "id": "st_cuthbert_s_way",
+      "name": "St Cuthbert's Way",
+      "calcKm": 30.928171325865744,
+      "pts": 122,
+      "source": "osm_ways",
+      "off": 69.07182867413425,
+      "status": "HIGH"
+    },
+    {
+      "id": "cateran_trail",
+      "name": "Cateran Trail",
+      "calcKm": 106.09700812727003,
+      "pts": 3201,
+      "source": "osm_overpass_ordered",
+      "off": 3.0068040070582813,
+      "status": "OK"
+    },
+    {
+      "id": "ben_nevis_via_mountain_track",
+      "name": "Ben Nevis via Mountain Track",
+      "calcKm": 9.24120197357695,
+      "pts": 630,
+      "source": "osm_overpass_ordered",
+      "off": 42.242487665144054,
+      "status": "HIGH"
+    },
+    {
+      "id": "snowdon_horseshoe",
+      "name": "Snowdon Horseshoe",
+      "calcKm": 7.293072492046845,
+      "pts": 344,
+      "source": "osm_overpass_ordered",
+      "off": 39.224395899609625,
+      "status": "HIGH"
+    },
+    {
+      "id": "scafell_pike_via_corridor_route",
+      "name": "Scafell Pike via Corridor Route",
+      "calcKm": 12.57032938415545,
+      "pts": 707,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 10.211932970318216,
+      "status": "FAIR"
+    },
+    {
+      "id": "crib_goch",
+      "name": "Crib Goch",
+      "calcKm": 2.702792100215414,
+      "pts": 174,
+      "source": "osm_overpass_ordered",
+      "off": 72.97207899784587,
+      "status": "HIGH"
+    },
+    {
+      "id": "ben_macdui_from_cairn_gorm",
+      "name": "Ben Macdui from Cairn Gorm",
+      "calcKm": 5.597804337695964,
+      "pts": 10,
+      "source": "osm_overpass_ordered",
+      "off": 68.9010870128002,
+      "status": "HIGH"
+    },
+    {
+      "id": "aonach_eagach_ridge",
+      "name": "Aonach Eagach Ridge",
+      "calcKm": 3.576445985656788,
+      "pts": 416,
+      "source": "osm_ways",
+      "off": 64.23554014343212,
+      "status": "HIGH"
+    },
+    {
+      "id": "buachaille_etive_mor",
+      "name": "Buachaille Etive Mor",
+      "calcKm": 11.023526893277465,
+      "pts": 841,
+      "source": "osm_overpass_ordered",
+      "off": 22.483632147527388,
+      "status": "FAIR"
+    },
+    {
+      "id": "ben_lomond",
+      "name": "Ben Lomond",
+      "calcKm": 11.901308255751795,
+      "pts": 614,
+      "source": "osm_overpass_ordered",
+      "off": 0.8224312020683744,
+      "status": "OK"
+    },
+    {
+      "id": "pen_y_fan_horseshoe",
+      "name": "Pen y Fan Horseshoe",
+      "calcKm": 9.753620605322201,
+      "pts": 326,
+      "source": "osm_overpass_ordered",
+      "off": 62.56034342203668,
+      "status": "HIGH"
+    },
+    {
+      "id": "liathach_traverse",
+      "name": "Liathach Traverse",
+      "calcKm": 8.918746388116872,
+      "pts": 622,
+      "source": "osm_overpass_ordered",
+      "off": 18.920487380755706,
+      "status": "FAIR"
+    },
+    {
+      "id": "stac_pollaidh",
+      "name": "Stac Pollaidh",
+      "calcKm": 4.5596301690350485,
+      "pts": 287,
+      "source": "osm_overpass_ordered",
+      "off": 13.990754225876213,
+      "status": "FAIR"
+    }
+  ],
+  "failures": [
+    "Snowdonia Way",
+    "Helvellyn via Striding Edge",
+    "Tryfan and Bristly Ridge",
+    "Blencathra via Sharp Edge",
+    "Great Gable",
+    "Cadair Idris",
+    "An Teallach Traverse",
+    "Old Man of Coniston",
+    "Suilven",
+    "The Cobbler"
+  ],
+  "skipped": [
+    "South West Coast Path (1014km > 500km)"
+  ],
+  "lastIndex": 44,
+  "timestamp": "2026-02-10T07:21:10.509Z"
+}

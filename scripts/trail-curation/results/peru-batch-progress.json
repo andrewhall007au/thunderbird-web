@@ -1,0 +1,84 @@
+{
+  "results": [
+    {
+      "id": "inca_trail_to_machu_picchu",
+      "name": "Inca Trail to Machu Picchu",
+      "calcKm": 53.26268523855941,
+      "pts": 1579,
+      "source": "osm_overpass_ordered",
+      "off": 23.866709857114916,
+      "status": "FAIR",
+      "country": "PE"
+    },
+    {
+      "id": "huayhuash_circuit",
+      "name": "Huayhuash Circuit",
+      "calcKm": 117.89221526798212,
+      "pts": 2325,
+      "source": "osm_overpass_ordered",
+      "off": 9.313680563090674,
+      "status": "FAIR",
+      "country": "PE"
+    },
+    {
+      "id": "salkantay_trek",
+      "name": "Salkantay Trek",
+      "calcKm": 92.93389394358603,
+      "pts": 3595,
+      "source": "osm_overpass_ordered",
+      "off": 25.586343167008145,
+      "status": "HIGH",
+      "country": "PE"
+    },
+    {
+      "id": "ausangate_circuit",
+      "name": "Ausangate Circuit",
+      "calcKm": 91.29434533456931,
+      "pts": 3119,
+      "source": "osm_overpass_ordered",
+      "off": 30.420493335099017,
+      "status": "HIGH",
+      "country": "PE"
+    },
+    {
+      "id": "choquequirao_trek",
+      "name": "Choquequirao Trek",
+      "calcKm": 67.0527774434751,
+      "pts": 2463,
+      "source": "osm_overpass_ordered_mirrored",
+      "off": 3.158119143807837,
+      "status": "OK",
+      "country": "PE"
+    },
+    {
+      "id": "santa_cruz_trek",
+      "name": "Santa Cruz Trek",
+      "calcKm": 117.92446236625156,
+      "pts": 4041,
+      "source": "osm_overpass_ordered",
+      "off": 135.84892473250312,
+      "status": "HIGH",
+      "country": "PE"
+    },
+    {
+      "id": "alpamayo_circuit",
+      "name": "Alpamayo Circuit",
+      "calcKm": 80.36126436281498,
+      "pts": 2977,
+      "source": "osm_overpass_ordered",
+      "off": 0.4515804535187229,
+      "status": "OK",
+      "country": "PE"
+    }
+  ],
+  "failures": [
+    "Lares Trek",
+    "Colca Canyon Trek",
+    "Rainbow Mountain (Vinicunca)",
+    "El Misti Volcano",
+    "Cotahuasi Canyon Trek"
+  ],
+  "skipped": [],
+  "lastIndex": 11,
+  "timestamp": "2026-02-11T07:57:41.088Z"
+}

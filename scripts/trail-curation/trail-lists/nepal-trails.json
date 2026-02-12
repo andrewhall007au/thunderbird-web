@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Everest Base Camp Trek",
+    "searchName": "Everest Base Camp|EBC",
+    "region": "Khumbu, Solukhumbu",
+    "country": "NP",
+    "officialDistanceKm": 130,
+    "typicalDays": "12-14",
+    "bbox": [27.70, 86.70, 28.00, 86.95]
+  },
+  {
+    "name": "Everest Three Passes Trek",
+    "searchName": "Three Passes|Kongma La|Cho La|Renjo La",
+    "region": "Khumbu, Solukhumbu",
+    "country": "NP",
+    "officialDistanceKm": 160,
+    "typicalDays": "18-20",
+    "bbox": [27.70, 86.55, 28.00, 86.95]
+  },
+  {
+    "name": "Gokyo Lakes Trek",
+    "searchName": "Gokyo",
+    "region": "Khumbu, Solukhumbu",
+    "country": "NP",
+    "officialDistanceKm": 90,
+    "typicalDays": "12",
+    "bbox": [27.80, 86.55, 27.98, 86.75]
+  },
+  {
+    "name": "Annapurna Circuit",
+    "searchName": "Annapurna Circuit",
+    "region": "Annapurna",
+    "country": "NP",
+    "officialDistanceKm": 200,
+    "typicalDays": "15-18",
+    "bbox": [28.27, 83.82, 28.80, 84.37]
+  },
+  {
+    "name": "Annapurna Base Camp Trek",
+    "searchName": "Annapurna Base Camp|ABC",
+    "region": "Annapurna",
+    "country": "NP",
+    "officialDistanceKm": 110,
+    "typicalDays": "10-12",
+    "bbox": [28.20, 83.70, 28.60, 83.90]
+  },
+  {
+    "name": "Poon Hill Trek",
+    "searchName": "Poon Hill|Ghorepani",
+    "region": "Annapurna",
+    "country": "NP",
+    "officialDistanceKm": 40,
+    "typicalDays": "4-5",
+    "bbox": [28.25, 83.65, 28.40, 83.82]
+  },
+  {
+    "name": "Mardi Himal Trek",
+    "searchName": "Mardi Himal",
+    "region": "Annapurna",
+    "country": "NP",
+    "officialDistanceKm": 45,
+    "typicalDays": "5-6",
+    "bbox": [28.30, 83.75, 28.52, 83.90]
+  },
+  {
+    "name": "Langtang Valley Trek",
+    "searchName": "Langtang",
+    "region": "Langtang",
+    "country": "NP",
+    "officialDistanceKm": 75,
+    "typicalDays": "7-10",
+    "bbox": [28.10, 85.30, 28.30, 85.60]
+  },
+  {
+    "name": "Manaslu Circuit Trek",
+    "searchName": "Manaslu Circuit",
+    "region": "Manaslu",
+    "country": "NP",
+    "officialDistanceKm": 177,
+    "typicalDays": "14-16",
+    "bbox": [28.25, 84.50, 28.75, 85.00]
+  },
+  {
+    "name": "Upper Mustang Trek",
+    "searchName": "Upper Mustang|Lo Manthang",
+    "region": "Mustang",
+    "country": "NP",
+    "officialDistanceKm": 140,
+    "typicalDays": "12-14",
+    "bbox": [28.75, 83.72, 29.20, 84.13]
+  },
+  {
+    "name": "Makalu Base Camp Trek",
+    "searchName": "Makalu Base Camp",
+    "region": "Makalu-Barun",
+    "country": "NP",
+    "officialDistanceKm": 125,
+    "typicalDays": "16-18",
+    "bbox": [27.60, 87.00, 27.90, 87.15]
+  },
+  {
+    "name": "Kanchenjunga Circuit Trek",
+    "searchName": "Kanchenjunga",
+    "region": "Kanchenjunga",
+    "country": "NP",
+    "officialDistanceKm": 220,
+    "typicalDays": "20-25",
+    "bbox": [27.55, 87.70, 27.90, 88.15]
+  }
+]

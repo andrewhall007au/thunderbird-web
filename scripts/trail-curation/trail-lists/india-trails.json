@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Hampta Pass",
+    "searchName": "Hampta Pass",
+    "region": "Himachal Pradesh",
+    "country": "IN",
+    "officialDistanceKm": 26,
+    "typicalDays": "4-5",
+    "bbox": [32.10, 77.05, 32.35, 77.30]
+  },
+  {
+    "name": "Pin Parvati Pass",
+    "searchName": "Pin Parvati Pass|Pin Parvati",
+    "region": "Himachal Pradesh",
+    "country": "IN",
+    "officialDistanceKm": 110,
+    "typicalDays": "9-11",
+    "bbox": [31.80, 77.20, 32.15, 77.80]
+  },
+  {
+    "name": "Valley of Flowers",
+    "searchName": "Valley of Flowers|Pushpawati",
+    "region": "Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 37,
+    "typicalDays": "5-6",
+    "bbox": [30.65, 79.55, 30.80, 79.70]
+  },
+  {
+    "name": "Roopkund Trek",
+    "searchName": "Roopkund|Mystery Lake",
+    "region": "Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 53,
+    "typicalDays": "7-8",
+    "bbox": [30.10, 79.60, 30.30, 79.80]
+  },
+  {
+    "name": "Kedarkantha Trek",
+    "searchName": "Kedarkantha|Sankri",
+    "region": "Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 23,
+    "typicalDays": "5-6",
+    "bbox": [31.00, 78.05, 31.20, 78.25]
+  },
+  {
+    "name": "Har Ki Dun Trek",
+    "searchName": "Har Ki Dun|Har Ki Doon",
+    "region": "Uttarakhand",
+    "country": "IN",
+    "officialDistanceKm": 46,
+    "typicalDays": "6-7",
+    "bbox": [31.00, 78.25, 31.20, 78.50]
+  },
+  {
+    "name": "Markha Valley Trek",
+    "searchName": "Markha Valley|Gongmaru La",
+    "region": "Ladakh",
+    "country": "IN",
+    "officialDistanceKm": 78,
+    "typicalDays": "8-10",
+    "bbox": [33.80, 77.30, 34.15, 77.70]
+  },
+  {
+    "name": "Chadar Trek",
+    "searchName": "Chadar Trek|Frozen River|Zanskar",
+    "region": "Ladakh",
+    "country": "IN",
+    "officialDistanceKm": 105,
+    "typicalDays": "8-9",
+    "bbox": [33.50, 76.80, 34.00, 77.40]
+  },
+  {
+    "name": "Kashmir Great Lakes",
+    "searchName": "Kashmir Great Lakes|Vishansar|Gadsar",
+    "region": "Kashmir",
+    "country": "IN",
+    "officialDistanceKm": 72,
+    "typicalDays": "7-8",
+    "bbox": [34.25, 75.20, 34.55, 75.50]
+  },
+  {
+    "name": "Goecha La Trek",
+    "searchName": "Goecha La|Goechala|Yuksom",
+    "region": "Sikkim",
+    "country": "IN",
+    "officialDistanceKm": 90,
+    "typicalDays": "9-11",
+    "bbox": [27.35, 88.10, 27.65, 88.40]
+  },
+  {
+    "name": "Snowman Trek",
+    "searchName": "Snowman Trek|Lunana",
+    "region": "Northern Bhutan",
+    "country": "BT",
+    "officialDistanceKm": 330,
+    "typicalDays": "24-30",
+    "bbox": [27.60, 89.50, 28.20, 90.80]
+  },
+  {
+    "name": "Druk Path Trek",
+    "searchName": "Druk Path|Paro Thimphu",
+    "region": "Central Bhutan",
+    "country": "BT",
+    "officialDistanceKm": 54,
+    "typicalDays": "5-6",
+    "bbox": [27.35, 89.30, 27.55, 89.70]
+  }
+]

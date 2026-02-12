@@ -1,0 +1,216 @@
+[
+  {
+    "name": "Bald Head Walk",
+    "searchName": "Bald Head Walk|Bald Head Track|Bald Head Trail",
+    "region": "Albany, WA",
+    "country": "AU",
+    "officialDistanceKm": 12,
+    "typicalDays": "1",
+    "bbox": [-35.12, 117.92, -35.06, 118.00],
+    "source": "Torndirrup National Park"
+  },
+  {
+    "name": "Mt Toolbrunup",
+    "searchName": "Toolbrunup|Mt Toolbrunup|Mount Toolbrunup",
+    "region": "Stirling Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 4,
+    "typicalDays": "1",
+    "bbox": [-34.40, 118.02, -34.36, 118.08],
+    "source": "Stirling Range National Park"
+  },
+  {
+    "name": "Mt Magog",
+    "searchName": "Magog|Mt Magog|Mount Magog",
+    "altSearchNames": ["Magog Peak"],
+    "region": "Stirling Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 4,
+    "typicalDays": "1",
+    "bbox": [-34.40, 118.06, -34.36, 118.12],
+    "source": "Stirling Range National Park"
+  },
+  {
+    "name": "Mt Talyuberlup",
+    "searchName": "Talyuberlup|Mt Talyuberlup|Mount Talyuberlup",
+    "region": "Stirling Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 3,
+    "typicalDays": "1",
+    "bbox": [-34.40, 118.00, -34.36, 118.06],
+    "source": "Stirling Range National Park"
+  },
+  {
+    "name": "Stirling Ridge Walk",
+    "searchName": "Stirling Ridge Walk|Stirling Ridge Trail|Stirling Range Ridge",
+    "region": "Stirling Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 12,
+    "typicalDays": "1-2",
+    "bbox": [-34.42, 117.90, -34.34, 118.30],
+    "source": "Stirling Range National Park"
+  },
+  {
+    "name": "Hakea Trail",
+    "searchName": "Hakea Trail|Hakea Walk",
+    "region": "Stirling Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 8,
+    "typicalDays": "1",
+    "bbox": [-34.42, 118.00, -34.36, 118.10],
+    "source": "Stirling Range National Park"
+  },
+  {
+    "name": "Nancy Peak and Devils Slide",
+    "searchName": "Nancy Peak|Nancys Peak|Devils Slide|Nancy Peak Track",
+    "region": "Porongurup Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 5,
+    "typicalDays": "1",
+    "bbox": [-34.70, 117.86, -34.66, 117.92],
+    "source": "Porongurup National Park"
+  },
+  {
+    "name": "Castle Rock Granite Skywalk",
+    "searchName": "Castle Rock Porongurup|Castle Rock Granite Skywalk|Castle Rock Walk",
+    "region": "Porongurup Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 4,
+    "typicalDays": "1",
+    "bbox": [-34.70, 117.86, -34.66, 117.92],
+    "source": "Porongurup National Park"
+  },
+  {
+    "name": "Tree in the Rock",
+    "searchName": "Tree in the Rock|Porongurup Tree in Rock",
+    "region": "Porongurup Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 3,
+    "typicalDays": "1",
+    "bbox": [-34.70, 117.84, -34.66, 117.90],
+    "source": "Porongurup National Park"
+  },
+  {
+    "name": "Mt Feathertop",
+    "searchName": "Mount Feathertop|Feathertop",
+    "region": "Alpine NP, VIC",
+    "country": "AU",
+    "officialDistanceKm": 22,
+    "typicalDays": "1-2",
+    "bbox": [-37.00, 147.10, -36.85, 147.22],
+    "source": "Alpine National Park"
+  },
+  {
+    "name": "Mt Bogong",
+    "searchName": "Mount Bogong|Mt Bogong|Bogong",
+    "region": "Alpine NP, VIC",
+    "country": "AU",
+    "officialDistanceKm": 16,
+    "typicalDays": "1-2",
+    "bbox": [-36.80, 147.24, -36.70, 147.34],
+    "source": "Alpine National Park"
+  },
+  {
+    "name": "Razorback Ridge",
+    "searchName": "Razorback|Razorback Ridge Walk|Razorback Track",
+    "region": "Alpine NP, VIC",
+    "country": "AU",
+    "officialDistanceKm": 22,
+    "typicalDays": "1-2",
+    "bbox": [-36.96, 147.10, -36.86, 147.24],
+    "source": "Alpine National Park"
+  },
+  {
+    "name": "Falls to Hotham Alpine Crossing",
+    "searchName": "Falls to Hotham|Falls Creek to Mount Hotham",
+    "region": "Alpine NP, VIC",
+    "country": "AU",
+    "officialDistanceKm": 37,
+    "typicalDays": "2-3",
+    "bbox": [-37.00, 147.10, -36.80, 147.34],
+    "source": "Alpine National Park"
+  },
+  {
+    "name": "Royal Coast Track",
+    "searchName": "Royal Coast Track|Royal National Park Coast Track|Coast Track Royal",
+    "region": "Royal NP, NSW",
+    "country": "AU",
+    "officialDistanceKm": 26,
+    "typicalDays": "2",
+    "bbox": [-34.20, 151.04, -34.06, 151.16],
+    "source": "Royal National Park"
+  },
+  {
+    "name": "Blue Gum Forest Walk",
+    "searchName": "Blue Gum Forest|Grose Valley Blue Gum",
+    "region": "Blue Mountains, NSW",
+    "country": "AU",
+    "officialDistanceKm": 14,
+    "typicalDays": "1",
+    "bbox": [-33.68, 150.28, -33.58, 150.38],
+    "source": "Blue Mountains National Park"
+  },
+  {
+    "name": "Grand Canyon Track",
+    "searchName": "Grand Canyon Track|Grand Canyon Walk",
+    "region": "Blue Mountains, NSW",
+    "country": "AU",
+    "officialDistanceKm": 6,
+    "typicalDays": "1",
+    "bbox": [-33.72, 150.30, -33.66, 150.38],
+    "source": "Blue Mountains National Park"
+  },
+  {
+    "name": "Fraser Island Great Walk",
+    "searchName": "Fraser Island Great Walk|K'gari Great Walk",
+    "region": "Fraser Island, QLD",
+    "country": "AU",
+    "officialDistanceKm": 90,
+    "typicalDays": "6-8",
+    "bbox": [-25.50, 153.00, -24.90, 153.20],
+    "source": "K'gari (Fraser Island)"
+  },
+  {
+    "name": "Whitsunday Ngaro Sea Trail",
+    "searchName": "Ngaro Sea Trail|Whitsunday Ngaro",
+    "region": "Whitsundays, QLD",
+    "country": "AU",
+    "officialDistanceKm": 14,
+    "typicalDays": "2-3",
+    "bbox": [-20.30, 148.85, -20.18, 149.00],
+    "source": "Whitsunday Islands National Park"
+  },
+  {
+    "name": "Mt Lofty Summit via Waterfall Gully",
+    "searchName": "Mount Lofty|Waterfall Gully to Mount Lofty",
+    "region": "Adelaide Hills, SA",
+    "country": "AU",
+    "officialDistanceKm": 6,
+    "typicalDays": "1",
+    "bbox": [-35.01, 138.67, -34.96, 138.73],
+    "source": "Cleland Conservation Park",
+    "existingJson": "mount_lofty_summit_via_waterfall_gully"
+  },
+  {
+    "name": "Wilpena Pound",
+    "searchName": "Wilpena Pound|Hills Homestead",
+    "region": "Flinders Ranges, SA",
+    "country": "AU",
+    "officialDistanceKm": 17,
+    "typicalDays": "1",
+    "bbox": [-31.60, 138.48, -31.44, 138.66],
+    "source": "Flinders Ranges National Park",
+    "existingJson": "wilpena_pound"
+  },
+  {
+    "name": "Bluff Knoll",
+    "searchName": "Bluff Knoll",
+    "region": "Stirling Range, WA",
+    "country": "AU",
+    "officialDistanceKm": 6,
+    "typicalDays": "1",
+    "bbox": [-34.39, 118.22, -34.34, 118.28],
+    "source": "Stirling Range National Park",
+    "existingJson": "bluff_knoll"
+  }
+]

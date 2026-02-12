@@ -1,0 +1,120 @@
+{
+  "results": [
+    {
+      "id": "everest_base_camp_trek",
+      "name": "Everest Base Camp Trek",
+      "calcKm": 77.46171311803525,
+      "pts": 2878,
+      "source": "osm_overpass_ordered",
+      "off": 40.414066832280575,
+      "status": "HIGH",
+      "country": "NP"
+    },
+    {
+      "id": "everest_three_passes_trek",
+      "name": "Everest Three Passes Trek",
+      "calcKm": 128.08342889536604,
+      "pts": 5196,
+      "source": "osm_overpass_ordered",
+      "off": 19.947856940396225,
+      "status": "FAIR",
+      "country": "NP"
+    },
+    {
+      "id": "gokyo_lakes_trek",
+      "name": "Gokyo Lakes Trek",
+      "calcKm": 77.29111947956899,
+      "pts": 1395,
+      "source": "osm_ways_mirrored",
+      "off": 14.120978356034456,
+      "status": "FAIR",
+      "country": "NP"
+    },
+    {
+      "id": "annapurna_circuit",
+      "name": "Annapurna Circuit",
+      "calcKm": 367.55626967633185,
+      "pts": 12094,
+      "source": "osm_overpass_ordered",
+      "off": 83.77813483816593,
+      "status": "HIGH",
+      "country": "NP"
+    },
+    {
+      "id": "annapurna_base_camp_trek",
+      "name": "Annapurna Base Camp Trek",
+      "calcKm": 24.10415053237229,
+      "pts": 1750,
+      "source": "osm_overpass_ordered",
+      "off": 78.08713587966156,
+      "status": "HIGH",
+      "country": "NP"
+    },
+    {
+      "id": "poon_hill_trek",
+      "name": "Poon Hill Trek",
+      "calcKm": 13.858782508243335,
+      "pts": 246,
+      "source": "osm_ways",
+      "off": 65.35304372939166,
+      "status": "HIGH",
+      "country": "NP"
+    },
+    {
+      "id": "mardi_himal_trek",
+      "name": "Mardi Himal Trek",
+      "calcKm": 45.65454940524504,
+      "pts": 1635,
+      "source": "osm_overpass_ordered",
+      "off": 1.4545542338778716,
+      "status": "OK",
+      "country": "NP"
+    },
+    {
+      "id": "langtang_valley_trek",
+      "name": "Langtang Valley Trek",
+      "calcKm": 57.41019723784179,
+      "pts": 1950,
+      "source": "osm_ways",
+      "off": 23.453070349544276,
+      "status": "FAIR",
+      "country": "NP"
+    },
+    {
+      "id": "manaslu_circuit_trek",
+      "name": "Manaslu Circuit Trek",
+      "calcKm": 197.97636862787184,
+      "pts": 13011,
+      "source": "osm_overpass_ordered",
+      "off": 11.851055721961488,
+      "status": "FAIR",
+      "country": "NP"
+    },
+    {
+      "id": "upper_mustang_trek",
+      "name": "Upper Mustang Trek",
+      "calcKm": 16.0304820766475,
+      "pts": 375,
+      "source": "osm_ways",
+      "off": 88.54965565953749,
+      "status": "HIGH",
+      "country": "NP"
+    },
+    {
+      "id": "makalu_base_camp_trek",
+      "name": "Makalu Base Camp Trek",
+      "calcKm": 81.4410503598143,
+      "pts": 9692,
+      "source": "osm_overpass_ordered",
+      "off": 34.84715971214856,
+      "status": "HIGH",
+      "country": "NP"
+    }
+  ],
+  "failures": [
+    "Kanchenjunga Circuit Trek"
+  ],
+  "skipped": [],
+  "lastIndex": 11,
+  "timestamp": "2026-02-10T23:28:16.590Z"
+}

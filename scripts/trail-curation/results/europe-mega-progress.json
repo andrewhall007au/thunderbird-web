@@ -1,0 +1,135 @@
+{
+  "results": [
+    {
+      "id": "tour_du_mont_blanc",
+      "name": "Tour du Mont Blanc",
+      "calcKm": 166.01385950094212,
+      "pts": 17632,
+      "source": "osm_overpass_ordered",
+      "off": 2.3447885288575776,
+      "status": "OK",
+      "country": "FR"
+    },
+    {
+      "id": "gr20_corsica",
+      "name": "GR20 Corsica",
+      "calcKm": 267.59590755034304,
+      "pts": 9012,
+      "source": "osm_overpass_ordered",
+      "off": 48.66439308352391,
+      "status": "HIGH",
+      "country": "FR"
+    },
+    {
+      "id": "alta_via_2_dolomites",
+      "name": "Alta Via 2 Dolomites",
+      "calcKm": 236.16123252430728,
+      "pts": 14743,
+      "source": "osm_overpass_ordered",
+      "off": 47.60077032769205,
+      "status": "HIGH",
+      "country": "IT"
+    },
+    {
+      "id": "vikos_gorge",
+      "name": "Vikos Gorge",
+      "calcKm": 20.407189317128942,
+      "pts": 546,
+      "source": "osm_overpass_ordered",
+      "off": 70.05991097607452,
+      "status": "HIGH",
+      "country": "GR"
+    },
+    {
+      "id": "lycian_way",
+      "name": "Lycian Way",
+      "calcKm": 860.9214631380731,
+      "pts": 25718,
+      "source": "osm_overpass_ordered",
+      "off": 59.42990058112465,
+      "status": "HIGH",
+      "country": "TR"
+    },
+    {
+      "id": "e5_alps_crossing",
+      "name": "E5 Alps Crossing",
+      "calcKm": 710.2923636400441,
+      "pts": 28012,
+      "source": "osm_overpass_ordered",
+      "off": 255.14618182002204,
+      "status": "HIGH",
+      "country": "DE"
+    },
+    {
+      "id": "kungsleden",
+      "name": "Kungsleden",
+      "calcKm": 829.6187566789181,
+      "pts": 12373,
+      "source": "osm_overpass_ordered",
+      "off": 88.54971742702685,
+      "status": "HIGH",
+      "country": "SE"
+    },
+    {
+      "id": "adlerweg_eagle_walk",
+      "name": "Adlerweg",
+      "calcKm": 576.8023879147888,
+      "pts": 27674,
+      "source": "osm_overpass_ordered",
+      "off": 39.661595136752744,
+      "status": "HIGH",
+      "country": "AT"
+    },
+    {
+      "id": "camino_de_santiago_frances",
+      "name": "Camino de Santiago Frances",
+      "calcKm": 1148.3858623478563,
+      "pts": 31904,
+      "source": "osm_overpass_ordered",
+      "off": 47.228956711263635,
+      "status": "HIGH",
+      "country": "ES"
+    },
+    {
+      "id": "gr10_french_pyrenees",
+      "name": "GR10 French Pyrenees",
+      "calcKm": 925.1584133370102,
+      "pts": 60937,
+      "source": "osm_overpass_ordered",
+      "off": 6.34004751000117,
+      "status": "FAIR",
+      "country": "FR"
+    },
+    {
+      "id": "west_highland_way",
+      "name": "West Highland Way",
+      "calcKm": 260.25346062053995,
+      "pts": 6826,
+      "source": "osm_overpass_ordered",
+      "off": 68.99575364970126,
+      "status": "HIGH",
+      "country": "GB"
+    },
+    {
+      "id": "gr11_pyrenean_traverse",
+      "name": "GR11 Pyrenean Traverse",
+      "calcKm": 768.2074912781725,
+      "pts": 41657,
+      "source": "osm_overpass_ordered",
+      "off": 6.316159600222868,
+      "status": "FAIR",
+      "country": "ES"
+    },
+    {
+      "id": "south_west_coast_path",
+      "name": "South West Coast Path",
+      "calcKm": 1269.9399981866368,
+      "pts": 66036,
+      "source": "osm_overpass_ordered",
+      "off": 25.240630984875423,
+      "status": "HIGH",
+      "country": "GB"
+    }
+  ],
+  "timestamp": "2026-02-10T21:57:57.984Z"
+}

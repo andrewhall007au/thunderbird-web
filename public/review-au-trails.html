@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AU Trail Review - Thunderbird</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: flex; height: 100vh; background: #111; color: #eee; }
+  #sidebar { width: 380px; overflow-y: auto; background: #1a1a2e; border-right: 1px solid #333; }
+  #sidebar h1 { padding: 16px; font-size: 18px; border-bottom: 1px solid #333; position: sticky; top: 0; background: #1a1a2e; z-index: 10; }
+  #sidebar h1 span { color: #888; font-weight: normal; font-size: 14px; }
+  .region-group { border-bottom: 1px solid #222; }
+  .region-header { padding: 10px 16px; background: #16213e; font-size: 13px; font-weight: 600; color: #7ec8e3; cursor: pointer; position: sticky; top: 52px; z-index: 5; }
+  .region-header:hover { background: #1a2744; }
+  .trail-item { padding: 8px 16px; cursor: pointer; border-bottom: 1px solid #1a1a2e; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+  .trail-item:hover { background: #16213e; }
+  .trail-item.active { background: #0f3460; }
+  .trail-item.loading { opacity: 0.5; }
+  .trail-item .name { flex: 1; }
+  .trail-item .meta { color: #888; font-size: 11px; text-align: right; white-space: nowrap; margin-left: 8px; }
+  .trail-item .status { width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+  .status.ok { background: #4ade80; }
+  .status.warn { background: #fbbf24; }
+  .status.err { background: #f87171; }
+  .status.needsgpx { background: #f87171; animation: pulse 2s infinite; }
+  .status.pending { background: #555; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+  .trail-item .tag { font-size: 9px; padding: 1px 4px; border-radius: 3px; margin-left: 4px; }
+  .tag.needs-gpx { background: #7f1d1d; color: #fca5a5; }
+  .tag.cleaned { background: #1e3a5f; color: #93c5fd; }
+  .tag.bbox { background: #4a2c0a; color: #fbbf24; }
+  #map { flex: 1; }
+  #info-panel { position: absolute; top: 10px; right: 10px; z-index: 1000; background: rgba(26,26,46,0.95); border: 1px solid #333; border-radius: 8px; padding: 16px; max-width: 320px; display: none; }
+  #info-panel h2 { font-size: 16px; margin-bottom: 8px; }
+  #info-panel .detail { font-size: 12px; color: #aaa; margin: 4px 0; }
+  #info-panel .detail b { color: #eee; }
+  .legend { padding: 12px 16px; font-size: 11px; color: #888; border-top: 1px solid #333; }
+  .legend span { display: inline-flex; align-items: center; margin-right: 12px; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  #load-all-btn { margin: 12px 16px; padding: 8px 16px; background: #0f3460; color: #fff; border: 1px solid #7ec8e3; border-radius: 6px; cursor: pointer; font-size: 13px; width: calc(100% - 32px); }
+  #load-all-btn:hover { background: #16213e; }
+  #load-all-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>AU Trail Review <span id="count"></span></h1>
+  <button id="load-all-btn" onclick="loadAllTrails()">Load All Trail Data</button>
+  <div class="legend">
+    <span><span class="dot" style="background:#4ade80"></span> Clean</span>
+    <span><span class="dot" style="background:#fbbf24"></span> Distance mismatch</span>
+    <span><span class="dot" style="background:#f87171;animation:pulse 2s infinite"></span> Needs GPX</span>
+    <span><span class="dot" style="background:#555"></span> Pending</span>
+  </div>
+  <div id="trail-list"></div>
+</div>
+
+<div id="map"></div>
+<div id="info-panel">
+  <h2 id="info-name"></h2>
+  <div class="detail">Region: <b id="info-region"></b></div>
+  <div class="detail">Official distance: <b id="info-dist"></b> km</div>
+  <div class="detail">Calculated distance: <b id="info-calc"></b> km</div>
+  <div class="detail">Typical days: <b id="info-days"></b></div>
+  <div class="detail">Points: <b id="info-pts"></b></div>
+  <div class="detail">Segments: <b id="info-segs"></b></div>
+  <div class="detail">Elevation: <b id="info-elev"></b></div>
+  <div class="detail">Data source: <b id="info-source"></b></div>
+</div>
+
+<script>
+const map = L.map('map').setView([-28, 134], 5);
+
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+});
+const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  maxZoom: 17,
+  attribution: 'Map: OpenTopoMap, Data: OpenStreetMap'
+});
+const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19,
+  attribution: 'Tiles: Esri'
+});
+
+osm.addTo(map);
+L.control.layers({ 'OpenStreetMap': osm, 'Topo': topo, 'Satellite': satellite }, {}, { position: 'topright' }).addTo(map);
+
+// AU trail IDs from popularTrails.ts
+const auTrailIds = [
+  // Tasmania
+  'overland_track', 'south_coast_track', 'three_capes_track', 'western_arthur_range_traverse',
+  'eastern_arthur_range_traverse', 'frenchmans_cap', 'freycinet_peninsula_circuit', 'walls_of_jerusalem',
+  'mount_anne_circuit', 'tasman_cape_pillar', 'lake_rhona', 'leeaberra_track',
+  'port_davey_track', 'federation_peak',
+  // Mainland existing
+  'bibbulmun_track', 'larapinta_trail', 'great_ocean_walk', 'thorsborne_trail',
+  'australian_alps_walking_track', 'heysen_trail', 'cape_to_cape_track', 'jatbula_trail',
+  'great_north_walk', 'six_foot_track', 'light_to_light_walk', 'grampians_peaks_trail',
+  'carnarvon_great_walk', 'gold_coast_hinterland_great_walk', 'yuraygir_coastal_walk',
+  'wilsons_promontory_southern_circuit', 'wilderness_coast_walk', 'goldfields_track',
+  'canberra_centenary_trail', 'cooloola_great_walk', 'kanangra_to_katoomba', 'scenic_rim_trail',
+  // Phase 13 new
+  'bald_head_walk', 'mt_toolbrunup', 'mt_magog', 'mt_talyuberlup', 'mt_trio', 'stirling_ridge_walk',
+  'bluff_knoll', 'nancy_peak_and_devils_slide', 'castle_rock_granite_skywalk',
+  'mt_feathertop', 'mt_bogong', 'razorback_ridge',
+  'falls_to_hotham_alpine_crossing', 'royal_coast_track', 'blue_gum_forest_walk',
+  'grand_canyon_track', 'fraser_island_great_walk', 'whitsunday_ngaro_sea_trail',
+  'mount_lofty_summit_via_waterfall_gully',
+  'sunshine_coast_hinterland_great_walk', 'kangaroo_island_wilderness_trail',
+];
+
+const trailData = {};
+const trailLayers = {};
+let activeTrail = null;
+
+// Trail quality categories from cleanup audit
+const NEEDS_GPX = new Set([
+  'federation_peak', 'frenchmans_cap', 'freycinet_peninsula_circuit',
+  'heysen_trail', 'mount_maria_walk', 'mt_feathertop', 'overland_track',
+  'point_lesueur_walk', 'port_davey_track', 'south_coast_track',
+  'tasman_cape_pillar', 'western_arthur_range_traverse', 'wilpena_pound',
+]);
+const BBOX_CLEANED = new Set([
+  'falls_to_hotham_alpine_crossing', 'fraser_island_great_walk', 'grand_canyon_track',
+  'mt_talyuberlup', 'nancy_peak_and_devils_side', 'royal_coast_track',
+  'stirling_ridge_walk', 'whitsunday_ngaro_sea_trail',
+  'blue_gum_forest_walk',
+]);
+const GAP_CLEANED = new Set([
+  'bald_head_walk', 'bibbulmun_track', 'bluff_knoll', 'canberra_centenary_trail',
+  'gold_coast_hinterland_great_walk', 'goldfields_track', 'great_north_walk',
+  'great_ocean_walk', 'mount_anne_circuit', 'mt_bogong',
+  'razorback_ridge', 'thorsborne_trail', 'three_capes_track', 'walls_of_jerusalem',
+  'wilderness_coast_walk',
+]);
+
+document.getElementById('count').textContent = `(${auTrailIds.length} trails)`;
+
+// Group by region (derive from trail ID patterns)
+const regionMap = {};
+async function init() {
+  // Load all trail JSON metadata
+  const results = await Promise.allSettled(
+    auTrailIds.map(id => fetch(`/trail-data/${id}.json`).then(r => r.ok ? r.json() : null))
+  );
+
+  const trails = [];
+  for (let i = 0; i < auTrailIds.length; i++) {
+    const id = auTrailIds[i];
+    const result = results[i];
+    if (result.status === 'fulfilled' && result.value) {
+      trailData[id] = result.value;
+      trails.push({ id, ...result.value });
+    } else {
+      trails.push({ id, name: id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), region: 'Unknown', failed: true });
+    }
+  }
+
+  // Group by region
+  const groups = {};
+  for (const t of trails) {
+    const region = t.region || 'Unknown';
+    if (!groups[region]) groups[region] = [];
+    groups[region].push(t);
+  }
+
+  // Sort regions
+  const sortedRegions = Object.keys(groups).sort();
+  const listEl = document.getElementById('trail-list');
+
+  for (const region of sortedRegions) {
+    const group = document.createElement('div');
+    group.className = 'region-group';
+
+    const header = document.createElement('div');
+    header.className = 'region-header';
+    header.textContent = `${region} (${groups[region].length})`;
+    group.appendChild(header);
+
+    for (const trail of groups[region].sort((a, b) => a.name.localeCompare(b.name))) {
+      const item = document.createElement('div');
+      item.className = 'trail-item';
+      item.id = `trail-${trail.id}`;
+
+      const status = document.createElement('div');
+      status.className = 'status';
+
+      if (trail.failed) {
+        status.className += ' err';
+        status.title = 'Failed to load JSON';
+      } else if (NEEDS_GPX.has(trail.id)) {
+        status.className += ' needsgpx';
+        status.title = 'Needs official GPX - data is incomplete or wrong';
+      } else if (trail.coordinates && trail.coordinates.length > 0) {
+        const calcKm = trail.calculatedKm || 0;
+        const ratio = trail.distance_km > 0 ? calcKm / trail.distance_km : 1;
+        if (ratio < 0.5 || ratio > 2.0) {
+          status.className += ' warn';
+          status.title = `Distance mismatch: ${calcKm.toFixed(1)}km calc vs ${trail.distance_km}km official`;
+        } else {
+          status.className += ' ok';
+        }
+      } else {
+        status.className += ' pending';
+      }
+
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = trail.name;
+
+      // Add category tag
+      if (NEEDS_GPX.has(trail.id)) {
+        const tag = document.createElement('span');
+        tag.className = 'tag needs-gpx';
+        tag.textContent = 'NEEDS GPX';
+        name.appendChild(tag);
+      } else if (BBOX_CLEANED.has(trail.id)) {
+        const tag = document.createElement('span');
+        tag.className = 'tag bbox';
+        tag.textContent = 'BBOX CLEANED';
+        name.appendChild(tag);
+      } else if (GAP_CLEANED.has(trail.id)) {
+        const tag = document.createElement('span');
+        tag.className = 'tag cleaned';
+        tag.textContent = 'GAP CLEANED';
+        name.appendChild(tag);
+      }
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = trail.failed ? 'NO DATA' : `${trail.distance_km}km / ${trail.typical_days}d`;
+
+      item.appendChild(status);
+      item.appendChild(name);
+      item.appendChild(meta);
+
+      item.onclick = () => showTrail(trail.id);
+      group.appendChild(item);
+    }
+
+    listEl.appendChild(group);
+  }
+
+  // Auto-show all trails with data on map
+  loadAllTrailsOnMap();
+}
+
+// Haversine distance in km
+function havKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Split coordinates into segments at gaps > 1km
+function splitAtGaps(coords) {
+  if (coords.length < 2) return [coords];
+  const segments = [];
+  let current = [coords[0]];
+  for (let i = 1; i < coords.length; i++) {
+    const gap = havKm(coords[i-1][1], coords[i-1][0], coords[i][1], coords[i][0]);
+    if (gap > 1.0) {
+      if (current.length >= 2) segments.push(current);
+      current = [coords[i]];
+    } else {
+      current.push(coords[i]);
+    }
+  }
+  if (current.length >= 2) segments.push(current);
+  return segments;
+}
+
+function loadAllTrailsOnMap() {
+  for (const id of Object.keys(trailData)) {
+    const data = trailData[id];
+    if (data.coordinates && data.coordinates.length > 1) {
+      // Split at gaps to avoid straight-line artifacts
+      const segments = splitAtGaps(data.coordinates);
+      const polylines = segments.map(seg => {
+        const latlngs = seg.map(c => [c[1], c[0]]);
+        return L.polyline(latlngs, { color: '#7ec8e3', weight: 2, opacity: 0.6 });
+      });
+      const layer = L.layerGroup(polylines).addTo(map);
+      // Bind tooltip to each polyline
+      polylines.forEach(p => {
+        p.bindTooltip(data.name, { sticky: true });
+        p.on('click', () => showTrail(id));
+      });
+      trailLayers[id] = { group: layer, polylines, segments };
+    }
+  }
+}
+
+// Km markers layer group
+let kmMarkersLayer = L.layerGroup().addTo(map);
+
+function showTrail(id) {
+  const data = trailData[id];
+  if (!data || !data.coordinates || data.coordinates.length < 2) return;
+
+  // Deactivate previous
+  if (activeTrail && trailLayers[activeTrail]) {
+    const prevEl = document.getElementById(`trail-${activeTrail}`);
+    if (prevEl) prevEl.classList.remove('active');
+    const prev = trailLayers[activeTrail];
+    prev.polylines.forEach(p => p.setStyle({ color: '#7ec8e3', weight: 2, opacity: 0.6 }));
+  }
+  kmMarkersLayer.clearLayers();
+
+  // Activate
+  activeTrail = id;
+  const el = document.getElementById(`trail-${id}`);
+  if (el) { el.classList.add('active'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+
+  const layerInfo = trailLayers[id];
+  if (layerInfo) {
+    layerInfo.polylines.forEach(p => {
+      p.setStyle({ color: '#ff6b6b', weight: 4, opacity: 1 });
+      p.bringToFront();
+    });
+
+    // Calculate bounds across all segments
+    const allBounds = L.latLngBounds([]);
+    layerInfo.polylines.forEach(p => allBounds.extend(p.getBounds()));
+    map.fitBounds(allBounds, { padding: [50, 50] });
+
+    // Add km markers along the trail
+    let cumDist = 0;
+    let nextMarker = 1; // km
+    const coords = data.coordinates;
+    // Add start marker
+    addKmMarker(coords[0][1], coords[0][0], '0', '#4ade80');
+
+    for (let i = 1; i < coords.length; i++) {
+      const segDist = havKm(coords[i-1][1], coords[i-1][0], coords[i][1], coords[i][0]);
+      // Skip gaps
+      if (segDist > 1.0) continue;
+      cumDist += segDist;
+      while (cumDist >= nextMarker) {
+        // Interpolate position
+        const overshoot = cumDist - nextMarker;
+        const frac = 1 - (overshoot / segDist);
+        const lat = coords[i-1][1] + frac * (coords[i][1] - coords[i-1][1]);
+        const lng = coords[i-1][0] + frac * (coords[i][0] - coords[i-1][0]);
+        const markerInterval = data.distance_km > 50 ? 10 : data.distance_km > 15 ? 5 : 1;
+        if (nextMarker % markerInterval === 0) {
+          addKmMarker(lat, lng, `${nextMarker}`, '#7ec8e3');
+        }
+        nextMarker++;
+      }
+    }
+    // Add end marker
+    const last = coords[coords.length - 1];
+    addKmMarker(last[1], last[0], `${cumDist.toFixed(1)}`, '#f87171');
+  }
+
+  // Info panel
+  const panel = document.getElementById('info-panel');
+  panel.style.display = 'block';
+  document.getElementById('info-name').textContent = data.name;
+  document.getElementById('info-region').textContent = data.region;
+  document.getElementById('info-dist').textContent = data.distance_km;
+  document.getElementById('info-calc').textContent = (data.calculatedKm || 0).toFixed(1);
+  document.getElementById('info-days').textContent = data.typical_days;
+  document.getElementById('info-pts').textContent = data.coordinates.length;
+
+  // Segment info
+  const segs = splitAtGaps(data.coordinates);
+  const segDists = segs.map(s => {
+    let d = 0;
+    for (let i = 1; i < s.length; i++) d += havKm(s[i-1][1], s[i-1][0], s[i][1], s[i][0]);
+    return d;
+  });
+  document.getElementById('info-segs').textContent = `${segs.length} segments (${segDists.map(d => d.toFixed(1) + 'km').join(', ')})`;
+
+  const elevations = data.coordinates.map(c => c[2]).filter(e => e > 0);
+  document.getElementById('info-elev').textContent = elevations.length > 0
+    ? `${Math.min(...elevations)}m - ${Math.max(...elevations)}m`
+    : 'N/A';
+  document.getElementById('info-source').textContent = data.dataSource || 'unknown';
+}
+
+function addKmMarker(lat, lng, label, color) {
+  const icon = L.divIcon({
+    className: 'km-marker',
+    html: `<div style="background:${color};color:#000;font-size:10px;font-weight:bold;padding:1px 4px;border-radius:3px;white-space:nowrap;">${label}km</div>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+  });
+  L.marker([lat, lng], { icon }).addTo(kmMarkersLayer);
+}
+
+async function loadAllTrails() {
+  const btn = document.getElementById('load-all-btn');
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+  await init();
+  btn.textContent = 'All trails loaded';
+}
+
+// Auto-load on page load
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+{
+  "results": [
+    {
+      "id": "west_coast_trail",
+      "name": "West Coast Trail",
+      "calcKm": 125.68546628013411,
+      "pts": 3114,
+      "source": "osm_overpass_ordered",
+      "off": 67.58062170684548,
+      "status": "HIGH"
+    },
+    {
+      "id": "berg_lake_trail",
+      "name": "Berg Lake Trail",
+      "calcKm": 27.408384672224777,
+      "pts": 535,
+      "source": "osm_overpass_ordered",
+      "off": 19.166889879238163,
+      "status": "FAIR"
+    },
+    {
+      "id": "chilkoot_trail",
+      "name": "Chilkoot Trail",
+      "calcKm": 55.93056735511983,
+      "pts": 2228,
+      "source": "osm_overpass_ordered",
+      "off": 5.529372368150617,
+      "status": "FAIR"
+    },
+    {
+      "id": "sunshine_coast_trail",
+      "name": "Sunshine Coast Trail",
+      "calcKm": 274.317955105851,
+      "pts": 14450,
+      "source": "osm_overpass_ordered",
+      "off": 52.398863947695006,
+      "status": "HIGH"
+    },
+    {
+      "id": "juan_de_fuca_marine_trail",
+      "name": "Juan de Fuca Marine Trail",
+      "calcKm": 66.94723637787928,
+      "pts": 3275,
+      "source": "osm_overpass_ordered",
+      "off": 42.44092846357293,
+      "status": "HIGH"
+    },
+    {
+      "id": "garibaldi_lake_trail",
+      "name": "Garibaldi Lake Trail",
+      "calcKm": 12.828810365224223,
+      "pts": 479,
+      "source": "osm_ways",
+      "off": 28.72883130430987,
+      "status": "HIGH"
+    },
+    {
+      "id": "joffre_lakes_trail",
+      "name": "Joffre Lakes Trail",
+      "calcKm": 7.364268232735728,
+      "pts": 406,
+      "source": "osm_overpass_ordered",
+      "off": 33.052106975129746,
+      "status": "HIGH"
+    },
+    {
+      "id": "stein_valley_traverse",
+      "name": "Stein Valley Traverse",
+      "calcKm": 88.84789079404801,
+      "pts": 3401,
+      "source": "osm_overpass_ordered",
+      "off": 11.059863492560016,
+      "status": "FAIR"
+    },
+    {
+      "id": "howe_sound_crest_trail",
+      "name": "Howe Sound Crest Trail",
+      "calcKm": 44.41620469797687,
+      "pts": 2380,
+      "source": "osm_overpass_ordered",
+      "off": 53.15932654474784,
+      "status": "HIGH"
+    },
+    {
+      "id": "golden_ears_trail",
+      "name": "Golden Ears Trail",
+      "calcKm": 5.627953604705555,
+      "pts": 554,
+      "source": "osm_ways",
+      "off": 76.55019331372687,
+      "status": "HIGH"
+    },
+    {
+      "id": "skyline_trail_jasper",
+      "name": "Skyline Trail (Jasper)",
+      "calcKm": 73.34213114228677,
+      "pts": 1782,
+      "source": "osm_overpass_ordered",
+      "off": 66.68666168701539,
+      "status": "HIGH"
+    },
+    {
+      "id": "plain_of_six_glaciers_trail",
+      "name": "Plain of Six Glaciers Trail",
+      "calcKm": 12.230837895342722,
+      "pts": 361,
+      "source": "osm_ways",
+      "off": 12.636872176123415,
+      "status": "FAIR"
+    },
+    {
+      "id": "crypt_lake_trail",
+      "name": "Crypt Lake Trail",
+      "calcKm": 15.506519187758954,
+      "pts": 340,
+      "source": "osm_ways",
+      "off": 8.785181248476741,
+      "status": "FAIR"
+    },
+    {
+      "id": "sentinel_pass_trail",
+      "name": "Sentinel Pass Trail",
+      "calcKm": 2.814979773531684,
+      "pts": 111,
+      "source": "osm_ways",
+      "off": 76.5418352205693,
+      "status": "HIGH"
+    },
+    {
+      "id": "la_cloche_silhouette_trail",
+      "name": "La Cloche Silhouette Trail",
+      "calcKm": 73.70471374113644,
+      "pts": 2275,
+      "source": "osm_overpass_ordered",
+      "off": 5.506777254953276,
+      "status": "FAIR"
+    },
+    {
+      "id": "bruce_trail_bruce_peninsula",
+      "name": "Bruce Trail (Bruce Peninsula)",
+      "calcKm": 233.4900658617074,
+      "pts": 6940,
+      "source": "osm_overpass_ordered",
+      "off": 133.4900658617074,
+      "status": "HIGH"
+    },
+    {
+      "id": "east_coast_trail",
+      "name": "East Coast Trail",
+      "calcKm": 477.84816767186516,
+      "pts": 14231,
+      "source": "osm_overpass_ordered",
+      "off": 42.21671656900748,
+      "status": "HIGH"
+    },
+    {
+      "id": "fundy_footpath",
+      "name": "Fundy Footpath",
+      "calcKm": 43.02409967591125,
+      "pts": 1485,
+      "source": "osm_overpass_ordered",
+      "off": 4.9368284778323215,
+      "status": "OK"
+    },
+    {
+      "id": "long_range_traverse",
+      "name": "Long Range Traverse",
+      "calcKm": 59.922459673992826,
+      "pts": 1085,
+      "source": "osm_overpass_ordered",
+      "off": 71.2070276399795,
+      "status": "HIGH"
+    },
+    {
+      "id": "tablelands_trail",
+      "name": "Tablelands Trail",
+      "calcKm": 3.3108113719916084,
+      "pts": 59,
+      "source": "osm_ways",
+      "off": 17.22971570020979,
+      "status": "FAIR"
+    },
+    {
+      "id": "mantario_trail",
+      "name": "Mantario Trail",
+      "calcKm": 102.06259776369014,
+      "pts": 1762,
+      "source": "osm_overpass_ordered",
+      "off": 62.004123434428784,
+      "status": "HIGH"
+    }
+  ],
+  "failures": [
+    "Rockwall Trail",
+    "Della Falls Trail",
+    "Nootka Trail",
+    "Tonquin Valley Trail",
+    "Lake Agnes and Big Beehive Trail",
+    "Mt Assiniboine via Wonder Pass",
+    "Egypt Lake via Healy Pass",
+    "Sawback Trail",
+    "Skoki Loop",
+    "Algonquin Highlands Backpacking Trail",
+    "Coastal Trail (Pukaskwa)",
+    "Killarney Provincial Park - The Crack",
+    "Cup and Saucer Trail",
+    "Sentier des Caps de Charlevoix",
+    "Mont Jacques-Cartier Trail",
+    "Les Loups Trail",
+    "Mont Albert Circuit",
+    "Mont Tremblant Summit Trail",
+    "Cape Chignecto Coastal Trail",
+    "Skyline Trail (Cape Breton)",
+    "Canol Heritage Trail",
+    "Chilkoot Pass Trail",
+    "Tombstone Grizzly Lake Trail",
+    "Aulavik River Route",
+    "Grey Owl Trail",
+    "Akamina Ridge Trail",
+    "Carthew-Alderson Trail"
+  ],
+  "skipped": [
+    "Great Divide Trail (1200km > 500km)",
+    "Sentier International des Appalaches (650km > 500km)"
+  ],
+  "lastIndex": 49,
+  "timestamp": "2026-02-09T16:21:11.345Z"
+}

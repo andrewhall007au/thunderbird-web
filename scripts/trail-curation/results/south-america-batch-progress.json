@@ -1,0 +1,101 @@
+{
+  "results": [
+    {
+      "id": "inca_trail_to_machu_picchu",
+      "name": "Inca Trail to Machu Picchu",
+      "calcKm": 92.93389394358603,
+      "pts": 3595,
+      "source": "osm_overpass_ordered",
+      "off": 121.2711760561572,
+      "status": "HIGH",
+      "country": "PE"
+    },
+    {
+      "id": "salkantay_trek",
+      "name": "Salkantay Trek",
+      "calcKm": 92.93389394358603,
+      "pts": 3595,
+      "source": "osm_overpass_ordered",
+      "off": 25.586343167008145,
+      "status": "HIGH",
+      "country": "PE"
+    },
+    {
+      "id": "huayhuash_circuit",
+      "name": "Huayhuash Circuit",
+      "calcKm": 117.89221526798212,
+      "pts": 2325,
+      "source": "osm_overpass_ordered",
+      "off": 9.313680563090674,
+      "status": "FAIR",
+      "country": "PE"
+    },
+    {
+      "id": "ausangate_circuit",
+      "name": "Ausangate Circuit",
+      "calcKm": 91.29434533456931,
+      "pts": 3119,
+      "source": "osm_overpass_ordered",
+      "off": 30.420493335099017,
+      "status": "HIGH",
+      "country": "PE"
+    },
+    {
+      "id": "choquequirao_trek",
+      "name": "Choquequirao Trek",
+      "calcKm": 33.526388721737554,
+      "pts": 1232,
+      "source": "osm_overpass_ordered",
+      "off": 39.04292959684081,
+      "status": "HIGH",
+      "country": "PE"
+    },
+    {
+      "id": "ciudad_perdida",
+      "name": "Ciudad Perdida",
+      "calcKm": 42.87565385602982,
+      "pts": 999,
+      "source": "osm_overpass_ordered",
+      "off": 6.79205683471778,
+      "status": "FAIR",
+      "country": "CO"
+    },
+    {
+      "id": "quilotoa_loop",
+      "name": "Quilotoa Loop",
+      "calcKm": 8.4412476030746,
+      "pts": 354,
+      "source": "osm_ways",
+      "off": 81.24167199316756,
+      "status": "HIGH",
+      "country": "EC"
+    },
+    {
+      "id": "choro_trail",
+      "name": "Choro Trail",
+      "calcKm": 69.38163108432838,
+      "pts": 1442,
+      "source": "osm_overpass_ordered",
+      "off": 21.722159797067324,
+      "status": "FAIR",
+      "country": "BO"
+    },
+    {
+      "id": "mount_roraima",
+      "name": "Mount Roraima",
+      "calcKm": 35.152814198449036,
+      "pts": 927,
+      "source": "osm_ways",
+      "off": 63.382485209948925,
+      "status": "HIGH",
+      "country": "VE"
+    }
+  ],
+  "failures": [
+    "Colca Canyon Trek",
+    "Lares Trek"
+  ],
+  "skipped": [],
+  "lastIndex": 10,
+  "timestamp": "2026-02-11T00:22:44.631Z"
+}

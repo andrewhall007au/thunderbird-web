@@ -1,0 +1,133 @@
+{
+  "results": [
+    {
+      "id": "spit_to_manly_walk",
+      "name": "Spit to Manly Walk",
+      "calcKm": 9.313560845074006,
+      "pts": 646,
+      "source": "osm_overpass_ordered",
+      "off": 6.864391549259937,
+      "status": "FAIR",
+      "country": "AU"
+    },
+    {
+      "id": "three_sisters_and_giant_stairway",
+      "name": "Three Sisters and Giant Stairway",
+      "calcKm": 0.3771557148459754,
+      "pts": 49,
+      "source": "osm_ways",
+      "off": 92.45688570308049,
+      "status": "HIGH",
+      "country": "AU"
+    },
+    {
+      "id": "mount_kosciuszko_summit_walk",
+      "name": "Mount Kosciuszko Summit Walk",
+      "calcKm": 15.26542336399773,
+      "pts": 192,
+      "source": "osm_overpass_ordered",
+      "off": 17.426333569213305,
+      "status": "FAIR",
+      "country": "AU"
+    },
+    {
+      "id": "cathedral_range_southern_circuit",
+      "name": "Cathedral Range Southern Circuit",
+      "calcKm": 15.435561914890082,
+      "pts": 490,
+      "source": "osm_overpass_ordered",
+      "off": 28.629682624084012,
+      "status": "HIGH",
+      "country": "AU"
+    },
+    {
+      "id": "bluff_knoll",
+      "name": "Bluff Knoll",
+      "calcKm": 4.570586570484418,
+      "pts": 174,
+      "source": "osm_ways",
+      "off": 23.823557158593026,
+      "status": "FAIR",
+      "country": "AU"
+    },
+    {
+      "id": "castle_rock_girraween",
+      "name": "Castle Rock Girraween",
+      "calcKm": 3.7636329674234736,
+      "pts": 96,
+      "source": "osm_ways",
+      "off": 24.727340651530525,
+      "status": "FAIR",
+      "country": "AU"
+    },
+    {
+      "id": "wilpena_pound",
+      "name": "Wilpena Pound",
+      "calcKm": 2.1742104881212083,
+      "pts": 63,
+      "source": "osm_ways",
+      "off": 87.21052654046349,
+      "status": "HIGH",
+      "country": "AU"
+    },
+    {
+      "id": "mount_lofty_summit_via_waterfall_gully",
+      "name": "Mount Lofty Summit via Waterfall Gully",
+      "calcKm": 3.934094795975666,
+      "pts": 337,
+      "source": "osm_overpass_ordered",
+      "off": 34.43175340040557,
+      "status": "HIGH",
+      "country": "AU"
+    },
+    {
+      "id": "uluru_base_walk",
+      "name": "Uluru Base Walk",
+      "calcKm": 9.574218324008276,
+      "pts": 294,
+      "source": "osm_overpass_ordered",
+      "off": 12.961651599924762,
+      "status": "FAIR",
+      "country": "AU"
+    },
+    {
+      "id": "cradle_mountain_summit",
+      "name": "Cradle Mountain Summit",
+      "calcKm": 1.8079802677781232,
+      "pts": 118,
+      "source": "osm_ways",
+      "off": 86.0924594786298,
+      "status": "HIGH",
+      "country": "AU"
+    },
+    {
+      "id": "wineglass_bay_and_hazards_beach",
+      "name": "Wineglass Bay and Hazards Beach",
+      "calcKm": 4.582439395240779,
+      "pts": 247,
+      "source": "osm_ways",
+      "off": 58.34146004326565,
+      "status": "HIGH",
+      "country": "AU"
+    }
+  ],
+  "failures": [
+    "Bondi to Coogee Coastal Walk",
+    "Mount Warning Summit Trail",
+    "Grand Canyon Track Blue Mountains",
+    "Pigeon House Mountain",
+    "The Pinnacle Walk Grampians",
+    "Mount Feathertop",
+    "Mount Oberon Summit Walk",
+    "Mount Beerwah",
+    "Mount Barney",
+    "St Mary Peak Flinders Ranges",
+    "Kings Canyon Rim Walk",
+    "Valley of the Winds Kata Tjuta",
+    "kunanyi Mount Wellington Summit",
+    "Cape Hauy Track"
+  ],
+  "skipped": [],
+  "lastIndex": 24,
+  "timestamp": "2026-02-11T14:18:42.877Z"
+}

@@ -898,5 +898,113 @@
     "officialDistanceKm": 3.2,
     "typicalDays": "1 day",
     "bbox": [44.33, -68.20, 44.35, -68.18]
+  },
+  {
+    "name": "Long Trail",
+    "searchName": "Long Trail",
+    "region": "VT",
+    "country": "US",
+    "officialDistanceKm": 437,
+    "typicalDays": "3-4 weeks",
+    "bbox": [42.70, -73.20, 45.01, -72.50]
+  },
+  {
+    "name": "Arizona Trail",
+    "searchName": "Arizona National Scenic Trail",
+    "region": "AZ",
+    "country": "US",
+    "officialDistanceKm": 1290,
+    "typicalDays": "6-8 weeks",
+    "bbox": [31.33, -112.50, 37.00, -110.50]
+  },
+  {
+    "name": "Superior Hiking Trail",
+    "searchName": "Superior Hiking Trail",
+    "region": "MN",
+    "country": "US",
+    "officialDistanceKm": 499,
+    "typicalDays": "4-5 weeks",
+    "bbox": [46.80, -92.00, 47.97, -89.50]
+  },
+  {
+    "name": "Pacific Northwest Trail",
+    "searchName": "Pacific Northwest National Scenic Trail",
+    "region": "MT-ID-WA",
+    "country": "US",
+    "officialDistanceKm": 1930,
+    "typicalDays": "8-10 weeks",
+    "bbox": [46.80, -124.70, 49.00, -113.50]
+  },
+  {
+    "name": "Ice Age Trail",
+    "searchName": "Ice Age National Scenic Trail",
+    "region": "WI",
+    "country": "US",
+    "officialDistanceKm": 1900,
+    "typicalDays": "8-10 weeks",
+    "bbox": [42.50, -90.70, 47.00, -87.50]
+  },
+  {
+    "name": "Ozark Highlands Trail",
+    "searchName": "Ozark Highlands Trail",
+    "region": "AR",
+    "country": "US",
+    "officialDistanceKm": 270,
+    "typicalDays": "2-3 weeks",
+    "bbox": [35.50, -94.00, 36.10, -92.80]
+  },
+  {
+    "name": "Pinhoti Trail",
+    "searchName": "Pinhoti Trail",
+    "region": "AL-GA",
+    "country": "US",
+    "officialDistanceKm": 530,
+    "typicalDays": "4-5 weeks",
+    "bbox": [33.20, -86.60, 34.70, -85.00]
+  },
+  {
+    "name": "Alum Cave Trail to Mt LeConte",
+    "searchName": "Alum Cave Trail",
+    "region": "TN",
+    "country": "US",
+    "officialDistanceKm": 16.6,
+    "typicalDays": "1 day",
+    "bbox": [35.62, -83.47, 35.66, -83.42]
+  },
+  {
+    "name": "Mount Washburn Trail",
+    "searchName": "Mount Washburn Trail",
+    "region": "WY",
+    "country": "US",
+    "officialDistanceKm": 10.0,
+    "typicalDays": "1 day",
+    "bbox": [44.77, -110.45, 44.80, -110.40]
+  },
+  {
+    "name": "Garfield Peak Trail",
+    "searchName": "Garfield Peak Trail",
+    "region": "OR",
+    "country": "US",
+    "officialDistanceKm": 5.6,
+    "typicalDays": "1 day",
+    "bbox": [42.90, -122.15, 42.92, -122.10]
+  },
+  {
+    "name": "Emory Peak Trail",
+    "searchName": "Emory Peak Trail",
+    "region": "TX",
+    "country": "US",
+    "officialDistanceKm": 16.0,
+    "typicalDays": "1 day",
+    "bbox": [29.23, -103.32, 29.27, -103.28]
+  },
+  {
+    "name": "Ryan Mountain Trail",
+    "searchName": "Ryan Mountain Trail",
+    "region": "CA",
+    "country": "US",
+    "officialDistanceKm": 4.8,
+    "typicalDays": "1 day",
+    "bbox": [33.98, -116.15, 34.00, -116.13]
   }
 ]

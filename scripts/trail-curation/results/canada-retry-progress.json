@@ -1,0 +1,136 @@
+{
+  "results": [
+    {
+      "id": "nootka_trail",
+      "name": "Nootka Trail",
+      "calcKm": 0.9368263319988832,
+      "pts": 17,
+      "source": "osm_ways",
+      "off": 97.32335333714606,
+      "status": "HIGH"
+    },
+    {
+      "id": "tonquin_valley",
+      "name": "Tonquin Valley Trail",
+      "calcKm": 12.001335319437281,
+      "pts": 167,
+      "source": "osm_ways",
+      "off": 72.72423791036982,
+      "status": "HIGH"
+    },
+    {
+      "id": "lake_agnes_and_big_beehive",
+      "name": "Lake Agnes and Big Beehive Trail",
+      "calcKm": 3.290904977379473,
+      "pts": 151,
+      "source": "osm_ways",
+      "off": 74.68534632785021,
+      "status": "HIGH"
+    },
+    {
+      "id": "mt_assiniboine_via_wonder_pass",
+      "name": "Mt Assiniboine via Wonder Pass",
+      "calcKm": 2.2458823022758216,
+      "pts": 264,
+      "source": "osm_ways",
+      "off": 95.91657763222578,
+      "status": "HIGH"
+    },
+    {
+      "id": "sawback_trail",
+      "name": "Sawback Trail",
+      "calcKm": 8.920952301176618,
+      "pts": 201,
+      "source": "osm_ways",
+      "off": 87.94465905246403,
+      "status": "HIGH"
+    },
+    {
+      "id": "akamina_ridge_trail",
+      "name": "Akamina Ridge Trail",
+      "calcKm": 0.07956001059245178,
+      "pts": 8,
+      "source": "osm_ways",
+      "off": 99.20439989407548,
+      "status": "HIGH"
+    },
+    {
+      "id": "carthew_alderson_trail",
+      "name": "Carthew-Alderson Trail",
+      "calcKm": 1.6626444077132678,
+      "pts": 155,
+      "source": "osm_ways",
+      "off": 91.68677796143368,
+      "status": "HIGH"
+    },
+    {
+      "id": "algonquin_highlands_backpacking_trail",
+      "name": "Algonquin Highlands Backpacking Trail",
+      "calcKm": 130.95359173366458,
+      "pts": 7203,
+      "source": "osm_ways",
+      "off": 48.810899697346116,
+      "status": "HIGH"
+    },
+    {
+      "id": "sentier_des_caps_de_charlevoix",
+      "name": "Sentier des Caps de Charlevoix",
+      "calcKm": 49.992609736318,
+      "pts": 3531,
+      "source": "osm_ways",
+      "off": 1.9752750268274473,
+      "status": "OK"
+    },
+    {
+      "id": "mont_tremblant_summit_trail",
+      "name": "Mont Tremblant Summit Trail",
+      "calcKm": 7.756754000739125,
+      "pts": 423,
+      "source": "osm_ways",
+      "off": 29.484054538735226,
+      "status": "HIGH"
+    },
+    {
+      "id": "canol_heritage_trail",
+      "name": "Canol Heritage Trail",
+      "calcKm": 306.5999731001804,
+      "pts": 3737,
+      "source": "osm_ways",
+      "off": 13.633810394315374,
+      "status": "FAIR"
+    },
+    {
+      "id": "chilkoot_pass_trail",
+      "name": "Chilkoot Pass Trail",
+      "calcKm": 55.84363207820275,
+      "pts": 2222,
+      "source": "osm_ways",
+      "off": 5.365343543778778,
+      "status": "FAIR"
+    },
+    {
+      "id": "tombstone_grizzly_lake_trail",
+      "name": "Tombstone Grizzly Lake Trail",
+      "calcKm": 21.884563060462952,
+      "pts": 805,
+      "source": "osm_ways",
+      "off": 9.42281530231476,
+      "status": "FAIR"
+    }
+  ],
+  "failures": [
+    "Rockwall Trail",
+    "Della Falls Trail",
+    "Egypt Lake via Healy Pass",
+    "Skoki Loop",
+    "Coastal Trail (Pukaskwa)",
+    "Killarney Provincial Park - The Crack",
+    "Cup and Saucer Trail",
+    "Mont Jacques-Cartier Trail",
+    "Les Loups Trail",
+    "Mont Albert Circuit",
+    "Cape Chignecto Coastal Trail",
+    "Skyline Trail (Cape Breton)"
+  ],
+  "timestamp": "2026-02-09T22:59:16.815Z"
+}

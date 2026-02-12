@@ -1,0 +1,243 @@
+{
+  "results": [
+    {
+      "id": "milford_track",
+      "name": "Milford Track",
+      "calcKm": 53.58250046659926,
+      "pts": 2068,
+      "source": "osm_overpass_ordered",
+      "off": 0.15420647962477865,
+      "status": "OK"
+    },
+    {
+      "id": "routeburn_track",
+      "name": "Routeburn Track",
+      "calcKm": 42.82736189327029,
+      "pts": 2649,
+      "source": "osm_overpass_ordered",
+      "off": 33.835505916469664,
+      "status": "HIGH"
+    },
+    {
+      "id": "kepler_track",
+      "name": "Kepler Track",
+      "calcKm": 70.33216107291095,
+      "pts": 2152,
+      "source": "osm_overpass_ordered",
+      "off": 17.22026845485158,
+      "status": "FAIR"
+    },
+    {
+      "id": "abel_tasman_coast_track",
+      "name": "Abel Tasman Coast Track",
+      "calcKm": 98.64827488296065,
+      "pts": 3849,
+      "source": "osm_overpass_ordered",
+      "off": 64.41379147160107,
+      "status": "HIGH"
+    },
+    {
+      "id": "tongariro_northern_circuit",
+      "name": "Tongariro Northern Circuit",
+      "calcKm": 44.31571013743609,
+      "pts": 4039,
+      "source": "osm_overpass_ordered",
+      "off": 3.059791017293237,
+      "status": "OK"
+    },
+    {
+      "id": "heaphy_track",
+      "name": "Heaphy Track",
+      "calcKm": 77.3843945895266,
+      "pts": 2714,
+      "source": "osm_overpass_ordered",
+      "off": 1.2954150643793525,
+      "status": "OK"
+    },
+    {
+      "id": "paparoa_track",
+      "name": "Paparoa Track",
+      "calcKm": 78.6504559266168,
+      "pts": 2541,
+      "source": "osm_overpass_ordered",
+      "off": 43.00082895748509,
+      "status": "HIGH"
+    },
+    {
+      "id": "lake_waikaremoana_great_walk",
+      "name": "Lake Waikaremoana Great Walk",
+      "calcKm": 55.40727027870549,
+      "pts": 1465,
+      "source": "osm_ways",
+      "off": 20.45058756240324,
+      "status": "FAIR"
+    },
+    {
+      "id": "rakiura_track",
+      "name": "Rakiura Track",
+      "calcKm": 34.82234381380852,
+      "pts": 3794,
+      "source": "osm_overpass_ordered",
+      "off": 8.819824418151633,
+      "status": "FAIR"
+    },
+    {
+      "id": "mueller_hut_route",
+      "name": "Mueller Hut Route",
+      "calcKm": 3.1150930824887806,
+      "pts": 190,
+      "source": "osm_ways",
+      "off": 68.84906917511219,
+      "status": "HIGH"
+    },
+    {
+      "id": "hooker_valley_track",
+      "name": "Hooker Valley Track",
+      "calcKm": 11.429124301268669,
+      "pts": 984,
+      "source": "osm_overpass_ordered",
+      "off": 14.291243012686685,
+      "status": "FAIR"
+    },
+    {
+      "id": "ben_lomond_track",
+      "name": "Ben Lomond Track",
+      "calcKm": 10.059506078554755,
+      "pts": 643,
+      "source": "osm_ways_mirrored",
+      "off": 8.549944740411322,
+      "status": "FAIR"
+    },
+    {
+      "id": "reesdart_track",
+      "name": "Rees-Dart Track",
+      "calcKm": 78.76970263304153,
+      "pts": 2449,
+      "source": "osm_overpass_ordered",
+      "off": 12.528146618630762,
+      "status": "FAIR"
+    },
+    {
+      "id": "hollyford_track",
+      "name": "Hollyford Track",
+      "calcKm": 58.22708826464905,
+      "pts": 2120,
+      "source": "osm_overpass_ordered",
+      "off": 3.9769433297304424,
+      "status": "OK"
+    },
+    {
+      "id": "queen_charlotte_track",
+      "name": "Queen Charlotte Track",
+      "calcKm": 68.74180908814647,
+      "pts": 3142,
+      "source": "osm_overpass_ordered",
+      "off": 3.1805505800753977,
+      "status": "OK"
+    },
+    {
+      "id": "tongariro_alpine_crossing",
+      "name": "Tongariro Alpine Crossing",
+      "calcKm": 23.202119152055364,
+      "pts": 3509,
+      "source": "osm_overpass_ordered",
+      "off": 19.598552330182294,
+      "status": "FAIR"
+    },
+    {
+      "id": "pinnacles_walk",
+      "name": "Pinnacles Walk",
+      "calcKm": 6.349278152383302,
+      "pts": 239,
+      "source": "osm_ways_mirrored",
+      "off": 9.296026394524251,
+      "status": "FAIR"
+    },
+    {
+      "id": "old_ghost_road",
+      "name": "Old Ghost Road",
+      "calcKm": 80.85735945456248,
+      "pts": 5170,
+      "source": "osm_overpass_ordered",
+      "off": 4.873694759338254,
+      "status": "OK"
+    },
+    {
+      "id": "matemateaonga_track",
+      "name": "Matemateaonga Track",
+      "calcKm": 33.869736805405125,
+      "pts": 236,
+      "source": "osm_ways",
+      "off": 19.35776951094018,
+      "status": "FAIR"
+    },
+    {
+      "id": "cape_brett_track",
+      "name": "Cape Brett Track",
+      "calcKm": 21.626007789155423,
+      "pts": 853,
+      "source": "osm_overpass_ordered",
+      "off": 31.865901153386737,
+      "status": "HIGH"
+    },
+    {
+      "id": "mt_holdsworth_jumbo_circuit",
+      "name": "Mt Holdsworth - Jumbo Circuit",
+      "calcKm": 21.30056034940671,
+      "pts": 1020,
+      "source": "osm_overpass_ordered",
+      "off": 14.797758602373165,
+      "status": "FAIR"
+    },
+    {
+      "id": "tama_lakes_track",
+      "name": "Tama Lakes Track",
+      "calcKm": 6.478363309264479,
+      "pts": 309,
+      "source": "osm_ways",
+      "off": 61.891980533738355,
+      "status": "HIGH"
+    },
+    {
+      "id": "key_summit_track",
+      "name": "Key Summit Track",
+      "calcKm": 2.778634210302788,
+      "pts": 137,
+      "source": "osm_ways_mirrored",
+      "off": 7.378859656573737,
+      "status": "FAIR"
+    }
+  ],
+  "failures": [
+    "Hump Ridge Track",
+    "Rob Roy Glacier Track",
+    "Roy's Peak Track",
+    "Cascade Saddle Route",
+    "Gillespie Pass Circuit",
+    "Greenstone-Caples Track",
+    "Dusky Track",
+    "George Sound Track",
+    "St James Walkway",
+    "Banks Peninsula Track",
+    "Pouakai Crossing",
+    "Mt Taranaki Summit Track",
+    "Kaimai Ridgeway",
+    "Te Araroa - Tararua Section",
+    "Whirinaki Track",
+    "Rangitoto Summit Track",
+    "Avalanche Peak Route",
+    "Gertrude Saddle Route",
+    "Lake Marian Track",
+    "Luxmore Hut Day Walk",
+    "Sealy Tarns Track",
+    "Mt Robert Circuit",
+    "Angelus Hut via Robert Ridge",
+    "Welcome Flat Hot Springs Track",
+    "Alex Knob Track",
+    "Isthmus Peak Track",
+    "Roys Peak to Mt Alpha Traverse"
+  ],
+  "skipped": [],
+  "lastIndex": 49,
+  "timestamp": "2026-02-10T02:52:02.190Z"
+}
