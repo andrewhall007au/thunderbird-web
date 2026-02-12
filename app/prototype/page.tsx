@@ -2,8 +2,8 @@
 
 import { useState, Suspense, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Smartphone, Tablet, Monitor } from 'lucide-react';
-import TrailPicker from './components/TrailPicker';
+import { Smartphone, Tablet, Monitor, Wifi, WifiOff, FlaskConical } from 'lucide-react';
+import TrailMenu from './components/TrailMenu';
 import ForecastPanel from './components/ForecastPanel';
 import TimeScrubber from './components/TimeScrubber';
 import SatelliteSimulator from './components/SatelliteSimulator';
@@ -33,8 +33,45 @@ export default function PrototypePage() {
   const [satelliteLatencyMs, setSatelliteLatencyMs] = useState(5000);
   const [lastPayloadMetrics, setLastPayloadMetrics] = useState<PayloadMetrics | null>(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
-  const [mode, setMode] = useState<AppMode>('online');
+  const [detectedMode, setDetectedMode] = useState<AppMode>('online');
+  const [simulatedMode, setSimulatedMode] = useState<AppMode | null>(null); // null = use detected
+  const [showModeAlert, setShowModeAlert] = useState(false);
   const [viewport, setViewport] = useState<Viewport>('mobile');
+
+  // Effective mode: simulated override takes precedence over detected
+  const mode = simulatedMode ?? detectedMode;
+
+  // Connectivity probe — try a lightweight fetch to detect online/satellite
+  useEffect(() => {
+    const probe = async () => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        // Lightweight probe — Open-Meteo geocoding endpoint with a tiny query
+        await fetch('https://geocoding-api.open-meteo.com/v1/search?name=test&count=1', {
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        const prevMode = detectedMode;
+        setDetectedMode('online');
+        if (prevMode === 'offline') {
+          setShowModeAlert(true);
+          setTimeout(() => setShowModeAlert(false), 4000);
+        }
+      } catch {
+        const prevMode = detectedMode;
+        setDetectedMode('offline');
+        if (prevMode === 'online') {
+          setShowModeAlert(true);
+          setTimeout(() => setShowModeAlert(false), 4000);
+        }
+      }
+    };
+
+    probe(); // Initial probe
+    const interval = setInterval(probe, 30000); // Re-probe every 30s
+    return () => clearInterval(interval);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch weather for a list of pins
   const fetchWeatherForPins = async (pinsToFetch: Pin[]) => {
@@ -198,11 +235,23 @@ export default function PrototypePage() {
     }
   };
 
-  // Switch mode — auto-fetch weather for existing pins when going online
-  const handleModeChange = (newMode: AppMode) => {
-    setMode(newMode);
-    if (newMode === 'online') {
-      // Fetch weather for pins that don't have forecasts yet
+  // Simulate mode toggle (prototype only) — cycle: auto → online → offline → auto
+  const cycleSimulatedMode = () => {
+    if (simulatedMode === null) {
+      // Currently auto → force online
+      setSimulatedMode('online');
+    } else if (simulatedMode === 'online') {
+      // Force online → force offline
+      setSimulatedMode('offline');
+    } else {
+      // Force offline → back to auto
+      setSimulatedMode(null);
+    }
+  };
+
+  // When effective mode changes to online, fetch weather for pins missing forecasts
+  useEffect(() => {
+    if (mode === 'online') {
       const pinsNeedingWeather = pins.filter(p => !p.forecast && !p.loading);
       if (pinsNeedingWeather.length > 0) {
         setPins(prev => prev.map(p =>
@@ -213,7 +262,7 @@ export default function PrototypePage() {
         fetchWeatherForPins(pinsNeedingWeather);
       }
     }
-  };
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Calculate severity summary for all pins at current hour
   const severitySummary = useMemo(() => {
@@ -232,36 +281,48 @@ export default function PrototypePage() {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-zinc-900 text-zinc-100" style={{ height: '100dvh' }}>
       {/* Header */}
-      <div className="bg-zinc-800 border-b border-zinc-700 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold truncate">
-              {trailGeojson?.properties?.name || 'Select a trail'}
-            </h1>
-            <p className="text-sm text-zinc-400 mt-0.5">
-              Tap screen to drop pins to find GPS points for SMS CAST functions
-            </p>
-          </div>
-          <div className="flex items-center gap-3 flex-shrink-0 ml-3">
-            {/* Mode: Standard / Satellite */}
+      <div className="bg-zinc-800 border-b border-zinc-700 px-4 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <TrailMenu
+            selectedTrailId={selectedTrailId}
+            onTrailSelect={handleTrailSelect}
+          />
+          <h1 className="text-base font-bold truncate flex-1 min-w-0">
+            {trailGeojson?.properties?.name || 'Select a trail'}
+          </h1>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Connectivity status indicator */}
+            <div className={`
+              flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+              ${mode === 'online'
+                ? 'bg-green-900/40 text-green-300 border border-green-700/50'
+                : 'bg-amber-900/40 text-amber-300 border border-amber-700/50'
+              }
+            `}>
+              {mode === 'online'
+                ? <Wifi className="w-3 h-3" />
+                : <WifiOff className="w-3 h-3" />
+              }
+              {mode === 'online' ? 'Data' : 'SMS only'}
+              {simulatedMode !== null && (
+                <span className="text-[10px] opacity-60 ml-0.5">SIM</span>
+              )}
+            </div>
+            {/* Prototype simulate button */}
             <button
-              onClick={() => handleModeChange(mode === 'online' ? 'offline' : 'online')}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors"
-              title={mode === 'online' ? 'Standard mode' : 'Satellite mode'}
+              onClick={cycleSimulatedMode}
+              className="p-1.5 rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors text-zinc-400 hover:text-zinc-200"
+              title={simulatedMode === null
+                ? 'Auto-detect (click to simulate)'
+                : simulatedMode === 'online'
+                ? 'Simulating: Online (click for offline)'
+                : 'Simulating: Offline (click for auto)'
+              }
             >
-              <span className={`
-                w-2.5 h-2.5 rounded-full transition-colors
-                ${mode === 'online'
-                  ? 'bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.6)]'
-                  : 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]'
-                }
-              `} />
-              <span className="text-xs font-medium text-zinc-200">
-                {mode === 'online' ? 'Standard' : 'Satellite'}
-              </span>
+              <FlaskConical className="w-3.5 h-3.5" />
             </button>
-            {/* Viewport selector */}
-            <div className="flex bg-zinc-700 rounded-full p-0.5">
+            {/* Viewport selector — hidden on small screens */}
+            <div className="hidden sm:flex bg-zinc-700 rounded-full p-0.5">
               {([
                 { key: 'mobile' as Viewport, icon: Smartphone, label: 'Mobile' },
                 { key: 'tablet' as Viewport, icon: Tablet, label: 'Tablet' },
@@ -280,13 +341,33 @@ export default function PrototypePage() {
                   title={label}
                 >
                   <Icon className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{label}</span>
+                  <span className="hidden md:inline">{label}</span>
                 </button>
               ))}
             </div>
           </div>
         </div>
+        <p className="text-xs text-zinc-500 mt-1">
+          Tap map to drop pins · Each grid cell is a separate forecast
+        </p>
       </div>
+
+      {/* Mode change alert banner */}
+      {showModeAlert && (
+        <div className={`
+          flex-shrink-0 px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2
+          transition-all
+          ${mode === 'online'
+            ? 'bg-green-900/50 text-green-200 border-b border-green-800/50'
+            : 'bg-amber-900/50 text-amber-200 border-b border-amber-800/50'
+          }
+        `}>
+          {mode === 'online'
+            ? <><Wifi className="w-4 h-4" /> Data connection detected — forecasts available</>
+            : <><WifiOff className="w-4 h-4" /> No data connection — use SMS for forecasts</>
+          }
+        </div>
+      )}
 
       {/* Desktop: two-column layout (map + sidebar) */}
       {viewport === 'desktop' ? (
@@ -312,15 +393,11 @@ export default function PrototypePage() {
           </div>
           {/* Sidebar */}
           <div className="w-96 flex flex-col overflow-y-auto border-l border-zinc-700 bg-zinc-800">
-            <TrailPicker
-              selectedTrailId={selectedTrailId}
-              onTrailSelect={handleTrailSelect}
-            />
             {mode === 'online' && (
               <TimeScrubber
                 currentHour={currentHour}
                 onHourChange={setCurrentHour}
-                maxHours={72}
+                maxHours={168}
               />
             )}
             {mode === 'online' && summary && (
@@ -371,14 +448,6 @@ export default function PrototypePage() {
       ) : (
         /* Mobile / Tablet: stacked layout */
         <>
-          {/* Trail Picker */}
-          <div className="flex-shrink-0">
-            <TrailPicker
-              selectedTrailId={selectedTrailId}
-              onTrailSelect={handleTrailSelect}
-            />
-          </div>
-
           {/* Map - takes remaining vertical space */}
           <div className={`flex-1 relative ${viewport === 'tablet' ? 'min-h-[50vh]' : ''}`}>
             <Suspense fallback={
@@ -420,7 +489,7 @@ export default function PrototypePage() {
               <TimeScrubber
                 currentHour={currentHour}
                 onHourChange={setCurrentHour}
-                maxHours={72}
+                maxHours={168}
               />
             </div>
           )}
@@ -448,9 +517,9 @@ export default function PrototypePage() {
             )}
           </div>
 
-          {/* Developer Tools (online only) */}
+          {/* Developer Tools (online only, hidden on mobile) */}
           {mode === 'online' && (
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 hidden sm:block">
               <SatelliteSimulator
                 enabled={satelliteMode}
                 onEnabledChange={setSatelliteMode}

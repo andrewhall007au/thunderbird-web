@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Map, { Source, Layer, Marker, NavigationControl, MapRef, MapLayerMouseEvent } from 'react-map-gl/maplibre';
+import { LocateFixed } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Grid } from 'lucide-react';
 import type { Pin } from '../lib/types';
@@ -98,7 +99,43 @@ export default function PrototypeMap({
   });
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<{ west: number; south: number; east: number; north: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const mapRef = useRef<MapRef>(null);
+  const hasGeolocated = useRef(false);
+
+  // Auto-locate user on first load
+  useEffect(() => {
+    if (hasGeolocated.current) return;
+    hasGeolocated.current = true;
+
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLocation(loc);
+        // Only fly to user location if no trail is selected
+        if (!trailGeojson && mapRef.current) {
+          mapRef.current.flyTo({ center: [loc.lng, loc.lat], zoom: 10, duration: 1500 });
+        }
+      },
+      () => { /* permission denied or error — ignore silently */ },
+      { enableHighAccuracy: false, timeout: 8000 }
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fly to user location on button press
+  const handleLocateMe = useCallback(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLocation(loc);
+        mapRef.current?.flyTo({ center: [loc.lng, loc.lat], zoom: 12, duration: 1000 });
+      },
+      () => { /* ignore */ },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
 
   // OSM basemap style (fast tile servers)
   const mapStyle = {
@@ -129,6 +166,11 @@ export default function PrototypeMap({
           padding: 40,
           duration: 1000
         });
+        // Update mapBounds after animation completes
+        setTimeout(() => {
+          const b = mapRef.current?.getBounds();
+          if (b) setMapBounds({ west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() });
+        }, 1100);
       }
     }
   }, [trailGeojson]);
@@ -169,6 +211,10 @@ export default function PrototypeMap({
       mapStyle={mapStyle}
       style={{ width: '100%', height: '100%' }}
       onClick={handleMapClick}
+      onLoad={() => {
+        const b = mapRef.current?.getBounds();
+        if (b) setMapBounds({ west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() });
+      }}
       scrollZoom={true}
       keyboard={true}
       touchPitch={false}
@@ -178,6 +224,27 @@ export default function PrototypeMap({
 
       {/* BOM geohash6 grid — faint mesh, visible at zoom >= 10 */}
       <BomGrid zoom={viewState.zoom} bounds={mapBounds} />
+
+      {/* Locate me button */}
+      <div className="absolute top-4 left-4 z-10">
+        <button
+          onClick={handleLocateMe}
+          className="p-2 rounded shadow-lg bg-white text-zinc-900 hover:bg-zinc-100 transition-colors"
+          title="Go to my location"
+        >
+          <LocateFixed className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* User location marker */}
+      {userLocation && (
+        <Marker latitude={userLocation.lat} longitude={userLocation.lng} anchor="center">
+          <div className="relative">
+            <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg" />
+            <div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-ping opacity-40" />
+          </div>
+        </Marker>
+      )}
 
       {/* Grid toggle button (online only) */}
       {mode === 'online' && (

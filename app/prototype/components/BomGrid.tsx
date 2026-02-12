@@ -55,7 +55,7 @@ interface BomGridProps {
 }
 
 export default function BomGrid({ zoom, bounds }: BomGridProps) {
-  const visible = zoom >= 10 && bounds !== null;
+  const visible = zoom >= 8 && bounds !== null;
 
   const gridData = useMemo(() => {
     if (!visible || !bounds) return null;
@@ -70,9 +70,9 @@ export default function BomGrid({ zoom, bounds }: BomGridProps) {
         id="bom-grid-lines"
         type="line"
         paint={{
-          'line-color': '#94a3b8',
-          'line-width': 0.5,
-          'line-opacity': 0.15,
+          'line-color': '#64748b',
+          'line-width': 0.8,
+          'line-opacity': 0.4,
         }}
       />
     </Source>

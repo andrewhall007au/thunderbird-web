@@ -132,7 +132,7 @@ export default function TrailPicker({ selectedTrailId, onTrailSelect }: TrailPic
 
       {/* Expanded state - show picker */}
       {(!selectedTrail || isExpanded) && (
-        <div className="max-h-96 overflow-hidden flex flex-col">
+        <div className="max-h-60 sm:max-h-96 overflow-hidden flex flex-col">
           {/* Search bar */}
           <div className="p-3 border-b border-zinc-700">
             <div className="relative">

@@ -68,21 +68,10 @@ export default function PinPanel({ pins, onRemovePin, onRenamePin, onClearPins, 
       {isExpanded && (
         <div className="border-t border-zinc-700">
           {pins.length === 0 ? (
-            <div className="px-4 py-8 text-center text-zinc-500">
-              <div className="text-4xl mb-2">📍</div>
-              {offlineMode ? (
-                <>
-                  <div className="text-sm font-medium text-zinc-300">Drop pins, then copy WX command</div>
-                  <div className="text-xs text-zinc-500 mt-2">
-                    Send via SMS to your Thunderbird number
-                  </div>
-                  <div className="text-xs text-zinc-600 mt-1 font-mono">
-                    Format: WX -41.636 145.949
-                  </div>
-                </>
-              ) : (
-                <div className="text-sm">Tap the map to drop a pin</div>
-              )}
+            <div className="px-4 py-3 text-center text-zinc-500">
+              <div className="text-sm">
+                {offlineMode ? 'Tap map to drop pins, then copy WX command' : 'Tap map to drop a pin'}
+              </div>
             </div>
           ) : (
             <>
@@ -153,7 +142,7 @@ function PinCard({
             {pin.lat.toFixed(3)}, {pin.lng.toFixed(3)}
           </div>
           {pin.elevation != null && (
-            <span className="text-xs text-zinc-400 font-mono flex-shrink-0">{pin.elevation}m</span>
+            <div className="text-sm font-mono text-zinc-300 flex-shrink-0">Elevation {pin.elevation}m</div>
           )}
         </div>
         <button

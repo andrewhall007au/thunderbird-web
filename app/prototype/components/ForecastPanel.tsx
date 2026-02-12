@@ -61,9 +61,8 @@ export default function ForecastPanel({
         <div className="border-t border-zinc-700">
           {pins.length === 0 ? (
             /* Empty state */
-            <div className="px-4 py-8 text-center text-zinc-500">
-              <div className="text-4xl mb-2">📍</div>
-              <div className="text-sm">Drop pins on the map to see forecasts</div>
+            <div className="px-4 py-3 text-center text-zinc-500">
+              <div className="text-sm">Tap map to drop pins for forecasts</div>
             </div>
           ) : (
             <>
@@ -339,7 +338,11 @@ function ForecastCard({
           <EditableLabel label={pin.label} onRename={onRename} />
           {dangerDisplay ? ` ${dangerDisplay}` : ''}
         </span>
-        <span className="text-xs text-zinc-400 font-mono">{pin.elevation != null ? pin.elevation : Math.round(elevation)}m</span>
+      </div>
+
+      {/* Elevation */}
+      <div className="text-sm font-mono text-zinc-300 mb-1">
+        Elevation {pin.elevation != null ? pin.elevation : Math.round(elevation)}m
       </div>
 
       {/* Light hours */}
