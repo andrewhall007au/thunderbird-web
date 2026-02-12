@@ -15921,8 +15921,5 @@
       -42.11601267568767,
       746.7322387695312
     ]
-  ],
-  "dataSource": "fkt_gpx",
-  "fktSource": "fastestknowntime.com",
-  "fktLicense": "CC-BY-SA (user-contributed GPS tracks)"
+  ]
 }

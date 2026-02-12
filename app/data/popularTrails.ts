@@ -35,13 +35,13 @@ export const lazyTrailIds = new Set([
   // Canada
   'algonquin_highlands_backpacking_trail', 'berg_lake_trail', 'bruce_trail_bruce_peninsula', 'canol_heritage_trail', 'chilkoot_trail', 'crypt_lake_trail', 'east_coast_trail', 'fundy_footpath', 'garibaldi_lake_trail', 'golden_ears_trail', 'great_divide_trail', 'howe_sound_crest_trail', 'joffre_lakes_trail', 'juan_de_fuca_marine_trail', 'la_cloche_silhouette_trail', 'long_range_traverse', 'mantario_trail', 'mont_tremblant_summit_trail', 'plain_of_six_glaciers_trail', 'sentier_des_caps_de_charlevoix', 'sentier_international_des_appalaches', 'sentinel_pass_trail', 'skyline_trail_jasper', 'stein_valley_traverse', 'sunshine_coast_trail', 'tablelands_trail', 'tombstone_grizzly_lake_trail', 'west_coast_trail',
   // US
-  'alamere_falls_via_coast_trail', 'alum_cave_trail_to_mt_leconte', 'angels_landing', 'appalachian_trail', 'arizona_trail', 'beartooth_traverse', 'bright_angel_trail_to_plateau_point', 'buckskin_gulch', 'cactus_to_clouds_trail', 'cascade_canyon_to_lake_solitude', 'cathedral_rock_trail', 'chain_lakes_loop', 'clouds_rest_trail', 'colorado_trail', 'continental_divide_trail', 'cucamonga_peak_trail', 'delicate_arch_trail', 'devil_s_postpile_to_rainbow_falls', 'dipsea_trail', 'eagle_creek_trail', 'emory_peak_trail', 'enchanted_valley_via_graves_creek', 'enchantments_thru_hike', 'four_mile_trail_to_glacier_point', 'four_pass_loop', 'franconia_ridge_loop', 'granite_peak_montana', 'half_dome_via_mist_trail', 'hanging_lake_trail', 'high_sierra_trail_to_mount_whitney', 'highline_trail_glacier_np', 'hoh_river_to_blue_glacier', 'horsetail_falls_trail', 'humphreys_peak_trail', 'ice_age_trail', 'ice_lakes_basin', 'isle_royale', 'john_muir_trail', 'kalalau_trail', 'lakes_trail_to_pear_lake', 'lassen_peak_trail', 'long_trail', 'longs_peak_via_keyhole_route', 'lost_coast_trail', 'mailbox_peak_trail', 'maple_pass_loop', 'maroon_bells_crater_lake', 'mist_trail_to_vernal_fall', 'moro_rock_trail', 'mount_adams_south_climb', 'mount_baldy_via_devil_s_backbone', 'mount_dana_trail', 'mount_hood_via_south_side_route', 'mount_katahdin_via_hunt_trail', 'mount_san_jacinto_via_marion_mountain', 'mount_shasta_via_avalanche_gulch', 'mount_si_trail', 'mount_tallac_trail', 'mount_washburn_trail', 'mount_washington_via_tuckerman_ravine', 'mount_whitney_trail', 'navajo_loop_and_queens_garden', 'north_dome_via_indian_rock', 'observation_point_via_east_mesa', 'old_rag_mountain_loop', 'ozark_highlands_trail', 'pacific_crest_trail', 'pacific_northwest_trail', 'pinhoti_trail', 'precipice_trail_acadia', 'presidential_traverse', 'quandary_peak_east_ridge', 'rae_lakes_loop', 'rim_to_rim_grand_canyon', 'ryan_mountain_trail', 'sentinel_dome_and_taft_point', 'skyline_trail_mount_rainier', 'south_kaibab_to_phantom_ranch', 'south_sister_via_green_lakes', 'superior_hiking_trail', 'tahoe_rim_trail', 'telescope_peak_trail', 'teton_crest_trail', 'the_narrows', 'three_sisters_loop', 'timberline_trail', 'west_fork_oak_creek', 'wonderland_trail', 'yosemite_valley_loop_trail',
+  'alamere_falls_via_coast_trail', 'alum_cave_trail_to_mt_leconte', 'angels_landing', 'appalachian_trail', 'arizona_trail', 'beartooth_traverse', 'bright_angel_trail_to_plateau_point', 'buckskin_gulch', 'cactus_to_clouds_trail', 'cascade_canyon_to_lake_solitude', 'cathedral_rock_trail', 'chain_lakes_loop', 'clouds_rest_trail', 'colorado_trail', 'continental_divide_trail', 'cucamonga_peak_trail', 'delicate_arch_trail', 'devil_s_postpile_to_rainbow_falls', 'dipsea_trail', 'eagle_creek_trail', 'emory_peak_trail', 'enchanted_valley_via_graves_creek', 'enchantments_thru_hike', 'four_mile_trail_to_glacier_point', 'four_pass_loop', 'franconia_ridge_loop', 'granite_peak_montana', 'hanging_lake_trail', 'high_sierra_trail_to_mount_whitney', 'highline_trail_glacier_np', 'hoh_river_to_blue_glacier', 'horsetail_falls_trail', 'humphreys_peak_trail', 'ice_age_trail', 'ice_lakes_basin', 'isle_royale', 'john_muir_trail', 'kalalau_trail', 'lakes_trail_to_pear_lake', 'lassen_peak_trail', 'long_trail', 'longs_peak_via_keyhole_route', 'lost_coast_trail', 'mailbox_peak_trail', 'maple_pass_loop', 'maroon_bells_crater_lake', 'mist_trail_to_vernal_fall', 'moro_rock_trail', 'mount_adams_south_climb', 'mount_baldy_via_devil_s_backbone', 'mount_dana_trail', 'mount_hood_via_south_side_route', 'mount_katahdin_via_hunt_trail', 'mount_san_jacinto_via_marion_mountain', 'mount_shasta_via_avalanche_gulch', 'mount_si_trail', 'mount_tallac_trail', 'mount_washburn_trail', 'mount_whitney_trail', 'navajo_loop_and_queens_garden', 'north_dome_via_indian_rock', 'observation_point_via_east_mesa', 'old_rag_mountain_loop', 'ozark_highlands_trail', 'pacific_crest_trail', 'pacific_northwest_trail', 'pinhoti_trail', 'precipice_trail_acadia', 'presidential_traverse', 'quandary_peak_east_ridge', 'rae_lakes_loop', 'rim_to_rim_grand_canyon', 'ryan_mountain_trail', 'skyline_trail_mount_rainier', 'south_kaibab_to_phantom_ranch', 'south_sister_via_green_lakes', 'superior_hiking_trail', 'tahoe_rim_trail', 'telescope_peak_trail', 'teton_crest_trail', 'the_narrows', 'three_sisters_loop', 'timberline_trail', 'west_fork_oak_creek', 'wonderland_trail', 'yosemite_valley_loop_trail',
   // NZ
   'abel_tasman_coast_track', 'ben_lomond_track', 'cape_brett_track', 'heaphy_track', 'hollyford_track', 'hooker_valley_track', 'kepler_track', 'key_summit_track', 'lake_waikaremoana_great_walk', 'matemateaonga_track', 'milford_track', 'mt_holdsworth_jumbo_circuit', 'mueller_hut_route', 'old_ghost_road', 'paparoa_track', 'pinnacles_walk', 'queen_charlotte_track', 'rakiura_track', 'reesdart_track', 'routeburn_track', 'tama_lakes_track', 'tongariro_alpine_crossing', 'tongariro_northern_circuit',
   // South Africa
   'drakensberg_grand_traverse',
   // UK
-  'west_highland_way', 'pennine_way', 'coast_to_coast_walk', 'hadrian_s_wall_path', 'offa_s_dyke_path', 'pembrokeshire_coast_path', 'cleveland_way', 'south_downs_way', 'cotswold_way', 'cape_wrath_trail', 'great_glen_way', 'skye_trail', 'southern_upland_way', 'speyside_way', 'cumbria_way', 'dales_way', 'north_downs_way', 'the_ridgeway', 'glyndwr_s_way', 'rob_roy_way', 'affric_kintail_way', 'st_cuthbert_s_way', 'cateran_trail', 'ben_nevis_via_mountain_track', 'snowdon_horseshoe', 'scafell_pike_via_corridor_route', 'crib_goch', 'ben_macdui_from_cairn_gorm', 'aonach_eagach_ridge', 'buachaille_etive_mor', 'ben_lomond', 'pen_y_fan_horseshoe', 'liathach_traverse', 'stac_pollaidh',
+  'west_highland_way', 'pennine_way', 'coast_to_coast_walk', 'hadrian_s_wall_path', 'offa_s_dyke_path', 'pembrokeshire_coast_path', 'cleveland_way', 'south_downs_way', 'cotswold_way', 'cape_wrath_trail', 'great_glen_way', 'southern_upland_way', 'speyside_way', 'cumbria_way', 'dales_way', 'north_downs_way', 'the_ridgeway', 'rob_roy_way', 'affric_kintail_way', 'st_cuthbert_s_way', 'cateran_trail', 'ben_nevis_via_mountain_track', 'snowdon_horseshoe', 'scafell_pike_via_corridor_route', 'aonach_eagach_ridge', 'buachaille_etive_mor', 'ben_lomond', 'pen_y_fan_horseshoe', 'liathach_traverse', 'stac_pollaidh',
   // Europe
   'tour_du_mont_blanc', 'gr20_corsica', 'alta_via_1_dolomites', 'alta_via_2_dolomites', 'kungsleden', 'laugavegur_trail', 'rota_vicentina_fishermans_trail', 'adlerweg_eagle_walk', 'tour_of_monte_rosa', 'lechweg', 'stubaier_hohenweg', 'meraner_hohenweg', 'selvaggio_blu', 'e5_alps_crossing', 'fimmvorduhals_trail', 'trolltunga', 'besseggen_ridge', 'preikestolen_pulpit_rock', 'sentiero_degli_dei', 'samaria_gorge', 'caminito_del_rey', 'vikos_gorge', 'ruta_del_cares', 'lycian_way', 'camino_de_santiago_frances', 'gr10_french_pyrenees', 'gr11_pyrenean_traverse', 'south_west_coast_path',
   // Japan
@@ -4809,15 +4809,6 @@ export const popularTrails: TrailData[] = [
     ]
   },
   {
-    id: 'half_dome_via_mist_trail',
-    name: 'Half Dome via Mist Trail',
-    region: 'CA',
-    country: 'US',
-    distance_km: 22.5,
-    typical_days: '1 day',
-    coordinates: []
-  },
-  {
     id: 'hanging_lake_trail',
     name: 'Hanging Lake Trail',
     region: 'CO',
@@ -5123,15 +5114,6 @@ export const popularTrails: TrailData[] = [
     ]
   },
   {
-    id: 'sentinel_dome_and_taft_point',
-    name: 'Sentinel Dome and Taft Point',
-    region: 'CA',
-    country: 'US',
-    distance_km: 8,
-    typical_days: '1 day',
-    coordinates: []
-  },
-  {
     id: 'skyline_trail_mount_rainier',
     name: 'Skyline Trail (Mount Rainier)',
     region: 'WA',
@@ -5291,15 +5273,6 @@ export const popularTrails: TrailData[] = [
     region: 'WY',
     country: 'US',
     distance_km: 10.0,
-    typical_days: '1 day',
-    coordinates: []
-  },
-  {
-    id: 'mount_washington_via_tuckerman_ravine',
-    name: 'Mount Washington via Tuckerman Ravine',
-    region: 'NH',
-    country: 'US',
-    distance_km: 13.6,
     typical_days: '1 day',
     coordinates: []
   },
@@ -5586,15 +5559,6 @@ export const popularTrails: TrailData[] = [
     coordinates: []
   },
   {
-    id: 'skye_trail',
-    name: 'Skye Trail',
-    region: 'Scotland',
-    country: 'GB',
-    distance_km: 128,
-    typical_days: '6-7',
-    coordinates: []
-  },
-  {
     id: 'southern_upland_way',
     name: 'Southern Upland Way',
     region: 'Scotland',
@@ -5646,15 +5610,6 @@ export const popularTrails: TrailData[] = [
     country: 'GB',
     distance_km: 139,
     typical_days: '5-6',
-    coordinates: []
-  },
-  {
-    id: 'glyndwr_s_way',
-    name: 'Glyndwr\'s Way',
-    region: 'Wales',
-    country: 'GB',
-    distance_km: 217,
-    typical_days: '9 days',
     coordinates: []
   },
   {
@@ -5717,24 +5672,6 @@ export const popularTrails: TrailData[] = [
     region: 'England',
     country: 'GB',
     distance_km: 14,
-    typical_days: '1 day',
-    coordinates: []
-  },
-  {
-    id: 'crib_goch',
-    name: 'Crib Goch',
-    region: 'Wales',
-    country: 'GB',
-    distance_km: 10,
-    typical_days: '1 day',
-    coordinates: []
-  },
-  {
-    id: 'ben_macdui_from_cairn_gorm',
-    name: 'Ben Macdui from Cairn Gorm',
-    region: 'Scotland',
-    country: 'GB',
-    distance_km: 18,
     typical_days: '1 day',
     coordinates: []
   },

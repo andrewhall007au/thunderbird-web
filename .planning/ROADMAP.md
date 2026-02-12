@@ -90,3 +90,30 @@ Plans:
 Plans:
 - [ ] 11-01: TBD
 - [ ] 11-02: TBD
+
+### Phase 12: Companion App — Web POC (Phase 12A)
+
+**Goal:** Build a web-based proof of concept that validates the core UX: select a trail, drop pins, view multi-pin weather forecasts with time scrubber, and export coordinates for SMS. Validates satellite feasibility through latency simulation and payload measurement.
+
+**Depends on:** Phase 10 (trail data), independent of Phase 11 (uses Open-Meteo directly for POC)
+**Plans:** 3 plans across 3 waves
+
+**Key context:** This is Phase 12A from the companion app proposal. The POC is a new Next.js route (`/prototype`) with no new infrastructure. Validates UX before committing to Flutter production build (Phase 12C). Dual-mode: data mode (JSON weather) + SMS mode (WX command copy) work in parallel. SMS mode delivers value today on any carrier with satellite SMS.
+
+**What this delivers:**
+- New `/prototype` page with trail picker + topo map
+- Pin drop with lettered markers (A-H, max 8 pins)
+- SMS coordinate export (copy WX command to clipboard, single + multi-pin)
+- Open-Meteo batch weather for all pins (hourly, 72h)
+- Forecast cards with temp, wind, gusts, rain %, precipitation, cloud cover
+- Time scrubber (0 to +72h) — forecast cards + pin colors update on scrub
+- Weather grid overlay (model resolution visualization, toggleable)
+- Green/amber/red severity coloring on pins and cards (wind, wind chill, rain thresholds)
+- Satellite latency simulation (configurable 2-10s delay)
+- Payload size inspector (byte measurement + satellite feasibility assessment)
+- Mobile-first responsive layout
+
+Plans:
+- [ ] 12-01: Coordinate Picker & SMS Export (Wave 1) — /prototype page, map, trail picker, pin drop, WX command copy
+- [ ] 12-02: Multi-Pin Weather + Grid + Time Scrubber (Wave 2) — Open-Meteo integration, forecast cards, time scrubber, grid overlay
+- [ ] 12-03: Severity + Satellite Simulation + Polish (Wave 3) — Green/amber/red severity, satellite latency sim, payload inspector, mobile polish

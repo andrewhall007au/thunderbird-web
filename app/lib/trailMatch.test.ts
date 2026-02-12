@@ -98,8 +98,8 @@ describe('parseCoordinates', () => {
 });
 
 describe('trailheads data integrity', () => {
-  it('has 252 trailheads', () => {
-    expect(trailheads.length).toBe(252);
+  it('has 264 trailheads', () => {
+    expect(trailheads.length).toBe(264);
   });
 
   it('all entries have valid format [string, number, number]', () => {
