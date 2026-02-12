@@ -117,6 +117,7 @@ function PhoneFrame({ width, height, scale, src, iframeRef }: { width: number; h
           <div className="flex-shrink-0 h-[59px]" />
           {/* App content */}
           <iframe
+            ref={iframeRef}
             src={src}
             className="w-full flex-1 border-0"
             style={{ width }}
