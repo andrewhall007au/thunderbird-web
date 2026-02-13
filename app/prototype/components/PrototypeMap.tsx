@@ -109,7 +109,7 @@ export default function PrototypeMap({
   const [locating, setLocating] = useState(false);
   const mapRef = useRef<MapRef>(null);
   const hasGeolocated = useRef(false);
-  const { tracking, track, currentPosition, error: gpsError, startTracking, stopTracking, clearTrack } = useGPSTracking();
+  const { tracking, track, currentPosition, error: gpsError, stats, startTracking, stopTracking, clearTrack } = useGPSTracking();
 
   // Auto-locate user on first load
   useEffect(() => {
@@ -305,6 +305,14 @@ export default function PrototypeMap({
         {gpsError && (
           <div className="bg-red-500 text-white text-xs px-2 py-1 rounded shadow-lg max-w-[140px]">
             {gpsError}
+          </div>
+        )}
+        {track.length > 0 && (
+          <div className="bg-white/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 text-xs font-medium px-2 py-1 rounded shadow-lg backdrop-blur-sm">
+            {stats.distanceKm < 1
+              ? `${Math.round(stats.distanceKm * 1000)}m`
+              : `${stats.distanceKm.toFixed(1)}km`}
+            {stats.elevGain > 0 && ` · +${stats.elevGain}m`}
           </div>
         )}
       </div>

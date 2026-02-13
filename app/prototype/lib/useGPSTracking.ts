@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { haversineKm } from '../../lib/trailMatch';
 
 export interface TrackPoint {
@@ -144,5 +144,19 @@ export function useGPSTracking() {
     };
   }, [releaseWakeLock]);
 
-  return { tracking, track, currentPosition, error, startTracking, stopTracking, clearTrack };
+  // Cumulative distance (km) and elevation gain (m)
+  const stats = useMemo(() => {
+    let distanceKm = 0;
+    let elevGain = 0;
+    for (let i = 1; i < track.length; i++) {
+      distanceKm += haversineKm(track[i - 1].lat, track[i - 1].lng, track[i].lat, track[i].lng);
+      if (track[i].elev != null && track[i - 1].elev != null) {
+        const diff = track[i].elev! - track[i - 1].elev!;
+        if (diff > 0) elevGain += diff;
+      }
+    }
+    return { distanceKm, elevGain: Math.round(elevGain) };
+  }, [track]);
+
+  return { tracking, track, currentPosition, error, stats, startTracking, stopTracking, clearTrack };
 }
