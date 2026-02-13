@@ -22,7 +22,7 @@ export interface TrailData {
 // Trail IDs with external coordinate files (loaded on demand from /trail-data/)
 export const lazyTrailIds = new Set([
   // Australia
-  'overland_track', 'south_coast_track', 'three_capes_track', 'western_arthur_range_traverse', 'eastern_arthur_range_traverse', 'frenchmans_cap', 'freycinet_peninsula_circuit', 'walls_of_jerusalem', 'mount_anne_circuit', 'tasman_cape_pillar', 'lake_rhona', 'leeaberra_track', 'port_davey_track', 'federation_peak', 'bibbulmun_track', 'larapinta_trail', 'great_ocean_walk', 'thorsborne_trail', 'australian_alps_walking_track', 'heysen_trail', 'cape_to_cape_track', 'jatbula_trail', 'great_north_walk', 'six_foot_track', 'light_to_light_walk', 'grampians_peaks_trail', 'carnarvon_great_walk', 'gold_coast_hinterland_great_walk', 'yuraygir_coastal_walk', 'wilsons_promontory_southern_circuit', 'wilderness_coast_walk', 'goldfields_track', 'canberra_centenary_trail', 'cooloola_great_walk', 'kanangra_to_katoomba', 'scenic_rim_trail', 'sunshine_coast_hinterland_great_walk', 'kangaroo_island_wilderness_trail',
+  'overland_track', 'south_coast_track', 'three_capes_track', 'western_arthur_range_traverse', 'eastern_arthur_range_traverse', 'frenchmans_cap', 'freycinet_peninsula_circuit', 'walls_of_jerusalem', 'mount_anne_circuit', 'tasman_cape_pillar', 'lake_rhona', 'leeaberra_track', 'port_davey_track', 'federation_peak', 'bibbulmun_track', 'larapinta_trail', 'great_ocean_walk', 'thorsborne_trail', 'australian_alps_walking_track', 'heysen_trail', 'cape_to_cape_track', 'eagles_view_trail', 'jatbula_trail', 'great_north_walk', 'six_foot_track', 'light_to_light_walk', 'grampians_peaks_trail', 'carnarvon_great_walk', 'gold_coast_hinterland_great_walk', 'yuraygir_coastal_walk', 'wilsons_promontory_southern_circuit', 'wilderness_coast_walk', 'goldfields_track', 'canberra_centenary_trail', 'cooloola_great_walk', 'kanangra_to_katoomba', 'scenic_rim_trail', 'sunshine_coast_hinterland_great_walk', 'kangaroo_island_wilderness_trail',
   // Australia Phase 13 - WA, VIC, NSW, QLD
   'bald_head_walk', 'mt_toolbrunup', 'mt_magog', 'mt_talyuberlup', 'mt_trio', 'stirling_ridge_walk', 'bluff_knoll', 'nancy_peak_and_devils_slide', 'castle_rock_granite_skywalk', 'mt_feathertop', 'mt_bogong', 'razorback_ridge', 'falls_to_hotham_alpine_crossing', 'royal_coast_track', 'blue_gum_forest_walk', 'grand_canyon_track', 'fraser_island_great_walk', 'whitsunday_ngaro_sea_trail', 'mount_lofty_summit_via_waterfall_gully',
   // Tasmania Day Walks (Wikiloc)
@@ -262,6 +262,15 @@ export const popularTrails: TrailData[] = [
     country: 'AU',
     distance_km: 123,
     typical_days: '6-7',
+    coordinates: [],
+  },
+  {
+    id: 'eagles_view_trail',
+    name: 'Eagles View Trail',
+    region: 'Western Australia',
+    country: 'AU',
+    distance_km: 15,
+    typical_days: '1',
     coordinates: [],
   },
   {
