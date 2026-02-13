@@ -275,7 +275,7 @@ export default function ChartPanel({
           ) : (
             <>
               {/* Pin tabs + time range toggle */}
-              <div className="flex items-center gap-2 px-3 py-2">
+              <div className="flex items-center gap-1.5 px-2 py-2">
                 <div className="flex-1 overflow-x-auto flex gap-1 min-w-0">
                   {pins.map(pin => {
                     const isActive = pin.id === (selectedPin?.id ?? null);
@@ -289,7 +289,7 @@ export default function ChartPanel({
                         key={pin.id}
                         onClick={() => onPinSelect(pin.id)}
                         className={`
-                          px-3 py-1.5 rounded text-sm font-bold flex-shrink-0 transition-colors
+                          px-2.5 py-1 rounded text-sm font-bold flex-shrink-0 transition-colors
                           ${isActive ? 'text-white' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'}
                         `}
                         style={isActive
@@ -308,7 +308,7 @@ export default function ChartPanel({
                       key={r}
                       onClick={() => setTimeRange(r)}
                       className={`
-                        px-3 py-1.5 rounded text-sm font-medium transition-colors
+                        px-1.5 py-1 rounded text-xs font-medium transition-colors
                         ${timeRange === r ? 'text-white' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'}
                       `}
                       style={timeRange === r ? { backgroundColor: activeSevColor } : undefined}
