@@ -7,7 +7,7 @@ type Device = 'iphone' | 'ipad' | 'desktop';
 type PreviewMode = 'online' | 'offline';
 
 const DEVICES: Record<Device, { label: string; width: number; height: number; scale: number; icon: typeof Smartphone }> = {
-  iphone: { label: 'iPhone 15', width: 393, height: 852, scale: 0.7, icon: Smartphone },
+  iphone: { label: 'iPhone 17 Pro Max', width: 440, height: 956, scale: 0.93, icon: Smartphone },
   ipad: { label: 'iPad Air', width: 820, height: 1180, scale: 0.55, icon: Tablet },
   desktop: { label: 'MacBook', width: 1440, height: 900, scale: 0.65, icon: Monitor },
 };
@@ -22,6 +22,23 @@ export default function PreviewPage() {
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'setMode', mode: previewMode }, '*');
   }, [previewMode]);
+
+  // Geolocation: get in parent (which has permission) and pass to iframe
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        // Send once iframe is loaded, and retry briefly in case iframe isn't ready
+        const send = () => iframeRef.current?.contentWindow?.postMessage({ type: 'setLocation', ...loc }, '*');
+        send();
+        const t = setTimeout(send, 2000);
+        return () => clearTimeout(t);
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 8000 }
+    );
+  }, [device]);
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center">
@@ -95,7 +112,7 @@ export default function PreviewPage() {
   );
 }
 
-function PhoneFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement | null> }) {
+function PhoneFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement> }) {
   return (
     <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
       <div
@@ -121,6 +138,7 @@ function PhoneFrame({ width, height, scale, src, iframeRef }: { width: number; h
             src={src}
             className="w-full flex-1 border-0"
             style={{ width }}
+            allow="geolocation"
           />
         </div>
 
@@ -131,7 +149,7 @@ function PhoneFrame({ width, height, scale, src, iframeRef }: { width: number; h
   );
 }
 
-function TabletFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement | null> }) {
+function TabletFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement> }) {
   return (
     <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
       <div
@@ -154,6 +172,7 @@ function TabletFrame({ width, height, scale, src, iframeRef }: { width: number; 
             src={src}
             className="w-full h-full border-0"
             style={{ width, height }}
+            allow="geolocation"
           />
         </div>
       </div>
@@ -161,7 +180,7 @@ function TabletFrame({ width, height, scale, src, iframeRef }: { width: number; 
   );
 }
 
-function DesktopFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement | null> }) {
+function DesktopFrame({ width, height, scale, src, iframeRef }: { width: number; height: number; scale: number; src: string; iframeRef: React.RefObject<HTMLIFrameElement> }) {
   return (
     <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
       {/* Monitor */}
@@ -186,6 +205,7 @@ function DesktopFrame({ width, height, scale, src, iframeRef }: { width: number;
             src={src}
             className="w-full h-full border-0"
             style={{ width, height }}
+            allow="geolocation"
           />
         </div>
       </div>

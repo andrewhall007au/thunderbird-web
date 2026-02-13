@@ -1,12 +1,21 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Menu, X, ChevronRight, ChevronLeft, Search } from 'lucide-react';
+import { Menu, X, ChevronRight, ChevronLeft, Search, MapPin } from 'lucide-react';
 import { popularTrails, lazyTrailIds, loadTrailCoordinates, type TrailData } from '@/app/data/popularTrails';
+
+interface GeoResult {
+  name: string;
+  country: string;
+  admin1?: string;
+  latitude: number;
+  longitude: number;
+}
 
 interface TrailMenuProps {
   selectedTrailId: string | null;
   onTrailSelect: (trailId: string, geojson: GeoJSON.Feature) => void;
+  onPlaceSelect?: (lat: number, lng: number, name: string) => void;
 }
 
 const COUNTRY_NAMES: Record<string, string> = {
@@ -52,12 +61,15 @@ function getGroupedTrails(query: string) {
   return { grouped, sorted, total: filtered.length };
 }
 
-export default function TrailMenu({ selectedTrailId, onTrailSelect }: TrailMenuProps) {
+export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelect }: TrailMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCountry, setActiveCountry] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [geoResults, setGeoResults] = useState<GeoResult[]>([]);
+  const [geoLoading, setGeoLoading] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const geoAbort = useRef<AbortController | null>(null);
 
   // Close on outside click
   useEffect(() => {
@@ -67,11 +79,42 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect }: TrailMenuP
         setIsOpen(false);
         setActiveCountry(null);
         setSearchQuery('');
+        setGeoResults([]);
       }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [isOpen]);
+
+  // Geocode search with debounce
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setGeoResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      geoAbort.current?.abort();
+      const controller = new AbortController();
+      geoAbort.current = controller;
+      setGeoLoading(true);
+
+      try {
+        const res = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=5&language=en`,
+          { signal: controller.signal }
+        );
+        const data = await res.json();
+        setGeoResults(data.results ?? []);
+      } catch {
+        // aborted or network error — ignore
+      } finally {
+        setGeoLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleTrailClick = async (trail: TrailData) => {
     setLoading(true);
@@ -83,14 +126,19 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect }: TrailMenuP
       } else {
         onTrailSelect(trail.id, trailToGeojson(trail));
       }
-      setIsOpen(false);
-      setActiveCountry(null);
-      setSearchQuery('');
     } catch (error) {
       console.error('Failed to load trail:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePlaceClick = (place: GeoResult) => {
+    onPlaceSelect?.(place.latitude, place.longitude, place.name);
+    setIsOpen(false);
+    setSearchQuery('');
+    setGeoResults([]);
+    setActiveCountry(null);
   };
 
   const { grouped, sorted, total } = getGroupedTrails(searchQuery);
@@ -100,7 +148,7 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect }: TrailMenuP
       {/* Hamburger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 transition-colors text-zinc-300 hover:text-white"
+        className="p-1.5 rounded-lg bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 transition-colors text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
         title="Trail library"
       >
         {isOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -108,38 +156,72 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect }: TrailMenuP
 
       {/* Dropdown panel */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-72 bg-zinc-800 border border-zinc-600 rounded-lg shadow-2xl shadow-black/50 z-50 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-600 rounded-lg shadow-2xl shadow-black/20 dark:shadow-black/50 z-50 overflow-hidden">
           {/* Search */}
-          <div className="p-2 border-b border-zinc-700">
+          <div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
               <input
                 type="text"
-                placeholder="Search trails..."
+                placeholder="Search trails or places..."
                 value={searchQuery}
                 onChange={e => { setSearchQuery(e.target.value); setActiveCountry(null); }}
-                className="w-full pl-8 pr-3 py-1.5 bg-zinc-900 border border-zinc-600 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-8 pr-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-600 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 autoFocus
               />
             </div>
-            <div className="text-[10px] text-zinc-500 mt-1 px-1">{total} trails</div>
+            <div className="text-xs text-zinc-500 mt-1 px-1">{total} trails</div>
           </div>
 
           {/* Content area */}
           <div className="max-h-80 overflow-y-auto">
+            {/* Place results (geocoding) */}
+            {searchQuery.length >= 2 && (geoResults.length > 0 || geoLoading) && (
+              <div className="border-b border-zinc-200 dark:border-zinc-600">
+                <div className="px-3 py-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide bg-zinc-50 dark:bg-zinc-900/50">
+                  Places
+                </div>
+                {geoLoading && geoResults.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-zinc-400">Searching...</div>
+                )}
+                {geoResults.map((place, i) => (
+                  <button
+                    key={`geo-${i}`}
+                    onClick={() => handlePlaceClick(place)}
+                    className="w-full px-3 py-2 flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">{place.name}</div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                        {[place.admin1, place.country].filter(Boolean).join(', ')}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Trail results */}
+            {searchQuery.length >= 2 && total > 0 && (
+              <div className="px-3 py-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide bg-zinc-50 dark:bg-zinc-900/50">
+                Trails
+              </div>
+            )}
+
             {activeCountry === null ? (
               /* Country list */
               sorted.map(code => (
                 <button
                   key={code}
                   onClick={() => setActiveCountry(code)}
-                  className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-zinc-700 transition-colors text-left border-b border-zinc-750"
+                  className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left border-b border-zinc-100 dark:border-zinc-750"
                 >
                   <div>
                     <div className="text-sm font-medium">{COUNTRY_NAMES[code] || code}</div>
-                    <div className="text-xs text-zinc-400">{grouped[code].length} trails</div>
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400">{grouped[code].length} trails</div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-zinc-500" />
+                  <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
                 </button>
               ))
             ) : (
@@ -147,10 +229,10 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect }: TrailMenuP
               <>
                 <button
                   onClick={() => setActiveCountry(null)}
-                  className="w-full px-3 py-2 flex items-center gap-2 hover:bg-zinc-700 transition-colors text-left border-b border-zinc-600 bg-zinc-750 sticky top-0"
+                  className="w-full px-3 py-2 flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left border-b border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-750 sticky top-0"
                 >
-                  <ChevronLeft className="w-4 h-4 text-zinc-400" />
-                  <span className="text-sm font-medium text-zinc-300">{COUNTRY_NAMES[activeCountry] || activeCountry}</span>
+                  <ChevronLeft className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{COUNTRY_NAMES[activeCountry] || activeCountry}</span>
                 </button>
                 {(grouped[activeCountry] || [])
                   .sort((a, b) => a.name.localeCompare(b.name))
@@ -160,13 +242,13 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect }: TrailMenuP
                       onClick={() => handleTrailClick(trail)}
                       disabled={loading}
                       className={`
-                        w-full px-3 py-2.5 text-left hover:bg-zinc-700 transition-colors
-                        disabled:opacity-50 border-b border-zinc-750
-                        ${selectedTrailId === trail.id ? 'bg-zinc-700 border-l-2 border-l-blue-500' : ''}
+                        w-full px-3 py-2.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors
+                        disabled:opacity-50 border-b border-zinc-100 dark:border-zinc-750
+                        ${selectedTrailId === trail.id ? 'bg-zinc-100 dark:bg-zinc-700 border-l-2 border-l-blue-500' : ''}
                       `}
                     >
                       <div className="text-sm">{trail.name}</div>
-                      <div className="text-xs text-zinc-400 mt-0.5">
+                      <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
                         {trail.region} · {trail.distance_km}km · {trail.typical_days}d
                       </div>
                     </button>

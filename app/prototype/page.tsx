@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, Suspense, useMemo, useEffect } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Smartphone, Tablet, Monitor, Wifi, WifiOff, FlaskConical } from 'lucide-react';
+import { Smartphone, Tablet, Monitor, Wifi, WifiOff, FlaskConical, Sun, Moon } from 'lucide-react';
 import TrailMenu from './components/TrailMenu';
-import ForecastPanel from './components/ForecastPanel';
-import TimeScrubber from './components/TimeScrubber';
+import ChartPanel from './components/ChartPanel';
 import SatelliteSimulator from './components/SatelliteSimulator';
 import PayloadInspector, { type PayloadMetrics } from './components/PayloadInspector';
-import PinPanel from './components/PinPanel';
+import ThemeProvider, { useTheme } from './components/ThemeProvider';
+
 import { Pin } from './lib/types';
 import { fetchMultiPinWeather } from './lib/openmeteo';
-import { calculateSeverity, getSeveritySummary } from './lib/severity';
+import { computeTrailStats, type TrailStats } from './lib/trailStats';
+
+const ElevationProfile = dynamic(() => import('./components/ElevationProfile'), { ssr: false });
 
 // Dynamic import to avoid SSR with MapLibre
 const PrototypeMap = dynamic(() => import('./components/PrototypeMap'), { ssr: false });
@@ -26,11 +28,13 @@ type Viewport = 'mobile' | 'tablet' | 'desktop';
 function PrototypePageInner() {
   const searchParams = useSearchParams();
   const urlMode = searchParams.get('mode');
+  const { theme, toggleTheme } = useTheme();
 
   const [selectedTrailId, setSelectedTrailId] = useState<string | null>(null);
   const [trailGeojson, setTrailGeojson] = useState<GeoJSON.Feature | null>(null);
+  const [trailStats, setTrailStats] = useState<TrailStats | null>(null);
   const [pins, setPins] = useState<Pin[]>([]);
-  const [currentHour, setCurrentHour] = useState(0);
+  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [gridVisible, setGridVisible] = useState(false);
   const [forecastExpanded, setForecastExpanded] = useState(false);
 
@@ -44,9 +48,27 @@ function PrototypePageInner() {
   ); // null = use detected
   const [showModeAlert, setShowModeAlert] = useState(false);
   const [viewport, setViewport] = useState<Viewport>('mobile');
+  const [mapFlyTo, setMapFlyTo] = useState<{ lat: number; lng: number; zoom: number } | null>(null);
 
   // Effective mode: simulated override takes precedence over detected
   const mode = simulatedMode ?? detectedMode;
+
+  // Location passed from parent preview page (for iframe geolocation)
+  const [parentLocation, setParentLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Listen for messages from preview page (postMessage)
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'setMode' && (e.data.mode === 'online' || e.data.mode === 'offline')) {
+        setSimulatedMode(e.data.mode);
+      }
+      if (e.data?.type === 'setLocation' && typeof e.data.lat === 'number' && typeof e.data.lng === 'number') {
+        setParentLocation({ lat: e.data.lat, lng: e.data.lng });
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   // Connectivity probe — try a lightweight fetch to detect online/satellite
   useEffect(() => {
@@ -150,6 +172,7 @@ function PrototypePageInner() {
     };
 
     setPins(prev => [...prev, newPin]);
+    setSelectedPinId(newPin.id);
 
     // Only fetch weather in online mode
     if (mode === 'online') {
@@ -181,23 +204,26 @@ function PrototypePageInner() {
 
   // Remove a specific pin (preserves custom labels on remaining pins)
   const removePin = (id: string) => {
-    setPins(prev => prev.filter(p => p.id !== id));
-  };
-
-  // Rename a pin
-  const renamePin = (id: string, newLabel: string) => {
-    setPins(prev => prev.map(p => p.id === id ? { ...p, label: newLabel } : p));
+    setPins(prev => {
+      const remaining = prev.filter(p => p.id !== id);
+      if (selectedPinId === id) {
+        setSelectedPinId(remaining[0]?.id ?? null);
+      }
+      return remaining;
+    });
   };
 
   // Clear all pins
   const clearPins = () => {
     setPins([]);
+    setSelectedPinId(null);
   };
 
   // Handle trail selection from picker — auto-drop pins at highest and lowest elevation
   const handleTrailSelect = (trailId: string, geojson: GeoJSON.Feature) => {
     setSelectedTrailId(trailId);
     setTrailGeojson(geojson);
+    setTrailStats(computeTrailStats(geojson));
 
     // Extract coordinates with elevation
     const geometry = geojson.geometry;
@@ -237,6 +263,7 @@ function PrototypePageInner() {
     };
 
     setPins([autoA, autoB]);
+    setSelectedPinId(autoA.id);
     setForecastExpanded(true);
 
     if (mode === 'online') {
@@ -273,39 +300,27 @@ function PrototypePageInner() {
     }
   }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Calculate severity summary for all pins at current hour
-  const severitySummary = useMemo(() => {
-    return pins
-      .filter(p => p.forecast && !p.loading)
-      .map(p => {
-        const hourlyData = p.forecast!.hourly[currentHour] || p.forecast!.hourly[0];
-        return calculateSeverity(hourlyData, p.forecast!.elevation);
-      });
-  }, [pins, currentHour]);
-
-  const summary = useMemo(() => {
-    return severitySummary.length > 0 ? getSeveritySummary(severitySummary) : null;
-  }, [severitySummary]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-zinc-900 text-zinc-100" style={{ height: '100dvh' }}>
+    <div className="h-screen flex flex-col bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100" style={{ height: '100dvh' }}>
       {/* Header */}
-      <div className="bg-zinc-800 border-b border-zinc-700 px-4 py-2">
+      <div className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 px-4 py-2">
         <div className="flex items-center justify-between gap-2">
           <TrailMenu
             selectedTrailId={selectedTrailId}
             onTrailSelect={handleTrailSelect}
+            onPlaceSelect={(lat, lng) => setMapFlyTo({ lat, lng, zoom: 10 })}
           />
           <h1 className="text-base font-bold truncate flex-1 min-w-0">
-            {trailGeojson?.properties?.name || 'Select a trail'}
+            {trailGeojson?.properties?.name || 'Search trail or place'}
           </h1>
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* Connectivity status indicator */}
             <div className={`
-              flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+              flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium
               ${mode === 'online'
-                ? 'bg-green-900/40 text-green-300 border border-green-700/50'
-                : 'bg-amber-900/40 text-amber-300 border border-amber-700/50'
+                ? 'bg-green-100 text-green-700 border border-green-300 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700/50'
+                : 'bg-amber-100 text-amber-700 border border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700/50'
               }
             `}>
               {mode === 'online'
@@ -314,13 +329,21 @@ function PrototypePageInner() {
               }
               {mode === 'online' ? 'Data' : 'SMS only'}
               {simulatedMode !== null && (
-                <span className="text-[10px] opacity-60 ml-0.5">SIM</span>
+                <span className="text-xs opacity-60 ml-0.5">SIM</span>
               )}
             </div>
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-full bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 transition-colors text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+              title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+            >
+              {theme === 'light' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+            </button>
             {/* Prototype simulate button */}
             <button
               onClick={cycleSimulatedMode}
-              className="p-1.5 rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors text-zinc-400 hover:text-zinc-200"
+              className="p-1.5 rounded-full bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 transition-colors text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
               title={simulatedMode === null
                 ? 'Auto-detect (click to simulate)'
                 : simulatedMode === 'online'
@@ -331,7 +354,7 @@ function PrototypePageInner() {
               <FlaskConical className="w-3.5 h-3.5" />
             </button>
             {/* Viewport selector — hidden on small screens */}
-            <div className="hidden sm:flex bg-zinc-700 rounded-full p-0.5">
+            <div className="hidden sm:flex bg-zinc-200 dark:bg-zinc-700 rounded-full p-0.5">
               {([
                 { key: 'mobile' as Viewport, icon: Smartphone, label: 'Mobile' },
                 { key: 'tablet' as Viewport, icon: Tablet, label: 'Tablet' },
@@ -341,10 +364,10 @@ function PrototypePageInner() {
                   key={key}
                   onClick={() => setViewport(key)}
                   className={`
-                    px-2 py-1 rounded-full text-xs font-medium transition-colors flex items-center gap-1
+                    px-2 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-1
                     ${viewport === key
-                      ? 'bg-zinc-500 text-white'
-                      : 'text-zinc-400 hover:text-zinc-200'
+                      ? 'bg-zinc-400 dark:bg-zinc-500 text-white'
+                      : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
                     }
                   `}
                   title={label}
@@ -356,8 +379,14 @@ function PrototypePageInner() {
             </div>
           </div>
         </div>
-        <p className="text-xs text-zinc-500 mt-1">
-          Tap map to drop pins · Each grid cell is a separate forecast
+        <p className="text-sm mt-1">
+          {trailStats ? (
+            <span className="text-orange-600 dark:text-orange-400 font-medium">
+              {trailStats.distanceKm} km · +{trailStats.totalAscent}m gain · {trailStats.minElev}m – {trailStats.maxElev}m
+            </span>
+          ) : (
+            <span className="text-zinc-500">Tap map to drop pins · Each grid cell is a separate forecast</span>
+          )}
         </p>
       </div>
 
@@ -367,8 +396,8 @@ function PrototypePageInner() {
           flex-shrink-0 px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2
           transition-all
           ${mode === 'online'
-            ? 'bg-green-900/50 text-green-200 border-b border-green-800/50'
-            : 'bg-amber-900/50 text-amber-200 border-b border-amber-800/50'
+            ? 'bg-green-100 text-green-700 border-b border-green-200 dark:bg-green-900/50 dark:text-green-200 dark:border-b dark:border-green-800/50'
+            : 'bg-amber-100 text-amber-700 border-b border-amber-200 dark:bg-amber-900/50 dark:text-amber-200 dark:border-b dark:border-amber-800/50'
           }
         `}>
           {mode === 'online'
@@ -384,65 +413,39 @@ function PrototypePageInner() {
           {/* Map */}
           <div className="flex-1 relative">
             <Suspense fallback={
-              <div className="w-full h-full flex items-center justify-center bg-zinc-800">
-                <div className="text-zinc-400">Loading map...</div>
+              <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
+                <div className="text-zinc-500 dark:text-zinc-400">Loading map...</div>
               </div>
             }>
               <PrototypeMap
                 trailGeojson={trailGeojson}
                 pins={pins}
-                currentHour={currentHour}
+                selectedPinId={selectedPinId}
                 onMapClick={addPin}
                 onPinRemove={removePin}
-                onPinSelect={() => setForecastExpanded(true)}
+                onPinSelect={(id: string) => { setSelectedPinId(id); setForecastExpanded(true); }}
                 gridVisible={gridVisible}
                 onGridToggle={() => setGridVisible(!gridVisible)}
                 mode={mode}
+                parentLocation={parentLocation}
+                flyTo={mapFlyTo}
               />
             </Suspense>
           </div>
           {/* Sidebar */}
-          <div className="w-96 flex flex-col overflow-y-auto border-l border-zinc-700 bg-zinc-800">
-            {mode === 'online' && (
-              <TimeScrubber
-                currentHour={currentHour}
-                onHourChange={setCurrentHour}
-                maxHours={168}
-              />
-            )}
-            {mode === 'online' && summary && (
-              <div className={`
-                px-4 py-2 text-center text-sm font-medium border-t border-zinc-700
-                ${summary.allSafe
-                  ? 'bg-green-900/30 text-green-300'
-                  : summary.dangerCount > 0
-                  ? 'bg-red-900/30 text-red-300'
-                  : 'bg-amber-900/30 text-amber-300'
-                }
-              `}>
-                {summary.message}
-              </div>
-            )}
-            {mode === 'online' ? (
-              <ForecastPanel
-                pins={pins}
-                currentHour={currentHour}
-                onRemovePin={removePin}
-                onRenamePin={renamePin}
-                onClearPins={clearPins}
-                expanded={forecastExpanded}
-                onExpandedChange={setForecastExpanded}
-                viewport="desktop"
-              />
-            ) : (
-              <PinPanel
-                pins={pins}
-                onRemovePin={removePin}
-                onRenamePin={renamePin}
-                onClearPins={clearPins}
-                offlineMode
-              />
-            )}
+          <div className="w-96 flex flex-col overflow-y-auto border-l border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800">
+            {trailGeojson && <ElevationProfile geojson={trailGeojson} />}
+            <ChartPanel
+              pins={pins}
+              selectedPinId={selectedPinId}
+              onPinSelect={setSelectedPinId}
+              onRemovePin={removePin}
+              onClearPins={clearPins}
+              expanded={forecastExpanded}
+              onExpandedChange={setForecastExpanded}
+              viewport="desktop"
+              mode={mode}
+            />
             {mode === 'online' && (
               <>
                 <SatelliteSimulator
@@ -457,77 +460,51 @@ function PrototypePageInner() {
           </div>
         </div>
       ) : (
-        /* Mobile / Tablet: stacked layout */
-        <>
-          {/* Map - takes remaining vertical space */}
-          <div className={`flex-1 relative ${viewport === 'tablet' ? 'min-h-[50vh]' : ''}`}>
+        /* Mobile / Tablet: scrollable stacked layout */
+        <div className="flex-1 overflow-y-auto">
+          {/* Map - fixed height so it doesn't get crushed */}
+          <div className={`relative ${viewport === 'tablet' ? 'h-[55vh]' : 'h-[45vh]'} flex-shrink-0`}>
             <Suspense fallback={
-              <div className="w-full h-full flex items-center justify-center bg-zinc-800">
-                <div className="text-zinc-400">Loading map...</div>
+              <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
+                <div className="text-zinc-500 dark:text-zinc-400">Loading map...</div>
               </div>
             }>
               <PrototypeMap
                 trailGeojson={trailGeojson}
                 pins={pins}
-                currentHour={currentHour}
+                selectedPinId={selectedPinId}
                 onMapClick={addPin}
                 onPinRemove={removePin}
-                onPinSelect={() => setForecastExpanded(true)}
+                onPinSelect={(id: string) => { setSelectedPinId(id); setForecastExpanded(true); }}
                 gridVisible={gridVisible}
                 onGridToggle={() => setGridVisible(!gridVisible)}
                 mode={mode}
+                parentLocation={parentLocation}
+                flyTo={mapFlyTo}
               />
             </Suspense>
           </div>
 
-          {/* Severity Summary Bar (online only, when pins have data) */}
-          {mode === 'online' && summary && (
-            <div className={`
-              flex-shrink-0 px-4 py-2 text-center text-sm font-medium border-t border-zinc-700
-              ${summary.allSafe
-                ? 'bg-green-900/30 text-green-300'
-                : summary.dangerCount > 0
-                ? 'bg-red-900/30 text-red-300'
-                : 'bg-amber-900/30 text-amber-300'
-              }
-            `}>
-              {summary.message}
-            </div>
-          )}
-
-          {/* Time Scrubber (online only) */}
-          {mode === 'online' && (
+          {/* Elevation profile */}
+          {trailGeojson && (
             <div className="flex-shrink-0">
-              <TimeScrubber
-                currentHour={currentHour}
-                onHourChange={setCurrentHour}
-                maxHours={168}
-              />
+              <ElevationProfile geojson={trailGeojson} />
             </div>
           )}
 
-          {/* Forecast Panel (online) or PinPanel (offline) */}
+          {/* Chart Panel (both modes) */}
           <div className="flex-shrink-0">
-            {mode === 'online' ? (
-              <ForecastPanel
-                pins={pins}
-                currentHour={currentHour}
-                onRemovePin={removePin}
-                onRenamePin={renamePin}
-                onClearPins={clearPins}
-                expanded={forecastExpanded}
-                onExpandedChange={setForecastExpanded}
-                viewport={viewport}
-              />
-            ) : (
-              <PinPanel
-                pins={pins}
-                onRemovePin={removePin}
-                onRenamePin={renamePin}
-                onClearPins={clearPins}
-                offlineMode
-              />
-            )}
+            <ChartPanel
+              pins={pins}
+              selectedPinId={selectedPinId}
+              onPinSelect={setSelectedPinId}
+              onRemovePin={removePin}
+              onClearPins={clearPins}
+              expanded={forecastExpanded}
+              onExpandedChange={setForecastExpanded}
+              viewport={viewport}
+              mode={mode}
+            />
           </div>
 
           {/* Developer Tools (online only, hidden on mobile) */}
@@ -542,21 +519,21 @@ function PrototypePageInner() {
               <PayloadInspector metrics={lastPayloadMetrics} />
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Satellite loading overlay */}
       {satelliteMode && isLoadingWeather && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-zinc-800 rounded-lg p-6 max-w-sm mx-4 border border-zinc-700">
+          <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 max-w-sm mx-4 border border-zinc-200 dark:border-zinc-700">
             <div className="flex items-center justify-center gap-3 mb-3">
               <div className="animate-spin">📡</div>
               <div className="text-lg font-medium">Fetching via satellite...</div>
             </div>
-            <div className="text-sm text-zinc-400 text-center mb-4">
+            <div className="text-sm text-zinc-500 dark:text-zinc-400 text-center mb-4">
               Simulating {(satelliteLatencyMs / 1000).toFixed(1)}s latency
             </div>
-            <div className="w-full bg-zinc-700 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 overflow-hidden">
               <div
                 className="bg-blue-500 h-full animate-loading-bar"
                 style={{
@@ -597,11 +574,13 @@ function PrototypePageInner() {
 export default function PrototypePage() {
   return (
     <Suspense fallback={
-      <div className="h-screen flex items-center justify-center bg-zinc-900 text-zinc-400">
+      <div className="h-screen flex items-center justify-center bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400">
         Loading...
       </div>
     }>
-      <PrototypePageInner />
+      <ThemeProvider>
+        <PrototypePageInner />
+      </ThemeProvider>
     </Suspense>
   );
 }

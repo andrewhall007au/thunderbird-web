@@ -149,7 +149,7 @@ export async function fetchMultiPinWeather(
       'snowfall',
       'cape'
     ].join(','),
-    forecast_hours: '72',
+    forecast_hours: '168',
     timezone: 'auto'
   });
 

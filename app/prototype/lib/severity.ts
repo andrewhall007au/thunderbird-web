@@ -144,27 +144,27 @@ export function calculateHourlySeverities(
  */
 export const SEVERITY_COLORS = {
   green: {
-    bg: '#22c55e',
+    bg: '#2563eb',
     text: '#ffffff',
     label: 'Safe',
-    border: 'border-green-500',
-    bgClass: 'bg-green-500',
+    border: 'border-blue-600',
+    bgClass: 'bg-blue-600',
     textClass: 'text-white'
   },
   amber: {
-    bg: '#f59e0b',
-    text: '#000000',
+    bg: '#d97706',
+    text: '#ffffff',
     label: 'Caution',
-    border: 'border-amber-500',
-    bgClass: 'bg-amber-500',
-    textClass: 'text-black'
+    border: 'border-amber-600',
+    bgClass: 'bg-amber-600',
+    textClass: 'text-white'
   },
   red: {
-    bg: '#ef4444',
+    bg: '#dc2626',
     text: '#ffffff',
     label: 'Danger',
-    border: 'border-red-500',
-    bgClass: 'bg-red-500',
+    border: 'border-red-600',
+    bgClass: 'bg-red-600',
     textClass: 'text-white'
   },
 };

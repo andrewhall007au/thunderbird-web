@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Map, { Source, Layer, Marker, NavigationControl, MapRef, MapLayerMouseEvent } from 'react-map-gl/maplibre';
+import { sampleKmMarkers } from '../lib/trailStats';
 import { LocateFixed } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Grid } from 'lucide-react';
@@ -13,13 +14,15 @@ import { calculateSeverity, SEVERITY_COLORS, type SeverityLevel } from '../lib/s
 interface PrototypeMapProps {
   trailGeojson: GeoJSON.Feature | null;
   pins: Pin[];
-  currentHour: number;
+  selectedPinId: string | null;
   onMapClick: (lat: number, lng: number) => void;
   onPinRemove: (id: string) => void;
   onPinSelect?: (id: string) => void;
   gridVisible: boolean;
   onGridToggle: () => void;
   mode?: 'online' | 'offline';
+  parentLocation?: { lat: number; lng: number } | null;
+  flyTo?: { lat: number; lng: number; zoom: number } | null;
 }
 
 // Calculate bounding box from GeoJSON coordinates
@@ -86,20 +89,21 @@ function getGridResolution(center: { lat: number; lng: number }): number {
 export default function PrototypeMap({
   trailGeojson,
   pins,
-  currentHour,
+  selectedPinId,
   onMapClick,
   onPinRemove,
   onPinSelect,
   gridVisible,
   onGridToggle,
-  mode = 'online'
+  mode = 'online',
+  parentLocation,
+  flyTo,
 }: PrototypeMapProps) {
   const [viewState, setViewState] = useState({
     latitude: 39.8,
     longitude: -98.5,
     zoom: 4
   });
-  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<{ west: number; south: number; east: number; north: number } | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
@@ -126,9 +130,31 @@ export default function PrototypeMap({
     );
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Use parent-provided location (from preview iframe) as fallback
+  useEffect(() => {
+    if (parentLocation && !userLocation && !trailGeojson) {
+      setUserLocation(parentLocation);
+      setViewState(prev => ({ ...prev, latitude: parentLocation.lat, longitude: parentLocation.lng, zoom: 10 }));
+    }
+  }, [parentLocation]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fly to a location when requested by parent
+  useEffect(() => {
+    if (flyTo) {
+      setViewState(prev => ({ ...prev, latitude: flyTo.lat, longitude: flyTo.lng, zoom: flyTo.zoom }));
+    }
+  }, [flyTo]);
+
   // Move to user location on button press
   const handleLocateMe = useCallback(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      // Fallback to parent-provided location
+      if (parentLocation) {
+        setUserLocation(parentLocation);
+        setViewState(prev => ({ ...prev, latitude: parentLocation.lat, longitude: parentLocation.lng, zoom: 12 }));
+      }
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -137,10 +163,17 @@ export default function PrototypeMap({
         setViewState(prev => ({ ...prev, latitude: loc.lat, longitude: loc.lng, zoom: 12 }));
         setLocating(false);
       },
-      () => { setLocating(false); },
+      () => {
+        // Native geolocation failed — use parent location if available
+        if (parentLocation) {
+          setUserLocation(parentLocation);
+          setViewState(prev => ({ ...prev, latitude: parentLocation.lat, longitude: parentLocation.lng, zoom: 12 }));
+        }
+        setLocating(false);
+      },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }, []);
+  }, [parentLocation]);
 
   // OSM basemap style (fast tile servers)
   const mapStyle = {
@@ -189,16 +222,20 @@ export default function PrototypeMap({
     onMapClick(e.lngLat.lat, e.lngLat.lng);
   };
 
-  // Handle pin marker click
+  // Handle pin marker click — first click selects, second click removes
   const handlePinClick = (pinId: string) => {
     if (selectedPinId === pinId) {
       onPinRemove(pinId);
-      setSelectedPinId(null);
     } else {
-      setSelectedPinId(pinId);
       onPinSelect?.(pinId);
     }
   };
+
+  // Km markers along trail
+  const kmMarkers = useMemo(() => {
+    if (!trailGeojson) return null;
+    return sampleKmMarkers(trailGeojson);
+  }, [trailGeojson]);
 
   // Calculate grid properties
   const trailCenter = trailGeojson ? getTrailCenter(trailGeojson) : null;
@@ -308,14 +345,38 @@ export default function PrototypeMap({
         </Source>
       )}
 
+      {/* Km markers along trail */}
+      {kmMarkers && (
+        <Source id="km-markers" type="geojson" data={kmMarkers}>
+          <Layer
+            id="km-marker-border"
+            type="circle"
+            paint={{
+              'circle-radius': 6,
+              'circle-color': '#FF10F0',
+              'circle-opacity': 0.9
+            }}
+          />
+          <Layer
+            id="km-marker-fill"
+            type="circle"
+            paint={{
+              'circle-radius': 3.75,
+              'circle-color': '#FFFFFF',
+              'circle-opacity': 1
+            }}
+          />
+        </Source>
+      )}
+
       {/* Pin markers */}
       {pins.map(pin => {
         let severityLevel: SeverityLevel = 'green';
         let dangerStr = '';
-        let bgColor = '#3b82f6'; // Default blue for loading/no data/offline
+        let bgColor = SEVERITY_COLORS.green.bg; // Default safe color for loading/no data
 
         if (mode === 'online' && pin.forecast && !pin.loading) {
-          const hourlyData = pin.forecast.hourly[currentHour] || pin.forecast.hourly[0];
+          const hourlyData = pin.forecast.hourly[0];
           if (hourlyData) {
             const severity = calculateSeverity(hourlyData, pin.forecast.elevation);
             severityLevel = severity.level;
@@ -325,7 +386,8 @@ export default function PrototypeMap({
         }
 
         const isSelected = selectedPinId === pin.id;
-        const shouldPulse = dangerStr === '!!' || dangerStr === '!!!';
+        if (!isSelected) bgColor = '#52525b'; // zinc-600 for unselected
+        const shouldPulse = isSelected && (dangerStr === '!!' || dangerStr === '!!!');
         const pinLabel = dangerStr ? `${pin.label}${dangerStr}` : pin.label;
 
         return (
@@ -346,11 +408,11 @@ export default function PrototypeMap({
                     w-10 h-10 rounded-full flex items-center justify-center
                     text-white font-bold shadow-lg
                     transition-all
-                    ${isSelected ? 'ring-4 ring-yellow-300 scale-110' : ''}
+                    ${isSelected ? 'ring-4 ring-white scale-110' : ''}
                     ${shouldPulse ? 'animate-pulse-glow' : ''}
                   `}
                   style={{
-                    backgroundColor: isSelected ? '#eab308' : bgColor,
+                    backgroundColor: bgColor,
                     fontSize: dangerStr ? '0.65rem' : '0.875rem'
                   }}
                 >
@@ -360,7 +422,7 @@ export default function PrototypeMap({
                 <div
                   className="absolute left-1/2 -translate-x-1/2 top-full w-1.5 h-3"
                   style={{
-                    backgroundColor: isSelected ? '#eab308' : bgColor
+                    backgroundColor: bgColor
                   }}
                 />
               </div>

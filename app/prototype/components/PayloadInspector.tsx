@@ -64,79 +64,79 @@ export default function PayloadInspector({ metrics }: PayloadInspectorProps) {
   }
 
   return (
-    <div className="bg-zinc-800 border-t border-zinc-700">
+    <div className="bg-white dark:bg-zinc-800 border-t border-zinc-200 dark:border-zinc-700">
       {/* Collapsed header */}
       <div
-        className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-zinc-750 transition-colors"
+        className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <FileCode className="w-4 h-4 text-zinc-400" />
+          <FileCode className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
           <div className="text-sm font-medium">Payload Inspector</div>
           {!isExpanded && (
-            <div className="text-xs text-zinc-400">
+            <div className="text-sm text-zinc-500 dark:text-zinc-400">
               {formatBytes(metrics.responseSizeBytes)} response
             </div>
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-zinc-400" />
+          <ChevronUp className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-zinc-400" />
+          <ChevronDown className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
         )}
       </div>
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="px-4 pb-4 space-y-4 border-t border-zinc-700 pt-4">
+        <div className="px-4 pb-4 space-y-4 border-t border-zinc-200 dark:border-zinc-700 pt-4">
           {/* Last request metrics */}
           <div>
-            <div className="text-xs text-zinc-400 uppercase tracking-wide mb-2">
+            <div className="text-sm text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
               Last Request
             </div>
-            <div className="bg-zinc-900 rounded p-3 font-mono text-xs space-y-1.5">
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-3 font-mono text-sm space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-zinc-400">Request:</span>
-                <span className="text-zinc-100">~{formatBytes(metrics.requestSizeBytes)} (URL)</span>
+                <span className="text-zinc-500 dark:text-zinc-400">Request:</span>
+                <span className="text-zinc-900 dark:text-zinc-100">~{formatBytes(metrics.requestSizeBytes)} (URL)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-400">Response:</span>
-                <span className="text-zinc-100">{formatBytes(metrics.responseSizeBytes)} (JSON)</span>
+                <span className="text-zinc-500 dark:text-zinc-400">Response:</span>
+                <span className="text-zinc-900 dark:text-zinc-100">{formatBytes(metrics.responseSizeBytes)} (JSON)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-400">Per pin:</span>
-                <span className="text-zinc-100">~{formatBytes(perPinBytes)}</span>
+                <span className="text-zinc-500 dark:text-zinc-400">Per pin:</span>
+                <span className="text-zinc-900 dark:text-zinc-100">~{formatBytes(perPinBytes)}</span>
               </div>
-              <div className="flex justify-between border-t border-zinc-700 pt-1.5 mt-1.5">
-                <span className="text-zinc-400">API time:</span>
-                <span className="text-zinc-100">{metrics.responseTimeMs}ms</span>
+              <div className="flex justify-between border-t border-zinc-200 dark:border-zinc-700 pt-1.5 mt-1.5">
+                <span className="text-zinc-500 dark:text-zinc-400">API time:</span>
+                <span className="text-zinc-900 dark:text-zinc-100">{metrics.responseTimeMs}ms</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-400">Total:</span>
-                <span className="text-zinc-100">{metrics.totalTimeMs}ms</span>
+                <span className="text-zinc-500 dark:text-zinc-400">Total:</span>
+                <span className="text-zinc-900 dark:text-zinc-100">{metrics.totalTimeMs}ms</span>
               </div>
             </div>
           </div>
 
           {/* Satellite feasibility */}
           <div>
-            <div className="text-xs text-zinc-400 uppercase tracking-wide mb-2">
+            <div className="text-sm text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
               Satellite Feasibility
             </div>
-            <div className="bg-zinc-900 rounded p-3 text-xs space-y-2">
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-3 text-sm space-y-2">
               <div className="flex justify-between">
-                <span className="text-zinc-400">At ~4 Mbps (theoretical):</span>
-                <span className="text-zinc-100">{Math.round(transferTheoretical)}ms transfer</span>
+                <span className="text-zinc-500 dark:text-zinc-400">At ~4 Mbps (theoretical):</span>
+                <span className="text-zinc-900 dark:text-zinc-100">{Math.round(transferTheoretical)}ms transfer</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-400">At ~100 kbps (realistic):</span>
-                <span className="text-zinc-100">{Math.round(transferRealistic)}ms transfer</span>
+                <span className="text-zinc-500 dark:text-zinc-400">At ~100 kbps (realistic):</span>
+                <span className="text-zinc-900 dark:text-zinc-100">{Math.round(transferRealistic)}ms transfer</span>
               </div>
               <div className={`
-                mt-2 pt-2 border-t border-zinc-700 font-medium
-                ${feasibility === 'good' ? 'text-green-400' :
-                  feasibility === 'ok' ? 'text-amber-400' :
-                  'text-red-400'}
+                mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-700 font-medium
+                ${feasibility === 'good' ? 'text-green-600 dark:text-green-400' :
+                  feasibility === 'ok' ? 'text-amber-600 dark:text-amber-400' :
+                  'text-red-600 dark:text-red-400'}
               `}>
                 {feasibilityLabel}
               </div>
@@ -144,8 +144,8 @@ export default function PayloadInspector({ metrics }: PayloadInspectorProps) {
           </div>
 
           {/* Technical notes */}
-          <div className="bg-zinc-900 rounded p-3 text-xs text-zinc-400">
-            <div className="font-medium text-zinc-300 mb-1">About These Metrics</div>
+          <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-3 text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="font-medium text-zinc-700 dark:text-zinc-300 mb-1">About These Metrics</div>
             <p className="mb-2">
               Open-Meteo returns ~{formatBytes(perPinBytes)} per location for 72 hours of hourly data
               (temp, wind, rain, cloud cover).
