@@ -3,9 +3,9 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Map, { Source, Layer, Marker, NavigationControl, MapRef, MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import { sampleKmMarkers } from '../lib/trailStats';
-import { LocateFixed } from 'lucide-react';
+import { LocateFixed, Play, Square, Trash2, Grid } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Grid } from 'lucide-react';
+import { useGPSTracking } from '../lib/useGPSTracking';
 import type { Pin } from '../lib/types';
 import WeatherGrid from './WeatherGrid';
 import BomGrid from './BomGrid';
@@ -109,6 +109,7 @@ export default function PrototypeMap({
   const [locating, setLocating] = useState(false);
   const mapRef = useRef<MapRef>(null);
   const hasGeolocated = useRef(false);
+  const { tracking, track, currentPosition, error: gpsError, startTracking, stopTracking, clearTrack } = useGPSTracking();
 
   // Auto-locate user on first load
   useEffect(() => {
@@ -268,8 +269,8 @@ export default function PrototypeMap({
       {/* BOM geohash6 grid — faint mesh, visible at zoom >= 10 */}
       <BomGrid zoom={viewState.zoom} bounds={mapBounds} />
 
-      {/* Locate me button */}
-      <div className="absolute top-4 left-4 z-10">
+      {/* GPS controls */}
+      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         <button
           onClick={(e) => { e.stopPropagation(); handleLocateMe(); }}
           className={`p-2 rounded shadow-lg transition-colors ${
@@ -281,11 +282,36 @@ export default function PrototypeMap({
         >
           <LocateFixed className={`w-5 h-5 ${locating ? 'animate-spin' : ''}`} />
         </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); tracking ? stopTracking() : startTracking(); }}
+          className={`p-2 rounded shadow-lg transition-colors ${
+            tracking
+              ? 'bg-blue-500 text-white'
+              : 'bg-white text-zinc-900 hover:bg-zinc-100'
+          }`}
+          title={tracking ? 'Stop tracking' : 'Start tracking'}
+        >
+          {tracking ? <Square className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+        </button>
+        {track.length > 0 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); clearTrack(); }}
+            className="p-2 rounded shadow-lg transition-colors bg-white text-zinc-900 hover:bg-red-50 hover:text-red-600"
+            title="Clear track"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        )}
+        {gpsError && (
+          <div className="bg-red-500 text-white text-xs px-2 py-1 rounded shadow-lg max-w-[140px]">
+            {gpsError}
+          </div>
+        )}
       </div>
 
-      {/* User location marker */}
-      {userLocation && (
-        <Marker latitude={userLocation.lat} longitude={userLocation.lng} anchor="center">
+      {/* User location marker — live GPS takes priority over one-shot locate */}
+      {(currentPosition ?? userLocation) && (
+        <Marker latitude={(currentPosition ?? userLocation)!.lat} longitude={(currentPosition ?? userLocation)!.lng} anchor="center">
           <div className="relative">
             <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg" />
             <div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-ping opacity-40" />
@@ -339,6 +365,40 @@ export default function PrototypeMap({
             type="line"
             paint={{
               'line-color': '#FF10F0',
+              'line-width': 3
+            }}
+          />
+        </Source>
+      )}
+
+      {/* GPS track polyline */}
+      {track.length >= 2 && (
+        <Source
+          id="gps-track"
+          type="geojson"
+          data={{
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: track.map(p => [p.lng, p.lat])
+            }
+          }}
+        >
+          <Layer
+            id="gps-track-border"
+            type="line"
+            paint={{
+              'line-color': '#ffffff',
+              'line-width': 5,
+              'line-opacity': 0.6
+            }}
+          />
+          <Layer
+            id="gps-track-main"
+            type="line"
+            paint={{
+              'line-color': '#3b82f6',
               'line-width': 3
             }}
           />

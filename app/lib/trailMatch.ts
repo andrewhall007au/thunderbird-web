@@ -64,6 +64,7 @@ export const trailheads: [string, number, number][] = [
   ['eagle_creek_trail', 45.579, -121.843],
   ['east_coast_trail', 47.023, -52.884],
   ['eastern_arthur_range_traverse', -43.038, 146.299],
+  ['eagles_view_trail', -31.883, 116.092],
   ['emory_peak_trail', 29.27, -103.302],
   ['enchanted_valley_via_graves_creek', 47.573, -123.569],
   ['enchantments_thru_hike', 47.528, -120.821],

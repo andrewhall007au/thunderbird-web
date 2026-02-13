@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Menu, X, ChevronRight, ChevronLeft, Search, MapPin } from 'lucide-react';
+import { Menu, X, ChevronDown, ChevronRight, Search, MapPin } from 'lucide-react';
 import { popularTrails, lazyTrailIds, loadTrailCoordinates, type TrailData } from '@/app/data/popularTrails';
 
 interface GeoResult {
@@ -18,15 +18,6 @@ interface TrailMenuProps {
   onPlaceSelect?: (lat: number, lng: number, name: string) => void;
 }
 
-const COUNTRY_NAMES: Record<string, string> = {
-  AU: 'Australia', CA: 'Canada', FR: 'France', DE: 'Germany', IT: 'Italy',
-  JP: 'Japan', NZ: 'New Zealand', ZA: 'South Africa', CH: 'Switzerland',
-  GB: 'United Kingdom', US: 'United States', NP: 'Nepal', PE: 'Peru',
-  CL: 'Chile', AR: 'Argentina', BO: 'Bolivia', CO: 'Colombia', IN: 'India',
-  NO: 'Norway', IS: 'Iceland', ES: 'Spain', GR: 'Greece', TR: 'Turkey',
-  PT: 'Portugal', AT: 'Austria',
-};
-
 function trailToGeojson(trail: TrailData): GeoJSON.Feature {
   return {
     type: 'Feature',
@@ -35,33 +26,51 @@ function trailToGeojson(trail: TrailData): GeoJSON.Feature {
   };
 }
 
-// Group AU trails by state/region, sorted alphabetically
+// Get all AU trails grouped by region, plus flat search matches
 function getGroupedTrails(query: string) {
-  const filtered = popularTrails.filter(trail => {
-    if (trail.country !== 'AU') return false;
-    if (!query) return true;
-    const q = query.toLowerCase();
-    return (
-      trail.name.toLowerCase().includes(q) ||
-      trail.region.toLowerCase().includes(q)
-    );
-  });
+  const allAU = popularTrails.filter(trail => trail.country === 'AU');
+  const q = query.toLowerCase();
 
-  const grouped = filtered.reduce((acc, trail) => {
+  const matches = query
+    ? allAU.filter(t => t.name.toLowerCase().includes(q) || t.region.toLowerCase().includes(q))
+    : [];
+
+  const matchIds = new Set(matches.map(t => t.id));
+
+  // Group ALL AU trails by region (not just matches)
+  const grouped = allAU.reduce((acc, trail) => {
     const region = trail.region;
     if (!acc[region]) acc[region] = [];
     acc[region].push(trail);
     return acc;
   }, {} as Record<string, TrailData[]>);
 
-  const sorted = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+  // Sort trails alphabetically within each region
+  for (const region of Object.keys(grouped)) {
+    grouped[region].sort((a, b) => a.name.localeCompare(b.name));
+  }
 
-  return { grouped, sorted, total: filtered.length };
+  const sortedRegions = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+
+  // Count matches per region
+  const matchCountByRegion: Record<string, number> = {};
+  for (const t of matches) {
+    matchCountByRegion[t.region] = (matchCountByRegion[t.region] || 0) + 1;
+  }
+
+  return {
+    grouped,
+    sortedRegions,
+    matches: matches.sort((a, b) => a.name.localeCompare(b.name)),
+    matchIds,
+    matchCountByRegion,
+    total: allAU.length,
+  };
 }
 
 export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelect }: TrailMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeRegion, setActiveRegion] = useState<string | null>(null);
+  const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [geoResults, setGeoResults] = useState<GeoResult[]>([]);
@@ -75,7 +84,6 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
     const handleClick = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
         setIsOpen(false);
-        setActiveRegion(null);
         setSearchQuery('');
         setGeoResults([]);
       }
@@ -136,10 +144,35 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
     setIsOpen(false);
     setSearchQuery('');
     setGeoResults([]);
-    setActiveRegion(null);
   };
 
-  const { grouped, sorted, total } = getGroupedTrails(searchQuery);
+  const toggleRegion = (region: string) => {
+    setExpandedRegions(prev => {
+      const next = new Set(prev);
+      if (next.has(region)) next.delete(region);
+      else next.add(region);
+      return next;
+    });
+  };
+
+  const { grouped, sortedRegions, matches, matchCountByRegion, total } = getGroupedTrails(searchQuery);
+
+  const TrailButton = ({ trail }: { trail: TrailData }) => (
+    <button
+      onClick={() => handleTrailClick(trail)}
+      disabled={loading}
+      className={`
+        w-full px-3 pl-8 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors
+        disabled:opacity-50 border-b border-zinc-100 dark:border-zinc-750
+        ${selectedTrailId === trail.id ? 'bg-zinc-100 dark:bg-zinc-700 border-l-2 border-l-blue-500' : ''}
+      `}
+    >
+      <div className="text-sm">{trail.name}</div>
+      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+        {trail.distance_km}km · {trail.typical_days}d
+      </div>
+    </button>
+  );
 
   return (
     <div className="relative" ref={panelRef}>
@@ -163,7 +196,7 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
                 type="text"
                 placeholder="Search trails or places..."
                 value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setActiveRegion(null); }}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-8 pr-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-600 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 autoFocus
               />
@@ -200,60 +233,66 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
               </div>
             )}
 
-            {/* Trail results */}
-            {searchQuery.length >= 2 && total > 0 && (
-              <div className="px-3 py-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide bg-zinc-50 dark:bg-zinc-900/50">
-                Trails
+            {/* Flat search results (matching trails) */}
+            {searchQuery && matches.length > 0 && (
+              <div className="border-b border-zinc-200 dark:border-zinc-600">
+                <div className="px-3 py-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide bg-zinc-50 dark:bg-zinc-900/50">
+                  Matching trails
+                </div>
+                {matches.map(trail => (
+                  <button
+                    key={`match-${trail.id}`}
+                    onClick={() => handleTrailClick(trail)}
+                    disabled={loading}
+                    className={`
+                      w-full px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors
+                      disabled:opacity-50 border-b border-zinc-100 dark:border-zinc-750
+                      ${selectedTrailId === trail.id ? 'bg-zinc-100 dark:bg-zinc-700 border-l-2 border-l-blue-500' : ''}
+                    `}
+                  >
+                    <div className="text-sm">{trail.name}</div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      {trail.region} · {trail.distance_km}km · {trail.typical_days}d
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
 
-            {activeRegion === null ? (
-              /* State/region list */
-              sorted.map(region => (
-                <button
-                  key={region}
-                  onClick={() => setActiveRegion(region)}
-                  className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left border-b border-zinc-100 dark:border-zinc-750"
-                >
-                  <div>
-                    <div className="text-sm font-medium">{region}</div>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400">{grouped[region].length} trail{grouped[region].length !== 1 ? 's' : ''}</div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-                </button>
-              ))
-            ) : (
-              /* Trail list for selected region */
-              <>
-                <button
-                  onClick={() => setActiveRegion(null)}
-                  className="w-full px-3 py-2 flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left border-b border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-750 sticky top-0"
-                >
-                  <ChevronLeft className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{activeRegion}</span>
-                </button>
-                {(grouped[activeRegion] || [])
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map(trail => (
-                    <button
-                      key={trail.id}
-                      onClick={() => handleTrailClick(trail)}
-                      disabled={loading}
-                      className={`
-                        w-full px-3 py-2.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors
-                        disabled:opacity-50 border-b border-zinc-100 dark:border-zinc-750
-                        ${selectedTrailId === trail.id ? 'bg-zinc-100 dark:bg-zinc-700 border-l-2 border-l-blue-500' : ''}
-                      `}
-                    >
-                      <div className="text-sm">{trail.name}</div>
-                      <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        {trail.distance_km}km · {trail.typical_days}d
+            {/* State/region accordion */}
+            {sortedRegions.map(region => {
+              const isExpanded = expandedRegions.has(region);
+              const matchCount = matchCountByRegion[region] || 0;
+              const trails = grouped[region];
+
+              return (
+                <div key={region}>
+                  <button
+                    onClick={() => toggleRegion(region)}
+                    className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left border-b border-zinc-100 dark:border-zinc-750"
+                  >
+                    <div className="flex items-center gap-2">
+                      {isExpanded
+                        ? <ChevronDown className="w-4 h-4 text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
+                        : <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
+                      }
+                      <div>
+                        <span className="text-sm font-medium">{region}</span>
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2">{trails.length}</span>
                       </div>
-                    </button>
-                  ))
-                }
-              </>
-            )}
+                    </div>
+                    {searchQuery && matchCount > 0 && (
+                      <span className="bg-blue-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                        {matchCount}
+                      </span>
+                    )}
+                  </button>
+                  {isExpanded && trails.map(trail => (
+                    <TrailButton key={trail.id} trail={trail} />
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
