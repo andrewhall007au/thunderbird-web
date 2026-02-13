@@ -35,7 +35,7 @@ function trailToGeojson(trail: TrailData): GeoJSON.Feature {
   };
 }
 
-// Group trails by country, sorted alphabetically
+// Group AU trails by state/region, sorted alphabetically
 function getGroupedTrails(query: string) {
   const filtered = popularTrails.filter(trail => {
     if (trail.country !== 'AU') return false;
@@ -43,28 +43,25 @@ function getGroupedTrails(query: string) {
     const q = query.toLowerCase();
     return (
       trail.name.toLowerCase().includes(q) ||
-      trail.region.toLowerCase().includes(q) ||
-      COUNTRY_NAMES[trail.country]?.toLowerCase().includes(q)
+      trail.region.toLowerCase().includes(q)
     );
   });
 
   const grouped = filtered.reduce((acc, trail) => {
-    const country = trail.country;
-    if (!acc[country]) acc[country] = [];
-    acc[country].push(trail);
+    const region = trail.region;
+    if (!acc[region]) acc[region] = [];
+    acc[region].push(trail);
     return acc;
   }, {} as Record<string, TrailData[]>);
 
-  const sorted = Object.keys(grouped).sort((a, b) =>
-    (COUNTRY_NAMES[a] || a).localeCompare(COUNTRY_NAMES[b] || b)
-  );
+  const sorted = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
 
   return { grouped, sorted, total: filtered.length };
 }
 
 export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelect }: TrailMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeCountry, setActiveCountry] = useState<string | null>(null);
+  const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [geoResults, setGeoResults] = useState<GeoResult[]>([]);
@@ -78,7 +75,7 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
     const handleClick = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
         setIsOpen(false);
-        setActiveCountry(null);
+        setActiveRegion(null);
         setSearchQuery('');
         setGeoResults([]);
       }
@@ -139,7 +136,7 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
     setIsOpen(false);
     setSearchQuery('');
     setGeoResults([]);
-    setActiveCountry(null);
+    setActiveRegion(null);
   };
 
   const { grouped, sorted, total } = getGroupedTrails(searchQuery);
@@ -166,7 +163,7 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
                 type="text"
                 placeholder="Search trails or places..."
                 value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setActiveCountry(null); }}
+                onChange={e => { setSearchQuery(e.target.value); setActiveRegion(null); }}
                 className="w-full pl-8 pr-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-600 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 autoFocus
               />
@@ -210,32 +207,32 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
               </div>
             )}
 
-            {activeCountry === null ? (
-              /* Country list */
-              sorted.map(code => (
+            {activeRegion === null ? (
+              /* State/region list */
+              sorted.map(region => (
                 <button
-                  key={code}
-                  onClick={() => setActiveCountry(code)}
+                  key={region}
+                  onClick={() => setActiveRegion(region)}
                   className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left border-b border-zinc-100 dark:border-zinc-750"
                 >
                   <div>
-                    <div className="text-sm font-medium">{COUNTRY_NAMES[code] || code}</div>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400">{grouped[code].length} trails</div>
+                    <div className="text-sm font-medium">{region}</div>
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400">{grouped[region].length} trail{grouped[region].length !== 1 ? 's' : ''}</div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
                 </button>
               ))
             ) : (
-              /* Trail list for selected country */
+              /* Trail list for selected region */
               <>
                 <button
-                  onClick={() => setActiveCountry(null)}
+                  onClick={() => setActiveRegion(null)}
                   className="w-full px-3 py-2 flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left border-b border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-750 sticky top-0"
                 >
                   <ChevronLeft className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{COUNTRY_NAMES[activeCountry] || activeCountry}</span>
+                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{activeRegion}</span>
                 </button>
-                {(grouped[activeCountry] || [])
+                {(grouped[activeRegion] || [])
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map(trail => (
                     <button
@@ -250,7 +247,7 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
                     >
                       <div className="text-sm">{trail.name}</div>
                       <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        {trail.region} · {trail.distance_km}km · {trail.typical_days}d
+                        {trail.distance_km}km · {trail.typical_days}d
                       </div>
                     </button>
                   ))
