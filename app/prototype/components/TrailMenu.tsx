@@ -38,6 +38,7 @@ function trailToGeojson(trail: TrailData): GeoJSON.Feature {
 // Group trails by country, sorted alphabetically
 function getGroupedTrails(query: string) {
   const filtered = popularTrails.filter(trail => {
+    if (trail.country !== 'AU') return false;
     if (!query) return true;
     const q = query.toLowerCase();
     return (
