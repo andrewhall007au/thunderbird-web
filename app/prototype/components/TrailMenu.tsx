@@ -26,7 +26,25 @@ function trailToGeojson(trail: TrailData): GeoJSON.Feature {
   };
 }
 
-// Get all AU trails grouped by region, plus flat search matches
+// Map region strings to their parent state/territory
+const STATE_ABBREV: Record<string, string> = {
+  TAS: 'Tasmania', WA: 'Western Australia', VIC: 'Victoria',
+  NSW: 'New South Wales', QLD: 'Queensland', SA: 'South Australia',
+  NT: 'Northern Territory', ACT: 'ACT',
+};
+
+function regionToState(region: string): string {
+  // Direct state names
+  if (Object.values(STATE_ABBREV).includes(region)) return region;
+  if (region === 'ACT') return 'ACT';
+  if (region === 'Victoria / NSW / ACT') return 'Victoria';
+  // Sub-region pattern: "Place, XX" where XX is state abbreviation
+  const commaMatch = region.match(/,\s*(TAS|WA|VIC|NSW|QLD|SA|NT|ACT)\s*$/);
+  if (commaMatch) return STATE_ABBREV[commaMatch[1]] || region;
+  return region;
+}
+
+// Get all AU trails grouped by state, plus flat search matches
 function getGroupedTrails(query: string) {
   const allAU = popularTrails.filter(trail => trail.country === 'AU');
   const q = query.toLowerCase();
@@ -35,35 +53,33 @@ function getGroupedTrails(query: string) {
     ? allAU.filter(t => t.name.toLowerCase().includes(q) || t.region.toLowerCase().includes(q))
     : [];
 
-  const matchIds = new Set(matches.map(t => t.id));
-
-  // Group ALL AU trails by region (not just matches)
+  // Group ALL AU trails by state
   const grouped = allAU.reduce((acc, trail) => {
-    const region = trail.region;
-    if (!acc[region]) acc[region] = [];
-    acc[region].push(trail);
+    const state = regionToState(trail.region);
+    if (!acc[state]) acc[state] = [];
+    acc[state].push(trail);
     return acc;
   }, {} as Record<string, TrailData[]>);
 
-  // Sort trails alphabetically within each region
-  for (const region of Object.keys(grouped)) {
-    grouped[region].sort((a, b) => a.name.localeCompare(b.name));
+  // Sort trails alphabetically within each state
+  for (const state of Object.keys(grouped)) {
+    grouped[state].sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  const sortedRegions = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+  const sortedStates = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
 
-  // Count matches per region
-  const matchCountByRegion: Record<string, number> = {};
+  // Count matches per state
+  const matchCountByState: Record<string, number> = {};
   for (const t of matches) {
-    matchCountByRegion[t.region] = (matchCountByRegion[t.region] || 0) + 1;
+    const state = regionToState(t.region);
+    matchCountByState[state] = (matchCountByState[state] || 0) + 1;
   }
 
   return {
     grouped,
-    sortedRegions,
+    sortedStates,
     matches: matches.sort((a, b) => a.name.localeCompare(b.name)),
-    matchIds,
-    matchCountByRegion,
+    matchCountByState,
     total: allAU.length,
   };
 }
@@ -155,7 +171,7 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
     });
   };
 
-  const { grouped, sortedRegions, matches, matchCountByRegion, total } = getGroupedTrails(searchQuery);
+  const { grouped, sortedStates, matches, matchCountByState, total } = getGroupedTrails(searchQuery);
 
   const TrailButton = ({ trail }: { trail: TrailData }) => (
     <button
@@ -259,16 +275,16 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
               </div>
             )}
 
-            {/* State/region accordion */}
-            {sortedRegions.map(region => {
-              const isExpanded = expandedRegions.has(region);
-              const matchCount = matchCountByRegion[region] || 0;
-              const trails = grouped[region];
+            {/* State accordion */}
+            {sortedStates.map(state => {
+              const isExpanded = expandedRegions.has(state);
+              const matchCount = matchCountByState[state] || 0;
+              const trails = grouped[state];
 
               return (
-                <div key={region}>
+                <div key={state}>
                   <button
-                    onClick={() => toggleRegion(region)}
+                    onClick={() => toggleRegion(state)}
                     className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors text-left border-b border-zinc-100 dark:border-zinc-750"
                   >
                     <div className="flex items-center gap-2">
@@ -277,7 +293,7 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
                         : <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
                       }
                       <div>
-                        <span className="text-sm font-medium">{region}</span>
+                        <span className="text-sm font-medium">{state}</span>
                         <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-2">{trails.length}</span>
                       </div>
                     </div>
