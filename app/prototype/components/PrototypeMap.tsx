@@ -307,15 +307,35 @@ export default function PrototypeMap({
             {gpsError}
           </div>
         )}
-        {track.length > 0 && (
-          <div className="bg-white/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 text-xs font-medium px-2 py-1 rounded shadow-lg backdrop-blur-sm">
-            {stats.distanceKm < 1
-              ? `${Math.round(stats.distanceKm * 1000)}m`
-              : `${stats.distanceKm.toFixed(1)}km`}
-            {stats.elevGain > 0 && ` · +${stats.elevGain}m`}
-          </div>
-        )}
       </div>
+
+      {/* GPS track stats bar */}
+      {track.length > 0 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-white/95 dark:bg-zinc-800/95 backdrop-blur-sm rounded-full shadow-lg px-4 py-2 flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              {stats.distanceKm < 1
+                ? `${Math.round(stats.distanceKm * 1000)} m`
+                : `${stats.distanceKm.toFixed(1)} km`}
+            </span>
+          </div>
+          {stats.elevGain > 0 && (
+            <>
+              <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-600" />
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                +{stats.elevGain} m
+              </span>
+            </>
+          )}
+          {tracking && (
+            <>
+              <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-600" />
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            </>
+          )}
+        </div>
+      )}
 
       {/* User location marker — live GPS takes priority over one-shot locate */}
       {(currentPosition ?? userLocation) && (
