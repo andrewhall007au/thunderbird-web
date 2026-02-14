@@ -148,6 +148,9 @@ export default function TrailMenu({ selectedTrailId, onTrailSelect, onPlaceSelec
       } else {
         onTrailSelect(trail.id, trailToGeojson(trail));
       }
+      setIsOpen(false);
+      setSearchQuery('');
+      setGeoResults([]);
     } catch (error) {
       console.error('Failed to load trail:', error);
     } finally {
